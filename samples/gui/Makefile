@@ -16,10 +16,10 @@ LIBDIR = ../../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I ../../src
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall 
+  CPPFLAGS = -MD -I ../../src -I /usr/include/freetype2 -I /usr/include/FTGL
+  CFLAGS += $(CPPFLAGS) -Os -c `sdl-config --cflags`
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L ../../bin -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -la2e
+  LDFLAGS += `sdl-config --libs` -L /usr/X11R6/lib -L jpeglib -L zlib -L ../../bin -lGL -lGLU -lXxf86vm -lz -ljpeg -la2e -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
   TARGET = ../bin/gui
 endif
 ifeq ($(CONFIG),Release)
@@ -28,10 +28,10 @@ LIBDIR = ../../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I ../../src
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall  -O2
+  CPPFLAGS = -MD -I ../../src -I /usr/include/freetype2 -I /usr/include/FTGL
+  CFLAGS += $(CPPFLAGS) -Os -c `sdl-config --cflags` -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L ../../bin -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -la2e
+  LDFLAGS += `sdl-config --libs` -L /usr/X11R6/lib -L jpeglib -L zlib -L ../../bin -lGL -lGLU -lXxf86vm -lz -ljpeg -la2e -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
   TARGET = ../bin/gui
 endif
 

@@ -31,5 +31,4 @@ shadow::~shadow() {
 /*! draws the shadows
  */
 void shadow::draw() {
-
 }

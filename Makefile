@@ -14,7 +14,7 @@ all: a2e obj2a2m chat-server gui model
 
 Makefile: ./premake.lua ./src/premake.lua ./tools/premake.lua ./samples/chat/premake.lua ./samples/gui/premake.lua ./samples/model/premake.lua
 	@echo ==== Regenerating Makefiles ====
-	@premake --target gnu --target vs6 --target vs2003
+	@premake --target gnu --cc gcc
 
 a2e:
 	@echo ==== Building a2e ====

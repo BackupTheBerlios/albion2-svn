@@ -31,7 +31,6 @@
 
 int main(int argc, char *argv[])
 {
-	cout << "blah!" << endl;
 	// initialize the engine
 	e.init(800, 600, 24, false);
 	e.set_caption("A2E Sample - Model Loader");
@@ -75,12 +74,12 @@ int main(int argc, char *argv[])
 	// initialize ode
 	// note: ode isn't implemented totally atm and
 	// returns (many) errors, so don't use it ...
-	//o.init();
+	o.init();
 
 	// pass the models to ode
-	//o.add_object(&plane, true, ode_object::TRIMESH);
-	//o.add_object(&cube, false, ode_object::BOX);
-	//o.add_object(&sphere, false, ode_object::SPHERE);
+	o.add_object(&plane, true, ode_object::TRIMESH);
+	o.add_object(&cube, false, ode_object::BOX);
+	o.add_object(&sphere, false, ode_object::SPHERE);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -143,6 +142,8 @@ int main(int argc, char *argv[])
 							l1.set_position(lpos);
 						}
 						break;
+						default:
+						break;
 					}
 					break;
 			}
@@ -150,6 +151,7 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/75 milliseconds (~ 75 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/75) {
+			cout << "inner loop - start" << endl;
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
@@ -161,18 +163,25 @@ int main(int argc, char *argv[])
 			}
 			e.set_caption(tmp);
 
+			cout << "start drawing" << endl;
 			e.start_draw();
 
+			cout << "running cam" << endl;
 			cam.run();
+			cout << "drawing scene" << endl;
 			sce.draw();
-			//o.run();
+			cout << "running ode" << endl;
+			o.run();
 
+			cout << "stop drawing" << endl;
 			e.stop_draw();
+			cout << "end stop drawing" << endl;
 			refresh_time = SDL_GetTicks();
+			cout << "inner loop - stop" << endl;
 		}
 	}
 
-	//o.close();
+	o.close();
 
 	return 0;
 }

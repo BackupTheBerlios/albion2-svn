@@ -136,17 +136,30 @@ void gui::draw() {
 	unsigned int tmp = 0;
 	for(unsigned int i = 0; i < (cwindows - 1); i++) {
 		end = true;
-		for(unsigned int j = 0; j < cwindows - i; j++) {
-			if(wnds_lid[j] > wnds_lid[j+1]) {
-				tmp = wnds_lid[j];
-				wnds_lid[j] = wnds_lid[j+1];
-				wnds_lid[j+1] = tmp;
+		if(cwindows != 2) {
+			for(unsigned int j = 0; j < cwindows - i; j++) {
+				if(wnds_lid[j] > wnds_lid[j+1]) {
+					tmp = wnds_lid[j];
+					wnds_lid[j] = wnds_lid[j+1];
+					wnds_lid[j+1] = tmp;
 
-				tmp = wnds_num[j];
-				wnds_num[j] = wnds_num[j+1];
-				wnds_num[j+1] = tmp;
+					tmp = wnds_num[j];
+					wnds_num[j] = wnds_num[j+1];
+					wnds_num[j+1] = tmp;
 
-				end = false;
+					end = false;
+				}
+			}
+		}
+		else {
+			if(wnds_lid[0] > wnds_lid[1]) {
+				tmp = wnds_lid[0];
+				wnds_lid[0] = wnds_lid[1];
+				wnds_lid[1] = tmp;
+
+				tmp = wnds_num[0];
+				wnds_num[0] = wnds_num[1];
+				wnds_num[1] = tmp;
 			}
 		}
 

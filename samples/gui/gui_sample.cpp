@@ -38,8 +38,6 @@ int main(int argc, char *argv[])
 	e.set_color_scheme(gui_style::BLUE);
 	sf = e.get_screen();
 
-	unsigned int white = SDL_MapRGB(sf->format, 255, 255, 255);
-
 	// initialize the a2e events
 	aevent.init(ievent);
 	aevent.set_keyboard_layout(event::DE);
@@ -90,8 +88,12 @@ int main(int argc, char *argv[])
 						case SDLK_ESCAPE:
 							done = true;
 							break;
+						default:
+						break;
 					}
 					break;
+				default:
+				break;
 			}
 		}
 
@@ -111,6 +113,8 @@ int main(int argc, char *argv[])
 							break;
 					}
 					break;
+				default:
+				break;
 			}
 		}
 
