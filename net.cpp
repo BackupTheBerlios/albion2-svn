@@ -49,7 +49,7 @@ void net::exit() {
 }
 
 /*! creates an server
- *  @param type the type of protocol that is used (currently just tcp is supported!)
+ *  @param type the type of protocol that is used (currently just tcp support!)
  *  @param port the port that is used
  *  @param num_clients the maximal amount of people who can connect to the server
  */
@@ -97,10 +97,10 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 }
 
 /*! creates a client
- *  @param server the name of the server to which the client should connect
- *  @param type the type of protocol that is used (currently just tcp is supported!)
+ *  @param server the name/ip of the server
+ *  @param type the type of protocol that is used (currently just tcp support!)
  *  @param port the port that is used
- *  @param client_name the client's name
+ *  @param client_name the clients' name
  */
 bool net::create_client(char* server, unsigned int type, unsigned short int port, char* client_name) {
 	net::max_clients = 256;
@@ -149,7 +149,7 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 				return false;
 			}
 
-			// connection created - communication is now possible
+			// connection created - data transfer is now possible
 			m.print(msg::MDEBUG, "net.cpp", "SDLNet_TCP_Open (client->server): successfully connected to server!");
 
 			SDLNet_TCP_AddSocket(socketset, tcp_ssock);
@@ -336,7 +336,7 @@ void net::send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	SDLNet_TCP_Send(clients[rcv_client].sock, data, 9+n);
 }
 
-/*! checks if there is a event from the clients
+/*! checks if a client has send an event
  */
 void net::check_events() {
 	for(unsigned int i = 0; i < net::max_clients; ++i) {
@@ -348,14 +348,14 @@ void net::check_events() {
 }
 
 /*! sends client data to the server and activates the client
- *  @param client_name the client's name
+ *  @param client_name the clients' name
  */
 void net::send_activation(char* client_name) {
 	char data[1+1+32];
 	int len;
 
 	// set all clients to inactive at first
-	for(unsigned int i = 0; i < net::max_clients; ++i) { // constant value of 32 clients ... has to be changed
+	for(unsigned int i = 0; i < net::max_clients; ++i) { // constant value of 32 clients ... has to be changed!
 		clients[i].is_active = false;
 	}
 	if(!net::tcp_ssock == 0) {
@@ -363,7 +363,7 @@ void net::send_activation(char* client_name) {
 
 		data[0] = net::NEW;
 		// need to create a new IPaddress value, because getpeeraddress returns a
-		// IPaddress* and not a IPaddress like the other sdl_net functions
+		// IPaddress* and not a IPaddress like the other sdl_net functions?
 		IPaddress* lh_ip = SDLNet_TCP_GetPeerAddress(tcp_ssock);
 		memcpy(&data[1], &lh_ip->port, 2);
 		if(strlen(client_name) > 32) {

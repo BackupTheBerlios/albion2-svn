@@ -106,8 +106,8 @@ void gui_input::draw_input() {
 			srcrect->x2 = width_diff + width_input_box;
 			srcrect->y2 = heigth_input_box;
 			
-			text_handler->set_blit_rectangles(srcrect, dstrect);
-			text_handler->set_blit(true);
+			/*text_handler->set_blit_rectangles(srcrect, dstrect);
+			text_handler->set_blit(true);*/
 			text_handler->draw_text();
 			
 			free(dstrect);
@@ -128,8 +128,8 @@ void gui_input::draw_input() {
 			srcrect->x2 = width_input_box;
 			srcrect->y2 = heigth_input_box;
 
-			text_handler->set_blit_rectangles(srcrect, dstrect);
-			text_handler->set_blit(true);
+			/*text_handler->set_blit_rectangles(srcrect, dstrect);
+			text_handler->set_blit(true);*/
 			text_handler->draw_text();
 
 			free(dstrect);
@@ -146,7 +146,7 @@ void gui_input::draw_input() {
 		// just draw the text surface
 		/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2));*/
-		text_handler->set_blit(false);
+		//text_handler->set_blit(false);
 		g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (heigth_input_box/2 - 14/2) + 1);
 		text_handler->set_point(p1);
@@ -291,12 +291,16 @@ void gui_input::set_text_position(unsigned int position) {
 	}
 }
 
+/*! sets "no" text - text length equals zero 
+ */
 void gui_input::set_notext() {
 	gui_input::text_handler->set_notext();
 	gui_input::text = "";
 	gui_input::text_length = 0;
 }
 
+/*! returns the text handler
+ */
 gui_text* gui_input::get_text_handler() {
 	return gui_input::text_handler;
 }

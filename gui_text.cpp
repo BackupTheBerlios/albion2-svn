@@ -28,29 +28,18 @@ gui_text::gui_text() {
 
 	// 1024 chars
 	gui_text::text = (char*)malloc(1024);
-
-	// the "blitting" stuff
-	is_blit = false;
-	gui_text::blit_src_rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
-	gui_text::blit_dest_rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
-	blit_src_rectangle->x1 = 0;
-	blit_src_rectangle->y1 = 0;
-	blit_src_rectangle->x2 = 0;
-	blit_src_rectangle->y2 = 0;
-	blit_dest_rectangle->x1 = 0;
-	blit_dest_rectangle->y1 = 0;
-	blit_dest_rectangle->x2 = 0;
-	blit_dest_rectangle->y2 = 0;
 }
 
 /*! there is no function currently
  */
 gui_text::~gui_text() {
 	free(text);
-	free(blit_src_rectangle);
-	free(blit_dest_rectangle);
 }
 
+/*! creates a new FTFont element and sets it as the currently used font
+ *  @param font_name the name of the .ttf file
+ *  @param font_size the font size in pixel
+ */
 void gui_text::new_text(char* font_name, unsigned int font_size) {
 	font = new FTGLTextureFont(font_name);
 	font->FaceSize(font_size);
@@ -171,55 +160,23 @@ void gui_text::set_notext() {
 	gui_text::text = "";
 }
 
+/*! returns the pointer to the currently used FTFont element 
+ */
 FTFont* gui_text::get_font() {
 	return gui_text::font;
 }
 
+/*! returns the text's width
+ */
 unsigned int gui_text::get_text_width() {
 	float wide = font->Advance(text);
 	return (unsigned int)wide;
 }
 
+/*! returns the text's height 
+ */
 unsigned int gui_text::get_text_height() {
 	float x, y, z, ux, uy, uz;
 	font->BBox(text, x, y, z, ux, uy, uz);
 	return (unsigned int)(uy - y);
-}
-
-void gui_text::set_blit_rectangles(gfx::rect* src, gfx::rect* dest) {
-	if(blit_dest_rectangle->x1 != dest->x1 ||
-		blit_dest_rectangle->x2 != dest->x2 ||
-		blit_dest_rectangle->y1 != dest->y1 ||
-		blit_dest_rectangle->y2 != dest->y2 ||
-		blit_src_rectangle->x1 != src->x1 ||
-		blit_src_rectangle->x2 != src->x2 ||
-		blit_src_rectangle->y1 != src->y1 ||
-		blit_src_rectangle->y2 != src->y2) {
-			gui_text::make_blit_texture(src->x2 - src->x1, src->y2 - src->y1);
-	}
-
-	memcpy(gui_text::blit_src_rectangle, src, sizeof(gfx::rect));
-	memcpy(gui_text::blit_dest_rectangle, dest, sizeof(gfx::rect));
-}
-
-bool gui_text::get_blit() {
-	return gui_text::is_blit;
-}
-
-void gui_text::set_blit(bool state) {
-	gui_text::is_blit = state;
-}
-
-void gui_text::make_blit_texture(unsigned int x, unsigned int y) {
-	unsigned int* data = (GLuint*)calloc(1, (x * y * 4 * sizeof(GLuint)));
-	glGenTextures(1, &blit_texture);								
-	glBindTexture(GL_TEXTURE_2D, blit_texture);					
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);						
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	free(data);
-}
-
-GLuint gui_text::get_blittexture() {
-	return gui_text::blit_texture;
 }

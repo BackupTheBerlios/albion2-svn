@@ -27,6 +27,10 @@ file_io::file_io() {
 file_io::~file_io() {
 }
 
+/*! opens a input file stream
+ *  @param filename the name of the file
+ *  @param binary flag if we read the file content binary of ascii wise
+ */
 void file_io::open_file(char* filename, bool binary) {
 	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::binary); }
 	else { file_io::filestream.open(filename, fstream::in); }
@@ -36,18 +40,29 @@ void file_io::open_file(char* filename, bool binary) {
 	}
 }
 
+/*! closes the input file stream
+ */
 void file_io::close_file() {
 	file_io::filestream.close();
 }
 
+/*! reads a line from the current input stream (senseless if we have a binary file)
+ *  @param finput a pointer to a char where the line is written to
+ */
 void file_io::get_line(char* finput) {
 	file_io::filestream.getline(finput, 65536);
 }
 
+/*! reads a block of -size- bytes
+ *  @param data a pointer to a char where the block is written to
+ *  @param size the amount of bytes we want to get
+ */
 void file_io::get_block(char* data, unsigned int size) {
 	file_io::filestream.read(data, size);
 }
 
+/*! reads a single char from the current file input stream and returns it
+ */
 char file_io::get_char() {
 	char c;
 	file_io::filestream.get(c);

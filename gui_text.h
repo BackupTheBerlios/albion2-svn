@@ -76,14 +76,6 @@ public:
 	unsigned int get_text_width();
 	unsigned int get_text_height();
 
-	void set_blit_rectangles(gfx::rect* src, gfx::rect* dest);
-	bool get_blit();
-	void set_blit(bool state);
-	void make_blit_texture(unsigned int x, unsigned int y);
-
-	// for debug purposes
-	GLuint get_blittexture();
-
 protected:
 	msg m;
 	core c;
@@ -116,11 +108,6 @@ protected:
 	float texmaxy;
 
 	FTFont* font;
-
-	bool is_blit;
-	gfx::rect* blit_src_rectangle;
-	gfx::rect* blit_dest_rectangle;
-	GLuint blit_texture;
 
 };
 

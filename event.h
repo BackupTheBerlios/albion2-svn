@@ -48,7 +48,7 @@ public:
 	SDL_Event get_event();
 	void handle_events(unsigned int event_type);
 
-	//! specifies which class is currently active
+	//! specifies currently active class
 	enum ACTIVE_CLASS {
 		NONE,		//!< @enum no class
 		GUI,		//!< @enum gui class

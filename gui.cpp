@@ -257,7 +257,6 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_texts[ctexts]->set_id(id);
 	// there were problems with TTF_RenderText_Solid, so it was just
 	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
-	//gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Blended(font, text, col));
 	gui::gui_texts[ctexts]->new_text(font_name, font_size);
 	gui::gui_texts[ctexts]->set_point(point);
 	gui::gui_texts[ctexts]->set_text(text);
@@ -371,15 +370,23 @@ SDL_Surface* gui::get_gui_surface() {
 	return gui::gui_surface;
 }
 
+/*! returns the currently active gui element
+ */
 gui::gui_element* gui::get_active_element() {
 	return gui::active_element;
 }
 
+/*! sets the currently active gui element via gui_element pointer
+ *  @param active_element pointer to the new active element
+ */
 void gui::set_active_element(gui_element* active_element) {
 	gui::active_element = active_element;
 	event_handler->set_active_element((event::gui_element*)active_element);
 }
 
+/*! sets the currently active gui element via the gui element's id
+ *  @param id the id of the new active element
+ */
 void gui::set_active_element(unsigned int id) {
 	for(unsigned int i = 0; i < celements; i++) {
 		if(gui::gui_elements[i].id == id) {
@@ -389,6 +396,10 @@ void gui::set_active_element(unsigned int id) {
 	}
 }
 
+/*! handles the input that we get from the event class for the input box
+ *  @param input_text chars written to the input box
+ *  @param input_box pointer to the input box
+ */
 void gui::switch_input_text(char* input_text, gui_input* input_box) {
 	for(unsigned int i = 0; i < strlen(input_text); i++) {
 		switch(input_text[i]) {

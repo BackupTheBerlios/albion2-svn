@@ -120,7 +120,7 @@
 			Name="Quelldateien"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="a2emesh.cpp">
+				RelativePath="a2emodel.cpp">
 			</File>
 			<File
 				RelativePath="camera.cpp">
@@ -181,7 +181,7 @@
 			Name="Headerdateien"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="a2emesh.h">
+				RelativePath="a2emodel.h">
 			</File>
 			<File
 				RelativePath="camera.h">

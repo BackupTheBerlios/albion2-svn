@@ -20,6 +20,7 @@
 #include "net.h"
 #include "gui_style.h"
 
+// dll main for windows dll export
 #ifdef WIN32
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -99,9 +100,8 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
 	engine::flags |= SDL_GL_DOUBLEBUFFER;
-	engine::flags |= SDL_HWSURFACE;
-	/*if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
-	else { engine::flags |= SDL_SWSURFACE; }*/
+	if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
+	else { engine::flags |= SDL_SWSURFACE; }
 	if(video_info->blit_hw) { engine::flags |= SDL_HWACCEL;	}
 	if(fullscreen) { engine::flags |= SDL_FULLSCREEN; }
 
@@ -269,6 +269,11 @@ int engine::resizeWindow(GLvoid) {
 	return 1;
 }
 
+/*! sets the position of the user
+ *  @param xpos x coordinate
+ *  @param ypos y coordinate
+ *  @param zpos z coordinate
+ */
 void engine::set_position(float xpos, float ypos, float zpos) {
 	engine::position->x = xpos;
 	engine::position->y = ypos;
@@ -277,10 +282,14 @@ void engine::set_position(float xpos, float ypos, float zpos) {
 	glTranslatef(engine::position->x, engine::position->y, engine::position->z);
 }
 
+/*! returns the position of the user
+ */
 core::vertex* engine::get_position() {
 	return engine::position;
 }
 
+/*! starts drawing the 2d elements and initializes the opengl functions for that
+ */
 void engine::start_2d_draw() {
 	glDisable(GL_TEXTURE_2D);
 
@@ -288,6 +297,7 @@ void engine::start_2d_draw() {
 	glPushMatrix();
 	glLoadIdentity();
 
+	// we need an orthogonal view (2d) for drawing 2d elements
 	glOrtho(0.0, screen->w, 0.0, screen->h, -1.0, 1.0);
 	
 	glMatrixMode(GL_MODELVIEW);
@@ -295,6 +305,8 @@ void engine::start_2d_draw() {
 	glLoadIdentity();
 }
 
+/*! stops drawing the 2d elements
+ */
 void engine::stop_2d_draw() {
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

@@ -31,7 +31,7 @@ using namespace std;
  *  @author flo
  *  @author laxity
  *  @version 0.2.3
- *  @date 2004/08/21
+ *  @date 2004/12/08
  *  @todo more functions
  *
  *  This is the network class
@@ -61,7 +61,7 @@ public:
 	enum PTYPE
 	{
 		TCP,	//!< @enum tcp
-		UDP	//!< @enum udp - isn't supported atm
+		UDP		//!< @enum udp - isn't supported atm
 	};
 
 	IPaddress server_ip;

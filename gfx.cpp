@@ -28,7 +28,7 @@ gfx::gfx() {
 gfx::~gfx() {
 }
 
-/*! draws a point on a surface
+/*! draws a point on a surface - deprecated!
  *  @param surface the surface where we want to draw the point
  *  @param point the position of the point
  *  @param color the color of the point

@@ -502,14 +502,22 @@ void event::add_gui_event(GEVENT_TYPE event_type, unsigned int id) {
 	gui_event_stack[cgui_event].id = id;
 }
 
+/*! returns a pointer to the currently active gui element
+ */
 event::gui_element* event::get_active_element() {
 	return event::active_element;
 }
 
+/*! sets the currently active gui element
+ *  @param active_element pointer to the new active gui element
+ */
 void event::set_active_element(event::gui_element* active_element) {
 	event::active_element = active_element;
 }
 
+/*! gets the current input text (for any input box) and writes it to tmp_text
+ *  @param tmp_text pointer to text where the new text should be written to
+ */
 void event::get_input_text(char* tmp_text) {
 	strcpy(tmp_text, input_text);
 	for(int i = 0; i < 512; i++) {
@@ -517,31 +525,50 @@ void event::get_input_text(char* tmp_text) {
 	}
 }
 
+/*! sets the currently used keyboard layout (just us and de support for the moment)
+ *  @param active_element pointer to the new active gui element
+ */
 void event::set_keyboard_layout(IKEY_LAYOUT layout) {
 	event::keyboard_layout = layout;
 }
 
+/*! sets the position of where clicked the last time
+ *  @param x the x coordinate
+ *  @param y the y coordinate
+ */
 void event::set_last_pressed(unsigned int x, unsigned int y) {
 	event::lm_last_pressed_x = x;
 	event::lm_last_pressed_y = y;
 }
 
+/*! sets the active class (gui, event or none - for internal usage only!)
+ *! needed for sending the keyboard or mouse input to the right class (handler)
+ *  @param active_class the new active_class
+ */
 void event::set_active(ACTIVE_CLASS active_class) {
 	event::act_class = active_class;
 }
 
+/*! returns true if the up arrow key is pressed
+ */
 bool event::is_key_up() {
 	return key_up;
 }
 
+/*! returns true if the down arrow key is pressed
+ */
 bool event::is_key_down() {
 	return key_down;
 }
 
+/*! returns true if the right arrow key is pressed
+ */
 bool event::is_key_right() {
 	return key_right;
 }
 
+/*! returns true if the left arrow key is pressed
+ */
 bool event::is_key_left() {
 	return key_left;
 }

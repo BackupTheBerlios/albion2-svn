@@ -36,7 +36,7 @@
 #include <gui_text.h>
 #include <event.h>
 #include <camera.h>
-#include <a2emesh.h>
+#include <a2emodel.h>
 #include <scene.h>
 using namespace std;
 
@@ -55,10 +55,5 @@ bool done = false;
 SDL_Event ievent;
 
 unsigned int refresh_time;
-
-
-/*camera cam;
-scene sce;
-a2emesh mesh;*/
 
 #endif

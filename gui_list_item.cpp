@@ -84,6 +84,8 @@ void gui_list_item::set_point(gfx::pnt* point) {
 	gui_list_item::text_handler->set_point(point);
 }
 
+/*! "deletes" the item
+ */
 void gui_list_item::clear() {
 	gui_list_item::id = 0xFFFFFF+gui_list_item::id;
 	gui_list_item::text = "";

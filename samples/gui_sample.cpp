@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July - November 2004
+ * \date July - December 2004
  *
  * Albion 2 Engine Sample - GUI Sample
  */
@@ -64,16 +64,6 @@ int main(int argc, char *argv[])
 	}
 
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102);
-
-
-	// initialize the camera
-	/*cam.init(e, aevent);
-
-	// load the model/mesh and set a new position
-	mesh.load_mesh("cube.a2m");
-	mesh.set_position(0.0f, 0.0f, -250.0f);
-	sce.add_model(&mesh);*/
-
 
 
 	refresh_time = SDL_GetTicks();
@@ -128,9 +118,6 @@ int main(int argc, char *argv[])
 			e.start_draw();
 
 			agui.draw();
-
-			/*cam.run();
-			sce.draw();*/
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();

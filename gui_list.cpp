@@ -199,6 +199,10 @@ void gui_list::set_position(unsigned int position) {
 	}
 }
 
+/*! adds an item to the list
+ *  @param text the text of the item
+ *  @param id the id of the added item
+ */
 gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
@@ -237,7 +241,7 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	items[citems]->set_point(g.cord_to_pnt(0,0));
 
 	// set position, so that we see the last line
-	//gui_list::set_position(gui_list::get_position() + 1);
+	gui_list::set_position(gui_list::get_position() + 1);
 
 	citems++;
 
@@ -246,6 +250,9 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	return items[citems-1];
 }
 
+/*! deletes an item of the list
+ *  @param id the id of the item
+ */
 void gui_list::delete_item(unsigned int id) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
@@ -254,6 +261,8 @@ void gui_list::delete_item(unsigned int id) {
 	}
 }
 
+/*! returns the amount of list items
+ */
 unsigned int gui_list::get_citems() {
 	return gui_list::citems;
 }

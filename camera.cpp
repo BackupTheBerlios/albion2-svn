@@ -35,6 +35,10 @@ camera::~camera() {
 	free(camera::position);
 }
 
+/*! initializes the camera
+ *  @param iengine pointer to the engine class for creating an engine handler
+ *  @param ievent pointer to the event class for creating an event handler
+ */
 void camera::init(engine &iengine, event &ievent) {
 	camera::event_handler = &ievent;
 	camera::engine_handler = &iengine;
@@ -46,6 +50,8 @@ void camera::init(engine &iengine, event &ievent) {
 	camera::rotation = 0.0f;
 }
 
+/*! runs the camera (expected to be called every draw)
+ */
 void camera::run() {
 	if(event_handler->is_key_right()) {
 		camera::rotation -= 1.5f;
@@ -69,12 +75,19 @@ void camera::run() {
 	engine_handler->set_position(camera::position->x, -10.0f, camera::position->z);
 }
 
+/*! sets the position of the camera
+ *  @param xpos x coordinate
+ *  @param ypos y coordinate
+ *  @param zpos z coordinate
+ */
 void camera::set_position(float x, float y, float z) {
 	camera::position->x = x;
 	camera::position->y = y;
 	camera::position->z = z;
 }
 
+/*! returns the position of the camera
+ */
 core::vertex* camera::get_position() {
 	return camera::position;
 }

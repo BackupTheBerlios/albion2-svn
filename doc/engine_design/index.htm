@@ -17,13 +17,13 @@
  *  @doc engine design
  *  @brief the a2e engine design doc
  *  @author flo
- *  @version 0.03
- *  @date 2004/09/28
+ *  @version 0.04
+ *  @date 2004/12/10
  *  @todo more descriptions
 -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Engine Design 0.03</title>
+<title>Engine Design 0.04</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
@@ -45,13 +45,13 @@
       </tr>
       <tr>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-Class for Text-Output to the Console.<br /></div></td>
+Class for Text-Output to the Console (or to the guis console if available).<br />
+        </div></td>
         <td width="33%" id="text_td"><div id="text">Description:<br />
           Class for functions that are used often and have to be accessible from
             anywhere.</div></td>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-          Class for graphical Output (2D (e.g. GUI)/3D (e.g. Scene Nodes)) and
-            Scene Management.</div></td>
+          Class for graphical Output (e.g. drawing lines or rectangles).</div></td>
       </tr>
       <tr>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
@@ -64,11 +64,6 @@ Class for Text-Output to the Console.<br /></div></td>
           - vector functions </div></td>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
           - 2D/3D Rendering              <br />
-- Pixel/Vertex Shader (OGSL?) <br />
-- Material Management<br />
-- other 3D fx (bump/cube mapping etc.)<br />
-- Normal Maps
-<br />
 - ...</div>
           </td>
       </tr>
@@ -88,21 +83,22 @@ Class for Text-Output to the Console.<br /></div></td>
       </tr>
       <tr>
         <td id="text_td"><div id="text">Functions:<br />
-      - bindings to ode -&gt; integrate ode totally into the engine<br />
+      - bindings to ODE -&gt; integrate ode totally into the engine<br />
       - Collision Detection<br />
       - extended simulation functions (gravity, joints, force/torque etc.)<br />
         </div></td>
         <td id="text_td"><div id="text">Functions:<br />
-      - Server &lt;-&gt; Client connection<br />
+      - Server &lt;-&gt; Client connection via SDL_Net <br />
       - data transfer functions (player position(s), messages, collision data
       (?) ...) </div></td>
         <td id="text_td"><div id="text">Functions:<br />
-      - A2E Script Parser + Interpreter </div></td>
+      - A2E Script Parser + Interpreter <br />
+      - bindings to LUA </div></td>
       </tr>
       <tr>
-        <td id="subtitle_td"><div id="subtitle">A2EMESH Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">A2EMODEL Class</div></td>
         <td id="subtitle_td"><div id="subtitle">File I/O Class</div></td>
-        <td id="subtitle_td"><div id="subtitle">Scene Manger Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Scene Management Class</div></td>
       </tr>
       <tr>
         <td id="text_td"><div id="text">Description:<br />
@@ -126,27 +122,63 @@ Class for Text-Output to the Console.<br /></div></td>
       - positioning of all elements in the scene </div></td>
       </tr>
       <tr>
-        <td width="33%" id="subtitle_td"><div id="subtitle">Camera Class</div></td>
-        <td width="33%" id="subtitle_td"><div id="subtitle">GUI Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Camera Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">GUI Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Event Class</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for the camera functions. <br />
+        </div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for the GUI functions.</div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for reacting on the Users I/O.</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">
+            <p>Functions:<br />
+        - &quot;bindings&quot; to the event class (get some key states ...)<br />
+        - reacting on user (movement) input -&gt; moving the camera <br />
+        - built-in camera style like a fps cam with collision detection <br />
+            </p>
+        </div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - interacts with the event class -&gt; handles the users I/O <br />
+      - GUI Button, Input Box, Text, List Box, Vertical/Horizontal Bar, Radio
+      Buttons etc.<br />
+      - GUI Style class/functions (different color schemes etc.) </div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - user input functions and reacting on them or passing them to another
+      class (like the GUI Class) <br />
+      - keyboard layout functions (us and de available atm) </div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="subtitle_td"><div id="subtitle">AI Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Material Management
+          Class</div></td>
         <td width="33%" rowspan="3" id="subtitle_td">&nbsp;</td>
       </tr>
       <tr>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-Class for the camera functions. <br />
+Class for AI functions. <br />
         </div></td>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-          Class for the GUI functions.</div></td>
+          Class for managing and rendering the materials of an object and/or
+              the whole scene.</div></td>
         </tr>
       <tr>
+        <td width="33%" id="text_td"><div id="text">
+          <p>Functions:<br />
+              - uses .a2e scripts for the AI functions</p>
+          </div></td>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
-          - &quot;bindings&quot; to the event class (get some key states ...)<br />
-- reacting on user (movement) input -&gt; moving the camera <br />
-        </div></td>
-        <td width="33%" id="text_td"><div id="text">Functions:<br />
-          - user input functions and reacting on them<br />
-          - GUI Button, Input Box, Text, List Box, Vertical/Horizontal Bar, Radio
-          Buttons etc.<br />
-          - GUI Style class/functions (different color schemes etc.) </div></td>
+          - supports different image file types (png, jpg etc.) <br />
+          - supports Pixel/Vertex Shader via GLSL<br />
+          - supports bump/cube/sphere/normal mapping <br />
+          - loads and handles .a2mt files<br />
+          - renders the materials to a model (or interacts closely with the a2emodel
+          class) </div></td>
         </tr>  
       <tr>
         <td colspan="3" id="hr_td"><hr></td>

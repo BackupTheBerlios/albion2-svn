@@ -38,18 +38,23 @@ scene::~scene() {
  */
 void scene::draw() {
 	for(unsigned int i = 0; i < cmodels; i++) {
-		models[i]->draw_mesh();
+		models[i]->draw_model();
 	}
 }
 
 /*! adds a model to the scene
  *  @param model pointer to the model
  */
-void scene::add_model(a2emesh* model) {
+void scene::add_model(a2emodel* model) {
 	models[cmodels] = model;
 	cmodels++;
 }
 
+/*! sets the position of the scene
+ *  @param xpos x coordinate
+ *  @param ypos y coordinate
+ *  @param zpos z coordinate
+ */
 void scene::set_position(float x, float y, float z) {
 	scene::position->x = x;
 	scene::position->y = y;
@@ -62,6 +67,8 @@ void scene::set_position(float x, float y, float z) {
 	}
 }
 
+/*! returns the position of the scene
+ */
 core::vertex* scene::get_position() {
 	return scene::position;
 }
