@@ -47,8 +47,11 @@ int main(int argc, char *argv[])
 	cam.init(e, aevent);
 
 	// load the model/mesh and set a new position
-	mesh.load_mesh("a2logo.a2m");
-	mesh.set_position(0.0f, 0.0f, -100.0f);
+	mesh.load_mesh("ground.a2m");
+	mesh.set_position(0.0f, -13.0f, 0.0f);
+	mesh2.load_mesh("celtic_cottage.a2m");
+	sce.add_model(&mesh);
+	sce.add_model(&mesh2);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -92,7 +95,7 @@ int main(int argc, char *argv[])
 			e.start_draw();
 
 			cam.run();
-			mesh.draw_mesh();
+			sce.draw();
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();

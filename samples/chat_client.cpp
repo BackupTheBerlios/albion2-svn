@@ -231,7 +231,7 @@ void add_user(char* name) {
 }
 
 void load_settings() {
-	fio.open_file("settings.dat");
+	fio.open_file("settings.dat", false);
 	char fline[256];
 	bool end = false;
 

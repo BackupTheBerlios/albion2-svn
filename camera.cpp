@@ -32,6 +32,7 @@ camera::camera() {
 /*! there is no function currently
  */
 camera::~camera() {
+	free(camera::position);
 }
 
 void camera::init(engine &iengine, event &ievent) {

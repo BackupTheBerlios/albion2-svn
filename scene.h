@@ -14,38 +14,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __CAMERA_H__
-#define __CAMERA_H__
+#ifndef __SCENE_H__
+#define __SCENE_H__
 
 #include <iostream>
 #include <SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"
-#include "event.h"
+#include "a2emesh.h"
 #include <math.h>
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class camera
- *  @brief a2e camera functions
+/*! @class scene
+ *  @brief a2e scene manager
  *  @author flo
- *  @version 0.1.2
+ *  @version 0.1
  *  @date 2004/09/12
  *  @todo more functions
  *  
- *  the camera class
+ *  the scene manager class
  */
 
-class A2E_API camera
+class A2E_API scene
 {
 public:
-	camera();
-	~camera();
+	scene();
+	~scene();
 
-	void init(engine &iengine, event &ievent);
-	void run();
+	void draw();
+	void add_model(a2emesh* model);
 
 	void set_position(float x, float y, float z);
 	core::vertex* get_position();
@@ -54,14 +54,11 @@ protected:
 	msg m;
 	core c;
 
-	event* event_handler;
-	engine* engine_handler;
+	unsigned int cmodels;
 
 	core::vertex* position;
-	float rotation;
-	float up_down;
 
-	float piover180;
+	a2emesh* models[256];
 };
 
 #endif

@@ -210,24 +210,19 @@ void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 int engine::initGL(GLvoid) {
 	// enable texture mapping
 	glEnable(GL_TEXTURE_2D);
-
-    /* Enable smooth shading */
-    glShadeModel( GL_SMOOTH );
-
-    /* Depth buffer setup */
-    glClearDepth( 1.0f );
-
-    /* Enables Depth Testing */
-    glEnable( GL_DEPTH_TEST );
-
-    /* The Type Of Depth Test To Do */
-    glDepthFunc( GL_LEQUAL );
-
-    /* Really Nice Perspective Calculations */
-    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
-
-	// disable backface culling
-	glCullFace(GL_FRONT);
+    // enable smooth shading
+    glShadeModel(GL_SMOOTH);
+    // depth buffer setup
+    glClearDepth(1.0f);
+    // anable depth testing
+    glEnable(GL_DEPTH_TEST);
+    // lequal depth test
+    glDepthFunc(GL_LEQUAL);
+    // nice perspective calculations
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	// enable backface culling
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	return 1;
 }
@@ -240,12 +235,12 @@ int engine::drawGLScene(GLvoid) {
 		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
 		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
 
-    // Clear the color and depth buffers.
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    // clear the color and depth buffers.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // We don't want to modify the projection matrix.
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity( );
+    // we don't want to modify the projection matrix.
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     return 1;
 }
@@ -253,13 +248,17 @@ int engine::drawGLScene(GLvoid) {
 /* function to reset our viewport after a window resize
  */
 int engine::resizeWindow(GLvoid) {
+	// set the viewport
     glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
 
+	// projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
+	// set perspective with fov = 45° and far value = 500.0f
 	gluPerspective(45.0f, engine::width/engine::height, 0.1f, 500.0f);
 
+	// model view matrix
     glMatrixMode(GL_MODELVIEW);
 
     glLoadIdentity();

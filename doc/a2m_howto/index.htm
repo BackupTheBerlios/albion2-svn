@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *****************************************************************************
+ *  @doc a2m howto
+ *  @brief howto create an a2m model
+ *  @author flo
+ *  @version 0.1
+ *  @date 2004/09/12
+ *  @todo more functions
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Howto create an A2M Model?</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td><img src="../../data/engine_logo.png" alt="Albion 2 Engine" title="Albion 2 Engine" width="446" height="130" /></td>
+  </tr>
+  <tr>
+    <td><table width="100%"  border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td id="title_td"><div id="title">Albion 2 Engine</div></td>
+        </tr>
+      <tr>
+        <td id="subtitle_td"><div id="subtitle">Howto create an A2M
+            Model? </div></td>
+      </tr>
+      <tr>
+        <td id="subtitle_td"><div id="subtitle">with 3D Studio Max: </div>          </td>
+        </tr>
+      <tr>
+        <td id="text_td"><div id="text">1. download an obj exporter for 3ds max
+          (i.e. from <a href="http://www.habware.at/duck4.htm">http://www.habware.at/duck4.htm</a> (named
+          max2obj))<br />
+          2. unzip the files and put them into your 3ds max plugin directory<br />
+          3. start 3ds max and load a model<br />
+          4. use file-&gt;export
+and select &quot;Wavefront Object (*.OBJ)&quot; as file type<br />
+5. a little window opens -&gt; select &quot;Group by: Object&quot;, &quot;Use Materials&quot;, &quot;Create
+Material Library&quot;, &quot;Rotate Model&quot;, &quot;Faces: Triangles&quot;,<br />
+&quot;Texture Coordinates&quot;, &quot;Smooth Groups&quot;. Deselect &quot;Normals&quot;, &quot;Compress Numbers&quot;
+(?) and &quot;Relative Vertex Numbers&quot;.<br />
+Put an &quot;8&quot; (or higher/lower) into &quot;# of Digits&quot; input field.<br /> 
+6. press OK
+<br />
+7. a second window opens -&gt; select &quot;Scene Materials&quot; and &quot;Export Maps&quot;. Deselect
+the rest and put a &quot;1&quot; into the &quot;# of Digits&quot; input field. <br />
+8. press OK<br />
+9. the obj file has been exported now. open the shell/command, move to the directory
+where the obj file or the obj2a2m program is.<br />
+10. type &quot;obj2a2m model.obj model.a2m&quot;
+<br />
+11. you should see some kind of that:<br />
+<em>F:\Programme\dev\albion2\tools&gt;obj2a2m ground.obj ground.a2m<br />
+1089 vertices, 2048 indices and 6144 texture vertices successfully converted!<br />
+</em>12. et voila, now you have an a2m model that you can open with the engine</div>          </td>
+        </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td id="footer_td"><div id="footer">&copy; by Albion 2 Development</div></td>
+  </tr>
+</table>
+</body>
+</html>

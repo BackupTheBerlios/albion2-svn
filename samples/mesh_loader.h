@@ -34,6 +34,7 @@
 #include <event.h>
 #include <camera.h>
 #include <a2emesh.h>
+#include <scene.h>
 using namespace std;
 
 msg m;
@@ -44,7 +45,10 @@ gfx agfx;
 event aevent;
 camera cam;
 
+scene sce;
+
 a2emesh mesh;
+a2emesh mesh2;
 
 SDL_Surface* sf;
 

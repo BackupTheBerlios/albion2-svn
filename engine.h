@@ -39,8 +39,8 @@ using namespace std;
  *  @brief main engine
  *  @author laxity
  *  @author flo
- *  @version 0.2.1
- *  @date 2004/09/08
+ *  @version 0.2.2
+ *  @date 2004/09/11
  *  @todo more functions
  *  
  *  the main engine

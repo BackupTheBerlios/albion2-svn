@@ -173,6 +173,9 @@
 			<File
 				RelativePath="net.cpp">
 			</File>
+			<File
+				RelativePath="scene.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"
@@ -227,6 +230,9 @@
 			</File>
 			<File
 				RelativePath="net.h">
+			</File>
+			<File
+				RelativePath="scene.h">
 			</File>
 			<File
 				RelativePath="win_dll_export.h">
