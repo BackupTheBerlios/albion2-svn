@@ -1,7 +1,29 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *****************************************************************************
+ *  @doc engine design
+ *  @brief the a2e engine design doc
+ *  @author flo
+ *  @version 0.03
+ *  @date 2004/09/28
+ *  @todo more descriptions
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Engine Design 0.02</title>
+<title>Engine Design 0.03</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
@@ -38,19 +60,12 @@ Class for Text-Output to the Console.<br /></div></td>
 - Debug Output <br /></div></td>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
           - Byte Manipulation<br />
-          - File I/O<br />
-          - File Management (e.g. access to system variables)<br />
           - definition of vector, line, triangle, quad etc.<br />
           - vector functions </div></td>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
-          - 2D/3D Rendering
-              <br />
-              - Scene Management<br />
-              - 3D Model
-loading (-&gt; which format?)<br />
+          - 2D/3D Rendering              <br />
 - Pixel/Vertex Shader (OGSL?) <br />
 - Material Management<br />
-- Texture Management<br />
 - other 3D fx (bump/cube mapping etc.)<br />
 - Normal Maps
 <br />
@@ -58,34 +73,81 @@ loading (-&gt; which format?)<br />
           </td>
       </tr>
       <tr>
-        <td width="33%" id="subtitle_td"><div id="subtitle">Physics Class</div></td>
-        <td width="33%" id="subtitle_td"><div id="subtitle">Networking Class</div></td>
-        <td width="33%" id="subtitle_td"><div id="subtitle">Script Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Physics Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Networking Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Script Class</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for Collision Detection and other physics stuff. <br />
+        </div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for Networking functions.</div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for Script functions.</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">Functions:<br />
+      - bindings to ode -&gt; integrate ode totally into the engine<br />
+      - Collision Detection<br />
+      - extended simulation functions (gravity, joints, force/torque etc.)<br />
+        </div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - Server &lt;-&gt; Client connection<br />
+      - data transfer functions (player position(s), messages, collision data
+      (?) ...) </div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - A2E Script Parser + Interpreter </div></td>
+      </tr>
+      <tr>
+        <td id="subtitle_td"><div id="subtitle">A2EMESH Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">File I/O Class</div></td>
+        <td id="subtitle_td"><div id="subtitle">Scene Manger Class</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for loading .a2m models and displaying (render) them. <br />
+        </div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for File I/O.</div></td>
+        <td id="text_td"><div id="text">Description:<br />
+      Class for managing the scene.</div></td>
+      </tr>
+      <tr>
+        <td id="text_td"><div id="text">Functions:<br />
+      - loading .a2m models (and textures) <br />
+      - render the model <br />
+        </div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - File I/O<br />
+      - File Management (e.g. access to system variables)</div></td>
+        <td id="text_td"><div id="text">Functions:<br />
+      - stack of 3d models to render<br />
+      - positioning of all elements in the scene </div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Camera Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">GUI Class</div></td>
+        <td width="33%" rowspan="3" id="subtitle_td">&nbsp;</td>
       </tr>
       <tr>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-Class for Collision Detection and other physics stuff. <br />
+Class for the camera functions. <br />
         </div></td>
         <td width="33%" id="text_td"><div id="text">Description:<br />
-          Class for Networking functions.</div></td>
-        <td width="33%" id="text_td"><div id="text">Description:<br />
-          Class for Script functions.</div></td>
-      </tr>
+          Class for the GUI functions.</div></td>
+        </tr>
       <tr>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
-          - bindings to ode -&gt; integrate ode totally into the engine<br />
-- Collision Detection<br />
-- extended 
-simulation functions (gravity, joints, force/torque etc.)<br />
+          - &quot;bindings&quot; to the event class (get some key states ...)<br />
+- reacting on user (movement) input -&gt; moving the camera <br />
         </div></td>
         <td width="33%" id="text_td"><div id="text">Functions:<br />
-          - P2P or Server &lt;-&gt; Client connection?<br />
-          - data transfer functions (player position(s), messages, collision
-          data (?) ...) </div></td>
-        <td width="33%" id="text_td"><div id="text">Functions:<br />
-- A2E Script Parser + Interpreter </div>
-          </td>
-      </tr>  
+          - user input functions and reacting on them<br />
+          - GUI Button, Input Box, Text, List Box, Vertical/Horizontal Bar, Radio
+          Buttons etc.<br />
+          - GUI Style class/functions (different color schemes etc.) </div></td>
+        </tr>  
       <tr>
         <td colspan="3" id="hr_td"><hr></td>
         </tr>
