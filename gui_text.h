@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include <FTGLTextureFont.h>
 #include "msg.h"
 #include "core.h"
@@ -68,6 +67,7 @@ public:
 	void set_point(gfx::pnt* point);
 	void set_text(char* text);
 	void set_color(SDL_Color color);
+	void set_color(unsigned int color);
 	void set_font_name(char* font_name);
 	void set_font_size(unsigned int font_size);
 	void set_init(bool state);
@@ -92,7 +92,7 @@ protected:
 	gfx::pnt* point;
 	//! the text itself
 	char* text;
-	//! the color if the text
+	//! the texts color
 	SDL_Color color;
 	//! the font name
 	char* font_name;

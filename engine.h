@@ -25,12 +25,13 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <math.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "msg.h"
 #include "core.h"
 #include "net.h"
 #include "gui_style.h"
+#include "shadow.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -39,8 +40,8 @@ using namespace std;
  *  @brief main engine
  *  @author laxity
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/14
+ *  @version 0.3.1
+ *  @date 2005/02/15
  *  @todo more functions
  *  
  *  the main engine
@@ -52,8 +53,8 @@ public:
 	engine();
 	~engine();
 	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
-	void set_width(unsigned int new_width);
-	void set_height(unsigned int new_height);
+	void set_width(unsigned int width);
+	void set_height(unsigned int height);
 	void start_draw();
 	void stop_draw();
 	void start_2d_draw();
@@ -71,15 +72,16 @@ public:
 	int resizeWindow(GLvoid);
 
 	void set_position(float xpos, float ypos, float zpos);
-	core::vertex* get_position();
+	core::vertex3* get_position();
 protected:
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
 	const SDL_VideoInfo* video_info;
 	msg m;
 	gui_style gstyle;
+	shadow shd;
 
-	core::vertex* position;
+	core::vertex3* position;
 };
 
 #endif

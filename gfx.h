@@ -23,8 +23,8 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "msg.h"
 #include "core.h"
 #include "net.h"
@@ -35,8 +35,8 @@ using namespace std;
 /*! @class gfx
  *  @brief graphical functions
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.3.1
+ *  @date 2005/02/15
  *  @todo more functions
  *  
  *  the gfx class
@@ -68,6 +68,7 @@ public:
 	void draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color);
 
 	void draw_line(SDL_Surface* surface, gfx::pnt* point1, gfx::pnt* point2, unsigned int color);
+	void draw_3d_line(core::vertex3* v1, core::vertex3* v2, unsigned int color);
 
 	void draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
 	void draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color1, unsigned int color2);

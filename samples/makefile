@@ -8,8 +8,9 @@ OBJS = gui_sample.o \
        
 CC         = gcc
 LD         = gcc
-CC_FLAGS   = -Os -c -I../ `sdl-config --cflags`
-LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -L../bin -lGL -lGLU -lXxf86vm -lz -ljpeg -la2e `sdl-config --libs` -lSDL_net -lSDL_ttf -lSDL_image -o
+CC_FLAGS   = -Os -c -I../ `sdl-config --cflags` -I"/usr/include/freetype2" -I"/usr/include/FTGL"
+LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -L../bin -lGL -lGLU -lXxf86vm -lz -ljpeg -la2e `sdl-config --libs` -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -o
+BIN        = chat_server chat_client gui_sample model_loader
 
 #######################################################################
 # Files
@@ -37,3 +38,8 @@ chat_client: chat_client.o
 
 model_loader: model_loader.o
 	$(LD) model_loader.o $(LD_FLAGS) model_loader
+
+
+
+clean:
+	rm -f $(OBJS) $(BIN)

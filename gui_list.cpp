@@ -30,11 +30,24 @@ gui_list::gui_list() {
 	citems = 0;
 
 	drawable_items = 0;
+
+	rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
+	rectangle->x1 = 0;
+	rectangle->y1 = 0;
+	rectangle->x2 = 0;
+	rectangle->y2 = 0;
+
+	sid = 0;
 }
 
 /*! there is no function currently
  */
 gui_list::~gui_list() {
+	m.print(msg::MDEBUG, "gui_list.cpp", "freeing gui_list stuff");
+
+	free(rectangle);
+
+	m.print(msg::MDEBUG, "gui_list.cpp", "gui_list stuff freed");
 }
 
 /*! draws the list box
@@ -59,12 +72,11 @@ void gui_list::draw_list() {
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
 		r1, engine_handler->get_gstyle().STYLE_DARK,
 		engine_handler->get_gstyle().STYLE_DARK2);
-	free(r1);
 
 	// draw items
-	// we need a height of 22px for each item
+	// we need a height of 18px for each item
 	unsigned int list_box_heigth = gui_list::rectangle->y2 - gui_list::rectangle->y1;
-	gui_list::drawable_items = (list_box_heigth - (list_box_heigth % 22)) / 22;
+	gui_list::drawable_items = (list_box_heigth - (list_box_heigth % 18)) / 18;
 	gui_list::vbar_handler->set_shown_lines(gui_list::drawable_items);
 	unsigned int* ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
 	unsigned int* new_ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
@@ -75,7 +87,6 @@ void gui_list::draw_list() {
 	while(c != 0) {
 		unsigned int highest = 0;
 		unsigned int tmp_id = 0;
-		//unsigned int tmp_num = 0; // not used ...
 		for(unsigned int i = 0; i < citems; i++) {
 			if(ids[i] > highest) {
 				tmp_id = i;
@@ -88,7 +99,7 @@ void gui_list::draw_list() {
 	}
 
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	// just loop for so many items as we have
+	// just loop for as many items as we have
 	unsigned int loop = 0;
 	if(drawable_items > citems) {
 		loop = citems;
@@ -101,13 +112,27 @@ void gui_list::draw_list() {
 		for(unsigned int j = 0; j < citems; j++) {
 			if(items[j]->get_id() == new_ids[i + position]) {
 				g.cord_to_pnt(p1, gui_list::rectangle->x1 + 3,
-					gui_list::rectangle->y1 + 3 + i*22);
-				items[j]->set_point(p1);
+					gui_list::rectangle->y1 + 6 + i*18);
+				items[j]->set_point(p1->x, p1->y);
+
+				// is item selected?
+				if(sid == items[j]->get_id()) {
+					r1->x1 = p1->x - 1;
+					r1->y1 = p1->y - 4;
+					r1->x2 = gui_list::rectangle->x2 - 15;
+					r1->y2 = p1->y + 13;
+					g.draw_filled_rectangle(engine_handler->get_screen(),
+						r1, engine_handler->get_gstyle().STYLE_SELECTED);
+					g.draw_rectangle(engine_handler->get_screen(),
+						r1, engine_handler->get_gstyle().STYLE_DARK);
+				}
+
 				items[j]->draw_list_item();
 			}
 		}
 	}
 	free(p1);
+	free(r1);
 
 	free(ids);
 	free(new_ids);
@@ -211,34 +236,27 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 		}
 	}
 
-	gui_text* gtext = (gui_text*)malloc(sizeof(gui_text));
-
-	//TTF_Font* font = gtext->open_font("vera.ttf", 12);
 	SDL_Color col;
 	col.b = engine_handler->get_gstyle().STYLE_FONT & 0xFF;
 	col.g = (engine_handler->get_gstyle().STYLE_FONT & 0xFF00) >> 8;
 	col.r = (engine_handler->get_gstyle().STYLE_FONT & 0xFF0000) >> 16;
 
+	gui_text* gtext = new gui_text();
+
 	gtext->set_init(false);
 	gtext->set_engine_handler(gui_list::engine_handler);
 	gtext->set_id(id);
-	// there were problems with TTF_RenderText_Solid, so it was just
-	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
-	//gtext->set_surface(TTF_RenderText_Blended(font, text, col));
 	gtext->new_text("vera.ttf", 12);
 	gtext->set_point(g.cord_to_pnt(0,0));
 	gtext->set_text(text);
 	gtext->set_color(col);
-	gtext->set_font_name("vera.ttf");
-	gtext->set_font_size(12);
 	gtext->set_init(true);
-	//gtext->close_font(font);
 
 	items[citems] = new gui_list_item();
 	items[citems]->set_text_handler(gtext);
 	items[citems]->set_text(text);
 	items[citems]->set_id(id);
-	items[citems]->set_point(g.cord_to_pnt(0,0));
+	items[citems]->set_point(0, 0);
 
 	// set position, so that we see the last line
 	gui_list::set_position(gui_list::get_position() + 1);
@@ -266,4 +284,59 @@ void gui_list::delete_item(unsigned int id) {
  */
 unsigned int gui_list::get_citems() {
 	return gui_list::citems;
+}
+
+/*! selects an element of the list box
+ *  @param x the x pos
+ *  @param x the y pos
+ */
+void gui_list::select_pos(unsigned int x, unsigned int y) {
+	for(unsigned int i = 0; i < citems; i++) {
+		if(items[i]->get_id() == sid) {
+            items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT);
+		}
+	}
+
+	gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::pnt* pos = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	pos->x = x;
+	pos->y = y;
+	r->x2 = gui_list::rectangle->x2 - 15;
+
+	for(unsigned int i = 0; i < citems; i++) {
+			r->x1 = items[i]->get_point()->x - 1;
+			r->y1 = items[i]->get_point()->y - 4;
+			r->y2 = items[i]->get_point()->y + 13;
+
+			if(g.is_pnt_in_rectangle(r, pos)) {
+				sid = items[i]->get_id();
+				items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT2);
+				i = citems;
+			}
+	}
+
+	free(r);
+	free(pos);
+}
+
+/*! returns the id of the selected element
+ */
+unsigned int gui_list::get_selected_id() {
+	return gui_list::sid;
+}
+
+/*! selects an element of the list box
+ *  @param sid the elements id
+ */
+void gui_list::set_selected_id(unsigned int sid) {
+	for(unsigned int i = 0; i < citems; i++) {
+		if(items[i]->get_id() == gui_list::sid) {
+            items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT);
+		}
+		else if(items[i]->get_id() == sid) {
+			items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT2);
+		}
+	}
+
+	gui_list::sid = sid;
 }

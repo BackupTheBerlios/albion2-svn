@@ -20,6 +20,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;A2E_EXPORTS"
+				KeepComments="TRUE"
+				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -34,11 +36,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib  ode.lib OPCODE.lib"
-				OutputFile="bin/a2e-debug.dll"
+				OutputFile="bin/a2e.dll"
+				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="1"
 				EnableCOMDATFolding="1"
-				ImportLibrary="bin/a2e-debug.lib"/>
+				ImportLibrary="bin/a2e.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				TypeLibraryName="bin/$(ProjectName).tlb"/>
@@ -85,7 +88,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib OPCODE.lib"
 				OutputFile="bin/a2e.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				GenerateDebugInformation="FALSE"
 				SubSystem="1"
 				OptimizeReferences="1"
@@ -147,6 +150,9 @@
 				RelativePath="gui_button.cpp">
 			</File>
 			<File
+				RelativePath="gui_check.cpp">
+			</File>
+			<File
 				RelativePath="gui_input.cpp">
 			</File>
 			<File
@@ -165,6 +171,12 @@
 				RelativePath="gui_vbar.cpp">
 			</File>
 			<File
+				RelativePath="image.cpp">
+			</File>
+			<File
+				RelativePath="light.cpp">
+			</File>
+			<File
 				RelativePath="main.cpp">
 			</File>
 			<File
@@ -178,9 +190,12 @@
 			</File>
 			<File
 				RelativePath="ode_object.cpp">
-			</File>	
+			</File>
 			<File
 				RelativePath="scene.cpp">
+			</File>
+			<File
+				RelativePath="shadow.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -211,6 +226,9 @@
 				RelativePath="gui_button.h">
 			</File>
 			<File
+				RelativePath="gui_check.h">
+			</File>
+			<File
 				RelativePath="gui_input.h">
 			</File>
 			<File
@@ -229,6 +247,12 @@
 				RelativePath="gui_vbar.h">
 			</File>
 			<File
+				RelativePath="image.h">
+			</File>
+			<File
+				RelativePath="light.h">
+			</File>
+			<File
 				RelativePath="main.h">
 			</File>
 			<File
@@ -242,9 +266,12 @@
 			</File>
 			<File
 				RelativePath="ode_object.h">
-			</File>			
+			</File>
 			<File
 				RelativePath="scene.h">
+			</File>
+			<File
+				RelativePath="shadow.h">
 			</File>
 			<File
 				RelativePath="win_dll_export.h">

@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July - December 2004
+ * \date July 2004 - February 2005
  *
  * Albion 2 Engine Sample - GUI Sample
  */
@@ -38,9 +38,6 @@ int main(int argc, char *argv[])
 	e.set_color_scheme(gui_style::BLUE);
 	sf = e.get_screen();
 
-	unsigned int black = SDL_MapRGB(sf->format, 0, 0, 0);
-	unsigned int blue = SDL_MapRGB(sf->format, 0, 0, 255);
-	unsigned int red = SDL_MapRGB(sf->format, 255, 0, 0);
 	unsigned int white = SDL_MapRGB(sf->format, 255, 255, 255);
 
 	// initialize the a2e events
@@ -54,21 +51,25 @@ int main(int argc, char *argv[])
 	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
 	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105,
 		"input text");
-	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 450), 106, "blah");
+	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 440), 106, "blah");
+	gui_text* xpos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 20), 107);
+	gui_text* ypos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 40), 108);
+	gui_check* cbox = agui.add_check_box(agfx.pnt_to_rect(10, 270, 200, 290), 109, "Test Check Box");
 
 	// add 32 items
-	for(unsigned int i = 1; i <= 7; i++) {
+	for(unsigned int i = 1; i <= 32; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1->add_item(tmp, i);
 	}
 
-	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102);
+	image img(&e);
+	img.open_image("../data/engine_logo.png");
+	img.set_position(800 - 446, 600 - 130);
 
-
-	gfx::rect* testrect = agfx.pnt_to_rect(0, 0, 2, 2);
-
-
+	gfx::pnt* mpos = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	char* xpos = (char*)malloc(8);
+	char* ypos = (char*)malloc(8);
 	refresh_time = SDL_GetTicks();
 	while(!done)
 	{
@@ -118,14 +119,27 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/60 milliseconds (~ 60 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/60) {
+			aevent.get_mouse_pos(mpos);
+			itoa(mpos->x, xpos, 10);
+			itoa(mpos->y, ypos, 10);
+			xpos_text->set_text(xpos);
+			ypos_text->set_text(ypos);
+
 			e.start_draw();
 
+			img.draw();
 			agui.draw();
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}
 	}
+
+	free(mpos);
+	free(xpos);
+	free(ypos);
+
+	SDL_FreeSurface(sf);
 
 	return 0;
 }

@@ -28,8 +28,8 @@ gui_style::gui_style() {
 gui_style::~gui_style() {
 }
 
-/*! initializes the gui style class and sets an engine handler
- *  @param iengine the engine we want to handle
+/*! initializes the gui style class and sets the screen surface
+ *  @param screen the surface screen
  */
 void gui_style::init(SDL_Surface* screen) {
 	gui_style::screen = screen;
@@ -52,6 +52,7 @@ void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
 			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0x000000);
 			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
 			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0x111111);
+			gui_style::STYLE_SELECTED = g.get_color(gui_style::screen, 0x8A8A8A);
 			break;
 		case gui_style::BLUE:
 			gui_style::STYLE_WINDOW_BG = g.get_color(gui_style::screen, 0x0005C0);
@@ -65,6 +66,7 @@ void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
 			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0x2F66F1);
 			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
 			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
+			gui_style::STYLE_SELECTED = g.get_color(gui_style::screen, 0x0A1CC6);
 			break;
 		case gui_style::BLACKWHITE:
 			gui_style::STYLE_WINDOW_BG = g.get_color(gui_style::screen, 0xEEEEEE);
@@ -78,6 +80,7 @@ void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
 			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0xFFFFFF);
 			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
 			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
+			gui_style::STYLE_SELECTED = g.get_color(gui_style::screen, 0xC9C9C9);
 			break;
 		default:
 			gui_style::set_color_scheme(gui_style::WINDOWS);

@@ -36,7 +36,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/model_loader.pdb"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="1"
 				EnableCOMDATFolding="1"
 				TargetMachine="1"/>

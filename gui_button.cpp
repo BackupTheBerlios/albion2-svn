@@ -28,6 +28,10 @@ gui_button::gui_button() {
 /*! there is no function currently
  */
 gui_button::~gui_button() {
+	m.print(msg::MDEBUG, "gui_button.cpp", "freeing gui_button stuff");
+
+
+	m.print(msg::MDEBUG, "gui_button.cpp", "gui_button stuff freed");
 }
 
 /*! draws the button

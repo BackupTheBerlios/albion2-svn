@@ -30,8 +30,8 @@ using namespace std;
 /*! @class event
  *  @brief (sdl) event handler
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.3.1
+ *  @date 2005/02/03
  *  @todo more functions
  *  
  *  the event handling class
@@ -115,6 +115,9 @@ public:
 	bool is_key_down();
 	bool is_key_right();
 	bool is_key_left();
+
+	//! gets the mouses position (pnt)
+	void get_mouse_pos(gfx::pnt* pos);
 
 protected:
 	msg m;

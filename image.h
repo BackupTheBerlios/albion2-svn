@@ -14,39 +14,57 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __GUI_SAMPLE_H__
-#define __GUI_SAMPLE_H__
-
-#ifdef WIN32
-#include <windows.h>
-#endif
+#ifndef __IMAGE_H__
+#define __IMAGE_H__
 
 #include <iostream>
-#include <SDL.h>
+#include "msg.h"
+#include "gfx.h"
+#include "engine.h"
 #include <SDL_image.h>
-#include <engine.h>
-#include <msg.h>
-#include <gfx.h>
-#include <gui.h>
-#include <event.h>
-#include <camera.h>
-#include <a2emodel.h>
-#include <scene.h>
-#include <image.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 using namespace std;
 
-msg m;
-engine e;
-gfx agfx;
-gui agui;
-event aevent;
+#include "win_dll_export.h"
 
-SDL_Surface* sf;
+/*! @class image
+ *  @brief functions to display an image
+ *  @author flo
+ *  @version 0.1
+ *  @date 2005/02/06
+ *  @todo more functions
+ *  
+ *  the image class
+ */
 
-bool done = false;
+class A2E_API image
+{
+public:
+	image(engine* iengine);
+	~image();
 
-SDL_Event ievent;
+	void draw();
+	void open_image(char* filename);
+	void set_engine_handler(engine* iengine);
 
-unsigned int refresh_time;
+	void set_position(unsigned int x, unsigned int y);
+	void set_position(gfx::pnt* position);
+
+	gfx::pnt* get_position();
+
+protected:
+	msg m;
+	gfx g;
+
+	engine* engine_handler;
+
+	GLuint texture;
+
+	gfx::pnt* position;
+	unsigned int width;
+	unsigned int heigth;
+
+};
 
 #endif

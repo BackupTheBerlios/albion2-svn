@@ -27,6 +27,13 @@ event::event() {
 /*! there is no function currently
  */
 event::~event() {
+	m.print(msg::MDEBUG, "event.cpp", "freeing event stuff");
+
+	if(event::gui_event_stack) {
+		free(event::gui_event_stack);
+	}
+
+	m.print(msg::MDEBUG, "event.cpp", "event stuff freed");
 }
 
 /*! initializes the event class and sets an sdl_event handler
@@ -526,7 +533,7 @@ void event::get_input_text(char* tmp_text) {
 }
 
 /*! sets the currently used keyboard layout (just us and de support for the moment)
- *  @param active_element pointer to the new active gui element
+ *  @param layout the keyboard layout
  */
 void event::set_keyboard_layout(IKEY_LAYOUT layout) {
 	event::keyboard_layout = layout;
@@ -571,4 +578,10 @@ bool event::is_key_right() {
  */
 bool event::is_key_left() {
 	return key_left;
+}
+
+/*! gets the mouses position (pnt)
+ */
+void event::get_mouse_pos(gfx::pnt* pos) {
+	SDL_GetMouseState((int*)&pos->x, (int*)&pos->y);
 }

@@ -36,33 +36,48 @@ ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool f
 /*! there is no function currently
  */
 ode_object::~ode_object() {
+	m.print(msg::MDEBUG, "ode_object.cpp", "freeing ode_object stuff");
+
 	// destroy the geom
 	if(ode_object::geom) { dGeomDestroy(ode_object::geom); }
 
+	m.print(msg::MDEBUG, "ode_object.cpp", "test1");
+
 	// destroy the body
-	if(ode_object::body) { dBodyDestroy(ode_object::body); }
+	//if(ode_object::body) { dBodyDestroy(ode_object::body); }
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "test2");
 
 	// delete the mass
-	if(ode_object::mass) { delete ode_object::mass; }
+	//if(ode_object::mass) { delete ode_object::mass; }
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "test3");
 
 	// destroy the trimesh
-	if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
+	//if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "test4");
 
 	// delete the vertices
-	if(ode_object::dvertices) { delete [] ode_object::dvertices; }
+	//if(ode_object::dvertices) { delete [] ode_object::dvertices; }
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "test5");
 
 	// and free the indices
-	if(ode_object::dindices) { free(ode_object::dindices); }
+	//if(ode_object::dindices) { free(ode_object::dindices); }
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }
 
 /*! sets the geometry of the object
  *  @param model a pointer to the model object
+ *  @param type the type of the ode object
  */
 void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 	switch(type) {
 		case ode_object::TRIMESH: {
 			// initialize pointers to our a2emodel stuff
-			core::vertex* vertices = model->get_vertices();
+			core::vertex3* vertices = model->get_vertices();
 			core::index* indices = model->get_indices();
 			ode_object::vertex_count = model->get_vertex_count();
 			ode_object::index_count = model->get_index_count();
@@ -70,7 +85,7 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			// create trimesh data id
 			ode_object::trimesh = dGeomTriMeshDataCreate();
 
-			// because ode uses another vertex/index store format,
+			// because ode uses another vertex3/index store format,
 			// we need to convert the a2emodel vertices/indices
 			ode_object::dvertices = new dVector3[vertex_count];
 			for(unsigned int i = 0; i < ode_object::vertex_count; i++) {

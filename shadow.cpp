@@ -13,40 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __GUI_SAMPLE_H__
-#define __GUI_SAMPLE_H__
 
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include "shadow.h"
+#include "msg.h"
+#include <math.h>
 
-#include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <engine.h>
-#include <msg.h>
-#include <gfx.h>
-#include <gui.h>
-#include <event.h>
-#include <camera.h>
-#include <a2emodel.h>
-#include <scene.h>
-#include <image.h>
-using namespace std;
+/*! there is no function currently
+ */
+shadow::shadow() {
+}
 
-msg m;
-engine e;
-gfx agfx;
-gui agui;
-event aevent;
+/*! there is no function currently
+ */
+shadow::~shadow() {
+}
 
-SDL_Surface* sf;
+/*! draws the shadows
+ */
+void shadow::draw() {
 
-bool done = false;
-
-SDL_Event ievent;
-
-unsigned int refresh_time;
-
-#endif
+}

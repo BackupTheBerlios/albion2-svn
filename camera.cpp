@@ -21,7 +21,7 @@
 /*! there is no function currently
  */
 camera::camera() {
-	camera::position = (core::vertex*)malloc(sizeof(core::vertex));
+	camera::position = (core::vertex3*)malloc(sizeof(core::vertex3));
 
 	// thx to nehe for that piover stuff ;)
 	piover180 = 0.0174532925f;
@@ -32,7 +32,11 @@ camera::camera() {
 /*! there is no function currently
  */
 camera::~camera() {
+	m.print(msg::MDEBUG, "camera.cpp", "freeing camera stuff");
+
 	free(camera::position);
+
+	m.print(msg::MDEBUG, "camera.cpp", "camera stuff freed");
 }
 
 /*! initializes the camera
@@ -76,9 +80,9 @@ void camera::run() {
 }
 
 /*! sets the position of the camera
- *  @param xpos x coordinate
- *  @param ypos y coordinate
- *  @param zpos z coordinate
+ *  @param x x coordinate
+ *  @param y y coordinate
+ *  @param z z coordinate
  */
 void camera::set_position(float x, float y, float z) {
 	camera::position->x = x;
@@ -88,6 +92,16 @@ void camera::set_position(float x, float y, float z) {
 
 /*! returns the position of the camera
  */
-core::vertex* camera::get_position() {
+core::vertex3* camera::get_position() {
 	return camera::position;
+}
+
+/*! returns a 3d line (ray) from the screen position (ray)
+ *  @param pos the x and y coordinate of the screen
+ *  @param cam pointer to camera
+ *  @param ray pointer to a ray object
+ */
+void camera::get_ray_from_cord(gfx::pnt* pos, core::line* ray) {
+	ray->v1 = *camera::position;
+	//ray->v2 = ;
 }

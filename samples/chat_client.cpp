@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July - December 2004
+ * \date July - February 2004
  *
  * Albion 2 Engine Sample - Chat Client Sample
  */
@@ -57,6 +57,7 @@ int HandleServerData(char *data)
 			message[j] = 0;
 			add_msg("%s: %s", clients[data[5]].name, message);
 			msg_list->set_position(lid-1);
+			//free(message);
 		}
 		used = 6+plen;
 		break;
@@ -119,7 +120,7 @@ int HandleServerData(char *data)
 		break;
 		case net::KICK: {
 			// there are some errors with that, but i absolutely dunno y ...
-			//add_msg("Chat: sorry, but the chat server is full!");
+			add_msg("Chat: sorry, but the chat server is full!");
 		}
 		used = 1;
 		break;
@@ -164,7 +165,7 @@ void get_msg()
 		// add msg to list
 		// we have a max amount of chars per line, that is 55 chars
 		char* text = msg_box->get_text();
-		unsigned int text_len = (unsigned int)strlen(text);
+		/*unsigned int text_len = (unsigned int)strlen(text);
 		if(text_len > 55) {
 			for(unsigned int i = 0; i <= (unsigned int)text_len/55; i++) {
 				char tmp[56];
@@ -182,7 +183,9 @@ void get_msg()
 		}
 		else {
 			add_msg("%s: %s", client_name, text);
-		}
+		}*/
+
+		add_msg("%s: %s", client_name, text);
 
 		msg_list->set_position(lid-1);
 
@@ -219,8 +222,23 @@ void add_msg(char* msg, ...) {
 		vsprintf(omsg, msg, argc);
 	va_end(argc);
 
-	msg_list->add_item(omsg, lid);
-	lid++;
+	unsigned int text_len = (unsigned int)strlen(omsg);
+	if(text_len > 55) {
+		for(unsigned int i = 0; i <= (unsigned int)text_len/55; i++) {
+			char tmp[56];
+			for(unsigned int j = 0; j < 55; j++) {
+				tmp[j] = omsg[j+i*55];
+			}
+			tmp[55] = 0;
+
+			msg_list->add_item(tmp, lid);
+			lid++;
+		}
+	}
+	else {
+		msg_list->add_item(omsg, lid);
+		lid++;
+	}
 
 	free(omsg);
 }
@@ -273,6 +291,21 @@ void load_settings() {
 					else if(strcmp(fline_tok[1], "blue") == 0) {
 						scheme = gui_style::BLUE;
 					}
+					else if(strcmp(fline_tok[1], "blachwhite") == 0) {
+						scheme = gui_style::BLACKWHITE;
+					}
+				}
+				// get width
+				else if(strcmp(fline_tok[0], "width") == 0) {
+					width = atoi(fline_tok[1]);
+				}
+				// get height
+				else if(strcmp(fline_tok[0], "height") == 0) {
+					height = atoi(fline_tok[1]);
+				}
+				// get depth
+				else if(strcmp(fline_tok[0], "depth") == 0) {
+					depth = atoi(fline_tok[1]);
 				}
 			}
 		}
@@ -283,13 +316,18 @@ void load_settings() {
 int main(int argc, char *argv[])
 {
 	// init a2e
-	e.init(800, 600, 32, false);
+	load_settings();
+	m.print(msg::MDEBUG, "chat_client.cpp", "settings loaded!");
+	e.init(width, height, depth, false);
+	m.print(msg::MDEBUG, "chat_client.cpp", "engine initialized!");
 	aevent.init(ievent);
+	m.print(msg::MDEBUG, "chat_client.cpp", "event class initialized!");
 	sf = e.get_screen();
 	agui.init(e, aevent);
+	m.print(msg::MDEBUG, "chat_client.cpp", "gui initialized!");
 	e.set_caption("A2E Sample - Chat Client");
-	load_settings();
 	e.set_color_scheme(scheme);
+	m.print(msg::MDEBUG, "chat_client.cpp", "color scheme set!");
 
 	// init gui
 	info_text = agui.add_text("vera.ttf", 14, "A2E Chat Sample - 0.01", e.get_gstyle().STYLE_FONT2, agfx.cord_to_pnt(10, 10), 100);
@@ -300,14 +338,24 @@ int main(int argc, char *argv[])
 	msg_box->set_notext();
 	msg_box->set_text_position(0);
 	aevent.set_keyboard_layout(event::DE);
+	m.print(msg::MDEBUG, "chat_client.cpp", "keyboard layout set!");
 
 	// create client
 	if(n.init()) {
+		m.print(msg::MDEBUG, "chat_client.cpp", "net class initialized!");
+		SDL_Delay(1000);
 		// we just want a client program
 		if(n.create_client(server, net::TCP, port, client_name)) {
+			m.print(msg::MDEBUG, "chat_client.cpp", "client created!");
 			add_msg("Chat: Welcome to the A2E Chat Client Sample! ;)");
 			is_networking = true;
 		}
+		else {
+			m.print(msg::MDEBUG, "chat_client.cpp", "client couldn't be created!");
+		}
+	}
+	else {
+		m.print(msg::MDEBUG, "chat_client.cpp", "net class couldn't be initialized!");
 	}
 
 	// now we fake a click on the input box to activate it ;)
@@ -348,36 +396,43 @@ int main(int argc, char *argv[])
 				done = true;
 				add_msg("Chat: server isn't available - perhaps disconnect");
 			}
+
+			while(aevent.is_gui_event()) {
+				switch(aevent.get_gui_event().type) {
+					case event::BUTTON_PRESSED:
+						switch(aevent.get_gui_event().id) {
+							case 101: {
+								get_msg();
+							}
+							break;
+							default:
+								break;
+						}
+						break;
+				}
+			}
+
+			// refresh every 1000/60 milliseconds (~ 60 fps)
+			if(SDL_GetTicks() - refresh_time >= 1000/60) {
+				e.start_draw();
+				agui.draw();
+				e.stop_draw();
+				refresh_time = SDL_GetTicks();
+			}
 		}
 		else {
 			done = true;
 		}
-
-		while(aevent.is_gui_event()) {
-			switch(aevent.get_gui_event().type) {
-				case event::BUTTON_PRESSED:
-					switch(aevent.get_gui_event().id) {
-						case 101: {
-							get_msg();
-						}
-						break;
-						default:
-							break;
-					}
-					break;
-			}
-		}
-
-		// refresh every 1000/60 milliseconds (~ 60 fps)
-		if(SDL_GetTicks() - refresh_time >= 1000/60) {
-			e.start_draw();
-			agui.draw();
-			e.stop_draw();
-			refresh_time = SDL_GetTicks();
-		}
 	}
 
 	n.exit();
+
+	if(sf) {
+        SDL_FreeSurface(sf);
+	}
+	if(clients) {
+		free(clients);
+	}
 
 	return 0;
 }

@@ -28,9 +28,9 @@ using namespace std;
 /*! @class core
  *  @brief core stuff
  *  @author flo
- *  @version 0.1.5
- *  @date 2004/09/08
- *  @todo more functions
+ *  @version 0.1.6
+ *  @date 2004/18/01
+ *  @todo more functions, write extra classes for each of these crappy structs ...
  *  
  *  the core stuff
  */
@@ -41,8 +41,13 @@ public:
 	core();
 	~core();
 
-	struct vertex {
+	struct vertex3 {
 		float x, y, z;
+	};
+
+	// remeber that the 'w-float' is the fourth element!
+	struct vertex4 {
+		float x, y, z, w;
 	};
 
 	struct index {
@@ -50,40 +55,47 @@ public:
 	};
 
 	struct line {
-		vertex v1;
-		vertex v2;
+		vertex3 v1;
+		vertex3 v2;
 	};
 
 	struct triangle {
-		vertex v1;
-		vertex v2;
-		vertex v3;
+		vertex3 v1;
+		vertex3 v2;
+		vertex3 v3;
 	};
 
 	struct quad {
-		vertex v1;
-		vertex v2;
-		vertex v3;
-		vertex v4;
+		vertex3 v1;
+		vertex3 v2;
+		vertex3 v3;
+		vertex3 v4;
 	};
 
 	struct aabbox {
-		vertex vmin;
-		vertex vmax;
+		vertex3 vmin;
+		vertex3 vmax;
+	};
+
+	struct matrix4 {
+		float m[16];
 	};
 
 	unsigned int get_bit(unsigned int value, unsigned int bit);
 	unsigned int set_bit(unsigned int value, unsigned int bit, unsigned int num);
 
-	float get_distance(vertex p1, vertex p2);
+	float get_distance(vertex3 p1, vertex3 p2);
 
-	bool is_vertex_in_line(line l1, vertex p1, float precision = 1);
-	bool is_vertex_in_triangle(triangle t1, vertex p1, float precision = 1);
-	bool is_vertex_in_quad(quad q1, vertex p1, float precision = 1);
+	bool is_vertex_in_line(line l1, vertex3 p1, float precision = 1);
+	bool is_vertex_in_triangle(triangle t1, vertex3 p1, float precision = 1);
+	bool is_vertex_in_quad(quad q1, vertex3 p1, float precision = 1);
 
-	void vertex_to_line(vertex p1, vertex p2, line &rline);
-	void vertex_to_triangle(vertex p1, vertex p2, vertex p3, triangle &rtriangle);
-	void vertex_to_quad(vertex p1, vertex p2, vertex p3, vertex p4, quad &rquad);
+	void vertex_to_line(vertex3 p1, vertex3 p2, line &rline);
+	void vertex_to_triangle(vertex3 p1, vertex3 p2, vertex3 p3, triangle &rtriangle);
+	void vertex_to_quad(vertex3 p1, vertex3 p2, vertex3 p3, vertex3 p4, quad &rquad);
+
+	void mmatrix4_by_vertex4(matrix4 m, vertex4 v);
+
 protected:
 	unsigned int value, bit, num;
 };

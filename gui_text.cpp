@@ -28,12 +28,22 @@ gui_text::gui_text() {
 
 	// 1024 chars
 	gui_text::text = (char*)malloc(1024);
+
+	// point font to NULL
+	font = NULL;
 }
 
 /*! there is no function currently
  */
 gui_text::~gui_text() {
+	m.print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
+
 	free(text);
+	if(font) {
+        delete font;
+	}
+
+	m.print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");
 }
 
 /*! creates a new FTFont element and sets it as the currently used font
@@ -43,6 +53,9 @@ gui_text::~gui_text() {
 void gui_text::new_text(char* font_name, unsigned int font_size) {
 	font = new FTGLTextureFont(font_name);
 	font->FaceSize(font_size);
+
+	gui_text::font_name = font_name;
+	gui_text::font_size = font_size;
 }
 
 /*! draws the text
@@ -129,7 +142,8 @@ void gui_text::set_point(gfx::pnt* point) {
  */
 void gui_text::set_text(char* text) {
 	is_notext = false;
-	gui_text::text = text;
+	memcpy(gui_text::text, text, strlen(text));
+	gui_text::text[strlen(text)] = 0;
 }
 
 /*! sets the text color
@@ -137,6 +151,15 @@ void gui_text::set_text(char* text) {
  */
 void gui_text::set_color(SDL_Color color) {
 	gui_text::color = color;
+}
+
+/*! sets the text color
+ *  @param color the text color we want to set
+ */
+void gui_text::set_color(unsigned int color) {
+	gui_text::color.r = (color & 0xFF0000) >> 16;
+	gui_text::color.g = (color & 0xFF00) >> 8;
+	gui_text::color.b = color & 0xFF;
 }
 
 /*! sets the font name

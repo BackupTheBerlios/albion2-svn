@@ -14,39 +14,42 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __GUI_SAMPLE_H__
-#define __GUI_SAMPLE_H__
-
-#ifdef WIN32
-#include <windows.h>
-#endif
+#ifndef __SHADOW_H__
+#define __SHADOW_H__
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_image.h>
-#include <engine.h>
-#include <msg.h>
-#include <gfx.h>
-#include <gui.h>
-#include <event.h>
-#include <camera.h>
-#include <a2emodel.h>
-#include <scene.h>
-#include <image.h>
+#include "msg.h"
+#include "core.h"
+//#include "engine.h"
+#include "a2emodel.h"
+#include <math.h>
 using namespace std;
 
-msg m;
-engine e;
-gfx agfx;
-gui agui;
-event aevent;
+#include "win_dll_export.h"
 
-SDL_Surface* sf;
+/*! @class shadow
+ *  @brief shadowing routines
+ *  @author flo
+ *  @version 0.1
+ *  @date 2005/01/21
+ *  @todo nothing atm
+ *  
+ *  the shadowing class
+ */
 
-bool done = false;
+class A2E_API shadow
+{
+public:
+	shadow();
+	~shadow();
 
-SDL_Event ievent;
+	void draw();
 
-unsigned int refresh_time;
+protected:
+	msg m;
+	core c;
+
+};
 
 #endif

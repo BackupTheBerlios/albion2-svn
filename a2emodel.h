@@ -27,8 +27,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <math.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "msg.h"
 #include "core.h"
 #include "file_io.h"
@@ -39,8 +39,8 @@ using namespace std;
 /*! @class a2emodel
  *  @brief class for loading and displaying an a2e model
  *  @author flo
- *  @version 0.1.3
- *  @date 2005/01/10
+ *  @version 0.1.4
+ *  @date 2005/02/15
  *  @todo more functions
  *  
  *  the a2emodel class
@@ -56,17 +56,20 @@ public:
 	void draw_model();
 	void load_textures();
 	void set_position(float x, float y, float z);
-	core::vertex* get_position();
+	core::vertex3* get_position();
 	void set_scale(float x, float y, float z);
-	core::vertex* get_scale();
+	core::vertex3* get_scale();
 
-	core::vertex* get_vertices();
+	core::vertex3* get_vertices();
 	core::index* get_indices();
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
 
 	void build_bounding_box();
 	core::aabbox* get_bounding_box();
+
+	void set_draw_wireframe(bool state);
+	bool get_draw_wireframe();
 
 	// stuff for collision detection
 	void set_radius(float radius);
@@ -85,7 +88,7 @@ protected:
 	char model_type[9];
 	char model_name[9];
 	unsigned int vertex_count;
-	core::vertex* vertices;
+	core::vertex3* vertices;
 	unsigned int texture_count;
 	char* tex_names[MAX_OBJS];
 	unsigned int object_count;
@@ -97,10 +100,12 @@ protected:
 
 	GLuint textures[MAX_OBJS];
 
-	core::vertex* position;
-	core::vertex* scale;
+	core::vertex3* position;
+	core::vertex3* scale;
 
 	core::aabbox* bbox;
+
+	bool draw_wireframe;
 
 	// some variables for collision detection
 	float radius;

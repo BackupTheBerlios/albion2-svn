@@ -20,7 +20,7 @@
 #include <iostream>
 #include <SDL.h>
 #include "msg.h"
-#include "core.h"
+//#include "core.h"
 #include "engine.h"
 #include "event.h"
 #include <math.h>
@@ -48,16 +48,19 @@ public:
 	void run();
 
 	void set_position(float x, float y, float z);
-	core::vertex* get_position();
+	core::vertex3* get_position();
+
+	//! returns a 3d line (ray) from the screen position (ray)
+	void get_ray_from_cord(gfx::pnt* pos, core::line* ray);
 
 protected:
 	msg m;
-	core c;
+	//core c;
 
 	event* event_handler;
 	engine* engine_handler;
 
-	core::vertex* position;
+	core::vertex3* position;
 	float rotation;
 	float up_down;
 

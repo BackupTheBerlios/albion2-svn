@@ -14,55 +14,48 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __SCENE_H__
-#define __SCENE_H__
+#ifndef __LIGHT_H__
+#define __LIGHT_H__
 
 #include <iostream>
 #include <SDL.h>
 #include "msg.h"
 #include "core.h"
-#include "engine.h"
-#include "a2emodel.h"
-#include "light.h"
 #include <math.h>
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class scene
- *  @brief a2e scene manager
+/*! @class light
+ *  @brief lighting routines
  *  @author flo
- *  @version 0.2
- *  @date 2005/02/15
- *  @todo more functions
+ *  @version 0.1
+ *  @date 2005/01/29
+ *  @todo nothing atm
  *  
- *  the scene manager class
+ *  the lighting class
  */
 
-class A2E_API scene
+class A2E_API light
 {
 public:
-	scene();
-	~scene();
+	light(float x, float y, float z);
+	light(core::vertex3* pos);
+	~light();
 
-	void draw();
-	void add_model(a2emodel* model);
-	void add_light(light* light);
+	//void draw();
 
-	void set_position(float x, float y, float z);
-	void set_mambient(float* mambient);
-	void set_mdiffuse(float* mdiffuse);
-	void set_mspecular(float* mspecular);
-	void set_mshininess(float* mshininess);
+	void set_position(core::vertex3* position);
+	void set_lambient(float* lambient);
+	void set_ldiffuse(float* ldiffuse);
+	void set_lspecular(float* lspecular);
+	void set_enabled(bool state);
 
 	core::vertex3* get_position();
-	float* get_mambient();
-	float* get_mdiffuse();
-	float* get_mspecular();
-	float* get_mshininess();
-
-	// for debugging purposes
-	void draw_sphere(core::vertex3* pos, core::vertex3* size);
+	float* get_lambient();
+	float* get_ldiffuse();
+	float* get_lspecular();
+	bool is_enabled();
 
 protected:
 	msg m;
@@ -70,19 +63,11 @@ protected:
 
 	core::vertex3* position;
 
-	unsigned int cmodels;
-	a2emodel* models[256];
+	float* lambient;
+	float* ldiffuse;
+	float* lspecular;
 
-	unsigned int clights;
-	light* lights[8];
-
-	float* mambient;
-	float* mdiffuse;
-	float* mspecular;
-	float* mshininess;
-
-	// for debugging purposes
-	a2emodel* sphere;
+	bool enabled;
 
 };
 

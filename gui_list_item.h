@@ -62,7 +62,7 @@ public:
 
 	void set_text(char* text);
 	void set_id(unsigned int id);
-	void set_point(gfx::pnt* point);
+	void set_point(unsigned int x, unsigned int y);
 
 protected:
 	msg m;

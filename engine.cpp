@@ -47,6 +47,13 @@ engine::engine() {
 /*! there is no function currently
  */
 engine::~engine() {
+	m.print(msg::MDEBUG, "engine.cpp", "freeing engine stuff");
+
+	/*if(screen) {
+        SDL_FreeSurface(screen);
+	}*/
+
+	m.print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
 }
 
 /*! initializes the engine
@@ -77,19 +84,19 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
+			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
 			break;
 		case 24:
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 6);
 			break;
 		case 32:
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 			break;
 	}
 
@@ -131,16 +138,17 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	resizeWindow();
 
 	// reserve memory for position ...
-	engine::position = (core::vertex*)malloc(sizeof(core::vertex));
+	engine::position = (core::vertex3*)malloc(sizeof(core::vertex3));
 }
 
 /*! sets the window width
  *  @param width the window width
  */
-void engine::set_width(unsigned int new_width) {
-	engine::width = new_width;
-	screen = SDL_SetVideoMode(width, height, depth, flags);
-	if(screen == NULL) {
+void engine::set_width(unsigned int width) {
+	engine::width = width;
+	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
+		engine::depth, engine::flags);
+	if(engine::screen == NULL) {
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
@@ -149,10 +157,11 @@ void engine::set_width(unsigned int new_width) {
 /*! sets the window height
  *  @param height the window height
  */
-void engine::set_height(unsigned int new_height) {
-	engine::height = new_height;
-	screen = SDL_SetVideoMode(width, height, depth, flags);
-	if(screen == NULL) {
+void engine::set_height(unsigned int height) {
+	engine::height = height;
+	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
+		engine::depth, engine::flags);
+	if(engine::screen == NULL) {
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
@@ -234,16 +243,30 @@ int engine::initGL(GLvoid) {
  */
 int engine::drawGLScene(GLvoid) {
 	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
-	glClearColor((GLclampf)((float)((bgcolor&0xFF0000) >> 16) / 255),
-		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
-		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
+	glClearColor((GLclampf)((float)((bgcolor & 0xFF0000) >> 16) / 255),
+		(GLclampf)((float)((bgcolor & 0xFF00) >> 8) / 255),
+		(GLclampf)((float)(bgcolor & 0xFF) / 255), 0.0f);
 
     // clear the color and depth buffers.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	float pinf[4][4];
+	pinf[1][0] = pinf[2][0] = pinf[3][0] = pinf[0][1] = pinf[2][1] = pinf[3][1] =
+		pinf[0][2] = pinf[1][2] = pinf[0][3] = pinf[1][3] = pinf[3][3] = 0.0f;
+	pinf[0][0] = atanf(60.0f) / (engine::width / engine::height);
+	pinf[1][1] = atanf(60.0f);
+	pinf[3][2] = -2.0f * 0.1f;
+	pinf[2][2] = pinf[2][3] = -1.0f;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(&pinf[0][0]);
 
     // we don't want to modify the projection matrix.
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+	// draw the shadows
+	engine::shd.draw();
 
     return 1;
 }
@@ -258,7 +281,7 @@ int engine::resizeWindow(GLvoid) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	// set perspective with fov = 45° and far value = 500.0f
+	// set perspective with fov = 60° and far value = 1500.0f
 	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
 
 	// model view matrix
@@ -284,7 +307,7 @@ void engine::set_position(float xpos, float ypos, float zpos) {
 
 /*! returns the position of the user
  */
-core::vertex* engine::get_position() {
+core::vertex3* engine::get_position() {
 	return engine::position;
 }
 

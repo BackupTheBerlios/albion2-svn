@@ -23,11 +23,13 @@
 #include "gui_input.h"
 #include "gui_list.h"
 #include "gui_vbar.h"
+#include "gui_check.h"
 
 /*! there is no function currently
 */
 gui::gui() {
 	p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	r = (gfx::rect*)malloc(sizeof(gfx::rect));
 	input_text = (char*)malloc(512);
 
 	//char* ib_text = (char*)malloc(1024);
@@ -41,6 +43,39 @@ gui::gui() {
 /*! there is no function currently
 */
 gui::~gui() {
+	m.print(msg::MDEBUG, "gui.cpp", "freeing gui stuff");
+
+	free(p);
+	free(r);
+	free(input_text);
+
+	for(unsigned int i = 0; i < 128; i++) {
+		delete gui_buttons[i];
+	}
+
+	for(unsigned int i = 0; i < 128; i++) {
+		cout << "test" << endl;
+        delete gui_texts[i];
+		cout << "test2" << endl;
+	}
+
+	for(unsigned int i = 0; i < 128; i++) {
+        delete gui_input_boxes[i];
+	}
+
+	for(unsigned int i = 0; i < 128; i++) {
+        delete gui_list_boxes[i];
+	}
+
+	for(unsigned int i = 0; i < 16; i++) {
+        delete gui_vbars[i];
+	}
+
+	for(unsigned int i = 0; i < 16; i++) {
+        delete gui_check_boxes[i];
+	}
+
+	m.print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
 }
 
 /*! initializes the gui class and sets an engine and event handler
@@ -55,6 +90,9 @@ void gui::init(engine &iengine, event &ievent) {
 	cbuttons = 0;
 	ctexts = 0;
 	cinput_boxes = 0;
+	clist_boxes = 0;
+	cvbars = 0;
+	ccboxes = 0;
 
 	if(gui::engine_handler->get_screen() == NULL) { m.print(msg::MERROR, "gui.cpp", "SDL_Surface does not exist!"); }
 	else { gui::gui_surface = gui::engine_handler->get_screen(); }
@@ -85,6 +123,11 @@ void gui::init(engine &iengine, event &ievent) {
 	// reserve memory for 16 vertical bar elements
 	for(unsigned int i = 0; i < 16; i++) {
         gui_vbars[i] = new gui_vbar();
+	}
+
+	// reserve memory for 16 check box elements
+	for(unsigned int i = 0; i < 16; i++) {
+        gui_check_boxes[i] = new gui_check();
 	}
 
 	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
@@ -148,7 +191,21 @@ void gui::draw() {
                     gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
 				}
 				break;
-				case gui::LIST: {					
+				case gui::LIST: {
+					p->x = event_handler->get_lm_last_pressed_x();
+					p->y = event_handler->get_lm_last_pressed_y();
+					memcpy(r, gui::gui_list_boxes[gui::gui_elements[i].num]->get_rectangle(), sizeof(gfx::rect));
+					// decrease the rects x2 coord by 15, because we don't want input from the vbar
+					r->x2 -= 15;
+					if(g.is_pnt_in_rectangle(r, p)) {
+						gui::gui_list_boxes[gui::gui_elements[i].num]->set_active(true);
+						gui::gui_list_boxes[gui::gui_elements[i].num]->select_pos(p->x, p->y);
+						event_handler->set_last_pressed(0, 0);
+					}
+					else {
+						gui::gui_list_boxes[gui::gui_elements[i].num]->set_active(false);
+					}
+
                     gui::gui_list_boxes[gui::gui_elements[i].num]->draw_list();
 				}
 				break;
@@ -173,6 +230,19 @@ void gui::draw() {
 					}
 
 					gui::gui_vbars[gui::gui_elements[i].num]->draw_vbar();
+				}
+				break;
+				case gui::CHECK: {
+					p->x = event_handler->get_lm_last_pressed_x();
+					p->y = event_handler->get_lm_last_pressed_y();
+					memcpy(r, gui::gui_check_boxes[gui::gui_elements[i].num]->get_rectangle(), sizeof(gfx::rect));
+					g.pnt_to_rect(r, r->x1, r->y1, r->x1 + 14, r->y1 + 14);
+					if(g.is_pnt_in_rectangle(r, p)) {
+						gui::gui_check_boxes[gui::gui_elements[i].num]->set_checked(gui::gui_check_boxes[gui::gui_elements[i].num]->get_checked() ^ true);
+						event_handler->set_last_pressed(0, 0);
+					}
+
+                    gui::gui_check_boxes[gui::gui_elements[i].num]->draw();
 				}
 				break;
 				default:
@@ -237,7 +307,6 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
  */
 gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, gfx::pnt* point, unsigned int id) {
-	//TTF_Font* font = gui_texts[ctexts]->open_font(font_name, font_size);
 	SDL_Color col;
 	col.r = (color & 0xFF0000) >> 16;
 	col.g = (color & 0x00FF00) >> 8;
@@ -251,17 +320,11 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_texts[ctexts]->set_init(false);
 	gui::gui_texts[ctexts]->set_engine_handler(gui::engine_handler);
 	gui::gui_texts[ctexts]->set_id(id);
-	// there were problems with TTF_RenderText_Solid, so it was just
-	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
 	gui::gui_texts[ctexts]->new_text(font_name, font_size);
 	gui::gui_texts[ctexts]->set_point(point);
 	gui::gui_texts[ctexts]->set_text(text);
 	gui::gui_texts[ctexts]->set_color(col);
-	gui::gui_texts[ctexts]->set_font_name(font_name);
-	gui::gui_texts[ctexts]->set_font_size(font_size);
 	gui::gui_texts[ctexts]->set_init(true);
-
-	//gui::gui_texts[ctexts]->close_font(font);
 
 	celements++;
 	ctexts++;
@@ -359,6 +422,37 @@ gui_vbar* gui::add_vbar(gfx::rect* rectangle, unsigned int id) {
 	cvbars++;
 
 	return gui_vbars[cvbars-1];
+}
+
+/*! adds a gui check box element and returns it
+ *  @param rectangle the check boxes rectangle
+ *  @param id the check boxes (a2e event) id
+ *  @param text the check boxes text
+ */
+gui_check* gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text) {
+	gui::gui_elements[celements].id = id;
+	gui::gui_elements[celements].type = gui::CHECK;
+	gui::gui_elements[celements].num = ccboxes;
+	gui::gui_elements[celements].is_drawn = true;
+	
+	// celements has to be incremented _before_ we add the text, otherwise
+	// our check box stuff will be overwritten
+	celements++;
+
+	gui::gui_check_boxes[ccboxes]->set_text_handler(add_text("vera.ttf", 12, text,
+		engine_handler->get_gstyle().STYLE_FONT2, g.cord_to_pnt(0,0), id+0xFFFF));
+	// don't draw our text automatically
+	// celements-1, because our text element, is the last initialized element
+	gui::gui_elements[celements-1].is_drawn = false;
+
+	gui::gui_check_boxes[ccboxes]->set_engine_handler(gui::engine_handler);
+	gui::gui_check_boxes[ccboxes]->set_id(id);
+	gui::gui_check_boxes[ccboxes]->set_rectangle(rectangle);
+	gui::gui_check_boxes[ccboxes]->set_text(text);
+
+	ccboxes++;
+
+	return gui_check_boxes[ccboxes-1];
 }
 
 //! returns the guis surface

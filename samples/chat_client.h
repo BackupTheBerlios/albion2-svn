@@ -98,4 +98,6 @@ unsigned int plen;
 
 gui_style::COLOR_SCHEME scheme;
 
+unsigned int width, height, depth;
+
 #endif

@@ -27,7 +27,7 @@ using namespace std;
  *
  * \author flo
  *
- * \date August - December 2004
+ * \date August - January 2005
  *
  * Albion 2 Engine Tool - Alias Wavefront .obj -> A2E .a2m Converter
  *
@@ -146,7 +146,7 @@ void load_materials(char* filename) {
 
 int main(int argc, char *argv[])
 {
-	char* usage = "usage: obj_converter <file.obj> <file.a2m> [-3dsmax]";
+	char* usage = "usage: obj2a2m <file.obj> <file.a2m>";
 	if(argc == 1) {
 		cout << "no .obj and .a2m file specified!" << endl << usage << endl;
 		return 0;

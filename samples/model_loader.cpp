@@ -24,7 +24,7 @@
  *
  * \author flo
  *
- * \date August 2004 - January 2005
+ * \date August 2004 - February 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	// initialize the engine
 	e.init(800, 600, 32, false);
 	e.set_caption("A2E Sample - Model Loader");
-	
+
 	// set a color scheme (blue)
 	e.set_color_scheme(gui_style::BLUE);
 	sf = e.get_screen();
@@ -61,6 +61,15 @@ int main(int argc, char *argv[])
 	sce.add_model(&plane);
 	sce.add_model(&cube);
 	sce.add_model(&sphere);
+
+	light l1(-50.0f, 0.0f, -50.0f);
+	float lamb[] = { 0.3f, 0.3f, 0.3f, 1.0f};
+	float ldif[] = { 0.7f, 0.7f, 0.7f, 1.0f};
+	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	l1.set_lambient(lamb);
+	l1.set_ldiffuse(ldif);
+	l1.set_lspecular(lspc);
+	sce.add_light(&l1);
 
 	// initialize ode
 	// note: ode isn't implemented totally atm and
@@ -97,6 +106,42 @@ int main(int argc, char *argv[])
 							break;
 						case SDLK_RETURN:
 							break;
+						case SDLK_w: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->z += 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
+						case SDLK_s: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->z -= 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
+						case SDLK_a: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->x += 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
+						case SDLK_d: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->x -= 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
+						case SDLK_q: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->y += 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
+						case SDLK_e: {
+							core::vertex3* lpos = l1.get_position();
+							lpos->y -= 1.0f;
+							l1.set_position(lpos);
+						}
+						break;
 					}
 					break;
 			}

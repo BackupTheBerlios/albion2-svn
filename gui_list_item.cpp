@@ -26,12 +26,25 @@
  */
 gui_list_item::gui_list_item() {
 	text = (char*)malloc(256);
+
+	point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+
+	text_handler = NULL;
 }
 
 /*! there is no function currently
  */
 gui_list_item::~gui_list_item() {
+	m.print(msg::MDEBUG, "gui_list_item.cpp", "freeing gui_list_item stuff");
+
 	free(text);
+	free(point);
+
+	if(text_handler) {
+		delete text_handler;
+	}
+
+	m.print(msg::MDEBUG, "gui_list_item.cpp", "gui_list_item stuff freed");
 }
 
 //! draws the list box item
@@ -71,7 +84,8 @@ gfx::pnt* gui_list_item::get_point() {
  *  @param id the id we want to set
  */
 void gui_list_item::set_text(char* text) {
-	_snprintf(gui_list_item::text, strlen(text)+1, "%s\0", text);
+	memcpy(gui_list_item::text, text, strlen(text));
+	gui_list_item::text[strlen(text)] = 0;
 	gui_list_item::text_handler->set_text(gui_list_item::text);
 }
 
@@ -83,11 +97,13 @@ void gui_list_item::set_id(unsigned int id) {
 }
 
 /*! sets the text starting point
- *  @param point the starting point we want to set
+ *  @param x the starting x position we want to set
+ *  @param y the starting y position we want to set
  */
-void gui_list_item::set_point(gfx::pnt* point) {
-	gui_list_item::point = point;
-	gui_list_item::text_handler->set_point(point);
+void gui_list_item::set_point(unsigned int x, unsigned int y) {
+	gui_list_item::point->x = x;
+	gui_list_item::point->y = y;
+	gui_list_item::text_handler->set_point(gui_list_item::point);
 }
 
 /*! "deletes" the item

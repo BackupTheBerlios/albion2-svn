@@ -33,6 +33,11 @@ gui_input::gui_input() {
 /*! there is no function currently
  */
 gui_input::~gui_input() {
+	m.print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
+
+	free(gui_input::text);
+
+	m.print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
 }
 
 /*! draws the input boxs
@@ -70,10 +75,10 @@ void gui_input::draw_input() {
 	float text_width = 0;
 	float after_text_width = 0;
 	char* tmp_text = text_handler->get_text();
-	char tmp_char[1];
+	char tmp_char;
 	for(unsigned int i = 0; i < strlen(text_handler->get_text()); i++) {
-		sprintf(tmp_char, "%c", tmp_text[i]);
-		glyph_width = text_handler->get_font()->Advance(tmp_char);
+		sprintf(&tmp_char, "%c", tmp_text[i]);
+		glyph_width = text_handler->get_font()->Advance(&tmp_char);
 		if(i < text_pos) {
             text_width += glyph_width;
 		}
@@ -361,7 +366,8 @@ void gui_input::set_rectangle(gfx::rect* rectangle) {
  *  @param text the text we want to set
  */
 void gui_input::set_text(char* text) {
-	gui_input::text = text;
+	memcpy(gui_input::text, text, strlen(text));
+	gui_input::text[strlen(text)] = 0;
 	gui_input::text_handler->set_text(text);
 	gui_input::text_length = strlen(text);
 }

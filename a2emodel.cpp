@@ -25,23 +25,48 @@ using namespace std;
 /*! there is no function currently
  */
 a2emodel::a2emodel() {
-	a2emodel::position = (core::vertex*)malloc(sizeof(core::vertex));
+	a2emodel::position = (core::vertex3*)malloc(sizeof(core::vertex3));
 	a2emodel::position->x = 0.0f;
 	a2emodel::position->y = 0.0f;
 	a2emodel::position->z = 0.0f;
 
-	a2emodel::scale = (core::vertex*)malloc(sizeof(core::vertex));
+	a2emodel::scale = (core::vertex3*)malloc(sizeof(core::vertex3));
 	a2emodel::scale->x = 0.0f;
 	a2emodel::scale->y = 0.0f;
 	a2emodel::scale->z = 0.0f;
+
+	a2emodel::bbox = NULL;
+	a2emodel::vertices = NULL;
+	a2emodel::index_count = NULL;
+	a2emodel::tex_value = NULL;
+	for(unsigned int i = 0; i < MAX_OBJS; i++) {
+        a2emodel::tex_names[i] = NULL;
+		a2emodel::indices[i] = NULL;
+		a2emodel::tex_cords[i] = NULL;
+	}
+
+	draw_wireframe = false;
 }
 
 /*! there is no function currently
  */
 a2emodel::~a2emodel() {
+	m.print(msg::MDEBUG, "a2emodel.cpp", "freeing a2emodel stuff");
+
 	free(a2emodel::position);
 	free(a2emodel::scale);
 	if(a2emodel::bbox) { free(a2emodel::bbox); }
+	if(a2emodel::vertices) { free(a2emodel::vertices); }
+	if(a2emodel::index_count) { free(a2emodel::index_count); }
+	if(a2emodel::tex_value) { free(a2emodel::tex_value); }
+
+	for(unsigned int i = 0; i < MAX_OBJS; i++) {
+		if(a2emodel::tex_names[i]) { free(a2emodel::tex_names[i]); }
+		if(a2emodel::indices[i]) { free(a2emodel::indices[i]); }
+		if(a2emodel::tex_cords[i]) { free(a2emodel::tex_cords[i]); }
+	}
+
+	m.print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
 }
 
 /*! draws the model
@@ -50,22 +75,54 @@ void a2emodel::draw_model() {
 	for(unsigned int i = 0; i < object_count; i++) {
 		glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
 
-		glBegin(GL_TRIANGLES);
-		for(unsigned int j = 0; j < index_count[i]; j++) {
-			glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
-				a2emodel::position->y + vertices[indices[i][j].i1].y,
-				a2emodel::position->z + vertices[indices[i][j].i1].z);
-			glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
-				a2emodel::position->y + vertices[indices[i][j].i2].y,
-				a2emodel::position->z + vertices[indices[i][j].i2].z);
-			glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
-				a2emodel::position->y + vertices[indices[i][j].i3].y,
-				a2emodel::position->z + vertices[indices[i][j].i3].z);
+		if(!a2emodel::draw_wireframe) {
+			glBegin(GL_TRIANGLES);
+			for(unsigned int j = 0; j < index_count[i]; j++) {
+				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
+					a2emodel::position->y + vertices[indices[i][j].i1].y,
+					a2emodel::position->z + vertices[indices[i][j].i1].z);
+				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
+					a2emodel::position->y + vertices[indices[i][j].i2].y,
+					a2emodel::position->z + vertices[indices[i][j].i2].z);
+				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
+					a2emodel::position->y + vertices[indices[i][j].i3].y,
+					a2emodel::position->z + vertices[indices[i][j].i3].z);
+			}
+			glEnd();
 		}
-		glEnd();
+		else {
+			glBegin(GL_LINES);
+			for(unsigned int j = 0; j < index_count[i]; j++) {
+				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
+					a2emodel::position->y + vertices[indices[i][j].i1].y,
+					a2emodel::position->z + vertices[indices[i][j].i1].z);
+				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
+					a2emodel::position->y + vertices[indices[i][j].i2].y,
+					a2emodel::position->z + vertices[indices[i][j].i2].z);
+				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
+					a2emodel::position->y + vertices[indices[i][j].i2].y,
+					a2emodel::position->z + vertices[indices[i][j].i2].z);
+				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
+					a2emodel::position->y + vertices[indices[i][j].i3].y,
+					a2emodel::position->z + vertices[indices[i][j].i3].z);
+				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
+					a2emodel::position->y + vertices[indices[i][j].i1].y,
+					a2emodel::position->z + vertices[indices[i][j].i1].z);
+				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
+					a2emodel::position->y + vertices[indices[i][j].i3].y,
+					a2emodel::position->z + vertices[indices[i][j].i3].z);
+			}
+			glEnd();
+		}
 	}
 }
 
@@ -112,12 +169,13 @@ void a2emodel::load_model(char* filename) {
 	file.get_block(model_name, 8);
 	model_name[9] = 0;
 
-	// get vertex count
+	// get vertex3 count
 	char* vc = (char*)malloc(5);
 	file.get_block(vc, 4);
 	vc[4] = 0;
 
 	// there seems to be "a bug" with read char stuff, so we have to AND 0xFF
+	vertex_count = 0;
 	vertex_count += (unsigned int)((vc[0] & 0xFF)*0x1000000);
 	vertex_count += (unsigned int)((vc[1] & 0xFF)*0x10000);
 	vertex_count += (unsigned int)((vc[2] & 0xFF)*0x100);
@@ -126,7 +184,7 @@ void a2emodel::load_model(char* filename) {
 
 	// create vertices
 	char vertex[4];
-	vertices = (core::vertex*)malloc(sizeof(core::vertex)*vertex_count);
+	vertices = (core::vertex3*)malloc(sizeof(core::vertex3)*vertex_count);
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		file.get_block(vertex, 4);
 		memcpy(&vertices[i].x, vertex, 4);
@@ -142,6 +200,7 @@ void a2emodel::load_model(char* filename) {
 	tc[4] = 0;
 
 	// there seems to be "a bug" with read char stuff, so we have to AND 0xFF
+	texture_count = 0;
 	texture_count += (unsigned int)((tc[0] & 0xFF)*0x1000000);
 	texture_count += (unsigned int)((tc[1] & 0xFF)*0x10000);
 	texture_count += (unsigned int)((tc[2] & 0xFF)*0x100);
@@ -167,6 +226,7 @@ void a2emodel::load_model(char* filename) {
 	oc[4] = 0;
 
 	// there seems to be "a bug" with read char stuff, so we have to AND 0xFF
+	object_count = 0;
 	object_count += (unsigned int)((oc[0] & 0xFF)*0x1000000);
 	object_count += (unsigned int)((oc[1] & 0xFF)*0x10000);
 	object_count += (unsigned int)((oc[2] & 0xFF)*0x100);
@@ -245,7 +305,7 @@ void a2emodel::load_model(char* filename) {
 		}
 
 		// create texture coordinates
-		//char vertex[4];
+		//char vertex3[4];
 		tex_cords[i] = (core::triangle*)malloc(sizeof(core::triangle)*index_count[i]);
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			file.get_block(vertex, 4);
@@ -289,7 +349,7 @@ void a2emodel::set_position(float x, float y, float z) {
 
 /*! returns the position of the model
  */
-core::vertex* a2emodel::get_position() {
+core::vertex3* a2emodel::get_position() {
 	return a2emodel::position;
 }
 
@@ -312,7 +372,7 @@ void a2emodel::set_scale(float x, float y, float z) {
 
 /*! returns the scale of the model
  */
-core::vertex* a2emodel::get_scale() {
+core::vertex3* a2emodel::get_scale() {
 	return a2emodel::scale;
 }
 
@@ -326,16 +386,31 @@ void a2emodel::set_texture(GLuint texture, unsigned int num) {
 
 /*! returns a pointer to the vertices
  */
-core::vertex* a2emodel::get_vertices() {
+core::vertex3* a2emodel::get_vertices() {
 	return a2emodel::vertices;
 }
 
 /*! returns a pointer to the indices
  */
 core::index* a2emodel::get_indices() {
-	// todo: a routine to get all (!) indices ...
+	unsigned int total_size = 0;
+	for(unsigned int i = 0; i < object_count; i++) {
+		total_size += index_count[i] * sizeof(core::index);
+	}
 
-	return a2emodel::indices[0];
+	core::index* total_indices = (core::index*)malloc(total_size);
+
+	unsigned int cidx = 0;
+	for(unsigned int i = 0; i < object_count; i++) {
+		for(unsigned int j = 0; j < index_count[i]; j++) {
+			total_indices[cidx].i1 = indices[i][j].i1;
+			total_indices[cidx].i2 = indices[i][j].i2;
+			total_indices[cidx].i3 = indices[i][j].i3;
+			cidx++;
+		}
+	}
+
+	return total_indices;
 }
 
 /*! returns the vertex count
@@ -422,4 +497,17 @@ void a2emodel::set_length(float length) {
  */
 float a2emodel::get_length() {
 	return a2emodel::length;
+}
+
+/*! sets the bool if the model is drawn as a wireframe
+ *  @param state the new state
+ */
+void a2emodel::set_draw_wireframe(bool state) {
+	a2emodel::draw_wireframe = state;
+}
+
+/*! returns a true if the model is drawn as a wireframe
+ */
+bool a2emodel::get_draw_wireframe() {
+	return a2emodel::draw_wireframe;
 }

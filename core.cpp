@@ -34,8 +34,7 @@ core::~core() {
  *  @param bit the number of the bit we want to get the bit from (0-7)
  */
 unsigned int core::get_bit(unsigned int value, unsigned int bit) {
-	unsigned int rbit = (value & (unsigned int)pow((double)2, (double)bit)) >> bit;
-	return rbit;
+	return ((value & (unsigned int)pow((double)2, (double)bit)) >> bit);
 }
 
 /*! sets the bitth bit of value to num
@@ -61,10 +60,10 @@ unsigned int core::set_bit(unsigned int value, unsigned int bit, unsigned int nu
 }
 
 /*! returns the distance between two points
- *  @param p1 point one (vertex)
- *  @param p2 point two (vertex)
+ *  @param p1 point one (vertex3)
+ *  @param p2 point two (vertex3)
  */
-float core::get_distance(vertex p1, vertex p2) {
+float core::get_distance(vertex3 p1, vertex3 p2) {
 	// little explanation:
 	// SQUARE ROOT(SQUARE ROOT((DIFF:X1-X2)^2 + (DIFF:Z1-Z2)^2) + (DIFF:Y1-Y2)^2)
 	float dist = sqrtf(sqrtf(powf(p1.x - p2.x, 2) + powf(p1.z - p2.z, 2)) + powf(p1.y - p2.y, 2));
@@ -73,11 +72,11 @@ float core::get_distance(vertex p1, vertex p2) {
 
 /*! returns true if p1 is in line l1
  *  @param l1 line one (line)
- *  @param p1 point one (vertex)
+ *  @param p1 point one (vertex3)
  *  @param precision the precision how much the value may differ
  *  1 = less precision / 0.1 = more precision (float)
  */
-bool core::is_vertex_in_line(line l1, vertex p1, float precision) {
+bool core::is_vertex_in_line(line l1, vertex3 p1, float precision) {
 	float dist_l10_l11 = core::get_distance(l1.v1, l1.v2);
 	float dist_l10_p1 = core::get_distance(l1.v1, p1);
 	float dist_l11_p1 = core::get_distance(l1.v2, p1);
@@ -86,21 +85,17 @@ bool core::is_vertex_in_line(line l1, vertex p1, float precision) {
 		&& dist_l11_p1 <= (dist_l10_l11 - dist_l10_p1 + precision)) {
 		return true;
 	}
-	else {
-		return false;
-	}
 
-	// is needed?
 	return false;
 }
 
 /*! returns true if p1 is in triangle t1
  *  @param t1 triangle one (triangle)
- *  @param p1 point one (vertex)
+ *  @param p1 point one (vertex3)
  *  @param precision the precision how much the value may differ
  *  1 = less precision / 0.1 = more precision (float)
  */
-bool core::is_vertex_in_triangle(triangle t1, vertex p1, float precision) {
+bool core::is_vertex_in_triangle(triangle t1, vertex3 p1, float precision) {
 	float dist_t10_t11 = core::get_distance(t1.v1, t1.v2);
 	float dist_t10_t12 = core::get_distance(t1.v1, t1.v3);
 	float dist_t11_t12 = core::get_distance(t1.v2, t1.v3);
@@ -148,20 +143,16 @@ bool core::is_vertex_in_triangle(triangle t1, vertex p1, float precision) {
 		&& area <= (area_t + precision)) {
 		return true;
 	}
-	else {
-		return false;
-	}
 
-	// is needed?
 	return false;
 }
 
 /*! makes a line out of 2 points (p1 and p2)
- *  @param p1 point one (vertex)
- *  @param p2 point two (vertex)
+ *  @param p1 point one (vertex3)
+ *  @param p2 point two (vertex3)
  *  @param rline the line (line)
  */
-void core::vertex_to_line(vertex p1, vertex p2, line &rline) {
+void core::vertex_to_line(vertex3 p1, vertex3 p2, line &rline) {
 	rline.v1.x = p1.x;
 	rline.v1.y = p1.y;
 	rline.v1.z = p1.z;
@@ -172,12 +163,12 @@ void core::vertex_to_line(vertex p1, vertex p2, line &rline) {
 }
 
 /*! makes a triangle out of 3 points (p1, p2 and p3)
- *  @param p1 point one (vertex)
- *  @param p2 point two (vertex)
- *  @param p3 point three (vertex)
+ *  @param p1 point one (vertex3)
+ *  @param p2 point two (vertex3)
+ *  @param p3 point three (vertex3)
  *  @param rtriangle the triangle (triangle)
  */
-void core::vertex_to_triangle(vertex p1, vertex p2, vertex p3, triangle &rtriangle) {
+void core::vertex_to_triangle(vertex3 p1, vertex3 p2, vertex3 p3, triangle &rtriangle) {
 	rtriangle.v1.x = p1.x;
 	rtriangle.v1.y = p1.y;
 	rtriangle.v1.z = p1.z;
@@ -192,13 +183,13 @@ void core::vertex_to_triangle(vertex p1, vertex p2, vertex p3, triangle &rtriang
 }
 
 /*! makes a quad out of 4 points (p1, p2, p3 and p4)
- *  @param p1 point one (vertex)
- *  @param p2 point two (vertex)
- *  @param p3 point three (vertex)
- *  @param p4 point four (vertex)
+ *  @param p1 point one (vertex3)
+ *  @param p2 point two (vertex3)
+ *  @param p3 point three (vertex3)
+ *  @param p4 point four (vertex3)
  *  @param rquad the quad (quad)
  */
-void core::vertex_to_quad(vertex p1, vertex p2, vertex p3, vertex p4, quad &rquad) {
+void core::vertex_to_quad(vertex3 p1, vertex3 p2, vertex3 p3, vertex3 p4, quad &rquad) {
 	rquad.v1.x = p1.x;
 	rquad.v1.y = p1.y;
 	rquad.v1.z = p1.z;
@@ -214,4 +205,22 @@ void core::vertex_to_quad(vertex p1, vertex p2, vertex p3, vertex p4, quad &rqua
 	rquad.v4.x = p4.x;
 	rquad.v4.y = p4.y;
 	rquad.v4.z = p4.z;
+}
+
+/*! multiplies a matrix4 object by a vertex4
+ *  @param m the matrix4 (matrix4)
+ *  @param v the vertex (vertex4)
+ */
+void core::mmatrix4_by_vertex4(matrix4 m, vertex4 v) {
+	vertex4 result;
+
+	result.x = m.m[0] * v.x + m.m[4] * v.y + m.m[8] * v.z + m.m[12] * v.w;
+	result.y = m.m[1] * v.x + m.m[5] * v.y + m.m[9] * v.z + m.m[13] * v.w;
+	result.z = m.m[2] * v.x + m.m[6] * v.y + m.m[10] * v.z + m.m[14] * v.w;
+	result.w = m.m[3] * v.x + m.m[7] * v.y + m.m[11] * v.z + m.m[15] * v.w;
+
+	v.x = result.x;
+	v.y = result.y;
+	v.z = result.z;
+	v.w = result.w;
 }

@@ -1,9 +1,14 @@
+[enginedata]
+width=800
+height=600
+depth=32
+
 [userdata]
 name=User
 scheme=blue
 
 [serverdata]
-server=flo88.dyndns.org
+server=localhost
 port=1337
 
 [EOF]

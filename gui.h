@@ -30,6 +30,7 @@
 #include "gui_input.h"
 #include "gui_list.h"
 #include "gui_vbar.h"
+#include "gui_check.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -37,8 +38,8 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.4
+ *  @date 2005/02/07
  *  @todo more functions
  *  
  *  the gui class
@@ -67,6 +68,7 @@ public:
 	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text);
 	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text);
 	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id);
+	gui_check* add_check_box(gfx::rect* rectangle, unsigned int id, char* text);
 
 	void switch_input_text(char* input_text, gui_input* input_box);
 
@@ -93,7 +95,8 @@ protected:
 		TEXT,	//!< @enum static text type
 		EMPTY,	//!< @enum empty type
 		LIST,	//!< @enum list box type
-		VBAR	//!< @enum vertical bar type
+		VBAR,	//!< @enum vertical bar type
+		CHECK	//!< @enum check box type
 	};
 
 	//! gui elements
@@ -126,10 +129,16 @@ protected:
 	//! current amount of gui vertical bar elements
 	unsigned int cvbars;
 
+	//! gui check boxes
+	gui_check* gui_check_boxes[16];
+	//! current amount of gui check box elements
+	unsigned int ccboxes;
+
 	//! current active gui element
 	gui_element* active_element;
 
 	gfx::pnt* p;
+	gfx::rect* r;
 	char* input_text;
 	char* ib_text;
 	unsigned int ib_text_length;

@@ -35,6 +35,10 @@ gui_vbar::gui_vbar() {
 /*! there is no function currently
  */
 gui_vbar::~gui_vbar() {
+	m.print(msg::MDEBUG, "gui_vbar.cpp", "freeing gui_vbar stuff");
+
+
+	m.print(msg::MDEBUG, "gui_vbar.cpp", "gui_vbar stuff freed");
 }
 
 //! draws the vertical bar

@@ -74,6 +74,8 @@ public:
 	unsigned int STYLE_FONT;
 	//! gui style color - normal font color 2
 	unsigned int STYLE_FONT2;
+	//! gui style color - selected color
+	unsigned int STYLE_SELECTED;
 
 protected:
     gfx g;

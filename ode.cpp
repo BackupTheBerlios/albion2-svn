@@ -75,6 +75,8 @@ void ode::init() {
 /*! destroys all ode relevant stuff
  */
 void ode::close() {
+	m.print(msg::MDEBUG, "ode.cpp", "freeing ode stuff");
+
 	// destroy all ode objects
 	for(unsigned int i = 0; i < ode::object_count; i++) {
 		delete ode_objects[i];
@@ -91,6 +93,8 @@ void ode::close() {
 
 	// ... and finally close ode
 	dCloseODE();
+
+	m.print(msg::MDEBUG, "ode_object.cpp", "ode stuff freed");
 }
 
 /*! runs the open dynamics engine
@@ -187,6 +191,7 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 /*! adds an object to the world
  *  @param model a pointer to the model object
  *  @param fixed bool, if the object can be moved or if its fixed
+ *  @param type the type of the ode object
  */
 void ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	// create an new ode object and pass it to the list

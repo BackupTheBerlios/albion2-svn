@@ -24,8 +24,6 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
 #include <engine.h>
 #include <msg.h>
 #include <core.h>
@@ -37,6 +35,8 @@
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
+#include <shadow.h>
+#include <light.h>
 using namespace std;
 
 msg m;

@@ -29,6 +29,10 @@ net::net():
 /*! there is no function currently
  */
 net::~net() {
+	m.print(msg::MDEBUG, "net.cpp", "freeing net stuff");
+
+
+	m.print(msg::MDEBUG, "net.cpp", "net stuff freed");
 }
 
 /*! initialize the networking functions - returns true if successful, otherwise false
@@ -46,6 +50,9 @@ bool net::init() {
  */
 void net::exit() {
 	SDLNet_Quit();
+	if(clients) {
+		free(clients);
+	}
 }
 
 /*! creates an server
@@ -56,7 +63,7 @@ void net::exit() {
 bool net::create_server(unsigned int type, unsigned short int port, const unsigned int num_clients) {
 	net::max_clients = num_clients;
 
-	if(SDLNet_ResolveHost(&local_ip,NULL,port)==-1) {
+	if(SDLNet_ResolveHost(&local_ip,NULL,port) == -1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (local server): %s", SDLNet_GetError());
 		return false;
 	}
@@ -312,6 +319,7 @@ void net::handle_client(unsigned int cur_client) {
 
 			default: {
 				// unknown packet type
+				m.print(msg::MDEBUG, "net.cpp", "a package with an unknown package type was send! type: %u", data[0]);
 			}
 			break;
 		}

@@ -19,12 +19,18 @@ OBJS = main.o \
        file_io.o \
        a2emodel.o \
        camera.o \
-       scene.o
+       scene.o \
+       ode.o \
+       ode_object.o \
+       shadow.o \
+       light.o \
+       image.o \
+       gui_check.o
 
 CC         = gcc
 LD         = gcc
-CC_FLAGS   = -Wall -Os -c `sdl-config --cflags`
-LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg `sdl-config --libs` -lSDL_net -lSDL_ttf -lSDL_image -o
+CC_FLAGS   = -Wall -Os -c `sdl-config --cflags` -I"/usr/include/freetype2" -I"/usr/include/FTGL"
+LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg `sdl-config --libs` -lSDL_net -l -lSDL_image -lode -lOPCODE -lfreetype -lftgl -o
 BIN        = bin/liba2e.a
 
 #######################################################################
@@ -90,6 +96,24 @@ camera.o: camera.cpp camera.h
 
 scene.o: scene.cpp scene.h
 	$(CC) scene.cpp $(CC_FLAGS)
+
+ode.o: ode.cpp ode.h
+	$(CC) ode.cpp $(CC_FLAGS)
+
+ode_object.o: ode_object.cpp ode_object.h
+	$(CC) ode_object.cpp $(CC_FLAGS)
+
+shadow.o: shadow.cpp shadow.h
+	$(CC) shadow.cpp $(CC_FLAGS)
+
+light.o: light.cpp light.h
+	$(CC) light.cpp $(CC_FLAGS)
+
+image.o: image.cpp image.h
+	$(CC) image.cpp $(CC_FLAGS)
+
+gui_check.o: gui_check.cpp gui_check.h
+	$(CC) gui_check.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other

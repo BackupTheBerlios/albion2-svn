@@ -58,6 +58,20 @@ void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
 	glEnd();
 }
 
+/*! draws a line into a 3d space
+ *  @param v1 the position of the first vertex
+ *  @param v2 the position of the second vertex
+ *  @param color the color of the line
+ */
+void gfx::draw_3d_line(core::vertex3* v1, core::vertex3* v2, unsigned int color) {
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
+	glBegin(GL_LINES);
+		glVertex3f(v1->x, v1->y, v1->z);
+		glVertex3f(v2->x, v2->y, v2->z);
+	glEnd();
+}
+
 /*! draws a rectangle on a surface
  *  @param surface the surface where we want to draw the rectangle
  *  @param rectangle the rectangle itself
@@ -183,6 +197,7 @@ unsigned int gfx::get_color(SDL_Surface* surface, unsigned int rgb) {
 }
 
 /*! makes a rectangle out of 2 points
+ *  @param rectangle a pointer to a rectangle object
  *  @param x1 x cord point 1
  *  @param y1 y cord point 1
  *  @param x2 x cord point 2
@@ -211,8 +226,9 @@ gfx::rect* gfx::pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, u
 }
 
 /*! makes a point out of 2 cords
- *  @param x x cord
- *  @param y y cord
+ *  @param point a pointer to a pnt object
+ *  @param x x coordinate
+ *  @param y y coordinate
  */
 void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
 	point->x = x;

@@ -24,6 +24,7 @@
  */
 
 #ifdef WIN32
+#define snprintf _snprintf
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #ifdef A2E_EXPORTS
