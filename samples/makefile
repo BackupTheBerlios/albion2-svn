@@ -9,7 +9,7 @@ OBJS = gui_sample.o \
 CC         = gcc
 LD         = gcc
 CC_FLAGS   = -Os -c -I../ `sdl-config --cflags`
-LD_FLAGS   = -L../bin -la2e `sdl-config --libs` -lSDL_net -lSDL_ttf -o
+LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -L../bin -lGL -lGLU -lXxf86vm -lz -ljpeg -la2e `sdl-config --libs` -lSDL_net -lSDL_ttf -lSDL_image -o
 
 #######################################################################
 # Files

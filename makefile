@@ -17,12 +17,14 @@ OBJS = main.o \
        gui_list_item.o \
        gui_vbar.o \
        file_io.o \
-       a2emesh.o                           
+       a2emesh.o \
+       camera.o \
+       scene.o
 
 CC         = gcc
 LD         = gcc
 CC_FLAGS   = -Wall -Os -c `sdl-config --cflags`
-LD_FLAGS   = -lstdc++ `sdl-config --libs` -lSDL_net -lSDL_ttf -o
+LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg `sdl-config --libs` -lSDL_net -lSDL_ttf -lSDL_image -o
 BIN        = bin/liba2e.a
 
 #######################################################################
@@ -81,7 +83,13 @@ file_io.o: file_io.cpp file_io.h
 	$(CC) file_io.cpp $(CC_FLAGS)
 
 a2emesh.o: a2emesh.cpp a2emesh.h
-$(CC) a2emesh.cpp $(CC_FLAGS)
+	$(CC) a2emesh.cpp $(CC_FLAGS)
+
+camera.o: camera.cpp camera.h
+	$(CC) camera.cpp $(CC_FLAGS)
+
+scene.o: scene.cpp scene.h
+	$(CC) scene.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other
