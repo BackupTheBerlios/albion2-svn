@@ -1,7 +1,9 @@
 #######################################################################
 # Variablen
 #######################################################################
-OBJS = gui_sample.o
+OBJS = gui_sample.o \
+       chat_server.o \
+       chat_client.o
        
 CC         = gcc
 LD         = gcc
@@ -14,5 +16,17 @@ LD_FLAGS   = -L../bin -la2e `sdl-config --libs` -lSDL_net -lSDL_ttf -o
 gui_sample.o: gui_sample.cpp gui_sample.h
 	$(CC) gui_sample.cpp $(CC_FLAGS)
 
+chat_server.o: chat_server.cpp chat_server.h
+	$(CC) chat_server.cpp $(CC_FLAGS)
+
+chat_client.o: chat_client.cpp chat_client.h
+	$(CC) chat_client.cpp $(CC_FLAGS)
+
 gui_sample: gui_sample.o
 	$(LD) gui_sample.o $(LD_FLAGS) gui_sample
+
+chat_server: chat_server.o
+	$(LD) chat_server.o $(LD_FLAGS) chat_server
+
+chat_client: chat_client.o
+	$(LD) chat_client.o $(LD_FLAGS) chat_client

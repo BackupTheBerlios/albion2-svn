@@ -31,7 +31,7 @@ gui::gui() {
 	input_text = (char*)malloc(512);
 
 	//char* ib_text = (char*)malloc(1024);
-	unsigned int ib_text_length = 0;
+	ib_text_length = 0;
 	//char* set_text = (char*)malloc(1028);
 	for(unsigned int i = 0; i < 1028; i++) {
         set_text[i] = 0;

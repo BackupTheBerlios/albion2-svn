@@ -75,7 +75,7 @@ void gui_list::draw_list() {
 	while(c != 0) {
 		unsigned int highest = 0;
 		unsigned int tmp_id = 0;
-		unsigned int tmp_num = 0;
+		//unsigned int tmp_num = 0; // not used ...
 		for(unsigned int i = 0; i < citems; i++) {
 			if(ids[i] > highest) {
 				tmp_id = i;
@@ -246,7 +246,7 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 }
 
 void gui_list::delete_item(unsigned int id) {
-	unsigned int tmp_count = citems;
+	// unsigned int tmp_count = citems; // not used any more ...
 
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {

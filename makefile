@@ -12,7 +12,11 @@ OBJS = main.o \
        gui_button.o \
        gui_text.o \
        gui_style.o \
-       gui_input.o
+       gui_input.o \
+       gui_list.o \
+       gui_list_item.o \
+       gui_vbar.o \
+       file_io.o                                   
 
 CC         = gcc
 LD         = gcc
@@ -62,6 +66,18 @@ gui_style.o: gui_style.cpp gui_style.h
 
 gui_input.o: gui_input.cpp gui_input.h
 	$(CC) gui_input.cpp $(CC_FLAGS)
+
+gui_list.o: gui_list.cpp gui_list.h
+	$(CC) gui_list.cpp $(CC_FLAGS)
+
+gui_list_item.o: gui_list_item.cpp gui_list_item.h
+	$(CC) gui_list_item.cpp $(CC_FLAGS)
+
+gui_vbar.o: gui_vbar.cpp gui_vbar.h
+	$(CC) gui_vbar.cpp $(CC_FLAGS)
+
+file_io.o: file_io.cpp file_io.h
+	$(CC) file_io.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other

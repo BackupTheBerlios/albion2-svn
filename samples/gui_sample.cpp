@@ -108,8 +108,9 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/60 milliseconds (~ 60 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/60) {
-			e.draw();
+			e.start_draw();
 			agui.draw();
+			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}
 	}

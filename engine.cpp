@@ -73,7 +73,6 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
-	//SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
 
 	gstyle.init(screen);
 	gstyle.set_color_scheme(gui_style::WINDOWS);
