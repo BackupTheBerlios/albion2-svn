@@ -136,9 +136,11 @@ void gui::draw() {
 					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), p)) {
 						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
 						set_active_element(&gui::gui_elements[i]);
+						event_handler->set_active(event::GUI);
 					}
 					else {
 						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
+						event_handler->set_active(event::NONE);
 					}
 					
 					event_handler->get_input_text(input_text);

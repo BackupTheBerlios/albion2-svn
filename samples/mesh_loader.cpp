@@ -17,31 +17,40 @@
 #include "mesh_loader.h"
 #include <iostream>
 #include <string.h>
+#include <SDL_image.h>
 
 /*!
  * \mainpage
  *
  * \author flo
  *
- * \date August 2004
+ * \date August - September 2004
  *
  * Albion 2 Engine Sample - Mesh Loader Sample
  */
 
 int main(int argc, char *argv[])
 {
+	// initialize the engine
 	e.init(800, 600, 32, false);
 	e.set_caption("A2E Sample - Mesh Loader");
 	
+	// set a color scheme (blue)
 	e.set_color_scheme(gui_style::BLUE);
 	sf = e.get_screen();
 
+	// initialize the a2e events
 	aevent.init(ievent);
-	agui.init(e, aevent);
 	aevent.set_keyboard_layout(event::DE);
 
-	mesh.load_mesh("text.a2m");
+	// initialize the camera
+	cam.init(e, aevent);
 
+	// load the model/mesh and set a new position
+	mesh.load_mesh("a2logo.a2m");
+	mesh.set_position(0.0f, 0.0f, -100.0f);
+
+	// needed for fps counting
 	unsigned int fps = 0;
 	unsigned int fps_time = 0;
 	char tmp[512];
@@ -71,17 +80,20 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/75 milliseconds (~ 75 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/75) {
+			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - Mesh Loader | fps: %u", fps);
+				sprintf(tmp, "A2E Sample - Mesh Loader | FPS: %u", fps);
 				fps = 0;
 				fps_time = SDL_GetTicks();
 			}
 			e.set_caption(tmp);
 
 			e.start_draw();
+
+			cam.run();
 			mesh.draw_mesh();
-			agui.draw();
+
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}

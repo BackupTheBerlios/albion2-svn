@@ -246,8 +246,6 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 }
 
 void gui_list::delete_item(unsigned int id) {
-	// unsigned int tmp_count = citems; // not used any more ...
-
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
 			items[i]->clear();

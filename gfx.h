@@ -35,8 +35,8 @@ using namespace std;
 /*! @class gfx
  *  @brief graphical functions
  *  @author flo
- *  @version 0.1.3
- *  @date 2004/08/22
+ *  @version 0.2
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the gfx class

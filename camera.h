@@ -13,72 +13,55 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-#ifndef __A2EMESH_H__
-#define __A2EMESH_H__
-
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#define MAX_OBJS 32
+ 
+#ifndef __CAMERA_H__
+#define __CAMERA_H__
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_image.h>
-#include <math.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
 #include "msg.h"
 #include "core.h"
-#include "file_io.h"
+#include "engine.h"
+#include "event.h"
+#include <math.h>
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class a2emesh
- *  @brief class for loading and displaying an a2e mesh
+/*! @class camera
+ *  @brief a2e camera functions
  *  @author flo
  *  @version 0.1.1
  *  @date 2004/09/08
  *  @todo more functions
  *  
- *  the a2emesh class
+ *  the camera class
  */
 
-class A2E_API a2emesh
+class A2E_API camera
 {
 public:
-	a2emesh();
-	~a2emesh();
+	camera();
+	~camera();
 
-	void load_mesh(char* filename);
-	void draw_mesh();
-	void load_textures();
+	void init(engine &iengine, event &ievent);
+	void run();
+
 	void set_position(float x, float y, float z);
 	core::vertex* get_position();
 
 protected:
 	msg m;
-	file_io file;
 	core c;
 
-	char mesh_type[8];
-	char mesh_name[9];
-	unsigned int vertex_count;
-	core::vertex* vertices;
-	unsigned int texture_count;
-	char* tex_names[MAX_OBJS];
-	unsigned int object_count;
-	char* obj_names[MAX_OBJS];
-	unsigned int* index_count;
-	unsigned int* tex_value;
-	core::triangle* indices[MAX_OBJS];
-	core::triangle* tex_cords[MAX_OBJS];
-
-	GLuint textures[MAX_OBJS];
+	event* event_handler;
+	engine* engine_handler;
 
 	core::vertex* position;
+	float rotation;
+	float up_down;
+
+	float piover180;
 };
 
 #endif

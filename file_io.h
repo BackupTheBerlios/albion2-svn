@@ -28,8 +28,8 @@ using namespace std;
 /*! @class file_io
  *  @brief file input/output
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/21
+ *  @version 0.1.1
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the file input/output class

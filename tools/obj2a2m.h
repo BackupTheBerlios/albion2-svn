@@ -13,45 +13,46 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __MESH_LOADER_H__
-#define __MESH_LOADER_H__
+
+#ifndef __OBJ2A2M_H__
+#define __OBJ2A2M_H__
+
+#define MAX_OBJS 32
 
 #ifdef WIN32
 #include <windows.h>
 #endif
 
 #include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
-#include <engine.h>
-#include <msg.h>
-#include <core.h>
-#include <net.h>
-#include <gfx.h>
-#include <event.h>
-#include <camera.h>
-#include <a2emesh.h>
+#include <fstream>
 using namespace std;
 
-msg m;
-net n;
-core c;
-engine e;
-gfx agfx;
-event aevent;
-camera cam;
+void load_materials(char* filename);
 
-a2emesh mesh;
+char mesh_name[9];
+char* obj_names[MAX_OBJS];
+unsigned int object_count = 0;
+unsigned int vertex_count = 0;
+unsigned int tex_vertex_count = 0;
+unsigned int total_index_count = 0;
+unsigned int* index_count;
+unsigned int* vertices1;
+unsigned int* vertices2;
+unsigned int* vertices3;
+unsigned int* indices1[MAX_OBJS];
+unsigned int* indices2[MAX_OBJS];
+unsigned int* indices3[MAX_OBJS];
+unsigned int* texindices1[MAX_OBJS];
+unsigned int* texindices2[MAX_OBJS];
+unsigned int* texindices3[MAX_OBJS];
+unsigned int* tex_number;
+unsigned int* texcords1;
+unsigned int* texcords2;
+unsigned int* texcords3;
 
-SDL_Surface* sf;
-
-bool done = false;
-
-SDL_Event ievent;
-
-unsigned int refresh_time;
+unsigned int material_count = 0;
+unsigned int texture_count = 0;
+char* mat_names[32];
+char* tex_names[32];
 
 #endif

@@ -28,8 +28,8 @@ using namespace std;
 /*! @class core
  *  @brief core stuff
  *  @author flo
- *  @version 0.1.4
- *  @date 2004/08/13
+ *  @version 0.1.5
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the core stuff
@@ -43,7 +43,6 @@ public:
 
 	struct vertex {
 		float x, y, z;
-		float u, v;
 	};
 
 	struct line {

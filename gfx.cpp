@@ -34,69 +34,9 @@ gfx::~gfx() {
  *  @param color the color of the point
  */
 void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) {
-	// there is no need for a draw point function any more - commented out
-
-	//int depth = surface->format->BytesPerPixel;
-    // p is the address to the pixel we want to draw
-	//Uint8 *p = (Uint8*)malloc(depth);
-	//GLuint *p = new GLuint[1*1*depth*sizeof(GLuint)];
-	//free(p);
-
-    /*switch(depth) {
-		// 8bpp => 1 byte per pixel
-		case 1:
-			*p = color;
-			break;
-
-		// 16bpp => 2 byte per pixel
-		case 2:
-			*(Uint16*)p = color;
-			break;
-
-		// 24bpp => 3 byte per pixel
-		case 3:
-			if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-				p[0] = (color >> 16) & 0xff;
-				p[1] = (color >> 8) & 0xff;
-				p[2] = color & 0xff;
-			}
-			else {
-				p[0] = color & 0xff;
-				p[1] = (color >> 8) & 0xff;
-				p[2] = (color >> 16) & 0xff;
-			}
-			break;
-
-		// 32bpp => 4 byte per pixel
-		case 4:
-			*(Uint32*)p = color;
-			break;
-    }*/
-
-	/*glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, 800, 0.0, 600, -1.0, 1.0);
-	
-	glMatrixMode(GL_MODELVIEW);
-	
-	glPushMatrix();
-	glLoadIdentity();
-
-	glDrawBuffer(GL_BACK);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	glRasterPos2i(point->x, 599 - point->y);
-	//glDrawPixels(1, 1, GL_BGRA_EXT, GL_UNSIGNED_BYTE, p);
-
-	glFlush();
-	
-	glPopMatrix();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();*/
-
-	//free(p);
+	// outdated - should be taken out soon or be reimplemented,
+	// but remember that you need to much cpu power if you just
+	// draw a single point in opengl
 }
 
 /*! draws a line on a surface
@@ -194,19 +134,12 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 					unsigned int color1, unsigned int color2) {
 	int dist_x1_x2 = rectangle->x2 - rectangle->x1;
 	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
-	//int tmp;
 
 	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; }
 	else { dist_x1_x2++; }
 
 	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; }
 	else { dist_y1_y2++; }
-
-	/*if(dist_x1_x2 < dist_y1_y2) {
-	    tmp = dist_x1_x2;
-	    dist_x1_x2 = dist_y1_y2;
-	    dist_y1_y2 = tmp;
-	}*/
 
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
@@ -327,7 +260,6 @@ void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
 	point->x = x;
 	point->y = y;
 }
-
 
 /*! makes a point out of 2 cords and returns it
  *  @param x x cord

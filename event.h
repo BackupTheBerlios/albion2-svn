@@ -30,8 +30,8 @@ using namespace std;
 /*! @class event
  *  @brief (sdl) event handler
  *  @author flo
- *  @version 0.2
- *  @date 2004/08/18
+ *  @version 0.2.1
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the event handling class
@@ -47,6 +47,15 @@ public:
 	int is_event();
 	SDL_Event get_event();
 	void handle_events(unsigned int event_type);
+
+	//! specifies which class is currently active
+	enum ACTIVE_CLASS {
+		NONE,		//!< @enum no class
+		GUI,		//!< @enum gui class
+		CAMERA		//!< @enum camera class
+	};
+
+	void set_active(ACTIVE_CLASS active_class);
 
 	struct gui_element {
 		unsigned int id;
@@ -101,6 +110,12 @@ public:
 		DE	//!< @enum de keyboard layout
 	};
 	void set_keyboard_layout(IKEY_LAYOUT layout);
+
+	bool is_key_up();
+	bool is_key_down();
+	bool is_key_right();
+	bool is_key_left();
+
 protected:
 	msg m;
 	SDL_Event event_handle;
@@ -113,6 +128,14 @@ protected:
 	unsigned int lm_last_pressed_x;
 	//! left mouse button pressed (y coordinate)
 	unsigned int lm_last_pressed_y;
+	//! key up pressed
+	bool key_up;
+	//! key down pressed
+	bool key_down;
+	//! key right pressed
+	bool key_right;
+	//! key left pressed
+	bool key_left;
 
 	//! current active gui element
 	gui_element* active_element;
@@ -129,6 +152,8 @@ protected:
 	char key;
 	Uint8 *keys;
 	char tmp_text[4];
+
+	ACTIVE_CLASS act_class;
 };
 
 #endif

@@ -38,8 +38,8 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.2
- *  @date 2004/08/18
+ *  @version 0.2.1
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the gui class

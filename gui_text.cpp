@@ -287,18 +287,10 @@ GLuint gui_text::SDL_GL_LoadTexture(SDL_Surface *surface) {
 			SDL_SWSURFACE,
 			w, h,
 			32,
-/*#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-			0x000000FF, 
-			0x0000FF00, 
-			0x00FF0000, 
-			0xFF000000
-#else*/
 			0x00FF0000, 
 			0x0000FF00, 
 			0x000000FF,
-			0xFF000000
-//#endif
-		       );
+			0xFF000000);
 	if ( image == NULL ) {
 		return 0;
 	}

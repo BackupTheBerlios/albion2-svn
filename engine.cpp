@@ -128,6 +128,9 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 
 	// resize stuff
 	resizeWindow();
+
+	// reserve memory for position ...
+	engine::position = (core::vertex*)malloc(sizeof(core::vertex));
 }
 
 /*! sets the window width
@@ -205,6 +208,9 @@ void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 /*! opengl initialization function
  */
 int engine::initGL(GLvoid) {
+	// enable texture mapping
+	glEnable(GL_TEXTURE_2D);
+
     /* Enable smooth shading */
     glShadeModel( GL_SMOOTH );
 
@@ -220,6 +226,9 @@ int engine::initGL(GLvoid) {
     /* Really Nice Perspective Calculations */
     glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
 
+	// disable backface culling
+	glCullFace(GL_FRONT);
+
 	return 1;
 }
 
@@ -231,34 +240,12 @@ int engine::drawGLScene(GLvoid) {
 		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
 		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
 
-    static GLfloat v0[] = { -1.0f, -1.0f,  1.0f };
-    static GLfloat v1[] = {  1.0f, -1.0f,  1.0f };
-    static GLfloat v2[] = {  1.0f,  1.0f,  1.0f };
-    static GLfloat v3[] = { -1.0f,  1.0f,  1.0f };
-    static GLfloat v4[] = { -1.0f, -1.0f, -1.0f };
-    static GLfloat v5[] = {  1.0f, -1.0f, -1.0f };
-    static GLfloat v6[] = {  1.0f,  1.0f, -1.0f };
-    static GLfloat v7[] = { -1.0f,  1.0f, -1.0f };
-    static GLubyte red[]    = { 255,   0,   0, 255 };
-    static GLubyte green[]  = {   0, 255,   0, 255 };
-    static GLubyte blue[]   = {   0,   0, 255, 255 };
-    static GLubyte white[]  = { 255, 255, 255, 255 };
-    static GLubyte yellow[] = {   0, 255, 255, 255 };
-    static GLubyte black[]  = {   0,   0,   0, 255 };
-    static GLubyte orange[] = { 255, 255,   0, 255 };
-    static GLubyte purple[] = { 255,   0, 255,   0 };
-
-    /* Clear the color and depth buffers. */
+    // Clear the color and depth buffers.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    /* We don't want to modify the projection matrix. */
+    // We don't want to modify the projection matrix.
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity( );
-
-    /* Move down the z-axis. */
-    glTranslatef( 0.0, 0.0, -250.0 );
-
-    //SDL_GL_SwapBuffers();
 
     return 1;
 }
@@ -278,4 +265,16 @@ int engine::resizeWindow(GLvoid) {
     glLoadIdentity();
 
     return 1;
+}
+
+void engine::set_position(float xpos, float ypos, float zpos) {
+	engine::position->x = -xpos;
+	engine::position->y = ypos;
+	engine::position->z = zpos;
+
+	glTranslatef(-engine::position->x, engine::position->y, engine::position->z);
+}
+
+core::vertex* engine::get_position() {
+	return engine::position;
 }

@@ -39,8 +39,8 @@ using namespace std;
  *  @brief main engine
  *  @author laxity
  *  @author flo
- *  @version 0.2
- *  @date 2004/08/22
+ *  @version 0.2.1
+ *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the main engine
@@ -67,12 +67,17 @@ public:
 	int drawGLScene(GLvoid);
 	int initGL(GLvoid);
 	int resizeWindow(GLvoid);
+
+	void set_position(float xpos, float ypos, float zpos);
+	core::vertex* get_position();
 protected:
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
 	const SDL_VideoInfo* video_info;
 	msg m;
 	gui_style gstyle;
+
+	core::vertex* position;
 };
 
 #endif
