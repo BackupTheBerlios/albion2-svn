@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 {
 	// initialize the engine
 	e.init(800, 600, 32, false);
-	e.set_caption("A2E Sample - Gui Sample");
+	e.set_caption("A2E Sample - GUI Sample");
 
 	// set a color scheme (blue)
 	e.set_color_scheme(gui_style::BLUE);

@@ -29,8 +29,8 @@ using namespace std;
 /*! @class gui_style
  *  @brief gui style stuff
  *  @author flo
- *  @version 0.3
- *  @date 2004/08/22
+ *  @version 0.3.1
+ *  @date 2004/12/13
  *  @todo more functions
  *  
  *  the gui_style class
@@ -45,7 +45,8 @@ public:
 	//! the style color scheme
 	enum COLOR_SCHEME {
 		WINDOWS,	//!< @enum windows like colors
-		BLUE		//!< @enum blue colors
+		BLUE,		//!< @enum blue colors
+		BLACKWHITE	//!< @enum black/white colors
 	};
 
 	void init(SDL_Surface* screen);

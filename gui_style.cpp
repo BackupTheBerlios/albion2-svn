@@ -66,6 +66,19 @@ void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
 			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
 			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
 			break;
+		case gui_style::BLACKWHITE:
+			gui_style::STYLE_WINDOW_BG = g.get_color(gui_style::screen, 0xEEEEEE);
+			gui_style::STYLE_BARBG = g.get_color(gui_style::screen, 0xC9C9C9);
+			gui_style::STYLE_BG = g.get_color(gui_style::screen, 0x1F1F1F);
+			gui_style::STYLE_BG2 = g.get_color(gui_style::screen, 0xE0E0E0);
+			gui_style::STYLE_LIGHT = g.get_color(gui_style::screen, 0x7D7D7D);
+			gui_style::STYLE_DARK = g.get_color(gui_style::screen, 0x4B4B4B);
+			gui_style::STYLE_DARK2 = g.get_color(gui_style::screen, 0x313131);
+			gui_style::STYLE_INDARK = g.get_color(gui_style::screen, 0x191919);
+			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0xFFFFFF);
+			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
+			break;
 		default:
 			gui_style::set_color_scheme(gui_style::WINDOWS);
 			break;

@@ -48,15 +48,15 @@ void gui_button::draw_button(bool is_pressed) {
 
 		gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 		gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-		g.cord_to_pnt(p1, gui_button::rectangle->x2, gui_button::rectangle->y1+1);
-		g.cord_to_pnt(p2, gui_button::rectangle->x2, gui_button::rectangle->y2);
+		g.cord_to_pnt(p1, gui_button::rectangle->x2-1, gui_button::rectangle->y1+1);
+		g.cord_to_pnt(p2, gui_button::rectangle->x2-1, gui_button::rectangle->y2-1);
 
 		// draw first line inside of the button
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_INDARK);
 
-		g.cord_to_pnt(p1, gui_button::rectangle->x1+1, gui_button::rectangle->y2);
-		g.cord_to_pnt(p2, gui_button::rectangle->x2-1, gui_button::rectangle->y2);
+		g.cord_to_pnt(p1, gui_button::rectangle->x1+1, gui_button::rectangle->y2-1);
+		g.cord_to_pnt(p2, gui_button::rectangle->x2, gui_button::rectangle->y2-1);
 
 		// draw second line inside of the button
 		g.draw_line(engine_handler->get_screen(), p1, p2,
