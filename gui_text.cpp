@@ -194,6 +194,8 @@ void gui_text::remake_text() {
 	}
 }
 
+/*! sets the notext bool to true and the text to ""
+ */
 void gui_text::set_notext() {
 	gui_text::is_notext = true;
 	gui_text::text = "";

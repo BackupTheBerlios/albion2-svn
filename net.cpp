@@ -148,10 +148,9 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 				m.print(msg::MERROR, "net.cpp", "SDLNet_TCP_Open (client->server): %s", SDLNet_GetError());
 				return false;
 			}
-			else {
-				// connection created - communication is now possible
-				m.print(msg::MDEBUG, "net.cpp", "SDLNet_TCP_Open (client->server): successfully connected to server!");
-			}
+
+			// connection created - communication is now possible
+			m.print(msg::MDEBUG, "net.cpp", "SDLNet_TCP_Open (client->server): successfully connected to server!");
 
 			SDLNet_TCP_AddSocket(socketset, tcp_ssock);
 			SDLNet_TCP_AddSocket(socketset, tcp_csock);
@@ -263,7 +262,6 @@ void net::handle_client(unsigned int cur_client) {
 					cur_client, clients[cur_client].name);
 				// send data to all clients
 				for(unsigned int i = 0; i < max_clients; i++) {
-					//if(clients[i].is_active && i != cur_client) {
 					if(clients[i].is_active) {
 						send_new_client(cur_client, i);
 					}
@@ -272,7 +270,6 @@ void net::handle_client(unsigned int cur_client) {
 				// send data of all clients to current client
 				clients[cur_client].is_active = true;
 				for(unsigned int i = 0; i < max_clients; i++) {
-					//if(clients[i].is_active && i != cur_client) {
 					if(clients[i].is_active) {
 						send_new_client(i, cur_client);
 					}

@@ -28,7 +28,9 @@ gui_vbar::gui_vbar() {
 	gui_vbar::last_point->x = 0;
 	gui_vbar::last_point->y = 0;
 
-	px_per_item = 0;
+	gui_vbar::position = 0;
+
+	gui_vbar::px_per_item = 0;
 }
 
 /*! there is no function currently
@@ -38,38 +40,16 @@ gui_vbar::~gui_vbar() {
 
 //! draws the vertical bar
 void gui_vbar::draw_vbar() {
+	if(gui_vbar::max_lines > gui_vbar::shown_lines) {
+		slider_active = true;
+	}
+	else {
+		slider_active = false;
+	}
+
 	// draw bar bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
 		gui_vbar::rectangle, gstyle.STYLE_BARBG);
-
-	// draw slider
-	unsigned int heigth_barbg = gui_vbar::rectangle->y2 - gui_vbar::rectangle->y1 - 28;
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
-	unsigned int overflow = heigth_barbg % max_lines;
-	gui_vbar::px_per_item = (heigth_barbg - overflow) / max_lines;
-	unsigned int slider_heigth = px_per_item * shown_lines + overflow;
-	unsigned int heigth_position = position * px_per_item;
-
-	// draw bg
-	g.pnt_to_rect(r1, gui_vbar::rectangle->x1,
-		gui_vbar::rectangle->y1 + 14 + heigth_position, gui_vbar::rectangle->x2,
-		gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth);
-	g.draw_filled_rectangle(engine_handler->get_screen(),
-		r1, gstyle.STYLE_BG);
-
-	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, gstyle.STYLE_LIGHT, gstyle.STYLE_DARK);
-
-	// draw 2 colored border
-	g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1,
-		gui_vbar::rectangle->y1 + 14 + heigth_position + 1, gui_vbar::rectangle->x2 - 1,
-		gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1);
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, gstyle.STYLE_BG, gstyle.STYLE_INDARK);
-
-	free(r1);
-
 
 	// draw up button
 	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
@@ -83,13 +63,48 @@ void gui_vbar::draw_vbar() {
 		gui_vbar::rectangle->x1 + 12, gui_vbar::rectangle->y2);
 	gui_vbar::down_button_handler->set_rectangle(dbrect);
 
-	// button event handling
-	if(gui_vbar::up_button_handler->get_pressed() == true) {
-		gui_vbar::set_position(gui_vbar::get_position() - 1);
-	}
+	// checks if there are enough items to draw a slider
+	if(slider_active) {
+		// draw slider
+		unsigned int heigth_barbg = gui_vbar::rectangle->y2 - gui_vbar::rectangle->y1 - 28;
+		gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+		unsigned int overflow = heigth_barbg % max_lines;
+		gui_vbar::px_per_item = (heigth_barbg - overflow) / max_lines;
+		if(gui_vbar::px_per_item < 1) {
+			gui_vbar::px_per_item = 1;
+		}
+		unsigned int slider_heigth = px_per_item * shown_lines + overflow;
+		unsigned int heigth_position = position * px_per_item;
 
-	if(gui_vbar::down_button_handler->get_pressed() == true) {
-		gui_vbar::set_position(gui_vbar::get_position() + 1);
+		// draw bg
+		g.pnt_to_rect(r1, gui_vbar::rectangle->x1,
+			gui_vbar::rectangle->y1 + 14 + heigth_position, gui_vbar::rectangle->x2,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth);
+		g.draw_filled_rectangle(engine_handler->get_screen(),
+			r1, gstyle.STYLE_BG);
+
+		// draw 2 colored border
+		g.draw_2colored_rectangle(engine_handler->get_screen(),
+			r1, gstyle.STYLE_LIGHT, gstyle.STYLE_DARK);
+
+		// draw 2 colored border
+		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + 1, gui_vbar::rectangle->x2 - 1,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1);
+		g.draw_2colored_rectangle(engine_handler->get_screen(),
+			r1, gstyle.STYLE_BG, gstyle.STYLE_INDARK);
+
+		free(r1);
+
+
+		// button event handling
+		if(gui_vbar::up_button_handler->get_pressed() == true) {
+			gui_vbar::set_position(gui_vbar::get_position() - 1);
+		}
+
+		if(gui_vbar::down_button_handler->get_pressed() == true) {
+			gui_vbar::set_position(gui_vbar::get_position() + 1);
+		}
 	}
 }
 
@@ -134,6 +149,11 @@ bool gui_vbar::get_active() {
 //! returns the new mouse click point
 gfx::pnt* gui_vbar::get_new_point() {
 	return gui_vbar::new_point;
+}
+
+//! returns the slider active bool
+bool gui_vbar::get_slider_active() {
+	return gui_vbar::slider_active;
 }
 
 /*! sets the vertical bars id
@@ -208,32 +228,40 @@ void gui_vbar::set_down_button_handler(gui_button* ibutton) {
  *  @param point the new mouse click point point we want to set
  */
 void gui_vbar::set_new_point(gfx::pnt* new_point) {
-	gui_vbar::new_point = new_point;
-	if(gui_vbar::last_point->x == 0 && gui_vbar::last_point->y == 0) {
-		gui_vbar::last_point->x = gui_vbar::new_point->x;
-		gui_vbar::last_point->y = gui_vbar::new_point->y;
-	}
+	if(gui_vbar::slider_active) {
+		gui_vbar::new_point = new_point;
+		if(gui_vbar::last_point->x == 0 && gui_vbar::last_point->y == 0) {
+			gui_vbar::last_point->x = gui_vbar::new_point->x;
+			gui_vbar::last_point->y = gui_vbar::new_point->y;
+		}
 
-	// gui_vbar::px_per_item / 128
-	if(gui_vbar::new_point->y > gui_vbar::last_point->y) {
-		if(gui_vbar::new_point->y - gui_vbar::last_point->y > gui_vbar::px_per_item) {
-			unsigned int overflow = (gui_vbar::new_point->y - gui_vbar::last_point->y) % gui_vbar::px_per_item;
-			unsigned int times = ((gui_vbar::new_point->y - gui_vbar::last_point->y - overflow) / gui_vbar::px_per_item) / 8;
-			if(times < 1) { times = 1; }
-			gui_vbar::set_position(gui_vbar::get_position() + times);
-			gui_vbar::last_point->x = 0;
-			gui_vbar::last_point->y = gui_vbar::last_point->y + overflow;
-			m.print(msg::MDEBUG, NULL, "%u: %u - %u - %u", gui_vbar::new_point->y - gui_vbar::last_point->y, overflow, times, gui_vbar::px_per_item);
+		// gui_vbar::px_per_item / 128
+		if(gui_vbar::new_point->y > gui_vbar::last_point->y) {
+			if(gui_vbar::new_point->y - gui_vbar::last_point->y > gui_vbar::px_per_item) {
+				unsigned int overflow = (gui_vbar::new_point->y - gui_vbar::last_point->y) % gui_vbar::px_per_item;
+				unsigned int times = ((gui_vbar::new_point->y - gui_vbar::last_point->y - overflow) / gui_vbar::px_per_item) / 8;
+				if(times < 1) { times = 1; }
+				gui_vbar::set_position(gui_vbar::get_position() + times);
+				gui_vbar::last_point->x = 0;
+				gui_vbar::last_point->y = gui_vbar::last_point->y + overflow;
+			}
+		}
+		else {
+			if(gui_vbar::last_point->y - gui_vbar::new_point->y > gui_vbar::px_per_item) {
+				unsigned int overflow = (gui_vbar::last_point->y - gui_vbar::new_point->y) % gui_vbar::px_per_item;
+				unsigned int times = ((gui_vbar::last_point->y - gui_vbar::new_point->y - overflow) / gui_vbar::px_per_item) / 8;
+				if(times < 1) { times = 1; }
+				gui_vbar::set_position(gui_vbar::get_position() - times);
+				gui_vbar::last_point->x = 0;
+				gui_vbar::last_point->y = gui_vbar::last_point->y - overflow;
+			}
 		}
 	}
-	else {
-		if(gui_vbar::last_point->y - gui_vbar::new_point->y > gui_vbar::px_per_item) {
-			unsigned int overflow = (gui_vbar::last_point->y - gui_vbar::new_point->y) % gui_vbar::px_per_item;
-			unsigned int times = ((gui_vbar::last_point->y - gui_vbar::new_point->y - overflow) / gui_vbar::px_per_item) / 8;
-			if(times < 1) { times = 1; }
-			gui_vbar::set_position(gui_vbar::get_position() - times);
-			gui_vbar::last_point->x = 0;
-			gui_vbar::last_point->y = gui_vbar::last_point->y - overflow;
-		}
-	}
+}
+
+/*! sets the slider active bool
+ *  @param state the state of slider active
+ */
+void gui_vbar::set_slider_active(bool state) {
+	gui_vbar::slider_active = state;
 }

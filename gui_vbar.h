@@ -33,8 +33,8 @@ using namespace std;
 /*! @class gui_vbar
  *  @brief gui vertical bar element functions
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/19
+ *  @version 0.1.1
+ *  @date 2004/08/21
  *  @todo more functions
  *  
  *  the gui_vbar class
@@ -60,6 +60,7 @@ public:
 	bool get_active();
 	//gfx::pnt* get_last_point();
 	gfx::pnt* get_new_point();
+	bool get_slider_active();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
@@ -69,6 +70,7 @@ public:
 	void set_active(bool is_active);
 	//void set_last_point(gfx::pnt* last_point);
 	void set_new_point(gfx::pnt* new_point);
+	void set_slider_active(bool state);
 
 	void set_up_button_handler(gui_button* ibutton);
 	void set_down_button_handler(gui_button* ibutton);
@@ -98,6 +100,8 @@ protected:
 	unsigned int shown_lines;
 	//! vertical bar position
 	unsigned int position;
+	//! bool if we draw the slider
+	bool slider_active;
 
 	// event handle stuff
 

@@ -37,8 +37,8 @@ using namespace std;
 /*! @class gui_list
  *  @brief gui list box element functions
  *  @author flo
- *  @version 0.1.1
- *  @date 2004/08/19
+ *  @version 0.1.2
+ *  @date 2004/08/21
  *  @todo more functions
  *  
  *  the gui_list class
@@ -82,7 +82,7 @@ protected:
 
 	gui_vbar* vbar_handler;
 
-	gui_list_item* items[1024];
+	gui_list_item* items[512];
 	unsigned int citems;
 
 	unsigned int drawable_items;

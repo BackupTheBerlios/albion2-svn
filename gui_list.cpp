@@ -87,7 +87,16 @@ void gui_list::draw_list() {
 	}
 
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	for(unsigned int i = 0; i < drawable_items; i++) {
+	// just loop for so many items as we have
+	unsigned int loop = 0;
+	if(drawable_items > citems) {
+		loop = citems;
+	}
+	else {
+		loop = drawable_items;
+	}
+
+	for(unsigned int i = 0; i < loop; i++) {
 		for(unsigned int j = 0; j < citems; j++) {
 			if(items[j]->get_id() == new_ids[i + position]) {
 				g.cord_to_pnt(p1, gui_list::rectangle->x1 + 3,
@@ -176,7 +185,12 @@ void gui_list::set_position(unsigned int position) {
 		vbar_handler->set_position(gui_list::position);
 	}
 	else if(gui_list::citems - position < gui_list::drawable_items) {
-		gui_list::position = gui_list::citems - gui_list::drawable_items;
+		if(gui_list::citems < gui_list::drawable_items) {
+			gui_list::position = 0;
+		}
+		else {
+			gui_list::position = gui_list::citems - gui_list::drawable_items;
+		}
 		vbar_handler->set_position(gui_list::position);
 	}
 	else {

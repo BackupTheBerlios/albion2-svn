@@ -262,6 +262,12 @@ void event::handle_events(unsigned int event_type) {
 									case SDLK_BACKQUOTE:
 										sprintf(tmp_text, "%s", "^");
 										break;
+									case SDLK_z:
+										sprintf(tmp_text, "%s", "y");
+										break;
+									case SDLK_y:
+										sprintf(tmp_text, "%s", "z");
+										break;
 									default:
 										break;
 								}

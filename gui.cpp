@@ -154,19 +154,21 @@ void gui::draw() {
 				case gui::VBAR: {
 					p->x = event_handler->get_lm_pressed_x();
 					p->y = event_handler->get_lm_pressed_y();
-					if(g.is_pnt_in_rectangle(gui::gui_vbars[gui::gui_elements[i].num]->get_rectangle(), p)) {
-						int cx;
-						int cy;
-						gfx::pnt* np = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-						SDL_GetMouseState(&cx, &cy);
-						np->x = cx;
-						np->y = cy;
-						gui::gui_vbars[gui::gui_elements[i].num]->set_active(true);
-						gui::gui_vbars[gui::gui_elements[i].num]->set_new_point(np);
-						free(np);
-					}
-					else {
-						gui::gui_vbars[gui::gui_elements[i].num]->set_active(false);
+					if(gui::gui_vbars[gui::gui_elements[i].num]->get_slider_active()) {
+						if(g.is_pnt_in_rectangle(gui::gui_vbars[gui::gui_elements[i].num]->get_rectangle(), p)) {
+							int cx;
+							int cy;
+							gfx::pnt* np = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+							SDL_GetMouseState(&cx, &cy);
+							np->x = cx;
+							np->y = cy;
+							gui::gui_vbars[gui::gui_elements[i].num]->set_active(true);
+							gui::gui_vbars[gui::gui_elements[i].num]->set_new_point(np);
+							free(np);
+						}
+						else {
+							gui::gui_vbars[gui::gui_elements[i].num]->set_active(false);
+						}
 					}
 
 					gui::gui_vbars[gui::gui_elements[i].num]->draw_vbar();

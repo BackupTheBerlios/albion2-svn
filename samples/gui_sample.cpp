@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text");
 	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 450), 106, "blah");
 	// add 32 items
-	for(unsigned int i = 1; i <= 32; i++) {
+	for(unsigned int i = 1; i <= 8; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1->add_item(tmp, i);
