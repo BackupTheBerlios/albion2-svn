@@ -141,7 +141,9 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 
 	gui::gui_texts[ctexts]->set_engine_handler(gui::engine_handler);
 	gui::gui_texts[ctexts]->set_id(id);
-	gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Solid(font, text, col));
+	// there were problems with TTF_RenderText_Solid, so it was just
+	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
+	gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Blended(font, text, col));
 	gui::gui_texts[ctexts]->set_point(point);
 
 	gui::gui_texts[ctexts]->close_font(font);
