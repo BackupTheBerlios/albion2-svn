@@ -17,6 +17,7 @@
 #include "gui_list.h"
 #include "gui_style.h"
 #include "gui_list_item.h"
+#include "gui_vbar.h"
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -63,6 +64,7 @@ void gui_list::draw_list() {
 	// we need a height of 22px for each item
 	unsigned int list_box_heigth = gui_list::rectangle->y2 - gui_list::rectangle->y1;
 	gui_list::drawable_items = (list_box_heigth - (list_box_heigth % 22)) / 22;
+	gui_list::vbar_handler->set_shown_lines(gui_list::drawable_items);
 	unsigned int* ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
 	unsigned int* new_ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
 	for(unsigned int i = 0; i < citems; i++) {
@@ -100,24 +102,8 @@ void gui_list::draw_list() {
 	free(ids);
 	free(new_ids);
 
-	// draw hbar <- should be a class later
-	if(gui_list::up_button_handler->get_pressed() == true) {
-		gui_list::set_position(gui_list::get_position() - 1);
-	}
-
-	if(gui_list::down_button_handler->get_pressed() == true) {
-		gui_list::set_position(gui_list::get_position() + 1);
-	}
-
-	gfx::rect* ubrect = gui_list::up_button_handler->get_rectangle();
-	g.pnt_to_rect(ubrect, gui_list::rectangle->x2 - 16, gui_list::rectangle->y1 + 2,
-		gui_list::rectangle->x2 - 2, gui_list::rectangle->y1 + 16);
-	gui_list::up_button_handler->set_rectangle(ubrect);
-
-	gfx::rect* dbrect = gui_list::down_button_handler->get_rectangle();
-	g.pnt_to_rect(dbrect, gui_list::rectangle->x2 - 16, gui_list::rectangle->y2 - 16,
-		gui_list::rectangle->x2 - 2, gui_list::rectangle->y2 - 2);
-	gui_list::down_button_handler->set_rectangle(dbrect);
+	// vbar handling
+	gui_list::set_position(vbar_handler->get_position());
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
@@ -126,6 +112,13 @@ void gui_list::draw_list() {
 void gui_list::set_engine_handler(engine* iengine) {
 	gui_list::engine_handler = iengine;
 	gstyle.init(gui_list::engine_handler);
+}
+
+/*! creates a vbar -> a pointer to the vbar class
+ *  @param ivbar the vertical bar we want to handle
+ */
+void gui_list::set_vbar_handler(gui_vbar* ivbar) {
+	gui_list::vbar_handler = ivbar;
 }
 
 //! returns the list boxes id
@@ -173,18 +166,22 @@ void gui_list::set_active(bool is_active) {
  *  @param position the position (the number of the item that is shown in the first line)
  */
 void gui_list::set_position(unsigned int position) {
-	// 0xFFFFFFFF, because position is a uint and we decrease 0
+	// 0xFFFFFFFF, because position is a uint and we decrease it by 0
 	if(position == 0xFFFFFFFF) {
 		gui_list::position = 0;
+		vbar_handler->set_position(gui_list::position);
 	}
 	else if(position > gui_list::citems) {
 		gui_list::position = 0;
+		vbar_handler->set_position(gui_list::position);
 	}
 	else if(gui_list::citems - position < gui_list::drawable_items) {
 		gui_list::position = gui_list::citems - gui_list::drawable_items;
+		vbar_handler->set_position(gui_list::position);
 	}
 	else {
         gui_list::position = position;
+		vbar_handler->set_position(gui_list::position);
 	}
 }
 
@@ -228,6 +225,9 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	//gui_list::set_position(gui_list::get_position() + 1);
 
 	citems++;
+
+	gui_list::vbar_handler->set_max_lines(citems);
+
 	return items[citems-1];
 }
 
@@ -246,16 +246,6 @@ void gui_list::delete_item(unsigned int id) {
 	}
 }
 
-/*! sets the up button handler
- *  @param ibutton the button handler
- */
-void gui_list::set_up_button_handler(gui_button* ibutton) {
-	gui_list::up_button_handler = ibutton;
-}
-
-/*! sets the down button handler
- *  @param ibutton the button handler
- */
-void gui_list::set_down_button_handler(gui_button* ibutton) {
-	gui_list::down_button_handler = ibutton;
+unsigned int gui_list::get_citems() {
+	return gui_list::citems;
 }

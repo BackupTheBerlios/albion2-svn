@@ -223,7 +223,7 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 					unsigned int color1, unsigned int color2) {
 	int dist_x1_x2 = rectangle->x2 - rectangle->x1;
 	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
-	int tmp;
+	//int tmp;
 
 	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; }
 	else { dist_x1_x2++; }
@@ -231,11 +231,11 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; }
 	else { dist_y1_y2++; }
 
-	if(dist_x1_x2 < dist_y1_y2) {
+	/*if(dist_x1_x2 < dist_y1_y2) {
 	    tmp = dist_x1_x2;
 	    dist_x1_x2 = dist_y1_y2;
 	    dist_y1_y2 = tmp;
-	}
+	}*/
 
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));

@@ -138,6 +138,9 @@
 				RelativePath="gui_button.cpp">
 			</File>
 			<File
+				RelativePath="gui_vbar.cpp">
+			</File>
+			<File
 				RelativePath="gui_input.cpp">
 			</File>
 			<File
@@ -179,6 +182,9 @@
 			</File>
 			<File
 				RelativePath="gui_button.h">
+			</File>
+			<File
+				RelativePath="gui_vbar.h">
 			</File>
 			<File
 				RelativePath="gui_input.h">

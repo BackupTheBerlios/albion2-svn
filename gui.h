@@ -30,6 +30,7 @@
 #include "gui_button.h"
 #include "gui_input.h"
 #include "gui_list.h"
+#include "gui_vbar.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -60,11 +61,13 @@ public:
 	void init(engine &iengine, event &ievent);
 	void draw();
 
+	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int icon);
 	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text);
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, gfx::pnt* point, unsigned int id);	
 	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text);
 	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text);
+	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id);
 
 	void switch_input_text(char* input_text, gui_input* input_box);
 
@@ -89,7 +92,8 @@ protected:
 		INPUT,	//!< @enum input box type
 		TEXT,	//!< @enum static text type
 		EMPTY,	//!< @enum empty type
-		LIST	//!< @enum list box type
+		LIST,	//!< @enum list box type
+		VBAR	//!< @enum vertical bar type
 	};
 
 	//! gui elements
@@ -116,6 +120,11 @@ protected:
 	gui_list* gui_list_boxes[128];
 	//! current amount of gui input box elements
 	unsigned int clist_boxes;
+
+	//! gui vertical bars
+	gui_vbar* gui_vbars[16];
+	//! current amount of gui vertical bar elements
+	unsigned int cvbars;
 
 	//! current active gui element
 	gui_element* active_element;

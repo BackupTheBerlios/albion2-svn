@@ -14,63 +14,64 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __GUI_LIST_H__
-#define __GUI_LIST_H__
+#ifndef __GUI_VBAR_H__
+#define __GUI_VBAR_H__
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
 #include "event.h"
 #include "engine.h"
-#include "gui_text.h"
 #include "gui_style.h"
 #include "gui_button.h"
-#include "gui_list_item.h"
-#include "gui_vbar.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class gui_list
- *  @brief gui list box element functions
+/*! @class gui_vbar
+ *  @brief gui vertical bar element functions
  *  @author flo
- *  @version 0.1.1
+ *  @version 0.1
  *  @date 2004/08/19
  *  @todo more functions
  *  
- *  the gui_list class
+ *  the gui_vbar class
  */
 
-class A2E_API gui_list
+class A2E_API gui_vbar
 {
 public:
-	gui_list();
-	~gui_list();
+	gui_vbar();
+	~gui_vbar();
 	
-	void draw_list();
+	void draw_vbar();
     void set_engine_handler(engine* iengine);
 
-    void set_vbar_handler(gui_vbar* ivbar);
 
-	// gui list box element variables functions
-
-	gui_list_item* add_item(char* text, unsigned int id);
-	void delete_item(unsigned int id);
+	// gui vertical bar element variables functions
 
 	unsigned int get_id();
 	gfx::rect* get_rectangle();
-	bool get_active();
+	unsigned int get_max_lines();
+	unsigned int get_shown_lines();
 	unsigned int get_position();
+	bool get_active();
+	//gfx::pnt* get_last_point();
+	gfx::pnt* get_new_point();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
-	void set_active(bool is_active);
+	void set_max_lines(unsigned int max_lines);
+	void set_shown_lines(unsigned int shown_lines);
 	void set_position(unsigned int position);
+	void set_active(bool is_active);
+	//void set_last_point(gfx::pnt* last_point);
+	void set_new_point(gfx::pnt* new_point);
 
-	unsigned int get_citems();
+	void set_up_button_handler(gui_button* ibutton);
+	void set_down_button_handler(gui_button* ibutton);
 
 protected:
 	msg m;
@@ -80,25 +81,29 @@ protected:
 
 	engine* engine_handler;
 
-	gui_vbar* vbar_handler;
+	gui_button* up_button_handler;
+	gui_button* down_button_handler;
 
-	gui_list_item* items[1024];
-	unsigned int citems;
+	unsigned int px_per_item;
 
-	unsigned int drawable_items;
+	// gui vertical bar element variables
 
-	// gui list box element variables
-
-	//! list box id
+	//! vertical bar id
 	unsigned int id;
-	//! list box rectangle
+	//! vertical bars rectangle
 	gfx::rect* rectangle;
-	//! list position
+	//! vertical bar max lines
+	unsigned int max_lines;
+	//! vertical bar shown lines
+	unsigned int shown_lines;
+	//! vertical bar position
 	unsigned int position;
 
 	// event handle stuff
 
 	bool is_active;
+	gfx::pnt* last_point;
+	gfx::pnt* new_point;
 };
 
 #endif

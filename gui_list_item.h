@@ -64,7 +64,6 @@ public:
 
 protected:
 	msg m;
-	core c;
 	gfx g;
 	gui_style gstyle;
 

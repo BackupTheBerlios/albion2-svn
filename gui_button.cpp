@@ -60,19 +60,86 @@ void gui_button::draw_button(bool is_pressed) {
 		// draw second line inside of the button
 		g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_INDARK);
 
-		// draw text
-		unsigned int width = text_handler->get_surface()->w;
-		unsigned int heigth = text_handler->get_surface()->h;
-		unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
-		unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
-		// first we divide the buttons width/higth by 2, to get center point of the button.
-		// then we also divide the texts width/higth by 2, to get the length we have to
-		// subtract from the buttons center point, to make the text centered.
-		// after that we just add the position to our lengths.
-		g.cord_to_pnt(p1, gui_button::rectangle->x1 + (width_button/2 - width/2),
-			gui_button::rectangle->y1 + (heigth_button/2 - heigth/2));
-		text_handler->set_point(p1);
-		text_handler->draw_text();
+		if(icon == 0) {
+			// draw text
+			unsigned int width = text_handler->get_surface()->w;
+			unsigned int heigth = text_handler->get_surface()->h;
+			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
+			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
+			// first we divide the buttons width/higth by 2, to get center point of the button.
+			// then we also divide the texts width/higth by 2, to get the length we have to
+			// subtract from the buttons center point, to make the text centered.
+			// after that we just add the position to our lengths.
+			g.cord_to_pnt(p1, gui_button::rectangle->x1 + (width_button/2 - width/2),
+				gui_button::rectangle->y1 + (heigth_button/2 - heigth/2));
+			text_handler->set_point(p1);
+			text_handler->draw_text();
+		}
+		else {
+			// draw icon
+			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
+			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
+
+			switch(icon) {
+				// up arrow icon
+				case 1:
+					// first line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 3,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// second line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// third line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
+						gui_button::rectangle->y1 + heigth_button/2 - 1);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 1,
+						gui_button::rectangle->y1 + heigth_button/2 - 1);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// fourth "line" (point)
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
+						gui_button::rectangle->y1 + heigth_button/2 - 2);
+					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					break;
+				case 2:
+					// first line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 3,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// second line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// third line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 1,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// fourth "line" (point)
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
+						gui_button::rectangle->y1 + heigth_button/2 + 3);
+					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					break;
+				default:
+					break;
+			}
+		}
 
 		free(p1);
 		free(p2);
@@ -101,23 +168,93 @@ void gui_button::draw_button(bool is_pressed) {
 
 		free(r1);
 
-		// draw text
-		unsigned int width = text_handler->get_surface()->w;
-		unsigned int heigth = text_handler->get_surface()->h;
-		unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
-		unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
-		// first we divide the buttons width/higth by 2, to get center point of the button.
-		// then we also divide the texts width/higth by 2, to get the length we have to
-		// subtract from the buttons center point, to make the text centered.
-		// after that we just add the position to our lengths.
-		// +1, because we want the text drawn a bit more right and bottom
 		gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-		g.cord_to_pnt(p1, gui_button::rectangle->x1 + (width_button/2 - width/2) + 1,
-			gui_button::rectangle->y1 + (heigth_button/2 - heigth/2) + 1);
-		text_handler->set_point(p1);
-		text_handler->draw_text();
+		gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+
+		if(icon == 0) {
+			// draw text
+			unsigned int width = text_handler->get_surface()->w;
+			unsigned int heigth = text_handler->get_surface()->h;
+			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
+			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
+			// first we divide the buttons width/higth by 2, to get center point of the button.
+			// then we also divide the texts width/higth by 2, to get the length we have to
+			// subtract from the buttons center point, to make the text centered.
+			// after that we just add the position to our lengths.
+			// +1, because we want the text drawn a bit more right and bottom
+			g.cord_to_pnt(p1, gui_button::rectangle->x1 + (width_button/2 - width/2) + 1,
+				gui_button::rectangle->y1 + (heigth_button/2 - heigth/2) + 1);
+			text_handler->set_point(p1);
+			text_handler->draw_text();
+		}
+		else {
+			// draw icon
+			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
+			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
+
+			switch(icon) {
+				// up arrow icon
+				case 1:
+					// first line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 4,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// second line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// third line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
+						gui_button::rectangle->y1 + heigth_button/2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// fourth "line" (point)
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 + 1,
+						gui_button::rectangle->y1 + heigth_button/2 - 1);
+					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					break;
+				case 2:
+					// first line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 4,
+						gui_button::rectangle->y1 + heigth_button/2 + 1);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// second line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
+						gui_button::rectangle->y1 + heigth_button/2 + 2);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// third line
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
+						gui_button::rectangle->y1 + heigth_button/2 + 3);
+					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
+						gui_button::rectangle->y1 + heigth_button/2 + 3);
+					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+
+					// fourth "line" (point)
+					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 + 1,
+						gui_button::rectangle->y1 + heigth_button/2 + 4);
+					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					break;
+				default:
+					break;
+			}
+		}
 
 		free(p1);
+		free(p2);
 	}
 }
 
@@ -151,6 +288,11 @@ char* gui_button::get_text() {
 	return gui_button::text;
 }
 
+//! returns the buttons icon id
+unsigned int gui_button::get_icon() {
+	return gui_button::icon;
+}
+
 //! returns the buttons pressed bool
 bool gui_button::get_pressed() {
 	return gui_button::pressed;
@@ -176,6 +318,13 @@ void gui_button::set_rectangle(gfx::rect* rectangle) {
 void gui_button::set_text(char* text) {
 	gui_button::text = text;
 	gui_button::text_handler->set_text(text);
+}
+
+/*! sets the buttons icon
+ *  @param icon the icon we want to set
+ */
+void gui_button::set_icon(unsigned int icon) {
+	gui_button::icon = icon;
 }
 
 /*! sets the pressed bool

@@ -47,6 +47,8 @@ public:
 
 	void init(engine* iengine);
 
+	//! gui style color - bar bg color (used for i.g. vertical bar)
+	unsigned int STYLE_BARBG;
 	//! gui style color - bg color (used for i.g. buttons)
 	unsigned int STYLE_BG;
 	//! gui style color - bg color 2 (used for i.g. input boxes)

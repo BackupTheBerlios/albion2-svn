@@ -22,6 +22,7 @@
 #include "gui_button.h"
 #include "gui_input.h"
 #include "gui_list.h"
+#include "gui_vbar.h"
 
 /*! there is no function currently
 */
@@ -79,6 +80,11 @@ void gui::init(engine &iengine, event &ievent) {
 	// reserve memory for 128 list input box elements
 	for(unsigned int i = 0; i < 128; i++) {
         gui_list_boxes[i] = new gui_list();
+	}
+
+	// reserve memory for 16 vertical bar elements
+	for(unsigned int i = 0; i < 16; i++) {
+        gui_vbars[i] = new gui_vbar();
 	}
 
 	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
@@ -141,21 +147,29 @@ void gui::draw() {
                     gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
 				}
 				break;
-				case gui::LIST: {
-					/*p->x = event_handler->get_lm_last_pressed_x();
-					p->y = event_handler->get_lm_last_pressed_y();
-					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), p)) {
-						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
-						set_active_element(&gui::gui_elements[i]);
+				case gui::LIST: {					
+                    gui::gui_list_boxes[gui::gui_elements[i].num]->draw_list();
+				}
+				break;
+				case gui::VBAR: {
+					p->x = event_handler->get_lm_pressed_x();
+					p->y = event_handler->get_lm_pressed_y();
+					if(g.is_pnt_in_rectangle(gui::gui_vbars[gui::gui_elements[i].num]->get_rectangle(), p)) {
+						int cx;
+						int cy;
+						gfx::pnt* np = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+						SDL_GetMouseState(&cx, &cy);
+						np->x = cx;
+						np->y = cy;
+						gui::gui_vbars[gui::gui_elements[i].num]->set_active(true);
+						gui::gui_vbars[gui::gui_elements[i].num]->set_new_point(np);
+						free(np);
 					}
 					else {
-						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
-					}*/
-					
-					/*event_handler->get_input_text(input_text);
-					gui::switch_input_text(input_text,
-						gui::gui_input_boxes[gui::gui_elements[i].num]);*/
-                    gui::gui_list_boxes[gui::gui_elements[i].num]->draw_list();
+						gui::gui_vbars[gui::gui_elements[i].num]->set_active(false);
+					}
+
+					gui::gui_vbars[gui::gui_elements[i].num]->draw_vbar();
 				}
 				break;
 				default:
@@ -169,8 +183,9 @@ void gui::draw() {
  *  @param rectangle the buttons rectangle
  *  @param id the buttons (a2e event) id
  *  @param text the buttons text
+ *  @param icon the icon id (0 = no icon)
  */
-gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
+gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int icon) {
 	gui::gui_elements[celements].id = id;
 	gui::gui_elements[celements].type = gui::BUTTON;
 	gui::gui_elements[celements].num = cbuttons;
@@ -189,10 +204,20 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
 	gui::gui_buttons[cbuttons]->set_id(id);
 	gui::gui_buttons[cbuttons]->set_rectangle(rectangle);
 	gui::gui_buttons[cbuttons]->set_text(text);
+	gui::gui_buttons[cbuttons]->set_icon(icon);
 
 	cbuttons++;
 
 	return gui_buttons[cbuttons-1];
+}
+
+/*! adds a gui button element and returns it
+ *  @param rectangle the buttons rectangle
+ *  @param id the buttons (a2e event) id
+ *  @param text the buttons text
+ */
+gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
+	return gui::add_button(rectangle, id, text, 0);
 }
 
 /*! adds a gui text element and returns it
@@ -283,22 +308,12 @@ gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, char* text) {
 	gui::gui_elements[celements].type = gui::LIST;
 	gui::gui_elements[celements].num = clist_boxes;
 	gui::gui_elements[celements].is_drawn = true;
-	
-	// celements has to be incremented _before_ we add the buttons, otherwise
-	// our list box stuff will be overwritten
+
 	celements++;
 
-	gui::gui_list_boxes[clist_boxes]->set_up_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
-		id+0xFFFFFF, "^"));
-	// don't draw our button automatically
-	// celements-1, because our text element, is the last initialized element
-	//gui::gui_elements[celements-1].is_drawn = false;
-
-	gui::gui_list_boxes[clist_boxes]->set_down_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
-		id+0xFFFFFE, "v"));
-	// don't draw our button automatically
-	// celements-1, because our text element, is the last initialized element
-	//gui::gui_elements[celements-1].is_drawn = false;
+	// add vertical bar
+	gui::gui_list_boxes[clist_boxes]->set_vbar_handler(add_vbar(g.pnt_to_rect(rectangle->x2-14,
+		rectangle->y1+2, rectangle->x2-2, rectangle->y2-2), id+0xFFFFFF));
 
 	gui::gui_list_boxes[clist_boxes]->set_engine_handler(gui::engine_handler);
 	gui::gui_list_boxes[clist_boxes]->set_id(id);
@@ -308,6 +323,33 @@ gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, char* text) {
 	clist_boxes++;
 
 	return gui_list_boxes[clist_boxes-1];
+}
+
+gui_vbar* gui::add_vbar(gfx::rect* rectangle, unsigned int id) {
+	gui::gui_elements[celements].id = id;
+	gui::gui_elements[celements].type = gui::VBAR;
+	gui::gui_elements[celements].num = cvbars;
+	gui::gui_elements[celements].is_drawn = true;
+
+	// celements has to be incremented _before_ we add the buttons, otherwise
+	// our vertical bar stuff will be overwritten
+	celements++;
+
+	// add up button
+	gui::gui_vbars[cvbars]->set_up_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
+		id+0xFFFFFF, " ", 1));
+
+	// add down button
+	gui::gui_vbars[cvbars]->set_down_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
+		id+0xFFFFFE, " ", 2));
+
+	gui::gui_vbars[cvbars]->set_engine_handler(gui::engine_handler);
+	gui::gui_vbars[cvbars]->set_id(id);
+	gui::gui_vbars[cvbars]->set_rectangle(rectangle);
+
+	cvbars++;
+
+	return gui_vbars[cvbars-1];
 }
 
 //! returns the guis surface

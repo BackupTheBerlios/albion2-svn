@@ -57,10 +57,12 @@ public:
 	unsigned int get_id();
 	gfx::rect* get_rectangle();
 	char* get_text();
+	unsigned int get_icon();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
 	void set_text(char* text);
+	void set_icon(unsigned int icon);
 
 	void set_pressed(bool pressed);
 	bool get_pressed();
@@ -83,6 +85,8 @@ protected:
 	gfx::rect* rectangle;
 	//! button text
 	char* text;
+	//! button icon id
+	unsigned int icon;
 
 	// event handle stuff
 
