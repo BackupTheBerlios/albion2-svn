@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Engine Design 0.02</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td><img src="../../data/engine_logo.png" alt="Albion 2 Engine" title="Albion 2 Engine" width="446" height="130" /></td>
+  </tr>
+  <tr>
+    <td><table width="100%"  border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="3" id="title_td"><div id="title">Albion 2 Engine</div></td>
+        </tr>
+      <tr>
+        <td width="33%" id="subtitle_td"><div id="subtitle">MSG Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Core Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Graphic Class</div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+Class for Text-Output to the Console.<br /></div></td>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+          Class for functions that are used often and have to be accessible from
+            anywhere.</div></td>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+          Class for graphical Output (2D (e.g. GUI)/3D (e.g. Scene Nodes)) and
+            Scene Management.</div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+- Error Output <br />
+- MSG Output <br />
+- Debug Output <br /></div></td>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+          - Byte Manipulation<br />
+          - File I/O<br />
+          - File Management (e.g. access to system variables)<br />
+          - definition of vector, line, triangle, quad etc.<br />
+          - vector functions </div></td>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+          - 2D/3D Rendering
+              <br />
+              - Scene Management<br />
+              - 3D Model
+loading (-&gt; which format?)<br />
+- Pixel/Vertex Shader (OGSL?) <br />
+- Material Management<br />
+- Texture Management<br />
+- other 3D fx (bump/cube mapping etc.)<br />
+- Normal Maps
+<br />
+- ...</div>
+          </td>
+      </tr>
+      <tr>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Physics Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Networking Class</div></td>
+        <td width="33%" id="subtitle_td"><div id="subtitle">Script Class</div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+Class for Collision Detection and other physics stuff. <br />
+        </div></td>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+          Class for Networking functions.</div></td>
+        <td width="33%" id="text_td"><div id="text">Description:<br />
+          Class for Script functions.</div></td>
+      </tr>
+      <tr>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+          - bindings to ode -&gt; integrate ode totally into the engine<br />
+- Collision Detection<br />
+- extended 
+simulation functions (gravity, joints, force/torque etc.)<br />
+        </div></td>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+          - P2P or Server &lt;-&gt; Client connection?<br />
+          - data transfer functions (player position(s), messages, collision
+          data (?) ...) </div></td>
+        <td width="33%" id="text_td"><div id="text">Functions:<br />
+- A2E Script Parser + Interpreter </div>
+          </td>
+      </tr>  
+      <tr>
+        <td colspan="3" id="hr_td"><hr></td>
+        </tr>
+      <tr>
+        <td colspan="3" id="title_td"><div id="title">Detailed Descriptions</div></td>
+        </tr>
+      <tr>
+        <td colspan="2" id="text_td"><div id="subtitle">MSG Class<br />
+          </div>
+          <div id="text">Error Output:<br />
+          print errors to console ...</div></td>
+        <td width="33%" id="smalltext_td"><div id="smalltext">place other stuff here ...</div></td>
+      </tr>
+      <tr>
+        <td colspan="2">&nbsp;</td>
+        <td width="33%">&nbsp;</td>
+      </tr>
+      <tr>
+        <td colspan="2">&nbsp;</td>
+        <td width="33%">&nbsp;</td>
+      </tr>
+      <tr>
+        <td colspan="2">&nbsp;</td>
+        <td width="33%">&nbsp;</td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td id="footer_td"><div id="footer">&copy; by Albion 2 Development</div></td>
+  </tr>
+</table>
+</body>
+</html>
