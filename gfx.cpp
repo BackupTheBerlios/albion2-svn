@@ -15,7 +15,6 @@
  */
 
 #include "gfx.h"
-#include "engine.h"
 #include "msg.h"
 #include "core.h"
 

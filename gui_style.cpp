@@ -17,8 +17,6 @@
 #include "gui_style.h"
 #include "gfx.h"
 #include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
@@ -33,14 +31,43 @@ gui_style::~gui_style() {
 /*! initializes the gui style class and sets an engine handler
  *  @param iengine the engine we want to handle
  */
-void gui_style::init(engine* iengine) {
-	gui_style::engine_handler = iengine;
+void gui_style::init(SDL_Surface* screen) {
+	gui_style::screen = screen;
+}
 
-	gui_style::STYLE_BARBG = g.get_color(engine_handler->get_screen(), 0xBFBFBF);
-	gui_style::STYLE_BG = g.get_color(engine_handler->get_screen(), 0x7F7F7F);
-	gui_style::STYLE_BG2 = g.get_color(engine_handler->get_screen(), 0xC4C4C4);
-	gui_style::STYLE_LIGHT = g.get_color(engine_handler->get_screen(), 0xBFBFBF);
-	gui_style::STYLE_DARK = g.get_color(engine_handler->get_screen(), 0x000000);
-	gui_style::STYLE_DARK2 = g.get_color(engine_handler->get_screen(), 0x7F7F7F);
-	gui_style::STYLE_INDARK = g.get_color(engine_handler->get_screen(), 0x555555);
+/*! sets the style color scheme
+ *  @param scheme the scheme we want to set
+ */
+void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
+	switch(scheme) {
+		case gui_style::WINDOWS:
+			gui_style::STYLE_WINDOW_BG = g.get_color(gui_style::screen, 0x7F7F7F);
+			gui_style::STYLE_BARBG = g.get_color(gui_style::screen, 0xBFBFBF);
+			gui_style::STYLE_BG = g.get_color(gui_style::screen, 0x7F7F7F);
+			gui_style::STYLE_BG2 = g.get_color(gui_style::screen, 0xC4C4C4);
+			gui_style::STYLE_LIGHT = g.get_color(gui_style::screen, 0xBFBFBF);
+			gui_style::STYLE_DARK = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_DARK2 = g.get_color(gui_style::screen, 0x7F7F7F);
+			gui_style::STYLE_INDARK = g.get_color(gui_style::screen, 0x555555);
+			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0x000000);
+			break;
+		case gui_style::BLUE:
+			gui_style::STYLE_WINDOW_BG = g.get_color(gui_style::screen, 0x0005C0);
+			gui_style::STYLE_BARBG = g.get_color(gui_style::screen, 0xA8CDFF);
+			gui_style::STYLE_BG = g.get_color(gui_style::screen, 0x2E1FC0);
+			gui_style::STYLE_BG2 = g.get_color(gui_style::screen, 0xD2E5FF);
+			gui_style::STYLE_LIGHT = g.get_color(gui_style::screen, 0x8E67FF);
+			gui_style::STYLE_DARK = g.get_color(gui_style::screen, 0x1F058B);
+			gui_style::STYLE_DARK2 = g.get_color(gui_style::screen, 0x12009C);
+			gui_style::STYLE_INDARK = g.get_color(gui_style::screen, 0x2809A8);
+			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0x2F66F1);
+			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
+			break;
+		default:
+			gui_style::set_color_scheme(gui_style::WINDOWS);
+			break;
+	}
 }

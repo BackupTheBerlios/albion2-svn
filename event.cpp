@@ -465,3 +465,8 @@ void event::get_input_text(char* tmp_text) {
 void event::set_keyboard_layout(IKEY_LAYOUT layout) {
 	event::keyboard_layout = layout;
 }
+
+void event::set_last_pressed(unsigned int x, unsigned int y) {
+	event::lm_last_pressed_x = x;
+	event::lm_last_pressed_y = y;
+}

@@ -22,6 +22,7 @@
 #include "msg.h"
 #include "core.h"
 #include "net.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -45,12 +46,20 @@ public:
 	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
 	void set_width(unsigned int new_width);
 	void set_height(unsigned int new_height);
-	void draw();
+	void start_draw();
+	void stop_draw();
 	SDL_Surface* get_screen();
+
+	void set_caption(char* caption);
+	char* get_caption();
+
+	gui_style get_gstyle();
+	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
 protected:
 	unsigned int width, height, depth, flags;
 	SDL_Surface *screen;
 	msg m;
+	gui_style gstyle;
 };
 
 #endif

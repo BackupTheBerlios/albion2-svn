@@ -24,7 +24,6 @@
 #include "gfx.h"
 #include "event.h"
 #include "engine.h"
-#include "gui_style.h"
 #include "gui_button.h"
 using namespace std;
 
@@ -79,7 +78,6 @@ protected:
 	msg m;
 	core c;
 	gfx g;
-	gui_style gstyle;
 
 	engine* engine_handler;
 

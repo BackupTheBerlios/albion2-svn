@@ -15,7 +15,6 @@
  */
 
 #include "gui_input.h"
-#include "gui_style.h"
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -41,12 +40,13 @@ gui_input::~gui_input() {
 void gui_input::draw_input() {
 	// draw bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
-		gui_input::rectangle, gstyle.STYLE_BG2);
+		gui_input::rectangle, engine_handler->get_gstyle().STYLE_BG2);
 
 	// draw 2 colored border
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
 		gui_input::rectangle,
-		gstyle.STYLE_INDARK, gstyle.STYLE_LIGHT);
+		engine_handler->get_gstyle().STYLE_INDARK,
+		engine_handler->get_gstyle().STYLE_LIGHT);
 
 	// draw 2 colored border
 	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
@@ -55,7 +55,8 @@ void gui_input::draw_input() {
 		gui_input::rectangle->x2-1,
 		gui_input::rectangle->y2-1);
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, gstyle.STYLE_DARK, gstyle.STYLE_DARK2);
+		r1, engine_handler->get_gstyle().STYLE_DARK,
+		engine_handler->get_gstyle().STYLE_DARK2);
 	free(r1);
 
 	// get the input box text width
@@ -219,7 +220,6 @@ void gui_input::draw_input() {
  */
 void gui_input::set_engine_handler(engine* iengine) {
 	gui_input::engine_handler = iengine;
-	gstyle.init(gui_input::engine_handler);
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class

@@ -15,7 +15,6 @@
  */
 
 #include "gui_button.h"
-#include "gui_style.h"
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -39,12 +38,13 @@ void gui_button::draw_button(bool is_pressed) {
 		// draw bg
 		g.draw_filled_rectangle(engine_handler->get_screen(),
 			gui_button::rectangle,
-			gstyle.STYLE_BG);
+			engine_handler->get_gstyle().STYLE_BG);
 
 		// draw 2 colored border
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
 			gui_button::rectangle,
-			gstyle.STYLE_LIGHT, gstyle.STYLE_DARK);
+			engine_handler->get_gstyle().STYLE_LIGHT,
+			engine_handler->get_gstyle().STYLE_DARK);
 
 		gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 		gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
@@ -52,13 +52,15 @@ void gui_button::draw_button(bool is_pressed) {
 		g.cord_to_pnt(p2, gui_button::rectangle->x2, gui_button::rectangle->y2);
 
 		// draw first line inside of the button
-		g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_INDARK);
+		g.draw_line(engine_handler->get_screen(), p1, p2,
+			engine_handler->get_gstyle().STYLE_INDARK);
 
 		g.cord_to_pnt(p1, gui_button::rectangle->x1+1, gui_button::rectangle->y2);
 		g.cord_to_pnt(p2, gui_button::rectangle->x2-1, gui_button::rectangle->y2);
 
 		// draw second line inside of the button
-		g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_INDARK);
+		g.draw_line(engine_handler->get_screen(), p1, p2,
+			engine_handler->get_gstyle().STYLE_INDARK);
 
 		if(icon == 0) {
 			// draw text
@@ -88,26 +90,30 @@ void gui_button::draw_button(bool is_pressed) {
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// second line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
 						gui_button::rectangle->y1 + heigth_button/2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
 						gui_button::rectangle->y1 + heigth_button/2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// third line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
 						gui_button::rectangle->y1 + heigth_button/2 - 1);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 1,
 						gui_button::rectangle->y1 + heigth_button/2 - 1);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// fourth "line" (point)
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
 						gui_button::rectangle->y1 + heigth_button/2 - 2);
-					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					g.draw_point(engine_handler->get_screen(), p1,
+						engine_handler->get_gstyle().STYLE_ARROW);
 					break;
 				case 2:
 					// first line
@@ -115,26 +121,30 @@ void gui_button::draw_button(bool is_pressed) {
 						gui_button::rectangle->y1 + heigth_button/2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
 						gui_button::rectangle->y1 + heigth_button/2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// second line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 2,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// third line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 1,
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// fourth "line" (point)
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
 						gui_button::rectangle->y1 + heigth_button/2 + 3);
-					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					g.draw_point(engine_handler->get_screen(), p1,
+						engine_handler->get_gstyle().STYLE_ARROW);
 					break;
 				default:
 					break;
@@ -148,12 +158,13 @@ void gui_button::draw_button(bool is_pressed) {
 
 		// draw bg
 		g.draw_filled_rectangle(engine_handler->get_screen(),
-			gui_button::rectangle, gstyle.STYLE_BG);
+			gui_button::rectangle, engine_handler->get_gstyle().STYLE_BG);
 
 		// draw 2 colored border
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
 			gui_button::rectangle,
-			gstyle.STYLE_DARK, gstyle.STYLE_LIGHT);
+			engine_handler->get_gstyle().STYLE_DARK,
+			engine_handler->get_gstyle().STYLE_LIGHT);
 
 
 		gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
@@ -164,7 +175,8 @@ void gui_button::draw_button(bool is_pressed) {
 
 		// draw 2 colored border
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
-			r1, gstyle.STYLE_INDARK, gstyle.STYLE_BG);
+			r1, engine_handler->get_gstyle().STYLE_INDARK,
+			engine_handler->get_gstyle().STYLE_BG);
 
 		free(r1);
 
@@ -200,26 +212,30 @@ void gui_button::draw_button(bool is_pressed) {
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 4,
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// second line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// third line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
 						gui_button::rectangle->y1 + heigth_button/2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
 						gui_button::rectangle->y1 + heigth_button/2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// fourth "line" (point)
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 + 1,
 						gui_button::rectangle->y1 + heigth_button/2 - 1);
-					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					g.draw_point(engine_handler->get_screen(), p1,
+						engine_handler->get_gstyle().STYLE_ARROW);
 					break;
 				case 2:
 					// first line
@@ -227,26 +243,30 @@ void gui_button::draw_button(bool is_pressed) {
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 4,
 						gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// second line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 - 1,
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 3,
 						gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// third line
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2,
 						gui_button::rectangle->y1 + heigth_button/2 + 3);
 					g.cord_to_pnt(p2, gui_button::rectangle->x1 + width_button/2 + 2,
 						gui_button::rectangle->y1 + heigth_button/2 + 3);
-					g.draw_line(engine_handler->get_screen(), p1, p2, gstyle.STYLE_DARK);
+					g.draw_line(engine_handler->get_screen(), p1, p2,
+						engine_handler->get_gstyle().STYLE_ARROW);
 
 					// fourth "line" (point)
 					g.cord_to_pnt(p1, gui_button::rectangle->x1 + width_button/2 + 1,
 						gui_button::rectangle->y1 + heigth_button/2 + 4);
-					g.draw_point(engine_handler->get_screen(), p1, gstyle.STYLE_DARK);
+					g.draw_point(engine_handler->get_screen(), p1,
+						engine_handler->get_gstyle().STYLE_ARROW);
 					break;
 				default:
 					break;
@@ -263,7 +283,6 @@ void gui_button::draw_button(bool is_pressed) {
  */
 void gui_button::set_engine_handler(engine* iengine) {
 	gui_button::engine_handler = iengine;
-	gstyle.init(engine_handler);
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class

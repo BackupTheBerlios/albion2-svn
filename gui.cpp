@@ -197,7 +197,8 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, u
 	// our button stuff will be overwritten
 	celements++;
 
-	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, g.cord_to_pnt(0,0), id+0xFFFF));
+	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text,
+		engine_handler->get_gstyle().STYLE_FONT2, g.cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
@@ -279,12 +280,14 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text)
 	// our input box stuff will be overwritten
 	celements++;
 
-	gui::gui_input_boxes[cinput_boxes]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, g.cord_to_pnt(0,0), id+0xFFFF));
+	gui::gui_input_boxes[cinput_boxes]->set_text_handler(add_text("vera.ttf", 12, text,
+		engine_handler->get_gstyle().STYLE_FONT, g.cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
-	gui::gui_input_boxes[cinput_boxes]->set_blink_text_handler(add_text("vera.ttf", 12, " ", 0x000000, g.cord_to_pnt(0,0), id+0xFFFFFF));
+	gui::gui_input_boxes[cinput_boxes]->set_blink_text_handler(add_text("vera.ttf", 12, " ",
+		engine_handler->get_gstyle().STYLE_FONT, g.cord_to_pnt(0,0), id+0xFFFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
@@ -366,6 +369,15 @@ gui::gui_element* gui::get_active_element() {
 void gui::set_active_element(gui_element* active_element) {
 	gui::active_element = active_element;
 	event_handler->set_active_element((event::gui_element*)active_element);
+}
+
+void gui::set_active_element(unsigned int id) {
+	for(unsigned int i = 0; i < celements; i++) {
+		if(gui::gui_elements[i].id == id) {
+			gui::set_active_element(&gui::gui_elements[i]);
+			return;
+		}
+	}
 }
 
 void gui::switch_input_text(char* input_text, gui_input* input_box) {

@@ -92,6 +92,8 @@ public:
 	unsigned int get_lm_pressed_y();
 	unsigned int get_lm_last_pressed_x();
 	unsigned int get_lm_last_pressed_y();
+	//! is needed to fake a click ;)
+	void set_last_pressed(unsigned int x, unsigned int y);
 
 	//! the keyboard input layout
 	enum IKEY_LAYOUT {

@@ -33,6 +33,7 @@
 #include <gui_vbar.h>
 #include <gui_style.h>
 #include <event.h>
+#include <file_io.h>
 using namespace std;
 
 unsigned int max_clients;
@@ -40,12 +41,15 @@ unsigned int max_clients;
 struct client {
 	bool is_active;
 	char name[32+1];
+	unsigned int id;
 };
 
 client* clients;
 
-char* client_name;
+char client_name[64];
 unsigned int client_num;
+char server[64];
+unsigned int port;
 
 msg m;
 net n;
@@ -54,6 +58,7 @@ engine e;
 gfx agfx;
 gui agui;
 event aevent;
+file_io fio;
 
 SDL_Surface* sf;
 
@@ -61,6 +66,7 @@ void get_msg();
 void send_msg(char* message, unsigned int length);
 void add_msg(char* msg, ...);
 void add_user(char* name);
+void load_settings();
 
 bool client_active = false;
 bool done = false;
@@ -87,5 +93,9 @@ gui_button* send_button;
 gui_list* msg_list;
 gui_list* client_list;
 gui_input* msg_box;
+
+unsigned int plen;
+
+gui_style::COLOR_SCHEME scheme;
 
 #endif

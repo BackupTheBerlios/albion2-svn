@@ -22,7 +22,6 @@
 #include "msg.h"
 #include "core.h"
 #include "net.h"
-#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -74,7 +73,6 @@ public:
 protected:
 	msg m;
 	core c;
-	engine e;
 
 	SDL_Surface* screen;
 };

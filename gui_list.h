@@ -26,7 +26,6 @@
 #include "event.h"
 #include "engine.h"
 #include "gui_text.h"
-#include "gui_style.h"
 #include "gui_button.h"
 #include "gui_list_item.h"
 #include "gui_vbar.h"
@@ -76,7 +75,6 @@ protected:
 	msg m;
 	core c;
 	gfx g;
-	gui_style gstyle;
 
 	engine* engine_handler;
 

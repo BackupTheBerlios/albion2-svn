@@ -15,7 +15,6 @@
  */
 
 #include "gui_vbar.h"
-#include "gui_style.h"
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -49,7 +48,7 @@ void gui_vbar::draw_vbar() {
 
 	// draw bar bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
-		gui_vbar::rectangle, gstyle.STYLE_BARBG);
+		gui_vbar::rectangle, engine_handler->get_gstyle().STYLE_BARBG);
 
 	// draw up button
 	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
@@ -81,18 +80,20 @@ void gui_vbar::draw_vbar() {
 			gui_vbar::rectangle->y1 + 14 + heigth_position, gui_vbar::rectangle->x2,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth);
 		g.draw_filled_rectangle(engine_handler->get_screen(),
-			r1, gstyle.STYLE_BG);
+			r1, engine_handler->get_gstyle().STYLE_BG);
 
 		// draw 2 colored border
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
-			r1, gstyle.STYLE_LIGHT, gstyle.STYLE_DARK);
+			r1, engine_handler->get_gstyle().STYLE_LIGHT,
+			engine_handler->get_gstyle().STYLE_DARK);
 
 		// draw 2 colored border
 		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + 1, gui_vbar::rectangle->x2 - 1,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1);
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
-			r1, gstyle.STYLE_BG, gstyle.STYLE_INDARK);
+			r1, engine_handler->get_gstyle().STYLE_BG,
+			engine_handler->get_gstyle().STYLE_INDARK);
 
 		free(r1);
 
@@ -113,7 +114,6 @@ void gui_vbar::draw_vbar() {
  */
 void gui_vbar::set_engine_handler(engine* iengine) {
 	gui_vbar::engine_handler = iengine;
-	gstyle.init(gui_vbar::engine_handler);
 }
 
 //! returns the vertical bars id

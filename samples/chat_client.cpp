@@ -40,24 +40,25 @@ int HandleServerData(char *data)
 			clients = (client*)malloc(sizeof(client)*max_clients);
 			for(unsigned int i = 0; i < max_clients; i++) {
 				clients[i].is_active = false;
+				clients[i].id = 0;
 				sprintf(clients[i].name, "unknown");
 			}
 		}
-	    used = 1;
+	    used = 2;
 		break;
 		case net::DAT: {
 			// get data package length
-			unsigned int plen = (unsigned int)(data[1]*0xFF0000 + data[2]*0xFF00 + data[3]*0xFF + data[4]);
+			plen = (unsigned int)(data[1]*0xFF0000 + data[2]*0xFF00 + data[3]*0xFF + data[4]);
 			char* message = (char*)malloc(plen);
 			unsigned int j;
 			for(j = 0; j < plen; j++) {
 				message[j] = data[j+6];
 			}
 			message[j] = 0;
-			add_msg("%s(%d): %s", clients[data[5]].name, data[5], message);
-
-			used = 6+plen;
+			add_msg("%s: %s", clients[data[5]].name, message);
+			msg_list->set_position(lid-1);
 		}
+		used = 6+plen;
 		break;
 		case net::ADD: {
 			unsigned int cur_client;
@@ -91,6 +92,7 @@ int HandleServerData(char *data)
 			client_active = true;
 
 			// add user to client list
+			clients[cur_client].id = uid;
 			add_user(clients[cur_client].name);
 		}
 		used = 9+data[8];
@@ -108,11 +110,16 @@ int HandleServerData(char *data)
 
 			// print out what happened
 			add_msg("Chat: lost client %d: %s", cur_client, clients[cur_client].name);
+			client_list->delete_item(clients[cur_client].id);
+
+			// delete client item
+			client_list->delete_item(clients[cur_client].id);
 		}
 		used = 2;
 		break;
 		case net::KICK: {
-			add_msg("Chat: sorry, but the chat server is full!");
+			// there are some errors with that, but i absolutely dunno y ...
+			//add_msg("Chat: sorry, but the chat server is full!");
 		}
 		used = 1;
 		break;
@@ -151,10 +158,39 @@ void HandleServer(void)
 
 void get_msg()
 {
-	send_msg(msg_box->get_text(), (unsigned int)strlen(msg_box->get_text()));
-	add_msg("%s: %s", client_name, msg_box->get_text());
-	msg_box->set_notext();
-	msg_box->set_text_position(0);
+	// checks if msg box isn't empty
+	if(strlen(msg_box->get_text()) != 0) {
+		send_msg(msg_box->get_text(), (unsigned int)strlen(msg_box->get_text()));
+		// add msg to list
+		// we have a max amount of chars per line, that is 55 chars
+		char* text = msg_box->get_text();
+		unsigned int text_len = (unsigned int)strlen(text);
+		if(text_len > 55) {
+			for(unsigned int i = 0; i <= (unsigned int)text_len/55; i++) {
+				char tmp[56];
+				for(unsigned int j = 0; j < 55; j++) {
+					tmp[j] = text[j+i*55];
+				}
+				tmp[55] = 0;
+				if(i == 0) {
+					add_msg("%s: %s", client_name, tmp);
+				}
+				else {
+					add_msg("%s", tmp);
+				}
+			}
+		}
+		else {
+			add_msg("%s: %s", client_name, text);
+		}
+
+		msg_list->set_position(lid-1);
+
+		msg_box->set_notext();
+		msg_box->set_text_position(0);
+		// now we fake a click on the input box to activate it again ;)
+		aevent.set_last_pressed(10, 560);
+	}
 }
 
 void send_msg(char* message, unsigned int length) {
@@ -194,6 +230,56 @@ void add_user(char* name) {
 	uid++;
 }
 
+void load_settings() {
+	fio.open_file("settings.dat");
+	char fline[256];
+	bool end = false;
+
+	while(!end) {
+        fio.get_line(fline);
+
+		// file end reached?
+		if(strcmp(fline, "[EOF]") == 0) {
+			end = true;
+		}
+		else {
+			// otherwise we load data
+			unsigned int x = 0;
+			char* fline_tok[8];
+			fline_tok[x] = strtok(fline, "=");
+			while(fline_tok[x] != NULL) {
+				x++;
+				fline_tok[x] = strtok(NULL, "=");
+			}
+
+			if(fline_tok[0]) {
+				// get user name
+				if(strcmp(fline_tok[0], "name") == 0) {
+					strcpy(client_name, fline_tok[1]);
+				}
+				// get server name/ip
+				else if(strcmp(fline_tok[0], "server") == 0) {
+					strcpy(server, fline_tok[1]);
+				}
+				// get server port
+				else if(strcmp(fline_tok[0], "port") == 0) {
+					port = atoi(fline_tok[1]);
+				}
+				// get color scheme
+				else if(strcmp(fline_tok[0], "scheme") == 0) {
+					if(strcmp(fline_tok[1], "windows") == 0) {
+						scheme = gui_style::WINDOWS;
+					}
+					else if(strcmp(fline_tok[1], "blue") == 0) {
+						scheme = gui_style::BLUE;
+					}
+				}
+			}
+		}
+	}
+	fio.close_file();
+}
+
 int main(int argc, char *argv[])
 {
 	// init a2e
@@ -201,9 +287,12 @@ int main(int argc, char *argv[])
 	aevent.init(ievent);
 	sf = e.get_screen();
 	agui.init(e, aevent);
+	e.set_caption("A2E Sample - Chat Client");
+	load_settings();
+	e.set_color_scheme(scheme);
 
 	// init gui
-	info_text = agui.add_text("vera.ttf", 14, "A2E Chat Sample - 0.01", 0x000000, agfx.cord_to_pnt(10, 10), 100);
+	info_text = agui.add_text("vera.ttf", 14, "A2E Chat Sample - 0.01", e.get_gstyle().STYLE_FONT2, agfx.cord_to_pnt(10, 10), 100);
 	send_button = agui.add_button(agfx.pnt_to_rect(620, 560, 790, 590), 101, "Send");
 	msg_list = agui.add_list_box(agfx.pnt_to_rect(10, 45, 610, 550), 102, "msg list box");
 	client_list = agui.add_list_box(agfx.pnt_to_rect(620, 45, 790, 550), 103, "clients list box");
@@ -212,30 +301,17 @@ int main(int argc, char *argv[])
 	msg_box->set_text_position(0);
 	aevent.set_keyboard_layout(event::DE);
 
-
-	char* server;
-	if(argc > 2) {
-		server = argv[2];
-	}
-	else {
-		server = "localhost"; // if you host a a2e chat server and want to run a client, you have to set the ip to localhost
-	}
-
-	if(argc > 3) {
-		client_name = argv[3];
-	}
-	else {
-		client_name = "unknown";
-	}
-
 	// create client
 	if(n.init()) {
 		// we just want a client program
-		if(n.create_client(server, net::TCP, 1337, client_name)) {
+		if(n.create_client(server, net::TCP, port, client_name)) {
 			add_msg("Chat: Welcome to the A2E Chat Client Sample! ;)");
 			is_networking = true;
 		}
 	}
+
+	// now we fake a click on the input box to activate it ;)
+	aevent.set_last_pressed(10, 560);
 
 	// endless loop
 	while(!done)
@@ -251,6 +327,9 @@ int main(int argc, char *argv[])
 					switch(aevent.get_event().key.keysym.sym) {
 						case SDLK_ESCAPE:
 							done = true;
+							break;
+						case SDLK_RETURN:
+							get_msg();
 							break;
 					}
 					break;
@@ -291,8 +370,9 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/60 milliseconds (~ 60 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/60) {
-			e.draw();
+			e.start_draw();
 			agui.draw();
+			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}
 	}

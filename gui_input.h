@@ -26,7 +26,6 @@
 #include "event.h"
 #include "engine.h"
 #include "gui_text.h"
-#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -74,7 +73,6 @@ protected:
 	msg m;
 	core c;
 	gfx g;
-	gui_style gstyle;
 
 	engine* engine_handler;
 	gui_text* text_handler;

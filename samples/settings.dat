@@ -1,0 +1,9 @@
+[userdata]
+name=User
+scheme=blue
+
+[serverdata]
+server=flo88.dyndns.org
+port=1337
+
+[EOF]

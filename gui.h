@@ -75,6 +75,7 @@ public:
 
 	gui_element* get_active_element();
 	void set_active_element(gui_element* active_element);
+	void set_active_element(unsigned int id);
 
 protected:
 	msg m;

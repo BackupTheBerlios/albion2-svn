@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	bool is_networking = false;
 
 	if(n.init()) {
-		if(n.create_server(net::TCP, 1337, 16)) {
+		if(n.create_server(net::TCP, 1337, 32)) {
 			is_networking = true;
 		}
 	}

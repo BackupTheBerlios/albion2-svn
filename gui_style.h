@@ -21,10 +21,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "msg.h"
-#include "core.h"
 #include "gfx.h"
-#include "event.h"
-#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -45,8 +42,17 @@ public:
 	gui_style();
 	~gui_style();
 
-	void init(engine* iengine);
+	//! the style color scheme
+	enum COLOR_SCHEME {
+		WINDOWS,	//!< @enum windows like colors
+		BLUE		//!< @enum blue colors
+	};
 
+	void init(SDL_Surface* screen);
+	void set_color_scheme(COLOR_SCHEME scheme);
+
+	//! gui style color - window bg color (used for i.g. start_draw() in the engine class)
+	unsigned int STYLE_WINDOW_BG;
 	//! gui style color - bar bg color (used for i.g. vertical bar)
 	unsigned int STYLE_BARBG;
 	//! gui style color - bg color (used for i.g. buttons)
@@ -61,11 +67,17 @@ public:
 	unsigned int STYLE_DARK2;
 	//! gui style color - inside dark color
 	unsigned int STYLE_INDARK;
+	//! gui style color - arrow color
+	unsigned int STYLE_ARROW;
+	//! gui style color - normal font color
+	unsigned int STYLE_FONT;
+	//! gui style color - normal font color 2
+	unsigned int STYLE_FONT2;
 
 protected:
     gfx g;
 
-	engine* engine_handler;
+	SDL_Surface* screen;
 };
 
 #endif

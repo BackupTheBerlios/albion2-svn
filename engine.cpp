@@ -18,6 +18,7 @@
 #include "msg.h"
 #include "core.h"
 #include "net.h"
+#include "gui_style.h"
 
 #ifdef WIN32
 BOOL APIENTRY DllMain( HANDLE hModule, 
@@ -72,7 +73,10 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
-	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
+	//SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
+
+	gstyle.init(screen);
+	gstyle.set_color_scheme(gui_style::WINDOWS);
 }
 
 /*! sets the window width
@@ -99,9 +103,17 @@ void engine::set_height(unsigned int new_height) {
 	}
 }
 
-/*! draws the windows
+/*! starts drawing the window
  */
-void engine::draw() {
+void engine::start_draw() {
+	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
+	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, ((bgcolor&0xFF0000) >> 16),
+		((bgcolor&0xFF00) >> 8), bgcolor&0xFF));
+}
+
+/*! stops drawing the window
+ */
+void engine::stop_draw() {
 	SDL_Flip(screen);
 }
 
@@ -109,4 +121,32 @@ void engine::draw() {
  */
 SDL_Surface* engine::get_screen() {
 	return screen;
+}
+
+/*! sets the window caption
+ *  @param caption the window caption
+ */
+void engine::set_caption(char* caption) {
+	SDL_WM_SetCaption(caption, NULL);
+}
+
+/*! returns the window caption
+ */
+char* engine::get_caption() {
+	char* caption;
+	SDL_WM_GetCaption(&caption, NULL);
+	return caption;
+}
+
+/*! returns the gstyle
+ */
+gui_style engine::get_gstyle() {
+	return gstyle;
+}
+
+/*! sets the window color scheme
+ *  @param scheme the window color scheme we want to set
+ */
+void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
+	gstyle.set_color_scheme(scheme);
 }

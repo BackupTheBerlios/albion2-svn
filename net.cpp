@@ -22,7 +22,7 @@ using namespace std;
 /*! there is no function currently
  */
 net::net():
-	max_clients(2)
+	max_clients(32)
 {
 }
 
@@ -54,7 +54,7 @@ void net::exit() {
  *  @param num_clients the maximal amount of people who can connect to the server
  */
 bool net::create_server(unsigned int type, unsigned short int port, const unsigned int num_clients) {
-	max_clients = num_clients;
+	net::max_clients = num_clients;
 
 	if(SDLNet_ResolveHost(&local_ip,NULL,port)==-1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (local server): %s", SDLNet_GetError());
@@ -62,15 +62,15 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 	}
 
 	// client stuff
-	clients = (client*)malloc(sizeof(client)*max_clients);
-	for(unsigned int i = 0; i < max_clients; i++) {
+	clients = (client*)malloc(sizeof(client)*net::max_clients);
+	for(unsigned int i = 0; i < net::max_clients; i++) {
 		clients[i].is_active = false;
 		clients[i].sock = NULL;
 		sprintf(clients[i].name, "unknown");
 	}
 
 	// initialize socketset
-	socketset = SDLNet_AllocSocketSet(max_clients);
+	socketset = SDLNet_AllocSocketSet(net::max_clients);
 	if(socketset == NULL) {
 		m.print(msg::MERROR, "net.cpp", "Couldn't create socket set: %s", SDLNet_GetError());
 		return false;
@@ -115,8 +115,8 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 	}
 
 	// client stuff
-	clients = (client*)malloc(sizeof(client)*max_clients);
-	for(unsigned int i = 0; i < max_clients; i++) {
+	clients = (client*)malloc(sizeof(client)*net::max_clients);
+	for(unsigned int i = 0; i < net::max_clients; i++) {
 		clients[i].is_active = false;
 		sprintf(clients[i].name, "unknown");
 		// aren't needed if it is a client
@@ -180,15 +180,15 @@ void net::handle_server() {
 	}
 
 	// checks if there are any unconnected clients
-	for(cur_client = 0; cur_client < max_clients; ++cur_client) {
-		if(!clients[cur_client].sock) {
+	for(cur_client = 0; cur_client < net::max_clients; ++cur_client) {
+		if(clients[cur_client].sock == NULL) {
 			break;
 		}
 	}
 
-	if(cur_client == max_clients) {
+	if(cur_client == net::max_clients) {
 		// checks if there is any inactive client
-		for(cur_client = 0; cur_client < max_clients; ++cur_client) {
+		for(cur_client = 0; cur_client < net::max_clients; ++cur_client) {
 			if(clients[cur_client].sock && !clients[cur_client].is_active) {
 				// kick this client
 				data = net::KICK;
@@ -201,7 +201,7 @@ void net::handle_server() {
 		}
 	}
 
-	if(cur_client == max_clients) {
+	if(cur_client == net::max_clients) {
 		// the server doesn't permit any further connections
 		data = net::KICK;
 		SDLNet_TCP_Send(tmpsock, &data, 1);
@@ -235,7 +235,7 @@ void net::handle_client(unsigned int cur_client) {
 			clients[cur_client].is_active = false;
 			data[0] = net::DEL;
 			data[1] = cur_client;
-			for(unsigned int i = 0; i < max_clients; ++i) {
+			for(unsigned int i = 0; i < net::max_clients; ++i) {
 				if(clients[i].is_active) {
 					SDLNet_TCP_Send(clients[i].sock, data, 2);
 				}
@@ -261,7 +261,7 @@ void net::handle_client(unsigned int cur_client) {
 				m.print(msg::MDEBUG, "net.cpp", "activating socket (%d: %s)",
 					cur_client, clients[cur_client].name);
 				// send data to all clients
-				for(unsigned int i = 0; i < max_clients; i++) {
+				for(unsigned int i = 0; i < net::max_clients; i++) {
 					if(clients[i].is_active) {
 						send_new_client(cur_client, i);
 					}
@@ -269,7 +269,7 @@ void net::handle_client(unsigned int cur_client) {
 
 				// send data of all clients to current client
 				clients[cur_client].is_active = true;
-				for(unsigned int i = 0; i < max_clients; i++) {
+				for(unsigned int i = 0; i < net::max_clients; i++) {
 					if(clients[i].is_active) {
 						send_new_client(i, cur_client);
 					}
@@ -302,7 +302,7 @@ void net::handle_client(unsigned int cur_client) {
 				free(print_data);
 
 				// send package to all clients except the one who send the data
-				for(unsigned int i = 0; i < max_clients; i++) {
+				for(unsigned int i = 0; i < net::max_clients; i++) {
 					if(clients[i].is_active && i != cur_client) {
 						SDLNet_TCP_Send(clients[i].sock, ndata, len+1 + 6);
 					}
@@ -325,12 +325,13 @@ void net::handle_client(unsigned int cur_client) {
 void net::send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	char data[512];
 
-	int n = (int)strlen((char*)clients[snd_client].name)+1;
+	unsigned int n = (int)strlen((char*)clients[snd_client].name)+1;
 	data[0] = net::ADD;
 	data[1] = snd_client;
 	memcpy(&data[2], &clients[snd_client].ip.host, 4);
 	memcpy(&data[6], &clients[snd_client].ip.port, 2);
 	data[8] = n;
+	data[9+n] = 0;
 	memcpy(&data[9], clients[snd_client].name, n);
 	SDLNet_TCP_Send(clients[rcv_client].sock, data, 9+n);
 }
@@ -338,7 +339,7 @@ void net::send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 /*! checks if there is a event from the clients
  */
 void net::check_events() {
-	for(unsigned int i = 0; i < max_clients; ++i) {
+	for(unsigned int i = 0; i < net::max_clients; ++i) {
 		if(SDLNet_SocketReady(clients[i].sock)) {
 			handle_client(i);
 		}
@@ -354,7 +355,7 @@ void net::send_activation(char* client_name) {
 	int len;
 
 	// set all clients to inactive at first
-	for(unsigned int i = 0; i < max_clients; ++i) { // constant value of 32 clients ... has to be changed
+	for(unsigned int i = 0; i < net::max_clients; ++i) { // constant value of 32 clients ... has to be changed
 		clients[i].is_active = false;
 	}
 	if(!net::tcp_ssock == 0) {

@@ -15,7 +15,6 @@
  */
 
 #include "gui_list.h"
-#include "gui_style.h"
 #include "gui_list_item.h"
 #include "gui_vbar.h"
 #include "gfx.h"
@@ -43,12 +42,13 @@ gui_list::~gui_list() {
 void gui_list::draw_list() {
 	// draw bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
-		gui_list::rectangle, gstyle.STYLE_BG2);
+		gui_list::rectangle, engine_handler->get_gstyle().STYLE_BG2);
 
 	// draw 2 colored border
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
 		gui_list::rectangle,
-		gstyle.STYLE_INDARK, gstyle.STYLE_LIGHT);
+		engine_handler->get_gstyle().STYLE_INDARK,
+		engine_handler->get_gstyle().STYLE_LIGHT);
 
 	// draw 2 colored border
 	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
@@ -57,7 +57,8 @@ void gui_list::draw_list() {
 		gui_list::rectangle->x2-1,
 		gui_list::rectangle->y2-1);
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, gstyle.STYLE_DARK, gstyle.STYLE_DARK2);
+		r1, engine_handler->get_gstyle().STYLE_DARK,
+		engine_handler->get_gstyle().STYLE_DARK2);
 	free(r1);
 
 	// draw items
@@ -120,7 +121,6 @@ void gui_list::draw_list() {
  */
 void gui_list::set_engine_handler(engine* iengine) {
 	gui_list::engine_handler = iengine;
-	gstyle.init(gui_list::engine_handler);
 }
 
 /*! creates a vbar -> a pointer to the vbar class
@@ -211,9 +211,9 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 
 	TTF_Font* font = gtext->open_font("vera.ttf", 12);
 	SDL_Color col;
-	col.b = 0;
-	col.g = 0;
-	col.r = 0;
+	col.b = engine_handler->get_gstyle().STYLE_FONT & 0xFF;
+	col.g = (engine_handler->get_gstyle().STYLE_FONT & 0xFF00) >> 8;
+	col.r = (engine_handler->get_gstyle().STYLE_FONT & 0xFF0000) >> 16;
 
 	gtext->set_init(false);
 	gtext->set_engine_handler(gui_list::engine_handler);
@@ -250,13 +250,8 @@ void gui_list::delete_item(unsigned int id) {
 
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
-			delete items[i];
-			citems--;
+			items[i]->clear();
 		}
-	}
-
-	if(tmp_count == citems) {
-		m.print(m.MERROR, "gui_list.cpp", "can't delete item with such an id!");
 	}
 }
 
