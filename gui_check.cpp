@@ -39,15 +39,17 @@ gui_check::~gui_check() {
 }
 
 /*! draws the check box
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
  */
-void gui_check::draw() {
+void gui_check::draw(unsigned int x, unsigned int y) {
 	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	
-	g.pnt_to_rect(r1, gui_check::rectangle->x1,
-		gui_check::rectangle->y1,
-		gui_check::rectangle->x1 + 14,
-		gui_check::rectangle->y1 + 14);
+	g.pnt_to_rect(r1, gui_check::rectangle->x1 + x,
+		gui_check::rectangle->y1 + y,
+		gui_check::rectangle->x1 + 14 + x,
+		gui_check::rectangle->y1 + 14 + y);
 
 	// draw bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
@@ -59,52 +61,52 @@ void gui_check::draw() {
 		engine_handler->get_gstyle().STYLE_LIGHT);
 
 	// draw 2 colored border
-	g.pnt_to_rect(r1, gui_check::rectangle->x1 + 1,
-		gui_check::rectangle->y1 + 1,
-		gui_check::rectangle->x1 + 13,
-		gui_check::rectangle->y1 + 13);
+	g.pnt_to_rect(r1, gui_check::rectangle->x1 + 1 + x,
+		gui_check::rectangle->y1 + 1 + y,
+		gui_check::rectangle->x1 + 13 + x,
+		gui_check::rectangle->y1 + 13 + y);
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
 		r1, engine_handler->get_gstyle().STYLE_DARK,
 		engine_handler->get_gstyle().STYLE_DARK2);
 
 	if(gui_check::checked) {
-		// draw the "checked X"
+		// draw the check mark
 		gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5, gui_check::rectangle->y1 + 11);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12, gui_check::rectangle->y1 + 3);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6, gui_check::rectangle->y1 + 11);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12, gui_check::rectangle->y1 + 4);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 11 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 4 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6, gui_check::rectangle->y1 + 12);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12, gui_check::rectangle->y1 + 5);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 12 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 5 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
 
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 3, gui_check::rectangle->y1 + 6);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 3, gui_check::rectangle->y1 + 8);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 6 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 8 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 4, gui_check::rectangle->y1 + 7);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 4, gui_check::rectangle->y1 + 9);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 7 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 9 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5, gui_check::rectangle->y1 + 8);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 5, gui_check::rectangle->y1 + 10);
+		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 8 + y);
+		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 10 + y);
 
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
@@ -116,11 +118,17 @@ void gui_check::draw() {
 	// draw the text
 	g.cord_to_pnt(p1, gui_check::rectangle->x1 + 20, gui_check::rectangle->y1 + 2);
 	gui_check::text_handler->set_point(p1);
-	gui_check::text_handler->draw_text();
+	gui_check::text_handler->draw(x, y);
 
 
 	free(r1);
 	free(p1);
+}
+
+/*! draws the check box
+ */
+void gui_check::draw() {
+	gui_check::draw(0, 0);
 }
 
 /*! creates a engine_handler -> a pointer to the engine class

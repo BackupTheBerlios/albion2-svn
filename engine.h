@@ -41,7 +41,7 @@ using namespace std;
  *  @author laxity
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/15
+ *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the main engine

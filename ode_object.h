@@ -45,10 +45,10 @@ public:
 	//! the objects type specifier
 	enum OTYPE
 	{
-		TRIMESH,	//!< @enum trimesh geometry
-		BOX,		//!< @enum box geometry
-		SPHERE,		//!< @enum sphere geometry
-		CYLINDER	//!< @enum cylinder geometry
+		TRIMESH,	//!< enum trimesh geometry
+		BOX,		//!< enum box geometry
+		SPHERE,		//!< enum sphere geometry
+		CYLINDER	//!< enum cylinder geometry
 	};
 
 	ode_object(dWorldID* world, dSpaceID* space, a2emodel* model,

@@ -34,8 +34,8 @@ using namespace std;
 /*! @class gui_list_item
  *  @brief gui list box item element functions
  *  @author flo
- *  @version 0.2
- *  @date 2004/12/13
+ *  @version 0.2.1
+ *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_list_item class
@@ -47,7 +47,7 @@ public:
 	gui_list_item();
 	~gui_list_item();
 	
-	void draw_list_item();
+	void draw(unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 	gui_text* get_text_handler();

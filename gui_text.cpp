@@ -59,22 +59,27 @@ void gui_text::new_text(char* font_name, unsigned int font_size) {
 }
 
 /*! draws the text
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
  */
-void gui_text::draw_text() {
-	gui_text::draw_text(gui_text::text);
+void gui_text::draw(unsigned int x, unsigned int y) {
+	gui_text::draw(gui_text::text, x, y);
 }
 
 /*! draws the text, that is specified by the parameter text
+ *  @param text the text that should be drawn
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
  */
-void gui_text::draw_text(char* text) {
+void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 
 	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
-	glTranslatef((GLfloat)(gui_text::point->x),
-		(GLfloat)(gui_text::engine_handler->get_screen()->h - gui_text::point->y - 10.0f),
+	glTranslatef((GLfloat)(gui_text::point->x + x),
+		(GLfloat)(gui_text::engine_handler->get_screen()->h - gui_text::point->y - 10.0f - y),
 		0.0f);
 	glColor3f((GLfloat)(gui_text::color.r / 255),
 		(GLfloat)(gui_text::color.g / 255),
@@ -180,7 +185,7 @@ void gui_text::set_font_size(unsigned int font_size) {
 }
 
 /*! sets the init state
- *  @param font_size the font size we want to set
+ *  @param state the state of the init bool
  */
 void gui_text::set_init(bool state) {
 	gui_text::is_init = state;
@@ -190,7 +195,7 @@ void gui_text::set_init(bool state) {
  */
 void gui_text::set_notext() {
 	gui_text::is_notext = true;
-	gui_text::text = "";
+	gui_text::text[0] = 0;
 }
 
 /*! returns the pointer to the currently used FTFont element 

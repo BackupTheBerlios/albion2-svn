@@ -44,9 +44,9 @@ public:
 
 	//! the style color scheme
 	enum COLOR_SCHEME {
-		WINDOWS,	//!< @enum windows like colors
-		BLUE,		//!< @enum blue colors
-		BLACKWHITE	//!< @enum black/white colors
+		WINDOWS,	//!< enum windows like colors
+		BLUE,		//!< enum blue colors
+		BLACKWHITE	//!< enum black/white colors
 	};
 
 	void init(SDL_Surface* screen);

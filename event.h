@@ -50,9 +50,9 @@ public:
 
 	//! specifies currently active class
 	enum ACTIVE_CLASS {
-		NONE,		//!< @enum no class
-		GUI,		//!< @enum gui class
-		CAMERA		//!< @enum camera class
+		NONE,		//!< enum no class
+		GUI,		//!< enum gui class
+		CAMERA		//!< enum camera class
 	};
 
 	void set_active(ACTIVE_CLASS active_class);
@@ -70,12 +70,12 @@ public:
 	void get_input_text(char* tmp_text);
 	//! input types
 	enum ITYPE {
-		LEFT = 1,	//!< @enum left arrow key
-		RIGHT,		//!< @enum right arrow key
-		BACK,		//!< @enum backspace key
-		DEL,		//!< @enum delete key
-		HOME,		//!< @enum home key
-		END			//!< @enum end key
+		LEFT = 1,	//!< enum left arrow key
+		RIGHT,		//!< enum right arrow key
+		BACK,		//!< enum backspace key
+		DEL,		//!< enum delete key
+		HOME,		//!< enum home key
+		END			//!< enum end key
 	};
 
 	// gui event stuff
@@ -103,11 +103,12 @@ public:
 	unsigned int get_lm_last_pressed_y();
 	//! is needed to fake a click ;)
 	void set_last_pressed(unsigned int x, unsigned int y);
+	void set_pressed(unsigned int x, unsigned int y);
 
 	//! the keyboard input layout
 	enum IKEY_LAYOUT {
-		US,	//!< @enum us keyboard layout
-		DE	//!< @enum de keyboard layout
+		US,	//!< enum us keyboard layout
+		DE	//!< enum de keyboard layout
 	};
 	void set_keyboard_layout(IKEY_LAYOUT layout);
 

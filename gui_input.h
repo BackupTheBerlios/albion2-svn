@@ -32,8 +32,8 @@ using namespace std;
 /*! @class gui_input
  *  @brief gui input box element functions
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.3.2
+ *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the gui_input class
@@ -45,7 +45,7 @@ public:
 	gui_input();
 	~gui_input();
 	
-	void draw_input();
+	void draw(unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 	void set_blink_text_handler(gui_text* itext);

@@ -20,8 +20,8 @@
 /*!
  * \mainpage
  *
- * \author laxity
  * \author flo
+ * \author laxity
  *
  * \date July 2004 - February 2005
  *

@@ -41,8 +41,11 @@ gui_vbar::~gui_vbar() {
 	m.print(msg::MDEBUG, "gui_vbar.cpp", "gui_vbar stuff freed");
 }
 
-//! draws the vertical bar
-void gui_vbar::draw_vbar() {
+/*! draws the vertical bar
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
+ */
+void gui_vbar::draw(unsigned int x, unsigned int y) {
 	if(gui_vbar::max_lines > gui_vbar::shown_lines) {
 		slider_active = true;
 	}
@@ -50,9 +53,15 @@ void gui_vbar::draw_vbar() {
 		slider_active = false;
 	}
 
+
+	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+
+	g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + x, gui_vbar::rectangle->y1 + y,
+		gui_vbar::rectangle->x2 + x, gui_vbar::rectangle->y2 + y);
+
 	// draw bar bg
-	g.draw_filled_rectangle(engine_handler->get_screen(),
-		gui_vbar::rectangle, engine_handler->get_gstyle().STYLE_BARBG);
+	g.draw_filled_rectangle(engine_handler->get_screen(), r1,
+		engine_handler->get_gstyle().STYLE_BARBG);
 
 	// draw up button
 	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
@@ -70,7 +79,6 @@ void gui_vbar::draw_vbar() {
 	if(slider_active) {
 		// draw slider
 		unsigned int heigth_barbg = gui_vbar::rectangle->y2 - gui_vbar::rectangle->y1 - 28;
-		gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
 		unsigned int overflow = heigth_barbg % max_lines;
 		gui_vbar::px_per_item = (heigth_barbg - overflow) / max_lines;
 		if(gui_vbar::px_per_item < 1) {
@@ -80,9 +88,9 @@ void gui_vbar::draw_vbar() {
 		unsigned int heigth_position = position * px_per_item;
 
 		// draw bg
-		g.pnt_to_rect(r1, gui_vbar::rectangle->x1,
-			gui_vbar::rectangle->y1 + 14 + heigth_position, gui_vbar::rectangle->x2,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth);
+		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + x,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + y, gui_vbar::rectangle->x2 + x,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth + y);
 		g.draw_filled_rectangle(engine_handler->get_screen(),
 			r1, engine_handler->get_gstyle().STYLE_BG);
 
@@ -92,14 +100,13 @@ void gui_vbar::draw_vbar() {
 			engine_handler->get_gstyle().STYLE_DARK);
 
 		// draw 2 colored border
-		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + 1, gui_vbar::rectangle->x2 - 1,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1);
+		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1 + x,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + 1 + y,
+			gui_vbar::rectangle->x2 - 1 + x,
+			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1 + y);
 		g.draw_2colored_rectangle(engine_handler->get_screen(),
 			r1, engine_handler->get_gstyle().STYLE_BG,
 			engine_handler->get_gstyle().STYLE_INDARK);
-
-		free(r1);
 
 
 		// button event handling
@@ -111,6 +118,14 @@ void gui_vbar::draw_vbar() {
 			gui_vbar::set_position(gui_vbar::get_position() + 1);
 		}
 	}
+
+	free(r1);
+}
+
+/*! draws the vertical bar box
+ */
+void gui_vbar::draw() {
+	gui_vbar::draw(0, 0);
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
@@ -175,14 +190,14 @@ void gui_vbar::set_rectangle(gfx::rect* rectangle) {
 }
 
 /*! sets the vertical bars max lines
- *  @param id the id we want to set
+ *  @param max_lines the maximal amount of lines
  */
 void gui_vbar::set_max_lines(unsigned int max_lines) {
 	gui_vbar::max_lines = max_lines;
 }
 
 /*! sets the vertical bars shown lines
- *  @param id the id we want to set
+ *  @param shown_lines the amount of "showable" lines
  */
 void gui_vbar::set_shown_lines(unsigned int shown_lines) {
 	gui_vbar::shown_lines = shown_lines;
@@ -229,7 +244,7 @@ void gui_vbar::set_down_button_handler(gui_button* ibutton) {
 }
 
 /*! sets the new mouse click point
- *  @param point the new mouse click point point we want to set
+ *  @param new_point the new mouse click point point we want to set
  */
 void gui_vbar::set_new_point(gfx::pnt* new_point) {
 	if(gui_vbar::slider_active) {

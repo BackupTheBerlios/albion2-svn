@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
@@ -33,8 +32,8 @@ using namespace std;
 /*! @class gui_button
  *  @brief gui button element functions
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.3.1
+ *  @date 2005/02/19
  *  @todo more functions
  *  
  *  the gui_button class
@@ -46,7 +45,7 @@ public:
 	gui_button();
 	~gui_button();
 	
-	void draw_button(bool is_pressed);
+	void draw(bool is_pressed, unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 

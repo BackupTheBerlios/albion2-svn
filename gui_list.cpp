@@ -51,24 +51,27 @@ gui_list::~gui_list() {
 }
 
 /*! draws the list box
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
  */
-void gui_list::draw_list() {
+void gui_list::draw(unsigned int x, unsigned int y) {
+	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+
+	g.pnt_to_rect(r1, gui_list::rectangle->x1 + x, gui_list::rectangle->y1 + y,
+		gui_list::rectangle->x2 + x, gui_list::rectangle->y2 + y);
+
 	// draw bg
-	g.draw_filled_rectangle(engine_handler->get_screen(),
-		gui_list::rectangle, engine_handler->get_gstyle().STYLE_BG2);
+	g.draw_filled_rectangle(engine_handler->get_screen(), r1,
+		engine_handler->get_gstyle().STYLE_BG2);
 
 	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		gui_list::rectangle,
+	g.draw_2colored_rectangle(engine_handler->get_screen(), r1,
 		engine_handler->get_gstyle().STYLE_INDARK,
 		engine_handler->get_gstyle().STYLE_LIGHT);
 
 	// draw 2 colored border
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
-	g.pnt_to_rect(r1, gui_list::rectangle->x1+1,
-		gui_list::rectangle->y1+1,
-		gui_list::rectangle->x2-1,
-		gui_list::rectangle->y2-1);
+	g.pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1,
+		gui_list::rectangle->x2 + x - 1, gui_list::rectangle->y2 + y - 1);
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
 		r1, engine_handler->get_gstyle().STYLE_DARK,
 		engine_handler->get_gstyle().STYLE_DARK2);
@@ -108,6 +111,12 @@ void gui_list::draw_list() {
 		loop = drawable_items;
 	}
 
+
+	// reset points
+	for(unsigned int i = 0; i < citems; i++) {
+		items[i]->set_point(0, 0);
+	}
+
 	for(unsigned int i = 0; i < loop; i++) {
 		for(unsigned int j = 0; j < citems; j++) {
 			if(items[j]->get_id() == new_ids[i + position]) {
@@ -117,17 +126,17 @@ void gui_list::draw_list() {
 
 				// is item selected?
 				if(sid == items[j]->get_id()) {
-					r1->x1 = p1->x - 1;
-					r1->y1 = p1->y - 4;
-					r1->x2 = gui_list::rectangle->x2 - 15;
-					r1->y2 = p1->y + 13;
+					r1->x1 = p1->x - 1 + x;
+					r1->y1 = p1->y - 4 + y;
+					r1->x2 = gui_list::rectangle->x2 - 15 + x;
+					r1->y2 = p1->y + 13 + y;
 					g.draw_filled_rectangle(engine_handler->get_screen(),
 						r1, engine_handler->get_gstyle().STYLE_SELECTED);
 					g.draw_rectangle(engine_handler->get_screen(),
 						r1, engine_handler->get_gstyle().STYLE_DARK);
 				}
 
-				items[j]->draw_list_item();
+				items[j]->draw(x, y);
 			}
 		}
 	}
@@ -288,7 +297,7 @@ unsigned int gui_list::get_citems() {
 
 /*! selects an element of the list box
  *  @param x the x pos
- *  @param x the y pos
+ *  @param y the y pos
  */
 void gui_list::select_pos(unsigned int x, unsigned int y) {
 	for(unsigned int i = 0; i < citems; i++) {
@@ -303,7 +312,7 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 	pos->y = y;
 	r->x2 = gui_list::rectangle->x2 - 15;
 
-	for(unsigned int i = 0; i < citems; i++) {
+	for(unsigned int i = 0; i < gui_list::citems; i++) {
 			r->x1 = items[i]->get_point()->x - 1;
 			r->y1 = items[i]->get_point()->y - 4;
 			r->y2 = items[i]->get_point()->y + 13;

@@ -39,9 +39,9 @@ public:
 	void scan(unsigned int length, char* str);
 	enum PRINT
 	{
-		MMSG,	//!< @enum simple message
-		MERROR,	//!< @enum error message
-		MDEBUG,	//!< @enum debug message
+		MMSG,	//!< enum simple message
+		MERROR,	//!< enum error message
+		MDEBUG,	//!< enum debug message
 	};
 protected:
 	unsigned long int err_counter;

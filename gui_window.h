@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __GUI_CHECK_H__
-#define __GUI_CHECK_H__
+#ifndef __GUI_WINDOW_H__
+#define __GUI_WINDOW_H__
 
 #include <iostream>
 #include <SDL.h>
@@ -25,43 +25,52 @@
 #include "event.h"
 #include "engine.h"
 #include "gui_text.h"
+#include "gui_button.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class gui_check
- *  @brief gui check box element functions
+/*! @class gui_window
+ *  @brief gui window element functions
  *  @author flo
- *  @version 0.1.1
- *  @date 2005/02/20
+ *  @version 0.1
+ *  @date 2005/02/16
  *  @todo more functions
  *  
- *  the gui_check class
+ *  the gui_window class
  */
 
-class A2E_API gui_check
+class A2E_API gui_window
 {
 public:
-	gui_check();
-	~gui_check();
+	gui_window();
+	~gui_window();
 	
 	void draw();
-	void draw(unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 
-
-	// gui button element variables functions
-
 	unsigned int get_id();
 	gfx::rect* get_rectangle();
-	char* get_text();
-	bool get_checked();
+	unsigned int get_lid();
+	char* get_caption();
+	bool get_border();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
-	void set_text(char* text);
-	void set_checked(bool state);
+	void set_lid(unsigned int id);
+	void set_caption(char* caption);
+	void set_border(bool state);
+
+	void change_position(int x, int y);
+
+	bool is_moving();
+	void set_moving(bool state);
+
+	void set_exit_button_handler(gui_button* ibutton);
+
+	bool get_deleted();
+	void set_deleted(bool state);
 
 protected:
 	msg m;
@@ -69,19 +78,24 @@ protected:
 	gfx g;
 
 	engine* engine_handler;
-
 	gui_text* text_handler;
+	
+	gui_button* exit_button_handler;
 
-	// gui check box element variables
-
-	//! check box id
+	//! window id
 	unsigned int id;
-	//! check box rectangle
+	//! window rectangle
 	gfx::rect* rectangle;
-	//! check box text
-	char* text;
-	//! is check box set/checked?
-	bool checked;
+	//! window layer id
+	unsigned int lid;
+	//! window caption
+	char* caption;
+	//! window border draw flag
+	bool border;
+
+	bool moving;
+
+	bool deleted;
 
 };
 

@@ -25,7 +25,8 @@ OBJS = main.o \
        shadow.o \
        light.o \
        image.o \
-       gui_check.o
+       gui_check.o \
+       gui_window.o
 
 CC         = gcc
 LD         = gcc
@@ -114,6 +115,9 @@ image.o: image.cpp image.h
 
 gui_check.o: gui_check.cpp gui_check.h
 	$(CC) gui_check.cpp $(CC_FLAGS)
+
+gui_window.o: gui_window.cpp gui_window.h
+	$(CC) gui_window.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other

@@ -47,9 +47,6 @@ void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) 
  */
 void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
 					gfx::pnt* point2, unsigned int color) {
-	unsigned int width = point2->x - point1->x;
-	unsigned int height = point2->y - point1->y;
-
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_LINES);

@@ -32,8 +32,8 @@ using namespace std;
 /*! @class gui_vbar
  *  @brief gui vertical bar element functions
  *  @author flo
- *  @version 0.1.2
- *  @date 2004/08/22
+ *  @version 0.1.3
+ *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_vbar class
@@ -45,7 +45,8 @@ public:
 	gui_vbar();
 	~gui_vbar();
 	
-	void draw_vbar();
+	void draw();
+	void draw(unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 
 

@@ -171,6 +171,9 @@
 				RelativePath="gui_vbar.cpp">
 			</File>
 			<File
+				RelativePath="gui_window.cpp">
+			</File>
+			<File
 				RelativePath="image.cpp">
 			</File>
 			<File
@@ -245,6 +248,9 @@
 			</File>
 			<File
 				RelativePath="gui_vbar.h">
+			</File>
+			<File
+				RelativePath="gui_window.h">
 			</File>
 			<File
 				RelativePath="image.h">

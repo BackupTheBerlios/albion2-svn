@@ -46,15 +46,20 @@ int main(int argc, char *argv[])
 
 	// initialize the gui
 	agui.init(e, aevent);
-	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(300, 50, 480, 80), 100, "test button");
-	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 101, "‰ˆ¸ƒ÷‹ﬂÈËÍ");
-	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
-	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105,
-		"input text");
-	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 440), 106, "blah");
-	gui_text* xpos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 20), 107);
-	gui_text* ypos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 40), 108);
-	gui_check* cbox = agui.add_check_box(agfx.pnt_to_rect(10, 270, 200, 290), 109, "Test Check Box");
+
+	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102, 0);
+	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0xFFFFFF, agfx.cord_to_pnt(10, 580), 103, 0);
+	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text", 0);
+	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 440), 106, "blah", 0);
+
+	gui_window* wnd = agui.add_window(agfx.pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
+	gui_text* xpos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 20), 107, 110);
+	gui_text* ypos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 40), 108, 110);
+	gui_check* cbox = agui.add_check_box(agfx.pnt_to_rect(10, 70, 200, 90), 109, "Test Check Box", 110);
+
+	gui_window* wnd2 = agui.add_window(agfx.pnt_to_rect(560, 100, 780, 450), 111, "test window 2", true);
+	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(10, 10, 200, 40), 100, "test button", 111);
+	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(10, 50, 200, 80), 101, "‰ˆ¸ƒ÷‹ﬂÈËÍ", 111);
 
 	// add 32 items
 	for(unsigned int i = 1; i <= 32; i++) {
@@ -95,19 +100,11 @@ int main(int argc, char *argv[])
 				case event::BUTTON_PRESSED:
 					switch(aevent.get_gui_event().id) {
 						case 100: {
-							gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
-							agfx.pnt_to_rect(r1, 10, 580, 799, 599);
-							agfx.draw_filled_rectangle(sf, r1, white);
 							output_text->set_text("button with the id #100 was pressed!");
-							free(r1);
 						}
 						break;
 						case 101: {
-							gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
-							agfx.pnt_to_rect(r1, 10, 580, 799, 599);
-							agfx.draw_filled_rectangle(sf, r1, white);
 							output_text->set_text("button with the id #101 was pressed!");
-							free(r1);
 						}
 						break;
 						default:
@@ -118,7 +115,7 @@ int main(int argc, char *argv[])
 		}
 
 		// refresh every 1000/60 milliseconds (~ 60 fps)
-		if(SDL_GetTicks() - refresh_time >= 1000/60) {
+		//if(SDL_GetTicks() - refresh_time >= 1000/60) {
 			aevent.get_mouse_pos(mpos);
 			itoa(mpos->x, xpos, 10);
 			itoa(mpos->y, ypos, 10);
@@ -132,7 +129,7 @@ int main(int argc, char *argv[])
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
-		}
+		//}
 	}
 
 	free(mpos);

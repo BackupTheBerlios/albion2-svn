@@ -17,6 +17,8 @@
 #ifndef __GUI_H__
 #define __GUI_H__
 
+#define MAX_ELEMENTS 128
+
 #include <iostream>
 #include <SDL.h>
 #include "msg.h"
@@ -31,6 +33,7 @@
 #include "gui_list.h"
 #include "gui_vbar.h"
 #include "gui_check.h"
+#include "gui_window.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -38,8 +41,8 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.4
- *  @date 2005/02/07
+ *  @version 0.5
+ *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the gui class
@@ -55,20 +58,24 @@ public:
 		unsigned int id;
 		unsigned int type;
 		unsigned int num;
+		unsigned int wid;
 		bool is_drawn;
 	};
 
 	void init(engine &iengine, event &ievent);
 	void draw();
 
-	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int icon);
-	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text);
+	bool delete_element(unsigned int id);
+
+	gui_button* add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, unsigned int wid = 0);
+	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
-				   unsigned int color, gfx::pnt* point, unsigned int id);	
-	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text);
-	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text);
-	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id);
-	gui_check* add_check_box(gfx::rect* rectangle, unsigned int id, char* text);
+				   unsigned int color, gfx::pnt* point, unsigned int id, unsigned int wid = 0);	
+	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
+	gui_check* add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	gui_window* add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true);
 
 	void switch_input_text(char* input_text, gui_input* input_box);
 
@@ -90,13 +97,14 @@ protected:
 
 	//! gui element types
 	enum GTYPE {
-		BUTTON,	//!< @enum button type
-		INPUT,	//!< @enum input box type
-		TEXT,	//!< @enum static text type
-		EMPTY,	//!< @enum empty type
-		LIST,	//!< @enum list box type
-		VBAR,	//!< @enum vertical bar type
-		CHECK	//!< @enum check box type
+		BUTTON,	//!< enum button type
+		INPUT,	//!< enum input box type
+		TEXT,	//!< enum static text type
+		EMPTY,	//!< enum empty type
+		LIST,	//!< enum list box type
+		VBAR,	//!< enum vertical bar type
+		CHECK,	//!< enum check box type
+		WINDOW	//!< enum window type
 	};
 
 	//! gui elements
@@ -104,38 +112,46 @@ protected:
 	//! current amount of gui elements
 	unsigned int celements;
 
+	//! gui windows
+	gui_window* gui_windows[MAX_ELEMENTS];
+	//! current amount of gui window elements
+	unsigned int cwindows;
+
 	//! gui buttons
-	gui_button* gui_buttons[128];
+	gui_button* gui_buttons[MAX_ELEMENTS];
 	//! current amount of gui button elements
 	unsigned int cbuttons;
 
 	//! gui texts
-	gui_text* gui_texts[128];
+	gui_text* gui_texts[MAX_ELEMENTS];
 	//! current amount of gui text elements
 	unsigned int ctexts;
 
 	//! gui input boxes
-	gui_input* gui_input_boxes[128];
+	gui_input* gui_input_boxes[MAX_ELEMENTS];
 	//! current amount of gui input box elements
 	unsigned int cinput_boxes;
 
 	//! gui list boxes
-	gui_list* gui_list_boxes[128];
+	gui_list* gui_list_boxes[MAX_ELEMENTS];
 	//! current amount of gui input box elements
 	unsigned int clist_boxes;
 
 	//! gui vertical bars
-	gui_vbar* gui_vbars[16];
+	gui_vbar* gui_vbars[MAX_ELEMENTS];
 	//! current amount of gui vertical bar elements
 	unsigned int cvbars;
 
 	//! gui check boxes
-	gui_check* gui_check_boxes[16];
+	gui_check* gui_check_boxes[MAX_ELEMENTS];
 	//! current amount of gui check box elements
 	unsigned int ccboxes;
 
 	//! current active gui element
 	gui_element* active_element;
+
+	//! current active window (id)
+	unsigned int awid;
 
 	gfx::pnt* p;
 	gfx::rect* r;
@@ -143,6 +159,7 @@ protected:
 	char* ib_text;
 	unsigned int ib_text_length;
 	char set_text[1028];
+	gui_window* main_window;
 };
 
 #endif

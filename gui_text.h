@@ -32,8 +32,8 @@ using namespace std;
 /*! @class gui_text
  *  @brief gui text element functions
  *  @author flo
- *  @version 0.3
- *  @date 2004/12/13
+ *  @version 0.3.1
+ *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_text class
@@ -45,8 +45,8 @@ public:
 	gui_text();
 	~gui_text();
 
-	void draw_text();
-	void draw_text(char* text);
+	void draw(unsigned int x, unsigned int y);
+	void draw(char* text, unsigned int x, unsigned int y);
 	void set_engine_handler(engine* iengine);
 	void new_text(char* font_name, unsigned int font_size);
 

@@ -36,8 +36,8 @@ using namespace std;
 /*! @class gui_list
  *  @brief gui list box element functions
  *  @author flo
- *  @version 0.2
- *  @date 2004/12/13
+ *  @version 0.2.1
+ *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_list class
@@ -49,7 +49,7 @@ public:
 	gui_list();
 	~gui_list();
 	
-	void draw_list();
+	void draw(unsigned int x, unsigned int y);
     void set_engine_handler(engine* iengine);
 
     void set_vbar_handler(gui_vbar* ivbar);

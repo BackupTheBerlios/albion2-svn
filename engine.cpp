@@ -63,10 +63,15 @@ engine::~engine() {
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
 void engine::init(unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
+	m.print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine");
+
 	// initialize sdl
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
 		m.print(m.MERROR, "engine.cpp", "Can't init SDL:  %s", SDL_GetError());
 		exit(1);
+	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "sdl initialized");
 	}
 	atexit(SDL_Quit);
 
@@ -77,6 +82,12 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 			SDL_GetError());
 		exit(1);
 	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "successfully received video info");
+	}
+
+	m.print(msg::MDEBUG, "engine.cpp",
+		"amount of available video memory: %u kb", video_info->video_mem);
 
 	// gl attributes
 	switch(depth) {
@@ -101,7 +112,9 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
+	m.print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	m.print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
 
 	// create screen
 	engine::flags |= SDL_HWPALETTE;
@@ -110,7 +123,13 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
 	else { engine::flags |= SDL_SWSURFACE; }
 	if(video_info->blit_hw) { engine::flags |= SDL_HWACCEL;	}
-	if(fullscreen) { engine::flags |= SDL_FULLSCREEN; }
+	if(fullscreen) {
+		engine::flags |= SDL_FULLSCREEN;
+		m.print(msg::MDEBUG, "engine.cpp", "fullscreen enabled");
+	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "fullscreen disabled");
+	}
 
 	engine::height = height;
 	engine::width = width;
@@ -120,6 +139,15 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "video mode set: w%u h%u d%u", width,
+			height, depth);
+	}
+
+	// print out some opengl informations
+	m.print(msg::MDEBUG, "engine.cpp", "vendor: %s", glGetString(GL_VENDOR));
+	m.print(msg::MDEBUG, "engine.cpp", "renderer: %s", glGetString(GL_RENDERER));
+	m.print(msg::MDEBUG, "engine.cpp", "version: %s", glGetString(GL_VERSION));
 
 	// enable key repeat
 	if((SDL_EnableKeyRepeat(200, SDL_DEFAULT_REPEAT_INTERVAL))) {
@@ -127,15 +155,22 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 				SDL_GetError());
 		exit(1);
 	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "keyboard repeat set");
+	}
 
 	gstyle.init(screen);
+	m.print(msg::MDEBUG, "engine.cpp", "gui style initialized");
 	gstyle.set_color_scheme(gui_style::WINDOWS);
+	m.print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
 
 	// initialize gl
 	initGL();
+	m.print(msg::MDEBUG, "engine.cpp", "opengl initialized");
 
 	// resize stuff
 	resizeWindow();
+	m.print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
 
 	// reserve memory for position ...
 	engine::position = (core::vertex3*)malloc(sizeof(core::vertex3));
@@ -276,18 +311,22 @@ int engine::drawGLScene(GLvoid) {
 int engine::resizeWindow(GLvoid) {
 	// set the viewport
 	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
+	m.print(msg::MDEBUG, "engine.cpp", "viewport set");
 
 	// projection matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	m.print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
 
 	// set perspective with fov = 60° and far value = 1500.0f
 	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
+	
+	m.print(msg::MDEBUG, "engine.cpp", "glu perspective set");
 
 	// model view matrix
 	glMatrixMode(GL_MODELVIEW);
-
 	glLoadIdentity();
+	m.print(msg::MDEBUG, "engine.cpp", "matrix mode (modelview) set");
 
 	return 1;
 }

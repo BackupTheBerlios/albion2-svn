@@ -548,6 +548,15 @@ void event::set_last_pressed(unsigned int x, unsigned int y) {
 	event::lm_last_pressed_y = y;
 }
 
+/*! sets the position of a current click
+ *  @param x the x coordinate
+ *  @param y the y coordinate
+ */
+void event::set_pressed(unsigned int x, unsigned int y) {
+	event::lm_pressed_x = x;
+	event::lm_pressed_y = y;
+}
+
 /*! sets the active class (gui, event or none - for internal usage only!)
  *! needed for sending the keyboard or mouse input to the right class (handler)
  *  @param active_class the new active_class

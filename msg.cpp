@@ -33,8 +33,9 @@ msg::~msg()
 }
 
 /*! Prints the error number and an error string
- *  @param type The type of msg that is printed (0 = normal msg; 1 = error msg; 2 = debug msg)
- *  @param str The error string
+ *  @param type the type of msg that is printed (0 = normal msg; 1 = error msg; 2 = debug msg)
+ *  @param file the file where the error has occurred respectively from where the msg is printed out
+ *  @param str the error string
  */
 void msg::print(unsigned int type, const char *file, const char *str, ...)
 {

@@ -98,7 +98,6 @@ core::vertex3* camera::get_position() {
 
 /*! returns a 3d line (ray) from the screen position (ray)
  *  @param pos the x and y coordinate of the screen
- *  @param cam pointer to camera
  *  @param ray pointer to a ray object
  */
 void camera::get_ray_from_cord(gfx::pnt* pos, core::line* ray) {

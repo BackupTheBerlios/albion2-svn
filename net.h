@@ -60,8 +60,8 @@ public:
 	//! protocol type
 	enum PTYPE
 	{
-		TCP,	//!< @enum tcp
-		UDP		//!< @enum udp - isn't supported atm
+		TCP,	//!< enum tcp
+		UDP		//!< enum udp - isn't supported atm
 	};
 
 	IPaddress server_ip;
@@ -74,12 +74,12 @@ public:
 
 	//! server <-> client commands
 	enum CMD {
-		ADD,	//!< @enum adds a client
-		NEW,	//!< @enum new client data
-		DEL,	//!< @enum delete client
-		KICK,	//!< @enum kicks a client
-		DAT,	//!< @enum data - can be used for "normal" data transfer
-		CDAT	//!< @enum client data
+		ADD,	//!< enum adds a client
+		NEW,	//!< enum new client data
+		DEL,	//!< enum delete client
+		KICK,	//!< enum kicks a client
+		DAT,	//!< enum data - can be used for "normal" data transfer
+		CDAT	//!< enum client data
 	};
 	
 protected:

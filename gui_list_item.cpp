@@ -47,9 +47,12 @@ gui_list_item::~gui_list_item() {
 	m.print(msg::MDEBUG, "gui_list_item.cpp", "gui_list_item stuff freed");
 }
 
-//! draws the list box item
-void gui_list_item::draw_list_item() {
-	gui_list_item::text_handler->draw_text();
+/*! draws the list box item
+ *  @param x specifies how much the element is moved on the x axis
+ *  @param y specifies how much the element is moved on the y axis
+ */
+void gui_list_item::draw(unsigned int x, unsigned int y) {
+	gui_list_item::text_handler->draw(x, y);
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class
@@ -81,7 +84,7 @@ gfx::pnt* gui_list_item::get_point() {
 }
 
 /*! sets the list box items text
- *  @param id the id we want to set
+ *  @param text the text we want to set
  */
 void gui_list_item::set_text(char* text) {
 	memcpy(gui_list_item::text, text, strlen(text));
