@@ -14,43 +14,72 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __ENGINE_H__
-#define __ENGINE_H__
+#ifndef __GUI_BUTTON_H__
+#define __GUI_BUTTON_H__
 
 #include <iostream>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "msg.h"
 #include "core.h"
-#include "net.h"
+#include "gfx.h"
+#include "event.h"
+#include "engine.h"
+#include "gui_text.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class engine
- *  @brief main engine
- *  @author laxity
+/*! @class gui_button
+ *  @brief gui button element functions
  *  @author flo
- *  @version 0.1.2
+ *  @version 0.1
  *  @date 2004/08/13
  *  @todo more functions
  *  
- *  the main engine
+ *  the gui_button class
  */
 
-class A2E_API engine
+class A2E_API gui_button
 {
 public:
-	engine();
-	~engine();
-	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
-	void set_width(unsigned int new_width);
-	void set_height(unsigned int new_height);
-	void draw();
-	SDL_Surface* get_screen();
+	gui_button();
+	~gui_button();
+	
+	void draw_button(bool is_pressed);
+    void set_engine_handler(engine* iengine);
+	void set_text_handler(gui_text* itext);
+
+
+	// gui button element variables functions
+
+	unsigned int get_id();
+	gfx::rect* get_rectangle();
+	char* get_text();
+
+	void set_id(unsigned int id);
+	void set_rectangle(gfx::rect* rectangle);
+	void set_text(char* text);
+
 protected:
-	unsigned int width, height, depth, flags;
-	SDL_Surface *screen;
 	msg m;
+	core c;
+	gfx g;
+	gui_style gstyle;
+
+	engine* engine_handler;
+
+	gui_text* text_handler;
+
+	// gui button element variables
+
+	//! button id
+	unsigned int id;
+	//! button rectangle
+	gfx::rect* rectangle;
+	//! button text
+	char* text;
 };
 
 #endif

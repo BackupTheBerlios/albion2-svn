@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
 				OutputFile="bin/a2e-debug.dll"
 				SubSystem="1"
 				OptimizeReferences="1"
@@ -83,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
 				OutputFile="bin/a2e.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="FALSE"
@@ -126,7 +126,22 @@
 				RelativePath="engine.cpp">
 			</File>
 			<File
+				RelativePath="event.cpp">
+			</File>
+			<File
 				RelativePath="gfx.cpp">
+			</File>
+			<File
+				RelativePath="gui.cpp">
+			</File>
+			<File
+				RelativePath="gui_button.cpp">
+			</File>
+			<File
+				RelativePath="gui_style.cpp">
+			</File>
+			<File
+				RelativePath="gui_text.cpp">
 			</File>
 			<File
 				RelativePath="main.cpp">
@@ -145,7 +160,22 @@
 				RelativePath="core.h">
 			</File>
 			<File
+				RelativePath="event.h">
+			</File>
+			<File
 				RelativePath="gfx.h">
+			</File>
+			<File
+				RelativePath="gui.h">
+			</File>
+			<File
+				RelativePath="gui_button.h">
+			</File>
+			<File
+				RelativePath="gui_style.h">
+			</File>
+			<File
+				RelativePath="gui_text.h">
 			</File>
 			<File
 				RelativePath="main.h">

@@ -14,43 +14,70 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __ENGINE_H__
-#define __ENGINE_H__
+#ifndef __GUI_TEXT_H__
+#define __GUI_TEXT_H__
 
 #include <iostream>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "msg.h"
 #include "core.h"
-#include "net.h"
+#include "gfx.h"
+#include "event.h"
+#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class engine
- *  @brief main engine
- *  @author laxity
+/*! @class gui_text
+ *  @brief gui text element functions
  *  @author flo
- *  @version 0.1.2
+ *  @version 0.1
  *  @date 2004/08/13
  *  @todo more functions
  *  
- *  the main engine
+ *  the gui_text class
  */
 
-class A2E_API engine
+class A2E_API gui_text
 {
 public:
-	engine();
-	~engine();
-	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
-	void set_width(unsigned int new_width);
-	void set_height(unsigned int new_height);
-	void draw();
-	SDL_Surface* get_screen();
+	gui_text();
+	~gui_text();
+
+	TTF_Font* open_font(char* font_name, unsigned int font_size);
+	void close_font(TTF_Font* font);
+
+	void draw_text();
+	void set_engine_handler(engine* iengine);
+
+
+	// gui text element variables functions
+
+	unsigned int get_id();
+	SDL_Surface* get_surface();
+	gfx::pnt* get_point();
+
+	void set_id(unsigned int id);
+	void set_surface(SDL_Surface* surface);
+	void set_point(gfx::pnt* point);
+
 protected:
-	unsigned int width, height, depth, flags;
-	SDL_Surface *screen;
 	msg m;
+	core c;
+	gfx g;
+
+	engine* engine_handler;
+
+	// gui text element variables
+
+	//! text id
+	unsigned int id;
+	//! text surface (no need to be changed or accessed)
+	SDL_Surface* surface;
+	//! text starting point (x,y)
+	gfx::pnt* point;
+
 };
 
 #endif

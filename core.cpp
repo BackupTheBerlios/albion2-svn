@@ -20,12 +20,12 @@ using namespace std;
 #include <math.h>
 
 /*! there is no function currently
-*/
+ */
 core::core() {
 }
 
 /*! there is no function currently
-*/
+ */
 core::~core() {
 }
 

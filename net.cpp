@@ -20,14 +20,14 @@ using namespace std;
 #include <math.h>
 
 /*! there is no function currently
-*/
+ */
 net::net():
 	max_clients(2)
 {
 }
 
 /*! there is no function currently
-*/
+ */
 net::~net() {
 }
 
@@ -35,7 +35,7 @@ net::~net() {
  */
 bool net::init() {
 	if(SDLNet_Init()==-1) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_Init", "%s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "SDLNet_Init", "%s", SDLNet_GetError());
 		return false;
 	}
 
@@ -57,7 +57,7 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 	max_clients = num_clients;
 
 	if(SDLNet_ResolveHost(&local_ip,NULL,port)==-1) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_ResolveHost (local server): %s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (local server): %s", SDLNet_GetError());
 		return false;
 	}
 
@@ -72,16 +72,16 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 	// initialize socketset
 	socketset = SDLNet_AllocSocketSet(max_clients);
 	if(socketset == NULL) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "Couldn't create socket set: %s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "Couldn't create socket set: %s", SDLNet_GetError());
 		return false;
 	}
 
 	switch(type) {
-		case net::PTYPE::TCP:
+		case net::TCP:
 			// listening socket @localhost
 			tcp_ssock = SDLNet_TCP_Open(&local_ip);
 			if(!tcp_ssock) {
-				m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_TCP_Open (local server): %s", SDLNet_GetError());
+				m.print(msg::MERROR, "net.cpp", "SDLNet_TCP_Open (local server): %s", SDLNet_GetError());
 				return false;
 			}
 			SDLNet_TCP_AddSocket(socketset, tcp_ssock);
@@ -89,7 +89,7 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 			// everything is set up now - the clients are now able to connect to the server 
 
 			break;
-		case net::PTYPE::UDP:
+		case net::UDP:
 			break;
 	}
 
@@ -105,12 +105,12 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 bool net::create_client(char* server, unsigned int type, unsigned short int port, char* client_name) {
 	net::max_clients = 256;
 	if(SDLNet_ResolveHost(&server_ip,server,port)==-1) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
 		return false;
 	}
 
 	if(SDLNet_ResolveHost(&local_ip,NULL,port)==-1) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
 		return false;
 	}
 
@@ -121,36 +121,36 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 		sprintf(clients[i].name, "unknown");
 		// aren't needed if it is a client
 		clients[i].sock = NULL;
-		clients[i].port = NULL;
-		clients[i].ip.port = NULL;
-		clients[i].ip.host = NULL;
+		clients[i].port = 0;
+		clients[i].ip.port = 0;
+		clients[i].ip.host = 0;
 	}
 
 	// initialize socketset
 	socketset = SDLNet_AllocSocketSet(2);
 	if(socketset == NULL) {
-		m.print(msg::PRINT::MERROR, "net.cpp", "Couldn't create socket set: %s", SDLNet_GetError());
+		m.print(msg::MERROR, "net.cpp", "Couldn't create socket set: %s", SDLNet_GetError());
 		return false;
 	}
 
 	switch(type) {
-		case net::PTYPE::TCP:
+		case net::TCP:
 			// create server tcp socket
 			tcp_ssock = SDLNet_TCP_Open(&server_ip);
 			if(!tcp_ssock) {
-				m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_TCP_Open (server): %s", SDLNet_GetError());
+				m.print(msg::MERROR, "net.cpp", "SDLNet_TCP_Open (server): %s", SDLNet_GetError());
 				return false;
 			}
 
 			// connect to server
 			tcp_csock = SDLNet_TCP_Open(&local_ip);
 			if(!tcp_csock) {
-				m.print(msg::PRINT::MERROR, "net.cpp", "SDLNet_TCP_Open (client->server): %s", SDLNet_GetError());
+				m.print(msg::MERROR, "net.cpp", "SDLNet_TCP_Open (client->server): %s", SDLNet_GetError());
 				return false;
 			}
 			else {
 				// connection created - communication is now possible
-				m.print(msg::PRINT::MDEBUG, "net.cpp", "SDLNet_TCP_Open (client->server): successfully connected to server!");
+				m.print(msg::MDEBUG, "net.cpp", "SDLNet_TCP_Open (client->server): successfully connected to server!");
 			}
 
 			SDLNet_TCP_AddSocket(socketset, tcp_ssock);
@@ -159,7 +159,7 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 			net::send_activation(client_name);
 
 			break;
-		case net::PTYPE::UDP:
+		case net::UDP:
 			break;
 	}
 
@@ -192,11 +192,11 @@ void net::handle_server() {
 		for(cur_client = 0; cur_client < max_clients; ++cur_client) {
 			if(clients[cur_client].sock && !clients[cur_client].is_active) {
 				// kick this client
-				data = net::CMD::KICK;
+				data = net::KICK;
 				SDLNet_TCP_Send(clients[cur_client].sock, &data, 1);
 				SDLNet_TCP_DelSocket(socketset, clients[cur_client].sock);
 				SDLNet_TCP_Close(clients[cur_client].sock);
-				m.print(msg::PRINT::MDEBUG, "net.cpp", "inactive client (%d) was kicked", cur_client);
+				m.print(msg::MDEBUG, "net.cpp", "inactive client (%d) was kicked", cur_client);
 				break;
 			}
 		}
@@ -204,17 +204,17 @@ void net::handle_server() {
 
 	if(cur_client == max_clients) {
 		// the server doesn't permit any further connections
-		data = net::CMD::KICK;
+		data = net::KICK;
 		SDLNet_TCP_Send(tmpsock, &data, 1);
 		SDLNet_TCP_Close(tmpsock);
-		m.print(msg::PRINT::MDEBUG, "net.cpp", "connection refused: server doesn't permit any further connections");
+		m.print(msg::MDEBUG, "net.cpp", "connection refused: server doesn't permit any further connections");
 	}
 	else {
 		// add socket to socketset and make it inactive
 		clients[cur_client].sock = tmpsock;
 		clients[cur_client].ip = *SDLNet_TCP_GetPeerAddress(tmpsock);
 		SDLNet_TCP_AddSocket(socketset, clients[cur_client].sock);
-		m.print(msg::PRINT::MDEBUG, "net.cpp", "a new inactive socket (%d) was added", cur_client);
+		m.print(msg::MDEBUG, "net.cpp", "a new inactive socket (%d) was added", cur_client);
 	}
 }
 
@@ -229,12 +229,12 @@ void net::handle_client(unsigned int cur_client) {
 
 	// checks if connection has been closed
 	if(SDLNet_TCP_Recv(clients[cur_client].sock, data, 512) <= 0) {
-        m.print(msg::PRINT::MDEBUG, "net.cpp", "closing %s socket (%d)",
+        m.print(msg::MDEBUG, "net.cpp", "closing %s socket (%d)",
 			clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
 		if(clients[cur_client].is_active) {
 			clients[cur_client].is_active = false;
-			data[0] = net::CMD::DEL;
+			data[0] = net::DEL;
 			data[1] = cur_client;
 			for(unsigned int i = 0; i < max_clients; ++i) {
 				if(clients[i].is_active) {
@@ -247,11 +247,11 @@ void net::handle_client(unsigned int cur_client) {
 	}
 	else {
 		switch(data[0]) {
-			case net::CMD::NEW:
+			case net::NEW:
 				// active connection
 
 				// send max client data (for the future maybe other stuff too)
-				cdata[0] = net::CMD::CDAT;
+				cdata[0] = net::CDAT;
 				cdata[1] = net::max_clients;
 				SDLNet_TCP_Send(clients[cur_client].sock, cdata, 2);
 
@@ -259,7 +259,7 @@ void net::handle_client(unsigned int cur_client) {
 				memcpy(&clients[cur_client].ip.port, &data[1], 2);
 				memcpy(&clients[cur_client].name, &data[4], 32);
 				clients[cur_client].name[32] = 0;
-				m.print(msg::PRINT::MDEBUG, "net.cpp", "activating socket (%d: %s)",
+				m.print(msg::MDEBUG, "net.cpp", "activating socket (%d: %s)",
 					cur_client, clients[cur_client].name);
 				// send data to all clients
 				for(unsigned int i = 0; i < max_clients; i++) {
@@ -279,9 +279,9 @@ void net::handle_client(unsigned int cur_client) {
 				}
                 break;
 
-			case net::CMD::DAT: {
+			case net::DAT: {
 				// set package type
-				ndata[0] = net::CMD::DAT;
+				ndata[0] = net::DAT;
 				// get data package length
 				unsigned int len = (unsigned int)(data[1]*0xFF0000 + data[2]*0xFF00 + data[3]*0xFF + data[4]);
 				ndata[1] = len & 0xFF000000;
@@ -300,7 +300,7 @@ void net::handle_client(unsigned int cur_client) {
 				print_data[i] = 0;
 
 				// print out package data
-				m.print(msg::PRINT::MMSG, "net.cpp", "data (%d bytes) send from %s(%d): %s",
+				m.print(msg::MMSG, "net.cpp", "data (%d bytes) send from %s(%d): %s",
 					len, clients[cur_client].name, cur_client, print_data);
 
 				// send package to all clients except the one who send the data
@@ -328,7 +328,7 @@ void net::send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	char data[512];
 
 	int n = (int)strlen((char*)clients[snd_client].name)+1;
-	data[0] = net::CMD::ADD;
+	data[0] = net::ADD;
 	data[1] = snd_client;
 	memcpy(&data[2], &clients[snd_client].ip.host, 4);
 	memcpy(&data[6], &clients[snd_client].ip.port, 2);
@@ -359,10 +359,10 @@ void net::send_activation(char* client_name) {
 	for(unsigned int i = 0; i < max_clients; ++i) { // constant value of 32 clients ... has to be changed
 		clients[i].is_active = false;
 	}
-	if(!net::tcp_ssock == NULL) {
+	if(!net::tcp_ssock == 0) {
 		// make the package
 
-		data[0] = net::CMD::NEW;
+		data[0] = net::NEW;
 		// need to create a new IPaddress value, because getpeeraddress returns a
 		// IPaddress* and not a IPaddress like the other sdl_net functions
 		IPaddress* lh_ip = SDLNet_TCP_GetPeerAddress(tcp_ssock);

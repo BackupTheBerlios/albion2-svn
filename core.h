@@ -28,8 +28,8 @@ using namespace std;
 /*! @class core
  *  @brief core stuff
  *  @author flo
- *  @version 0.1.3
- *  @date 2004/07/20
+ *  @version 0.1.4
+ *  @date 2004/08/13
  *  @todo more functions
  *  
  *  the core stuff

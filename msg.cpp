@@ -43,7 +43,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 
 	switch(type) {
 		// normal msg output
-		case msg::PRINT::MMSG:
+		case msg::MMSG:
 			if(str == NULL) {
 				cout << "MSG: " << file << endl;
 			}
@@ -67,7 +67,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			}
 			break;
 		// error msg output
-		case msg::PRINT::MERROR:
+		case msg::MERROR:
 			err_counter++;
 			if(str == NULL) {
 				cerr << "ERROR #" << err_counter << ": " << file << endl;
@@ -83,7 +83,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			}
 			break;
 		// debug msg output
-		case msg::PRINT::MDEBUG:
+		case msg::MDEBUG:
 			if(str == NULL) {
 				cout << "DEBUG: " << file << endl;
 			}

@@ -30,8 +30,8 @@ using namespace std;
  *  @brief networking class
  *  @author flo
  *  @author laxity
- *  @version 0.2.1
- *  @date 2004/07/30
+ *  @version 0.2.2
+ *  @date 2004/08/13
  *  @todo more functions
  *
  *  This is the network class

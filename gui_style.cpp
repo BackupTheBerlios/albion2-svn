@@ -13,38 +13,31 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __MSG_H__
-#define __MSG_H__
 
-#include "win_dll_export.h"
+#include "gui_style.h"
+#include "gfx.h"
+#include "msg.h"
+#include "core.h"
+#include "engine.h"
 
-/*! @class msg
- *  @brief msg handling
- *  @author laxity
- *  @author flo
- *  @version 0.3.6
- *  @date 2004/08/13
- *  @todo logfile support
- *
- *  This is the msg handling class
+/*! there is no function currently
  */
+gui_style::gui_style() {
+}
 
-class A2E_API msg
-{
-public:
-	msg();
-	~msg();
-	void print(unsigned int type, const char *file, const char *str = NULL, ...);
-	void scan(unsigned int length, char* str);
-	enum PRINT
-	{
-		MMSG,	//!< @enum simple message
-		MERROR,	//!< @enum error message
-		MDEBUG,	//!< @enum debug message
-	};
-protected:
-	unsigned long int err_counter;
-};
+/*! there is no function currently
+ */
+gui_style::~gui_style() {
+}
 
-#endif
+/*! initializes the gui style class and sets an engine handler
+ *  @param iengine the engine we want to handle
+ */
+void gui_style::init(engine* iengine) {
+	gui_style::engine_handler = iengine;
+
+	gui_style::STYLE_BG = g.get_color(engine_handler->get_screen(), 0x7F7F7F);
+	gui_style::STYLE_LIGHT = g.get_color(engine_handler->get_screen(), 0xBFBFBF);
+	gui_style::STYLE_DARK = g.get_color(engine_handler->get_screen(), 0x000000);
+	gui_style::STYLE_INDARK = g.get_color(engine_handler->get_screen(), 0x555555);
+}

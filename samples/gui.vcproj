@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.00"
-	Name="gui"
+	Name="gui_sample"
 	ProjectGUID="{87EC3E53-A6BA-45A0-A610-90CB2BC71732}"
 	Keyword="Win32Proj">
 	<Platforms>
@@ -31,7 +31,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib a2e.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib a2e.lib"
 				OutputFile="$(OutDir)/gui.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
@@ -78,7 +78,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib a2e.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib a2e.lib"
 				OutputFile="$(OutDir)/gui.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
@@ -107,14 +107,14 @@
 			Name="Quelldateien"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="gui.cpp">
+				RelativePath="gui_sample.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="gui.h">
+				RelativePath="gui_sample.h">
 			</File>
 		</Filter>
 		<Filter

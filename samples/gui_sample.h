@@ -14,37 +14,36 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __MSG_H__
-#define __MSG_H__
+#ifndef __GUI_SAMPLE_H__
+#define __GUI_SAMPLE_H__
 
-#include "win_dll_export.h"
+#include <iostream>
+#include <SDL.h>
+#include <engine.h>
+#include <msg.h>
+#include <core.h>
+#include <net.h>
+#include <gfx.h>
+#include <gui.h>
+#include <gui_button.h>
+#include <gui_text.h>
+#include <event.h>
+using namespace std;
 
-/*! @class msg
- *  @brief msg handling
- *  @author laxity
- *  @author flo
- *  @version 0.3.6
- *  @date 2004/08/13
- *  @todo logfile support
- *
- *  This is the msg handling class
- */
+msg m;
+net n;
+core c;
+engine e;
+gfx agfx;
+gui agui;
+event aevent;
 
-class A2E_API msg
-{
-public:
-	msg();
-	~msg();
-	void print(unsigned int type, const char *file, const char *str = NULL, ...);
-	void scan(unsigned int length, char* str);
-	enum PRINT
-	{
-		MMSG,	//!< @enum simple message
-		MERROR,	//!< @enum error message
-		MDEBUG,	//!< @enum debug message
-	};
-protected:
-	unsigned long int err_counter;
-};
+SDL_Surface* sf;
+
+bool done = false;
+
+SDL_Event ievent;
+
+unsigned int refresh_time;
 
 #endif

@@ -38,15 +38,21 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #endif // WIN32
 
 /*! there is no function currently
-*/
+ */
 engine::engine() {
 }
 
 /*! there is no function currently
-*/
+ */
 engine::~engine() {
 }
 
+/*! initializes the engine
+ *  @param width the window width
+ *  @param height the window height
+ *  @param depth the depth of the window (8(?), 16, 24 or 32)
+ *  @param fullscreen bool if the window is drawn in fullscreen mode
+ */
 void engine::init(unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
 	// initialize sdl
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
@@ -66,9 +72,13 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
+	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
 }
 
-void engine::setwidth(unsigned int new_width) {
+/*! sets the window width
+ *  @param width the window width
+ */
+void engine::set_width(unsigned int new_width) {
 	engine::width = new_width;
 	screen = SDL_SetVideoMode(width, height, depth, flags);
 	if(screen == NULL) {
@@ -77,7 +87,10 @@ void engine::setwidth(unsigned int new_width) {
 	}
 }
 
-void engine::setheight(unsigned int new_height) {
+/*! sets the window height
+ *  @param height the window height
+ */
+void engine::set_height(unsigned int new_height) {
 	engine::height = new_height;
 	screen = SDL_SetVideoMode(width, height, depth, flags);
 	if(screen == NULL) {
@@ -86,10 +99,14 @@ void engine::setheight(unsigned int new_height) {
 	}
 }
 
+/*! draws the windows
+ */
 void engine::draw() {
 	SDL_Flip(screen);
 }
 
+/*! returns the surface used by the engine
+ */
 SDL_Surface* engine::get_screen() {
 	return screen;
 }

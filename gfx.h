@@ -30,8 +30,8 @@ using namespace std;
 /*! @class gfx
  *  @brief graphical functions
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/01
+ *  @version 0.1.2
+ *  @date 2004/08/13
  *  @todo more functions
  *  
  *  the gfx class
@@ -42,16 +42,38 @@ class A2E_API gfx
 public:
 	gfx();
 	~gfx();
-	void draw_point(SDL_Surface* surface, unsigned int x, unsigned int y,
-		unsigned int color);
-	void draw_line(SDL_Surface* surface, unsigned int x1, unsigned int y1,
-		unsigned int x2, unsigned int y2, unsigned int color);
-	void draw_rectangle(SDL_Surface* surface, unsigned int x1, unsigned int y1,
-		unsigned int x2, unsigned int y2, unsigned int color);
+
+	struct rect {
+		unsigned int x1;
+		unsigned int y1;
+		unsigned int x2;
+		unsigned int y2;
+	};
+
+	struct pnt {
+		unsigned int x;
+		unsigned int y;
+	};
+
+	gfx::pnt* cord_to_pnt(unsigned int x, unsigned int y);
+	gfx::rect* pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
+
+	void draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color);
+
+	void draw_line(SDL_Surface* surface, gfx::pnt* point1, gfx::pnt* point2, unsigned int color);
+
+	void draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
+	void draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color1, unsigned int color2);
+	void draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
+	bool is_pnt_in_rectangle(gfx::rect* rectangle, gfx::pnt* point);
+
+	unsigned int get_color(SDL_Surface* surface, unsigned int red, unsigned int green, unsigned int blue);
+	unsigned int get_color(SDL_Surface* surface, unsigned int rgb);
 protected:
 	msg m;
 	core c;
 	engine e;
+
 	SDL_Surface* screen;
 };
 
