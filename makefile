@@ -12,26 +12,12 @@ OBJS = main.o \
        gui_button.o \
        gui_text.o \
        gui_style.o
-       
-INCLUDE = main.h \
-	  msg.h \
-	  core.h \
-	  net.h \
-	  gfx.h \
-	  engine.h \
-	  win_dll_export.h \
-	  gui.h \
-	  event.h \
-	  gui_button.h \
-	  gui_text.h \
-	  gui_style.h
 
-USR        = /usr/local/
 CC         = gcc
 LD         = gcc
 CC_FLAGS   = -Wall -Os -c `sdl-config --cflags`
 LD_FLAGS   = -lstdc++ `sdl-config --libs` -lSDL_net -lSDL_ttf -o
-BIN        = liba2e.a
+BIN        = bin/liba2e.a
 
 #######################################################################
 # Files
@@ -39,9 +25,6 @@ BIN        = liba2e.a
 a2e: $(OBJS)
 	ar r $(BIN) $(OBJS)
 	ranlib $(BIN)
-#	cp $(BIN) $(USR)/lib/$(BIN)
-#	cp $(INCLUDE) $(USR)/include/
-
 
 main.o: main.cpp main.h
 	$(CC) main.cpp $(CC_FLAGS)
@@ -96,3 +79,7 @@ strip:
 
 docu:
 	doxygen
+
+install:
+	cp $(BIN) $(USR)/lib/$(BIN)
+	cp $(INCLUDE) $(USR)/include/
