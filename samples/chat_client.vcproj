@@ -31,7 +31,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib a2e.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib a2e.lib"
 				OutputFile="$(OutDir)/chat_client.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
@@ -76,7 +76,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib a2e.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib a2e.lib"
 				OutputFile="$(OutDir)/chat_client.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"

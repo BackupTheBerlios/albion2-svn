@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "mesh_loader.h"
+#include "model_loader.h"
 #include <iostream>
 #include <string.h>
 #include <SDL_image.h>
@@ -24,16 +24,16 @@
  *
  * \author flo
  *
- * \date August - September 2004
+ * \date August - December 2004
  *
- * Albion 2 Engine Sample - Mesh Loader Sample
+ * Albion 2 Engine Sample - Model Loader Sample
  */
 
 int main(int argc, char *argv[])
 {
 	// initialize the engine
 	e.init(800, 600, 32, false);
-	e.set_caption("A2E Sample - Mesh Loader");
+	e.set_caption("A2E Sample - Model Loader");
 	
 	// set a color scheme (blue)
 	e.set_color_scheme(gui_style::BLUE);
@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
 	// initialize the camera
 	cam.init(e, aevent);
 
-	// load the model/mesh and set a new position
-	mesh.load_mesh("ground.a2m");
-	mesh.set_position(0.0f, -13.0f, 0.0f);
-	mesh2.load_mesh("celtic_cottage.a2m");
-	sce.add_model(&mesh);
-	sce.add_model(&mesh2);
+	// load the model and set a new position
+	model.load_model("ground.a2m");
+	model.set_position(0.0f, -13.0f, 0.0f);
+	model2.load_model("celtic_cottage.a2m");
+	sce.add_model(&model);
+	sce.add_model(&model2);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - Mesh Loader | FPS: %u", fps);
+				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
 				fps = 0;
 				fps_time = SDL_GetTicks();
 			}

@@ -46,6 +46,12 @@ void gui_list_item::set_text_handler(gui_text* itext) {
 	gui_list_item::text_handler = itext;
 }
 
+/*! returns the text_handler
+ */
+gui_text* gui_list_item::get_text_handler() {
+	return gui_list_item::text_handler;
+}
+
 //! returns the list box items text
 char* gui_list_item::get_text() {
 	return gui_list_item::text;
@@ -65,8 +71,8 @@ gfx::pnt* gui_list_item::get_point() {
  *  @param id the id we want to set
  */
 void gui_list_item::set_text(char* text) {
-	gui_list_item::text = text;
-	gui_list_item::text_handler->set_text(text);
+	_snprintf(gui_list_item::text, strlen(text)+1, "%s\0", text);
+	gui_list_item::text_handler->set_text(gui_list_item::text);
 }
 
 /*! sets the list box items id

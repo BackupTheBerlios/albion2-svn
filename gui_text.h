@@ -47,6 +47,7 @@ public:
 	~gui_text();
 
 	void draw_text();
+	void draw_text(char* text);
 	void set_engine_handler(engine* iengine);
 	void new_text(char* font_name, unsigned int font_size);
 

@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include "msg.h"
 #include "core.h"
 #include "net.h"

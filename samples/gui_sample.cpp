@@ -66,6 +66,9 @@ int main(int argc, char *argv[])
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102);
 
 
+	gfx::rect* testrect = agfx.pnt_to_rect(0, 0, 2, 2);
+
+
 	refresh_time = SDL_GetTicks();
 	while(!done)
 	{

@@ -48,15 +48,25 @@ void gui_text::new_text(char* font_name, unsigned int font_size) {
 /*! draws the text
  */
 void gui_text::draw_text() {
+	gui_text::draw_text(gui_text::text);
+}
+
+/*! draws the text, that is specified by the parameter text
+ */
+void gui_text::draw_text(char* text) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glPushMatrix();
 
 	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
-	glTranslatef((GLfloat)(point->x), (GLfloat)(engine_handler->get_screen()->h - point->y - 10.0f), 0.0f);
-	glColor3f((GLfloat)(color.r / 255), (GLfloat)(color.g / 255), (GLfloat)(color.b / 255));
-	font->Render(text);
+	glTranslatef((GLfloat)(gui_text::point->x),
+		(GLfloat)(gui_text::engine_handler->get_screen()->h - gui_text::point->y - 10.0f),
+		0.0f);
+	glColor3f((GLfloat)(gui_text::color.r / 255),
+		(GLfloat)(gui_text::color.g / 255),
+		(GLfloat)(gui_text::color.b / 255));
+	gui_text::font->Render(text);
 
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);

@@ -17,7 +17,7 @@ OBJS = main.o \
        gui_list_item.o \
        gui_vbar.o \
        file_io.o \
-       a2emesh.o \
+       a2emodel.o \
        camera.o \
        scene.o
 
@@ -82,8 +82,8 @@ gui_vbar.o: gui_vbar.cpp gui_vbar.h
 file_io.o: file_io.cpp file_io.h
 	$(CC) file_io.cpp $(CC_FLAGS)
 
-a2emesh.o: a2emesh.cpp a2emesh.h
-	$(CC) a2emesh.cpp $(CC_FLAGS)
+a2emodel.o: a2emodel.cpp a2emodel.h
+	$(CC) a2emodel.cpp $(CC_FLAGS)
 
 camera.o: camera.cpp camera.h
 	$(CC) camera.cpp $(CC_FLAGS)

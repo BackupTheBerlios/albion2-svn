@@ -50,6 +50,7 @@ public:
 	void draw_list_item();
     void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
+	gui_text* get_text_handler();
 	void clear();
 
 

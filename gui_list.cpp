@@ -256,6 +256,7 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 void gui_list::delete_item(unsigned int id) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
+			free(items[i]->get_text_handler());
 			items[i]->clear();
 		}
 	}

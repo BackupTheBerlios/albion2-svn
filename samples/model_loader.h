@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __MESH_LOADER_H__
-#define __MESH_LOADER_H__
+#ifndef __MODEL_LOADER_H__
+#define __MODEL_LOADER_H__
 
 #ifdef WIN32
 #include <windows.h>
@@ -33,7 +33,7 @@
 #include <gfx.h>
 #include <event.h>
 #include <camera.h>
-#include <a2emesh.h>
+#include <a2emodel.h>
 #include <scene.h>
 using namespace std;
 
@@ -47,8 +47,8 @@ camera cam;
 
 scene sce;
 
-a2emesh mesh;
-a2emesh mesh2;
+a2emodel model;
+a2emodel model2;
 
 SDL_Surface* sf;
 

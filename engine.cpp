@@ -115,7 +115,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	}
 
 	// enable key repeat
-	if((SDL_EnableKeyRepeat(100, SDL_DEFAULT_REPEAT_INTERVAL))) {
+	if((SDL_EnableKeyRepeat(200, SDL_DEFAULT_REPEAT_INTERVAL))) {
 		m.print(msg::MDEBUG, "engine.cpp", "setting keyboard repeat failed: %s",
 				SDL_GetError());
 		exit(1);

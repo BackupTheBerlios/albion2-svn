@@ -89,10 +89,6 @@ void gui::init(engine &iengine, event &ievent) {
 
 	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
 
-	if(TTF_Init()==-1) {
-		m.print(msg::MERROR, "gui.cpp", "TTF_Init: %s", TTF_GetError());
-	}
-
 	// empty element
 	gui::gui_elements[celements].id = 1;
 	gui::gui_elements[celements].type = gui::EMPTY;
