@@ -72,6 +72,7 @@ a2emodel::~a2emodel() {
 /*! draws the model
  */
 void a2emodel::draw_model() {
+	glColor3f(0.0f, 0.0f, 0.0f);
 	for(unsigned int i = 0; i < object_count; i++) {
 		glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
 
@@ -94,7 +95,7 @@ void a2emodel::draw_model() {
 			glEnd();
 		}
 		else {
-			glBegin(GL_LINES);
+			glBegin(GL_LINE_STRIP);
 			for(unsigned int j = 0; j < index_count[i]; j++) {
 				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
 				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
@@ -104,18 +105,6 @@ void a2emodel::draw_model() {
 				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
 					a2emodel::position->y + vertices[indices[i][j].i2].y,
 					a2emodel::position->z + vertices[indices[i][j].i2].z);
-				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
-					a2emodel::position->y + vertices[indices[i][j].i2].y,
-					a2emodel::position->z + vertices[indices[i][j].i2].z);
-				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
-					a2emodel::position->y + vertices[indices[i][j].i3].y,
-					a2emodel::position->z + vertices[indices[i][j].i3].z);
-				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
-					a2emodel::position->y + vertices[indices[i][j].i1].y,
-					a2emodel::position->z + vertices[indices[i][j].i1].z);
 				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
 				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
 					a2emodel::position->y + vertices[indices[i][j].i3].y,
