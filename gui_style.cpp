@@ -37,7 +37,9 @@ void gui_style::init(engine* iengine) {
 	gui_style::engine_handler = iengine;
 
 	gui_style::STYLE_BG = g.get_color(engine_handler->get_screen(), 0x7F7F7F);
+	gui_style::STYLE_BG2 = g.get_color(engine_handler->get_screen(), 0xC4C4C4);
 	gui_style::STYLE_LIGHT = g.get_color(engine_handler->get_screen(), 0xBFBFBF);
 	gui_style::STYLE_DARK = g.get_color(engine_handler->get_screen(), 0x000000);
+	gui_style::STYLE_DARK2 = g.get_color(engine_handler->get_screen(), 0x7F7F7F);
 	gui_style::STYLE_INDARK = g.get_color(engine_handler->get_screen(), 0x555555);
 }

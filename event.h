@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <SDL.h>
+#include <string.h>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"
@@ -47,6 +48,27 @@ public:
 	SDL_Event get_event();
 	void handle_events(unsigned int event_type);
 
+	struct gui_element {
+		unsigned int id;
+		unsigned int type;
+		unsigned int num;
+		bool is_drawn;
+	};
+
+	gui_element* get_active_element();
+	void set_active_element(gui_element* active_element);
+
+	char* get_input_text();
+	//! input types
+	enum ITYPE {
+		LEFT = 1,	//!< @enum left arrow key
+		RIGHT,		//!< @enum right arrow key
+		BACK,		//!< @enum backspace key
+		DEL,		//!< @enum delete key
+		HOME,		//!< @enum home key
+		END			//!< @enum end key
+	};
+
 	// gui event stuff
 
 	enum GEVENT_TYPE {
@@ -68,6 +90,15 @@ public:
 
 	unsigned int get_lm_pressed_x();
 	unsigned int get_lm_pressed_y();
+	unsigned int get_lm_last_pressed_x();
+	unsigned int get_lm_last_pressed_y();
+
+	//! the keyboard input layout
+	enum IKEY_LAYOUT {
+		US,	//!< @enum us keyboard layout
+		DE	//!< @enum de keyboard layout
+	};
+	void set_keyboard_layout(IKEY_LAYOUT layout);
 protected:
 	msg m;
 	SDL_Event event_handle;
@@ -76,6 +107,21 @@ protected:
 	unsigned int lm_pressed_x;
 	//! left mouse button pressed (y coordinate)
 	unsigned int lm_pressed_y;
+	//! left mouse button pressed (x coordinate)
+	unsigned int lm_last_pressed_x;
+	//! left mouse button pressed (y coordinate)
+	unsigned int lm_last_pressed_y;
+
+	//! current active gui element
+	gui_element* active_element;
+
+	//! the input text of a input box
+	char input_text[512];
+
+	bool shift;
+	bool alt;
+
+	IKEY_LAYOUT keyboard_layout;
 };
 
 #endif

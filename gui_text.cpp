@@ -23,6 +23,10 @@
 /*! there is no function currently
  */
 gui_text::gui_text() {
+	is_notext = false;
+
+	// 1024 chars
+	gui_text::text = (char*)malloc(1024);
 }
 
 /*! there is no function currently
@@ -138,6 +142,7 @@ void gui_text::set_point(gfx::pnt* point) {
  *  @param text the text we want to set
  */
 void gui_text::set_text(char* text) {
+	is_notext = false;
 	gui_text::text = text;
 	gui_text::remake_text();
 }
@@ -178,8 +183,21 @@ void gui_text::set_init(bool state) {
 void gui_text::remake_text() {
 	// checks if everything was initialized
 	if(is_init) {
-		TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
-		gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
-		gui_text::close_font(font);
+		if(!is_notext) {
+			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
+			gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
+			gui_text::close_font(font);
+		}
+		else {
+			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
+			gui_text::set_surface(TTF_RenderText_Blended(font, "  ", gui_text::color));
+			gui_text::close_font(font);
+		}
 	}
+}
+
+void gui_text::set_notext() {
+	gui_text::is_notext = true;
+	gui_text::text = "";
+	gui_text::remake_text();
 }

@@ -35,8 +35,6 @@ gui_button::~gui_button() {
  *  @param is_pressed bool, if the button should be drawn as pressed or unpressed
  */
 void gui_button::draw_button(bool is_pressed) {
-	gstyle.init(engine_handler);
-
 	if(!is_pressed) {
 		// draw bg
 		g.draw_filled_rectangle(engine_handler->get_screen(),
@@ -136,6 +134,7 @@ void gui_button::draw_button(bool is_pressed) {
  */
 void gui_button::set_engine_handler(engine* iengine) {
 	gui_button::engine_handler = iengine;
+	gstyle.init(engine_handler);
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class

@@ -20,6 +20,7 @@
 #include "core.h"
 #include "engine.h"
 #include "gui_button.h"
+#include "gui_input.h"
 
 /*! there is no function currently
 */
@@ -42,6 +43,7 @@ void gui::init(engine &iengine, event &ievent) {
 	celements = 0;
 	cbuttons = 0;
 	ctexts = 0;
+	cinput_boxes = 0;
 
 	if(gui::engine_handler->get_screen() == NULL) { m.print(msg::MERROR, "gui.cpp", "SDL_Surface does not exist!"); }
 	else { gui::gui_surface = gui::engine_handler->get_screen(); }
@@ -59,6 +61,13 @@ void gui::init(engine &iengine, event &ievent) {
         gui_texts[i] = new gui_text();
 	}
 
+	// reserve memory for 128 gui input box elements
+	for(unsigned int i = 0; i < 128; i++) {
+        gui_input_boxes[i] = new gui_input();
+	}
+
+	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
+
 	if(TTF_Init()==-1) {
 		m.print(msg::MERROR, "gui.cpp", "TTF_Init: %s", TTF_GetError());
 	}
@@ -67,6 +76,7 @@ void gui::init(engine &iengine, event &ievent) {
 /*! draws all gui elements
  */
 void gui::draw() {
+	set_active_element(NULL);
 	for(unsigned int i = 0; i < celements; i++) {
 		if(gui::gui_elements[i].is_drawn == true) {
 			switch(gui::gui_elements[i].type) {
@@ -76,6 +86,7 @@ void gui::draw() {
 						event_handler->get_lm_pressed_y()))) {
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(true);
 						gui::gui_buttons[gui::gui_elements[i].num]->set_pressed(true);
+						set_active_element(&gui::gui_elements[i]);
 					}
 					else {
 						if(gui::gui_buttons[gui::gui_elements[i].num]->get_pressed() == true) {
@@ -89,6 +100,23 @@ void gui::draw() {
 					break;
 				case gui::TEXT:
 					gui::gui_texts[gui::gui_elements[i].num]->draw_text();
+					break;
+				case gui::INPUT:
+					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(),
+						g.cord_to_pnt(event_handler->get_lm_last_pressed_x(),
+						event_handler->get_lm_last_pressed_y()))) {
+						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
+						set_active_element(&gui::gui_elements[i]);
+					}
+					else {
+						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
+					}
+					
+					gui::switch_input_text(event_handler->get_input_text(),
+						gui::gui_input_boxes[gui::gui_elements[i].num]);
+                    gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
+					break;
+				default:
 					break;
 			}
 		}
@@ -167,7 +195,180 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	return gui::gui_texts[ctexts-1];
 }
 
+/*! adds a gui input box element and returns it
+ *  @param rectangle the input boxes rectangle
+ *  @param id the input boxes (a2e event) id
+ *  @param text the input boxes text
+ */
+gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text) {
+	gui::gui_elements[celements].id = id;
+	gui::gui_elements[celements].type = gui::INPUT;
+	gui::gui_elements[celements].num = cinput_boxes;
+	gui::gui_elements[celements].is_drawn = true;
+	
+	// celements has to be incremented _before_ we add the text, otherwise
+	// our input box stuff will be overwritten
+	celements++;
+
+	gui::gui_input_boxes[cinput_boxes]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, g.cord_to_pnt(0,0), id+0xFFFF));
+	// don't draw our text automatically
+	// celements-1, because our text element, is the last initialized element
+	gui::gui_elements[celements-1].is_drawn = false;
+
+	gui::gui_input_boxes[cinput_boxes]->set_blink_text_handler(add_text("vera.ttf", 12, " ", 0x000000, g.cord_to_pnt(0,0), id+0xFFFFFF));
+	// don't draw our text automatically
+	// celements-1, because our text element, is the last initialized element
+	gui::gui_elements[celements-1].is_drawn = false;
+
+	gui::gui_input_boxes[cinput_boxes]->set_engine_handler(gui::engine_handler);
+	gui::gui_input_boxes[cinput_boxes]->set_id(id);
+	gui::gui_input_boxes[cinput_boxes]->set_rectangle(rectangle);
+	gui::gui_input_boxes[cinput_boxes]->set_text(text);
+	gui::gui_input_boxes[cinput_boxes]->set_text_position(strlen(text));
+
+	cinput_boxes++;
+
+	return gui_input_boxes[cinput_boxes-2];
+}
+
 //! returns the guis surface
 SDL_Surface* gui::get_gui_surface() {
 	return gui::gui_surface;
+}
+
+gui::gui_element* gui::get_active_element() {
+	return gui::active_element;
+}
+
+void gui::set_active_element(gui_element* active_element) {
+	gui::active_element = active_element;
+	event_handler->set_active_element((event::gui_element*)active_element);
+}
+
+void gui::switch_input_text(char* input_text, gui_input* input_box) {
+	for(unsigned int i = 0; i < strlen(input_text); i++) {
+		switch(input_text[i]) {
+			case event_handler->LEFT:
+				input_box->set_text_position(input_box->get_text_position() - 1);
+				break;
+			case event_handler->RIGHT:
+				input_box->set_text_position(input_box->get_text_position() + 1);
+				break;
+			case event_handler->BACK: {
+				unsigned int ib_text_length = strlen(input_box->get_text());
+				char* ib_text = input_box->get_text();
+				char* set_text = (char*)malloc(ib_text_length+4);
+				char* tok1 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok1[a] = 0;
+				}
+				char* tok2 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok2[a] = 0;
+				}
+				if(ib_text_length != input_box->get_text_position()) {
+					unsigned int j;
+					for(j = 0; j < input_box->get_text_position(); j++) {
+						tok1[j] = ib_text[j];
+					}
+					tok1[j-1] = 0;
+					unsigned int k = 0;
+					for(j = input_box->get_text_position(); j < ib_text_length; j++) {
+						tok2[k] = ib_text[j];
+						k++;
+					}
+					sprintf(set_text, "%s%s", tok1, tok2);
+				}
+				else {
+					sprintf(tok1, "%s", ib_text);
+					tok1[ib_text_length - 1] = 0;
+                    sprintf(set_text, "%s", tok1);
+				}
+
+				// no text exception
+				if(strlen(set_text) != 0) {
+					input_box->set_text(set_text);
+					input_box->set_text_position(input_box->get_text_position() - 1);
+				}
+				else {
+					input_box->set_notext();
+					input_box->set_text_position(0);
+				}
+				//input_box->set_text_position(input_box->get_text_position() - 1);
+			}
+			break;
+			case event_handler->DEL: {
+				unsigned int ib_text_length = strlen(input_box->get_text());
+				char* ib_text = input_box->get_text();
+				char* set_text = (char*)malloc(ib_text_length+4);
+				char* tok1 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok1[a] = 0;
+				}
+				char* tok2 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok2[a] = 0;
+				}
+				if(ib_text_length != input_box->get_text_position()) {
+					unsigned int j;
+					for(j = 0; j < input_box->get_text_position(); j++) {
+						tok1[j] = ib_text[j];
+					}
+					unsigned int k = 0;
+					for(j = input_box->get_text_position(); j < ib_text_length; j++) {
+						tok2[k] = ib_text[j+1];
+						k++;
+					}
+					sprintf(set_text, "%s%s", tok1, tok2);
+				}
+				else {
+                    sprintf(set_text, "%s", ib_text);
+				}
+				// no text exception
+				if(strlen(set_text) != 0) {
+					input_box->set_text(set_text);
+				}
+				else {
+					input_box->set_notext();
+				}
+			}
+			break;
+			case event_handler->HOME:
+				input_box->set_text_position(0);
+				break;
+			case event_handler->END:
+				input_box->set_text_position(strlen(input_box->get_text()));
+				break;
+			default: {
+				unsigned int ib_text_length = strlen(input_box->get_text());
+				char* ib_text = input_box->get_text();
+				char* set_text = (char*)malloc(ib_text_length+4);
+				char* tok1 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok1[a] = 0;
+				}
+				char* tok2 = (char*)malloc(ib_text_length+4);
+				for(unsigned int a = 0; a < ib_text_length+4; a++) {
+					tok2[a] = 0;
+				}
+				if(ib_text_length != input_box->get_text_position()) {
+					for(unsigned int j = 0; j < input_box->get_text_position(); j++) {
+						tok1[j] = ib_text[j];
+					}
+					unsigned int k = 0;
+					for(unsigned int j = input_box->get_text_position(); j < ib_text_length; j++) {
+						tok2[k] = ib_text[j];
+						k++;
+					}
+					sprintf(set_text, "%s%c%s", tok1, input_text[i], tok2);
+				}
+				else {
+                    sprintf(set_text, "%s%c", ib_text, input_text[i]);
+				}
+				input_box->set_text(set_text);
+				input_box->set_text_position(input_box->get_text_position() + 1);
+			}
+			break;
+		}
+	}
 }

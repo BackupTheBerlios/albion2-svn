@@ -28,6 +28,7 @@
 #include "event.h"
 #include "gui_text.h"
 #include "gui_button.h"
+#include "gui_input.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -35,8 +36,8 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/13
+ *  @version 0.1.1
+ *  @date 2004/08/14
  *  @todo more functions
  *  
  *  the gui class
@@ -48,14 +49,26 @@ public:
 	gui();
 	~gui();
 
+	struct gui_element {
+		unsigned int id;
+		unsigned int type;
+		unsigned int num;
+		bool is_drawn;
+	};
+
 	void init(engine &iengine, event &ievent);
 	void draw();
 
 	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text);
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, gfx::pnt* point, unsigned int id);	
+	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text);
+	void switch_input_text(char* input_text, gui_input* input_box);
 
 	SDL_Surface* get_gui_surface();
+
+	gui_element* get_active_element();
+	void set_active_element(gui_element* active_element);
 
 protected:
 	msg m;
@@ -66,13 +79,6 @@ protected:
 	engine* engine_handler;
 	
 	SDL_Surface* gui_surface;
-
-	struct gui_element {
-		unsigned int id;
-		unsigned int type;
-		unsigned int num;
-		bool is_drawn;
-	};
 
 	//! gui element types
 	enum GTYPE {
@@ -96,6 +102,14 @@ protected:
 	gui_text* gui_texts[128];
 	//! current amount of gui text elements
 	unsigned int ctexts;
+
+	//! gui input boxes
+	gui_input* gui_input_boxes[128];
+	//! current amount of gui input box elements
+	unsigned int cinput_boxes;
+
+	//! current active gui element
+	gui_element* active_element;
 };
 
 #endif

@@ -16,6 +16,7 @@
 
 #include "gui_sample.h"
 #include <iostream>
+#include <string.h>
 
 /*!
  * \mainpage
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
 	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 101, "äöüÄÖÜßéèê");
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0x000000, agfx.cord_to_pnt(100, 5), 102);
 	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
+	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "ä");
+	aevent.set_keyboard_layout(event::DE);
 
 	refresh_time = SDL_GetTicks();
 	while(!done)
@@ -81,7 +84,6 @@ int main(int argc, char *argv[])
 							output_text->set_text("button with the id #101 was pressed!");
 							break;
 						default:
-							int blubb = 0;
 							break;
 					}
 					break;

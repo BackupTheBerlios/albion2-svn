@@ -47,12 +47,16 @@ public:
 
 	void init(engine* iengine);
 
-	//! gui style color - bg color
+	//! gui style color - bg color (used for i.g. buttons)
 	unsigned int STYLE_BG;
+	//! gui style color - bg color 2 (used for i.g. input boxes)
+	unsigned int STYLE_BG2;
 	//! gui style color - light color
 	unsigned int STYLE_LIGHT;
 	//! gui style color - dark color
 	unsigned int STYLE_DARK;
+	//! gui style color - dark color 2
+	unsigned int STYLE_DARK2;
 	//! gui style color - inside dark color
 	unsigned int STYLE_INDARK;
 

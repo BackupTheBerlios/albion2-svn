@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __GUI_TEXT_H__
-#define __GUI_TEXT_H__
+#ifndef __GUI_INPUT_H__
+#define __GUI_INPUT_H__
 
 #include <iostream>
 #include <SDL.h>
@@ -25,53 +25,48 @@
 #include "gfx.h"
 #include "event.h"
 #include "engine.h"
+#include "gui_text.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class gui_text
- *  @brief gui text element functions
+/*! @class gui_input
+ *  @brief gui input box element functions
  *  @author flo
  *  @version 0.1
- *  @date 2004/08/13
+ *  @date 2004/08/14
  *  @todo more functions
  *  
- *  the gui_text class
+ *  the gui_input class
  */
 
-class A2E_API gui_text
+class A2E_API gui_input
 {
 public:
-	gui_text();
-	~gui_text();
+	gui_input();
+	~gui_input();
+	
+	void draw_input();
+    void set_engine_handler(engine* iengine);
+	void set_text_handler(gui_text* itext);
+	void set_blink_text_handler(gui_text* itext);
 
-	TTF_Font* open_font(char* font_name, unsigned int font_size);
-	void close_font(TTF_Font* font);
 
-	void draw_text();
-	void set_engine_handler(engine* iengine);
-
-
-	// gui text element variables functions
-
-	void remake_text();
+	// gui input box element variables functions
 
 	unsigned int get_id();
-	SDL_Surface* get_surface();
-	gfx::pnt* get_point();
+	gfx::rect* get_rectangle();
 	char* get_text();
-	SDL_Color get_color();
-	char* get_font_name();
-	unsigned int get_font_size();
+	unsigned int get_text_position();
 
 	void set_id(unsigned int id);
-	void set_surface(SDL_Surface* surface);
-	void set_point(gfx::pnt* point);
+	void set_rectangle(gfx::rect* rectangle);
 	void set_text(char* text);
-	void set_color(SDL_Color color);
-	void set_font_name(char* font_name);
-	void set_font_size(unsigned int font_size);
-	void set_init(bool state);
+	void set_text_position(unsigned int position);
+
+	void set_active(bool pressed);
+	bool get_active();
 
 	void set_notext();
 
@@ -79,30 +74,32 @@ protected:
 	msg m;
 	core c;
 	gfx g;
+	gui_style gstyle;
 
 	engine* engine_handler;
 
-	// gui text element variables
+	gui_text* text_handler;
 
-	//! text id
+	gui_text* blink_text_handler;
+	unsigned int blink_time;
+
+	// gui input box element variables
+
+	//! input box id
 	unsigned int id;
-	//! text surface (no need to be changed or accessed)
-	SDL_Surface* surface;
-	//! text starting point (x,y)
-	gfx::pnt* point;
-	//! the text itself
+	//! input box rectangle
+	gfx::rect* rectangle;
+	//! input box text
 	char* text;
-	//! the color if the text
-	SDL_Color color;
-	//! the font name
-	char* font_name;
-	//! the font size
-	unsigned int font_size;
-	//! bool if everything was initialized
-	bool is_init;
+	//! the current text position (of the blink symbol)
+	unsigned int text_pos;
 
-	bool is_notext;
+	//! the current text length
+	unsigned int text_length;
 
+	// event handle stuff
+
+	bool is_active;
 };
 
 #endif
