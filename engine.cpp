@@ -259,7 +259,7 @@ int engine::resizeWindow(GLvoid) {
 	glLoadIdentity();
 
 	// set perspective with fov = 45° and far value = 500.0f
-	gluPerspective(45.0f, engine::width/engine::height, 0.1f, 500.0f);
+	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
 
 	// model view matrix
 	glMatrixMode(GL_MODELVIEW);

@@ -23,7 +23,7 @@
  * \author laxity
  * \author flo
  *
- * \date July - December 2004
+ * \date July 2004 - January 2005
  *
  * Albion 2 Engine
  */

@@ -30,7 +30,7 @@ using namespace std;
  *  @brief gui style stuff
  *  @author flo
  *  @version 0.3.1
- *  @date 2004/12/13
+ *  @date 2004/12/14
  *  @todo more functions
  *  
  *  the gui_style class
@@ -77,8 +77,8 @@ public:
 
 protected:
     gfx g;
-
 	SDL_Surface* screen;
+
 };
 
 #endif

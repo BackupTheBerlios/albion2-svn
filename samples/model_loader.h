@@ -35,6 +35,8 @@
 #include <camera.h>
 #include <a2emodel.h>
 #include <scene.h>
+#include <ode.h>
+#include <ode_object.h>
 using namespace std;
 
 msg m;
@@ -44,11 +46,13 @@ engine e;
 gfx agfx;
 event aevent;
 camera cam;
+ode o;
 
 scene sce;
 
-a2emodel model;
-a2emodel model2;
+a2emodel plane;
+a2emodel cube;
+a2emodel sphere;
 
 SDL_Surface* sf;
 

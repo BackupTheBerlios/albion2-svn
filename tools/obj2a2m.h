@@ -29,7 +29,7 @@ using namespace std;
 
 void load_materials(char* filename);
 
-char mesh_name[9];
+char model_name[9];
 char* obj_names[MAX_OBJS];
 unsigned int object_count = 0;
 unsigned int vertex_count = 0;

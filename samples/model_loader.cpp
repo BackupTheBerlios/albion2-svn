@@ -24,7 +24,7 @@
  *
  * \author flo
  *
- * \date August - December 2004
+ * \date August 2004 - January 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
@@ -45,13 +45,32 @@ int main(int argc, char *argv[])
 
 	// initialize the camera
 	cam.init(e, aevent);
+	cam.set_position(0.0f, 0.0f, -30.0f);
 
 	// load the model and set a new position
-	model.load_model("ground.a2m");
-	model.set_position(0.0f, -13.0f, 0.0f);
-	model2.load_model("celtic_cottage.a2m");
-	sce.add_model(&model);
-	sce.add_model(&model2);
+	plane.load_model("plane2.a2m");
+	plane.set_position(0.0f, -15.0f, 0.0f);
+
+	cube.load_model("cube.a2m");
+	cube.set_position(0.0f, 10.0f, 0.0f);
+
+	sphere.load_model("sphere.a2m");
+	sphere.set_position(0.0f, 10.0f, 0.0f);
+	sphere.set_radius(2.5f);
+
+	sce.add_model(&plane);
+	sce.add_model(&cube);
+	sce.add_model(&sphere);
+
+	// initialize ode
+	// note: ode isn't implemented totally atm and
+	// returns (many) errors, so don't use it ...
+	o.init();
+
+	// pass the models to ode
+	o.add_object(&plane, true, ode_object::TRIMESH);
+	o.add_object(&cube, false, ode_object::BOX);
+	o.add_object(&sphere, false, ode_object::SPHERE);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -76,6 +95,8 @@ int main(int argc, char *argv[])
 						case SDLK_ESCAPE:
 							done = true;
 							break;
+						case SDLK_RETURN:
+							break;
 					}
 					break;
 			}
@@ -86,7 +107,8 @@ int main(int argc, char *argv[])
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
+				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
+					cam.get_position()->x, cam.get_position()->y, cam.get_position()->z);
 				fps = 0;
 				fps_time = SDL_GetTicks();
 			}
@@ -96,11 +118,14 @@ int main(int argc, char *argv[])
 
 			cam.run();
 			sce.draw();
+			o.run();
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}
 	}
+
+	o.close();
 
 	return 0;
 }

@@ -39,8 +39,8 @@ using namespace std;
 /*! @class a2emodel
  *  @brief class for loading and displaying an a2e model
  *  @author flo
- *  @version 0.1.1
- *  @date 2004/09/08
+ *  @version 0.1.3
+ *  @date 2005/01/10
  *  @todo more functions
  *  
  *  the a2emodel class
@@ -57,6 +57,22 @@ public:
 	void load_textures();
 	void set_position(float x, float y, float z);
 	core::vertex* get_position();
+	void set_scale(float x, float y, float z);
+	core::vertex* get_scale();
+
+	core::vertex* get_vertices();
+	core::index* get_indices();
+	unsigned int get_vertex_count();
+	unsigned int get_index_count();
+
+	void build_bounding_box();
+	core::aabbox* get_bounding_box();
+
+	// stuff for collision detection
+	void set_radius(float radius);
+	void set_length(float length);
+	float get_radius();
+	float get_length();
 
 	// for debug purposes
 	void set_texture(GLuint texture, unsigned int num);
@@ -66,7 +82,7 @@ protected:
 	file_io file;
 	core c;
 
-	char model_type[8];
+	char model_type[9];
 	char model_name[9];
 	unsigned int vertex_count;
 	core::vertex* vertices;
@@ -76,12 +92,19 @@ protected:
 	char* obj_names[MAX_OBJS];
 	unsigned int* index_count;
 	unsigned int* tex_value;
-	core::triangle* indices[MAX_OBJS];
+	core::index* indices[MAX_OBJS];
 	core::triangle* tex_cords[MAX_OBJS];
 
 	GLuint textures[MAX_OBJS];
 
 	core::vertex* position;
+	core::vertex* scale;
+
+	core::aabbox* bbox;
+
+	// some variables for collision detection
+	float radius;
+	float length;
 };
 
 #endif

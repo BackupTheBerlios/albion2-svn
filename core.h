@@ -45,6 +45,10 @@ public:
 		float x, y, z;
 	};
 
+	struct index {
+		unsigned int i1, i2, i3;
+	};
+
 	struct line {
 		vertex v1;
 		vertex v2;
@@ -61,6 +65,11 @@ public:
 		vertex v2;
 		vertex v3;
 		vertex v4;
+	};
+
+	struct aabbox {
+		vertex vmin;
+		vertex vmax;
 	};
 
 	unsigned int get_bit(unsigned int value, unsigned int bit);

@@ -33,8 +33,8 @@ using namespace std;
 /*! @class gui_input
  *  @brief gui input box element functions
  *  @author flo
- *  @version 0.2.1
- *  @date 2004/08/22
+ *  @version 0.3
+ *  @date 2004/12/13
  *  @todo more functions
  *  
  *  the gui_input class

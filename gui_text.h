@@ -33,8 +33,8 @@ using namespace std;
 /*! @class gui_text
  *  @brief gui text element functions
  *  @author flo
- *  @version 0.2.1
- *  @date 2004/09/08
+ *  @version 0.3
+ *  @date 2004/12/13
  *  @todo more functions
  *  
  *  the gui_text class

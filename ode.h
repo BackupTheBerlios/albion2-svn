@@ -13,73 +13,66 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __GUI_LIST_ITEM_H__
-#define __GUI_LIST_ITEM_H__
+
+#ifndef __ODE_H__
+#define __ODE_H__
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_ttf.h>
+#include <ode/ode.h>
+#include <cmath>
+#include <list>
 #include "msg.h"
 #include "core.h"
-#include "gfx.h"
-#include "event.h"
 #include "engine.h"
-#include "gui_text.h"
-#include "gui_style.h"
+#include "a2emodel.h"
+#include "ode_object.h"
 using namespace std;
+
+#define MAX_CONTACTS 128
+#define MAX_OBJECTS 4096
 
 #include "win_dll_export.h"
 
-/*! @class gui_list_item
- *  @brief gui list box item element functions
+/*! @class ode
+ *  @brief open dynamic engine bindings/functions
  *  @author flo
- *  @version 0.2
- *  @date 2004/12/13
+ *  @version 0.1
+ *  @date 2005/01/10
  *  @todo more functions
  *  
- *  the gui_list_item class
+ *  bindings and functions for using the open dynamic engine
  */
 
-class A2E_API gui_list_item
+class A2E_API ode
 {
 public:
-	gui_list_item();
-	~gui_list_item();
-	
-	void draw_list_item();
-    void set_engine_handler(engine* iengine);
-	void set_text_handler(gui_text* itext);
-	gui_text* get_text_handler();
-	void clear();
+	ode();
+	~ode();
 
+	void init();
+	void close();
+	void run();
 
-	// gui list box item element variables functions
+	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 
-	char* get_text();
-	unsigned int get_id();
-	gfx::pnt* get_point();
-
-	void set_text(char* text);
-	void set_id(unsigned int id);
-	void set_point(gfx::pnt* point);
+	void add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
+	void update_objects();
 
 protected:
 	msg m;
-	gfx g;
-	gui_style gstyle;
+	core c;
 
-	engine* engine_handler;
-	gui_text* text_handler;
+	unsigned int object_count;
+	ode_object* ode_objects[MAX_OBJECTS];
 
-	// gui list box element variables
+	static dWorldID world;
+	static dSpaceID space;
+	static dJointGroupID joint_group;
+	static float gravity;
+	static float cfm;
+	static float erp;
 
-	//! list box item text
-	char* text;
-	//! list box item id
-	unsigned int id;
-	//! text starting point (x,y)
-	gfx::pnt* point;
 };
 
 #endif

@@ -30,8 +30,8 @@ using namespace std;
 /*! @class event
  *  @brief (sdl) event handler
  *  @author flo
- *  @version 0.2.1
- *  @date 2004/09/08
+ *  @version 0.3
+ *  @date 2004/12/13
  *  @todo more functions
  *  
  *  the event handling class

@@ -27,14 +27,14 @@ using namespace std;
  *
  * \author flo
  *
- * \date August - September 2004
+ * \date August - December 2004
  *
  * Albion 2 Engine Tool - Alias Wavefront .obj -> A2E .a2m Converter
  *
  *
  * little specification of the A2E model format:
  *
- * [A2EMESH - 7 bytes]
+ * [A2EMODEL - 8 bytes]
  * [NAME - 8 bytes]
  * [VERTEX COUNT - 4 bytes]
  * [VERTICES - 4 bytes * VERTEX COUNT]
@@ -404,9 +404,9 @@ int main(int argc, char *argv[])
 	fstream afile;
 	afile.open(a2m_filename, fstream::out | fstream::binary);
 
-	char* a2m_type = "A2EMESH";
-	afile.write(a2m_type, 7);
-	afile.write(mesh_name, 8);
+	char* a2m_type = "A2EMODEL";
+	afile.write(a2m_type, 8);
+	afile.write(model_name, 8);
 
 	tmp[0] = (char)(vertex_count >> 24) & 0xFF;
 	tmp[1] = (char)(vertex_count >> 16) & 0xFF;

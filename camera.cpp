@@ -23,7 +23,7 @@
 camera::camera() {
 	camera::position = (core::vertex*)malloc(sizeof(core::vertex));
 
-	// the to nehe for that piover stuff ;)
+	// thx to nehe for that piover stuff ;)
 	piover180 = 0.0174532925f;
 
 	up_down = 0.0f;

@@ -29,12 +29,19 @@ a2emodel::a2emodel() {
 	a2emodel::position->x = 0.0f;
 	a2emodel::position->y = 0.0f;
 	a2emodel::position->z = 0.0f;
+
+	a2emodel::scale = (core::vertex*)malloc(sizeof(core::vertex));
+	a2emodel::scale->x = 0.0f;
+	a2emodel::scale->y = 0.0f;
+	a2emodel::scale->z = 0.0f;
 }
 
 /*! there is no function currently
  */
 a2emodel::~a2emodel() {
 	free(a2emodel::position);
+	free(a2emodel::scale);
+	if(a2emodel::bbox) { free(a2emodel::bbox); }
 }
 
 /*! draws the model
@@ -46,17 +53,17 @@ void a2emodel::draw_model() {
 		glBegin(GL_TRIANGLES);
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-			glVertex3f(a2emodel::position->x + indices[i][j].v1.x,
-				a2emodel::position->y + indices[i][j].v1.y,
-				a2emodel::position->z + indices[i][j].v1.z);
+			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
+				a2emodel::position->y + vertices[indices[i][j].i1].y,
+				a2emodel::position->z + vertices[indices[i][j].i1].z);
 			glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-			glVertex3f(a2emodel::position->x + indices[i][j].v2.x,
-				a2emodel::position->y + indices[i][j].v2.y,
-				a2emodel::position->z + indices[i][j].v2.z);
+			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
+				a2emodel::position->y + vertices[indices[i][j].i2].y,
+				a2emodel::position->z + vertices[indices[i][j].i2].z);
 			glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-			glVertex3f(a2emodel::position->x + indices[i][j].v3.x,
-				a2emodel::position->y + indices[i][j].v3.y,
-				a2emodel::position->z + indices[i][j].v3.z);
+			glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
+				a2emodel::position->y + vertices[indices[i][j].i3].y,
+				a2emodel::position->z + vertices[indices[i][j].i3].z);
 		}
 		glEnd();
 	}
@@ -100,8 +107,8 @@ void a2emodel::load_model(char* filename) {
 	file.open_file(filename, true);
 
 	// get type and name
-	file.get_block(model_type, 7);
-	model_type[8] = 0;
+	file.get_block(model_type, 8);
+	model_type[9] = 0;
 	file.get_block(model_name, 8);
 	model_name[9] = 0;
 
@@ -215,26 +222,26 @@ void a2emodel::load_model(char* filename) {
 		// create indices/triangles
 		char index[4];
 		unsigned int uindex;
-		indices[i] = (core::triangle*)malloc(sizeof(core::triangle)*index_count[i]);
+		indices[i] = (core::index*)malloc(sizeof(core::index)*index_count[i]);
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			file.get_block(index, 4);
 			uindex = (unsigned int)((index[0] & 0xFF)*0x1000000);
 			uindex += (unsigned int)((index[1] & 0xFF)*0x10000);
 			uindex += (unsigned int)((index[2] & 0xFF)*0x100);
 			uindex += (unsigned int)(index[3] & 0xFF);
-			indices[i][j].v1 = vertices[uindex];
+			indices[i][j].i1 = uindex;
 			file.get_block(index, 4);
 			uindex = (unsigned int)((index[0] & 0xFF)*0x1000000);
 			uindex += (unsigned int)((index[1] & 0xFF)*0x10000);
 			uindex += (unsigned int)((index[2] & 0xFF)*0x100);
 			uindex += (unsigned int)(index[3] & 0xFF);
-			indices[i][j].v2 = vertices[uindex];
+			indices[i][j].i2 = uindex;
 			file.get_block(index, 4);
 			uindex = (unsigned int)((index[0] & 0xFF)*0x1000000);
 			uindex += (unsigned int)((index[1] & 0xFF)*0x10000);
 			uindex += (unsigned int)((index[2] & 0xFF)*0x100);
 			uindex += (unsigned int)(index[3] & 0xFF);
-			indices[i][j].v3 = vertices[uindex];
+			indices[i][j].i3 = uindex;
 		}
 
 		// create texture coordinates
@@ -265,6 +272,8 @@ void a2emodel::load_model(char* filename) {
 	}
 
 	file.close_file();
+
+	a2emodel::build_bounding_box();
 }
 
 /*! sets the position of the model
@@ -284,10 +293,133 @@ core::vertex* a2emodel::get_position() {
 	return a2emodel::position;
 }
 
+/*! sets the scale of the model
+ *  @param x the x scale
+ *  @param y the y scale
+ *  @param z the z scale
+ */
+void a2emodel::set_scale(float x, float y, float z) {
+	a2emodel::scale->x = x;
+	a2emodel::scale->y = y;
+	a2emodel::scale->z = z;
+
+	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
+		a2emodel::vertices[i].x *= a2emodel::scale->x;
+		a2emodel::vertices[i].y *= a2emodel::scale->y;
+		a2emodel::vertices[i].z *= a2emodel::scale->z;
+	}
+}
+
+/*! returns the scale of the model
+ */
+core::vertex* a2emodel::get_scale() {
+	return a2emodel::scale;
+}
+
 /*! sets a texture of the model to a new one
  *  @param texture the texture data
  *  @param num the number of the texture that you want to replace
  */
 void a2emodel::set_texture(GLuint texture, unsigned int num) {
 	a2emodel::textures[num] = texture;
+}
+
+/*! returns a pointer to the vertices
+ */
+core::vertex* a2emodel::get_vertices() {
+	return a2emodel::vertices;
+}
+
+/*! returns a pointer to the indices
+ */
+core::index* a2emodel::get_indices() {
+	// todo: a routine to get all (!) indices ...
+
+	return a2emodel::indices[0];
+}
+
+/*! returns the vertex count
+ */
+unsigned int a2emodel::get_vertex_count() {
+	return a2emodel::vertex_count;
+}
+
+/*! returns the index count
+ */
+unsigned int a2emodel::get_index_count() {
+	return *a2emodel::index_count;
+}
+
+/*! builds the bounding box
+ */
+void a2emodel::build_bounding_box() {
+	float minx, miny, minz, maxx, maxy, maxz;
+	minx = vertices[0].x;
+	miny = vertices[0].y;
+	minz = vertices[0].z;
+	maxx = vertices[0].x;
+	maxy = vertices[0].y;
+	maxz = vertices[0].z;
+	for(unsigned int i = 1; i < vertex_count; i++) {
+		if(vertices[i].x < minx) {
+			minx = vertices[i].x;
+		}
+		if(vertices[i].y < miny) {
+			miny = vertices[i].y;
+		}
+		if(vertices[i].z < minz) {
+			minz = vertices[i].z;
+		}
+
+		if(vertices[i].x > maxx) {
+			maxx = vertices[i].x;
+		}
+		if(vertices[i].y > maxy) {
+			maxy = vertices[i].y;
+		}
+		if(vertices[i].z > maxz) {
+			maxz = vertices[i].z;
+		}
+	}
+
+	if(a2emodel::bbox) { free(a2emodel::bbox); }
+	a2emodel::bbox = (core::aabbox*)malloc(sizeof(core::aabbox));
+	a2emodel::bbox->vmin.x = minx;
+	a2emodel::bbox->vmin.y = miny;
+	a2emodel::bbox->vmin.z = minz;
+	a2emodel::bbox->vmax.x = maxx;
+	a2emodel::bbox->vmax.y = maxy;
+	a2emodel::bbox->vmax.z = maxz;
+}
+
+/*! returns the bounding box of the model
+ */
+core::aabbox* a2emodel::get_bounding_box() {
+	return a2emodel::bbox;
+}
+
+/*! used for ode collision - sets the radius of an sphere/cylinder object
+ *  @param radius the objects radius
+ */
+void a2emodel::set_radius(float radius) {
+	a2emodel::radius = radius;
+}
+
+/*! used for ode collision - returns the radius of an sphere/cylinder object
+ */
+float a2emodel::get_radius() {
+	return a2emodel::radius;
+}
+
+/*! used for ode collision - sets the length of an cylinder object
+ *  @param length the objects length
+ */
+void a2emodel::set_length(float length) {
+	a2emodel::length = length;
+}
+
+/*! used for ode collision - returns the length of an cylinder object
+ */
+float a2emodel::get_length() {
+	return a2emodel::length;
 }
