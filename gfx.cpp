@@ -189,10 +189,26 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	    dist_y1_y2 = tmp;
 	}
 
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1), color);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1 + dist_y1_y2), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2), color);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1), gfx::cord_to_pnt(rectangle->x1, rectangle->y1 + dist_y1_y2), color);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2), color);
+	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
+	gfx::draw_line(surface, p1, p2, color);
+
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color);
+
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color);
+
+	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color);
+
+	free(p1);
+	free(p2);
 }
 
 /*! draws a two colored rectangle on a surface
@@ -221,10 +237,26 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	    dist_y1_y2 = tmp;
 	}
 
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1), color1);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1), gfx::cord_to_pnt(rectangle->x1, rectangle->y1 + dist_y1_y2), color1);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1, rectangle->y1 + dist_y1_y2), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2), color2);
-	gfx::draw_line(surface, gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1), gfx::cord_to_pnt(rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2), color2);
+	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
+	gfx::draw_line(surface, p1, p2, color1);
+
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color1);
+
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color2);
+
+	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color2);
+
+	free(p1);
+	free(p2);
 }
 
 /*! draws a filled rectangle on a surface
@@ -234,11 +266,14 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
  */
 void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 								unsigned int color) {
+	gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	for(unsigned int i = rectangle->y1; i <= rectangle->y2; i++) {
 		for(unsigned int j = rectangle->x1; j <= rectangle->x2; j++) {
-			gfx::draw_point(surface, gfx::cord_to_pnt(j, i), color);
+			gfx::cord_to_pnt(p, j, i);
+			gfx::draw_point(surface, p, color);
 		}
 	}
+	free(p);
 }
 
 /*! returns the sdl_color, we get from the function arguments and surface
@@ -262,6 +297,19 @@ unsigned int gfx::get_color(SDL_Surface* surface, unsigned int rgb) {
 	return (unsigned int)gfx::get_color(surface, red, green, blue);
 }
 
+/*! makes a rectangle out of 2 points
+ *  @param x1 x cord point 1
+ *  @param y1 y cord point 1
+ *  @param x2 x cord point 2
+ *  @param y2 y cord point 2
+ */
+void gfx::pnt_to_rect(gfx::rect* rectangle, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
+	rectangle->x1 = x1;
+	rectangle->y1 = y1;
+	rectangle->x2 = x2;
+	rectangle->y2 = y2;
+}
+
 /*! makes a rectangle out of 2 points and returns it
  *  @param x1 x cord point 1
  *  @param y1 y cord point 1
@@ -269,23 +317,33 @@ unsigned int gfx::get_color(SDL_Surface* surface, unsigned int rgb) {
  *  @param y2 y cord point 2
  */
 gfx::rect* gfx::pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
-	gfx::rect* rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
-	rectangle->x1 = x1;
-	rectangle->y1 = y1;
-	rectangle->x2 = x2;
-	rectangle->y2 = y2;
-	return rectangle;
+	gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+	r->x1 = x1;
+	r->y1 = y1;
+	r->x2 = x2;
+	r->y2 = y2;
+	return r;
 }
+
+/*! makes a point out of 2 cords
+ *  @param x x cord
+ *  @param y y cord
+ */
+void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
+	point->x = x;
+	point->y = y;
+}
+
 
 /*! makes a point out of 2 cords and returns it
  *  @param x x cord
  *  @param y y cord
  */
 gfx::pnt* gfx::cord_to_pnt(unsigned int x, unsigned int y) {
-	gfx::pnt* point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	point->x = x;
-	point->y = y;
-	return point;
+	gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	p->x = x;
+	p->y = y;
+	return p;
 }
 
 /*! returns true if point is in rectangle

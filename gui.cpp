@@ -80,10 +80,11 @@ void gui::draw() {
 	for(unsigned int i = 0; i < celements; i++) {
 		if(gui::gui_elements[i].is_drawn == true) {
 			switch(gui::gui_elements[i].type) {
-				case gui::BUTTON:
-					if(g.is_pnt_in_rectangle(gui::gui_buttons[gui::gui_elements[i].num]->get_rectangle(),
-						g.cord_to_pnt(event_handler->get_lm_pressed_x(),
-						event_handler->get_lm_pressed_y()))) {
+				case gui::BUTTON: {
+					gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+					p->x = event_handler->get_lm_pressed_x();
+					p->y = event_handler->get_lm_pressed_y();
+					if(g.is_pnt_in_rectangle(gui::gui_buttons[gui::gui_elements[i].num]->get_rectangle(), p)) {
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(true);
 						gui::gui_buttons[gui::gui_elements[i].num]->set_pressed(true);
 						set_active_element(&gui::gui_elements[i]);
@@ -97,14 +98,17 @@ void gui::draw() {
 
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(false);
 					}
-					break;
+					free(p);
+				}
+				break;
 				case gui::TEXT:
 					gui::gui_texts[gui::gui_elements[i].num]->draw_text();
 					break;
-				case gui::INPUT:
-					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(),
-						g.cord_to_pnt(event_handler->get_lm_last_pressed_x(),
-						event_handler->get_lm_last_pressed_y()))) {
+				case gui::INPUT: {
+					gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+					p->x = event_handler->get_lm_last_pressed_x();
+					p->y = event_handler->get_lm_last_pressed_y();
+					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), p)) {
 						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
 						set_active_element(&gui::gui_elements[i]);
 					}
@@ -115,7 +119,9 @@ void gui::draw() {
 					gui::switch_input_text(event_handler->get_input_text(),
 						gui::gui_input_boxes[gui::gui_elements[i].num]);
                     gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
-					break;
+					free(p);
+				}
+				break;
 				default:
 					break;
 			}
@@ -138,7 +144,11 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
 	// our button stuff will be overwritten
 	celements++;
 
-	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, g.cord_to_pnt(0,0), id+0xFFFF));
+	gfx::pnt* tmp_point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	tmp_point->x = 0;
+	tmp_point->y = 0;
+	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, tmp_point, id+0xFFFF));
+	free(tmp_point);
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
@@ -248,13 +258,13 @@ void gui::set_active_element(gui_element* active_element) {
 void gui::switch_input_text(char* input_text, gui_input* input_box) {
 	for(unsigned int i = 0; i < strlen(input_text); i++) {
 		switch(input_text[i]) {
-			case event_handler->LEFT:
+			case event::LEFT:
 				input_box->set_text_position(input_box->get_text_position() - 1);
 				break;
-			case event_handler->RIGHT:
+			case event::RIGHT:
 				input_box->set_text_position(input_box->get_text_position() + 1);
 				break;
-			case event_handler->BACK: {
+			case event::BACK: {
 				unsigned int ib_text_length = strlen(input_box->get_text());
 				char* ib_text = input_box->get_text();
 				char* set_text = (char*)malloc(ib_text_length+4);
@@ -297,7 +307,7 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				//input_box->set_text_position(input_box->get_text_position() - 1);
 			}
 			break;
-			case event_handler->DEL: {
+			case event::DEL: {
 				unsigned int ib_text_length = strlen(input_box->get_text());
 				char* ib_text = input_box->get_text();
 				char* set_text = (char*)malloc(ib_text_length+4);
@@ -333,10 +343,10 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				}
 			}
 			break;
-			case event_handler->HOME:
+			case event::HOME:
 				input_box->set_text_position(0);
 				break;
-			case event_handler->END:
+			case event::END:
 				input_box->set_text_position(strlen(input_box->get_text()));
 				break;
 			default: {

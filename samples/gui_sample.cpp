@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 	unsigned int blue = SDL_MapRGB(sf->format, 0, 0, 255);
 	unsigned int red = SDL_MapRGB(sf->format, 255, 0, 0);
 	unsigned int white = SDL_MapRGB(sf->format, 255, 255, 255);
+
 	agfx.draw_point(sf, agfx.cord_to_pnt(10, 10), black);
 	agfx.draw_line(sf, agfx.cord_to_pnt(10, 20), agfx.cord_to_pnt(50, 40), black);
 	agfx.draw_rectangle(sf, agfx.pnt_to_rect(100, 100, 200, 120), black);
@@ -73,16 +74,24 @@ int main(int argc, char *argv[])
 
 		while(aevent.is_gui_event()) {
 			switch(aevent.get_gui_event().type) {
-				case aevent.BUTTON_PRESSED:
+				case event::BUTTON_PRESSED:
 					switch(aevent.get_gui_event().id) {
-						case 100:
-							agfx.draw_filled_rectangle(sf, agfx.pnt_to_rect(10, 580, 799, 599), white);
+						case 100: {
+							gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+							agfx.pnt_to_rect(r1, 10, 580, 799, 599);
+							agfx.draw_filled_rectangle(sf, r1, white);
 							output_text->set_text("button with the id #100 was pressed!");
-							break;
-						case 101:
-							agfx.draw_filled_rectangle(sf, agfx.pnt_to_rect(10, 580, 799, 599), white);
+							free(r1);
+						}
+						break;
+						case 101: {
+							gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+							agfx.pnt_to_rect(r1, 10, 580, 799, 599);
+							agfx.draw_filled_rectangle(sf, r1, white);
 							output_text->set_text("button with the id #101 was pressed!");
-							break;
+							free(r1);
+						}
+						break;
 						default:
 							break;
 					}

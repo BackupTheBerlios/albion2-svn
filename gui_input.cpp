@@ -42,26 +42,25 @@ gui_input::~gui_input() {
 void gui_input::draw_input() {
 	// draw bg
 	g.draw_filled_rectangle(engine_handler->get_screen(),
-		g.pnt_to_rect(gui_input::rectangle->x1,
-		gui_input::rectangle->y1,
-		gui_input::rectangle->x2,
-		gui_input::rectangle->y2), gstyle.STYLE_BG2);
+		gui_input::rectangle, gstyle.STYLE_BG2);
 
 	// draw 2 colored border
 	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		g.pnt_to_rect(gui_input::rectangle->x1,
-		gui_input::rectangle->y1,
-		gui_input::rectangle->x2,
-		gui_input::rectangle->y2),
+		gui_input::rectangle,
 		gstyle.STYLE_INDARK, gstyle.STYLE_LIGHT);
 
-	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		g.pnt_to_rect(gui_input::rectangle->x1+1,
+
+	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+
+	g.pnt_to_rect(r1, gui_input::rectangle->x1+1,
 		gui_input::rectangle->y1+1,
 		gui_input::rectangle->x2-1,
-		gui_input::rectangle->y2-1),
-		gstyle.STYLE_DARK, gstyle.STYLE_DARK2);
+		gui_input::rectangle->y2-1);
+	// draw 2 colored border
+	g.draw_2colored_rectangle(engine_handler->get_screen(),
+		r1, gstyle.STYLE_DARK, gstyle.STYLE_DARK2);
+
+	free(r1);
 
 	// draw text
 	unsigned int width = text_handler->get_surface()->w;
@@ -73,9 +72,12 @@ void gui_input::draw_input() {
 	// subtract from the input boxes center point, to make the text height centered.
 	// after that we just add the position to our lengths.
 	// +4, because we want the text be drawn a bit more right
-	text_handler->set_point(g.cord_to_pnt(gui_input::rectangle->x1 + 4,
-		gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2)));
+	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
+		gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2));
+	text_handler->set_point(p1);
 	text_handler->draw_text();
+	free(p1);
 
 	// draw blink text
 	width = blink_text_handler->get_surface()->w;
@@ -149,9 +151,12 @@ void gui_input::draw_input() {
 	// after that we just add the position to our lengths.
 	// +4, because we want the text be drawn a bit more right
 	// +1, because we want the text be drawn a bit more bottom
-	blink_text_handler->set_point(g.cord_to_pnt(gui_input::rectangle->x1 + 1 + text_width,
-		gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1));
+	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + text_width,
+		gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1);
+	blink_text_handler->set_point(p2);
 	blink_text_handler->draw_text();
+	free(p2);
 }
 
 /*! creates a engine_handler -> a pointer to the engine class

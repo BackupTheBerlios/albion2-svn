@@ -55,6 +55,8 @@ public:
 		unsigned int y;
 	};
 
+	void cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y);
+	void pnt_to_rect(gfx::rect* rectangle, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 	gfx::pnt* cord_to_pnt(unsigned int x, unsigned int y);
 	gfx::rect* pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 

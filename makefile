@@ -11,7 +11,8 @@ OBJS = main.o \
        event.o \
        gui_button.o \
        gui_text.o \
-       gui_style.o
+       gui_style.o \
+       gui_input.o
 
 CC         = gcc
 LD         = gcc
@@ -55,9 +56,12 @@ gui_button.o: gui_button.cpp gui_button.h
 
 gui_text.o: gui_text.cpp gui_text.h
 	$(CC) gui_text.cpp $(CC_FLAGS)
-	
+
 gui_style.o: gui_style.cpp gui_style.h
 	$(CC) gui_style.cpp $(CC_FLAGS)
+
+gui_input.o: gui_input.cpp gui_input.h
+	$(CC) gui_input.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other
