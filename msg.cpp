@@ -107,6 +107,8 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			}
 			break;
 	}
+
+	free(ostr);
 }
 
 /*! gets user console input and returns it as a char*

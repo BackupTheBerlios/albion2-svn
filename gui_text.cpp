@@ -59,20 +59,16 @@ void gui_text::close_font(TTF_Font* font) {
 /*! draws the text
  */
 void gui_text::draw_text() {
-	SDL_Rect* srcrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
 	SDL_Rect* dstrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
-
-	srcrect->x = 0;
-	srcrect->y = 0;
-	srcrect->w = gui_text::surface->w;
-	srcrect->h = gui_text::surface->h;
 
 	dstrect->x = gui_text::point->x;
 	dstrect->y = gui_text::point->y;
 	dstrect->w = gui_text::surface->w;
 	dstrect->h = gui_text::surface->h;
 
-	SDL_BlitSurface(gui_text::surface, srcrect, gui_text::engine_handler->get_screen(), dstrect);
+	SDL_BlitSurface(gui_text::surface, 0, gui_text::engine_handler->get_screen(), dstrect);
+
+	free(dstrect);
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
@@ -185,11 +181,13 @@ void gui_text::remake_text() {
 	if(is_init) {
 		if(!is_notext) {
 			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
+			SDL_FreeSurface(gui_text::get_surface());
 			gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
 			gui_text::close_font(font);
 		}
 		else {
 			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
+			SDL_FreeSurface(gui_text::get_surface());
 			gui_text::set_surface(TTF_RenderText_Blended(font, "  ", gui_text::color));
 			gui_text::close_font(font);
 		}

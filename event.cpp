@@ -118,7 +118,6 @@ void event::handle_events(unsigned int event_type) {
 			switch(active_element->type) {
 				// input box
 				case 1: {
-					char tmp_text[4];
 					for(int i = 0; i < 4; i++) {
 						tmp_text[i] = 0;
 					}
@@ -268,7 +267,7 @@ void event::handle_events(unsigned int event_type) {
 								}
 							}
 
-							Uint8 *keys = SDL_GetKeyState(NULL);
+							keys = SDL_GetKeyState(NULL);
 							if(keys[SDLK_RSHIFT] == SDL_PRESSED
 								|| keys[SDLK_LSHIFT] == SDL_PRESSED) {
 								shift = true;
@@ -278,7 +277,6 @@ void event::handle_events(unsigned int event_type) {
 								alt = true;
 							}
 
-							char key;
 							if(shift) {
 								key = toupper(tmp_text[0]);
 								if(keyboard_layout == event::DE) {
@@ -451,13 +449,11 @@ void event::set_active_element(event::gui_element* active_element) {
 	event::active_element = active_element;
 }
 
-char* event::get_input_text() {
-	char* tmp_text = (char*)malloc(512);
+void event::get_input_text(char* tmp_text) {
 	strcpy(tmp_text, input_text);
 	for(int i = 0; i < 512; i++) {
         event::input_text[i] = 0;
 	}
-	return tmp_text;
 }
 
 void event::set_keyboard_layout(IKEY_LAYOUT layout) {

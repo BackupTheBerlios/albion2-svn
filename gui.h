@@ -110,6 +110,12 @@ protected:
 
 	//! current active gui element
 	gui_element* active_element;
+
+	gfx::pnt* p;
+	char* input_text;
+	char* ib_text;
+	unsigned int ib_text_length;
+	char set_text[1028];
 };
 
 #endif

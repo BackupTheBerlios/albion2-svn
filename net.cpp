@@ -302,6 +302,7 @@ void net::handle_client(unsigned int cur_client) {
 				// print out package data
 				m.print(msg::MMSG, "net.cpp", "data (%d bytes) send from %s(%d): %s",
 					len, clients[cur_client].name, cur_client, print_data);
+				free(print_data);
 
 				// send package to all clients except the one who send the data
 				for(unsigned int i = 0; i < max_clients; i++) {

@@ -58,7 +58,7 @@ public:
 	gui_element* get_active_element();
 	void set_active_element(gui_element* active_element);
 
-	char* get_input_text();
+	void get_input_text(char* tmp_text);
 	//! input types
 	enum ITYPE {
 		LEFT = 1,	//!< @enum left arrow key
@@ -122,6 +122,11 @@ protected:
 	bool alt;
 
 	IKEY_LAYOUT keyboard_layout;
+
+
+	char key;
+	Uint8 *keys;
+	char tmp_text[4];
 };
 
 #endif

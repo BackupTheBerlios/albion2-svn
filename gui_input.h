@@ -82,6 +82,7 @@ protected:
 
 	gui_text* blink_text_handler;
 	unsigned int blink_time;
+	bool is_in_rectangle;
 
 	// gui input box element variables
 

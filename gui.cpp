@@ -25,6 +25,15 @@
 /*! there is no function currently
 */
 gui::gui() {
+	p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	input_text = (char*)malloc(512);
+
+	//char* ib_text = (char*)malloc(1024);
+	unsigned int ib_text_length = 0;
+	//char* set_text = (char*)malloc(1028);
+	for(unsigned int i = 0; i < 1028; i++) {
+        set_text[i] = 0;
+	}
 }
 
 /*! there is no function currently
@@ -81,7 +90,6 @@ void gui::draw() {
 		if(gui::gui_elements[i].is_drawn == true) {
 			switch(gui::gui_elements[i].type) {
 				case gui::BUTTON: {
-					gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 					p->x = event_handler->get_lm_pressed_x();
 					p->y = event_handler->get_lm_pressed_y();
 					if(g.is_pnt_in_rectangle(gui::gui_buttons[gui::gui_elements[i].num]->get_rectangle(), p)) {
@@ -98,14 +106,12 @@ void gui::draw() {
 
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(false);
 					}
-					free(p);
 				}
 				break;
 				case gui::TEXT:
 					gui::gui_texts[gui::gui_elements[i].num]->draw_text();
 					break;
 				case gui::INPUT: {
-					gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 					p->x = event_handler->get_lm_last_pressed_x();
 					p->y = event_handler->get_lm_last_pressed_y();
 					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), p)) {
@@ -116,10 +122,10 @@ void gui::draw() {
 						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
 					}
 					
-					gui::switch_input_text(event_handler->get_input_text(),
+					event_handler->get_input_text(input_text);
+					gui::switch_input_text(input_text,
 						gui::gui_input_boxes[gui::gui_elements[i].num]);
                     gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
-					free(p);
 				}
 				break;
 				default:
@@ -144,11 +150,7 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
 	// our button stuff will be overwritten
 	celements++;
 
-	gfx::pnt* tmp_point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	tmp_point->x = 0;
-	tmp_point->y = 0;
-	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, tmp_point, id+0xFFFF));
-	free(tmp_point);
+	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text, 0x000000, g.cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
@@ -265,17 +267,19 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				input_box->set_text_position(input_box->get_text_position() + 1);
 				break;
 			case event::BACK: {
-				unsigned int ib_text_length = strlen(input_box->get_text());
-				char* ib_text = input_box->get_text();
-				char* set_text = (char*)malloc(ib_text_length+4);
+				ib_text_length = strlen(input_box->get_text());
+				ib_text = input_box->get_text();
+
 				char* tok1 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
+
 				char* tok2 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
+
 				if(ib_text_length != input_box->get_text_position()) {
 					unsigned int j;
 					for(j = 0; j < input_box->get_text_position(); j++) {
@@ -304,21 +308,25 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 					input_box->set_notext();
 					input_box->set_text_position(0);
 				}
-				//input_box->set_text_position(input_box->get_text_position() - 1);
+
+				free(tok1);
+				free(tok2);
 			}
 			break;
 			case event::DEL: {
-				unsigned int ib_text_length = strlen(input_box->get_text());
-				char* ib_text = input_box->get_text();
-				char* set_text = (char*)malloc(ib_text_length+4);
+				ib_text_length = strlen(input_box->get_text());
+				ib_text = input_box->get_text();
+
 				char* tok1 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
+
 				char* tok2 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
+
 				if(ib_text_length != input_box->get_text_position()) {
 					unsigned int j;
 					for(j = 0; j < input_box->get_text_position(); j++) {
@@ -334,6 +342,7 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				else {
                     sprintf(set_text, "%s", ib_text);
 				}
+
 				// no text exception
 				if(strlen(set_text) != 0) {
 					input_box->set_text(set_text);
@@ -341,6 +350,9 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				else {
 					input_box->set_notext();
 				}
+
+				free(tok1);
+				free(tok2);
 			}
 			break;
 			case event::HOME:
@@ -350,17 +362,19 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				input_box->set_text_position(strlen(input_box->get_text()));
 				break;
 			default: {
-				unsigned int ib_text_length = strlen(input_box->get_text());
-				char* ib_text = input_box->get_text();
-				char* set_text = (char*)malloc(ib_text_length+4);
+				ib_text_length = strlen(input_box->get_text());
+				ib_text = input_box->get_text();
+
 				char* tok1 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
+
 				char* tok2 = (char*)malloc(ib_text_length+4);
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
+
 				if(ib_text_length != input_box->get_text_position()) {
 					for(unsigned int j = 0; j < input_box->get_text_position(); j++) {
 						tok1[j] = ib_text[j];
@@ -375,8 +389,12 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				else {
                     sprintf(set_text, "%s%c", ib_text, input_text[i]);
 				}
+
 				input_box->set_text(set_text);
 				input_box->set_text_position(input_box->get_text_position() + 1);
+
+				free(tok1);
+				free(tok2);
 			}
 			break;
 		}
