@@ -3,7 +3,8 @@
 #######################################################################
 OBJS = gui_sample.o \
        chat_server.o \
-       chat_client.o
+       chat_client.o \
+       mesh_loader.o
        
 CC         = gcc
 LD         = gcc
@@ -22,6 +23,9 @@ chat_server.o: chat_server.cpp chat_server.h
 chat_client.o: chat_client.cpp chat_client.h
 	$(CC) chat_client.cpp $(CC_FLAGS)
 
+mesh_loader.o: mesh_loader.cpp mesh_loader.h
+	$(CC) mesh_loader.cpp $(CC_FLAGS)
+
 gui_sample: gui_sample.o
 	$(LD) gui_sample.o $(LD_FLAGS) gui_sample
 
@@ -30,3 +34,6 @@ chat_server: chat_server.o
 
 chat_client: chat_client.o
 	$(LD) chat_client.o $(LD_FLAGS) chat_client
+
+mesh_loader: mesh_loader.o
+	$(LD) mesh_loader.o $(LD_FLAGS) mesh_loader
