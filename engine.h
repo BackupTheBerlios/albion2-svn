@@ -56,6 +56,8 @@ public:
 	void set_height(unsigned int new_height);
 	void start_draw();
 	void stop_draw();
+	void start_2d_draw();
+	void stop_2d_draw();
 	SDL_Surface* get_screen();
 
 	void set_caption(char* caption);

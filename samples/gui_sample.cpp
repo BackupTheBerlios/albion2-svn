@@ -30,34 +30,40 @@
 
 int main(int argc, char *argv[])
 {
+	// initialize the engine
 	e.init(800, 600, 32, false);
-	aevent.init(ievent);
+	e.set_caption("A2E Sample - Gui Sample");
 
+	// set a color scheme (blue)
+	e.set_color_scheme(gui_style::BLUE);
 	sf = e.get_screen();
+
 	unsigned int black = SDL_MapRGB(sf->format, 0, 0, 0);
 	unsigned int blue = SDL_MapRGB(sf->format, 0, 0, 255);
 	unsigned int red = SDL_MapRGB(sf->format, 255, 0, 0);
 	unsigned int white = SDL_MapRGB(sf->format, 255, 255, 255);
 
-	agfx.draw_point(sf, agfx.cord_to_pnt(10, 10), black);
-	agfx.draw_line(sf, agfx.cord_to_pnt(10, 20), agfx.cord_to_pnt(50, 40), black);
-	agfx.draw_rectangle(sf, agfx.pnt_to_rect(100, 100, 200, 120), black);
-	agfx.draw_2colored_rectangle(sf, agfx.pnt_to_rect(210, 210, 300, 300), blue, red);
+	// initialize the a2e events
+	aevent.init(ievent);
+	aevent.set_keyboard_layout(event::DE);
 
+	// initialize the gui
 	agui.init(e, aevent);
 	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(300, 50, 480, 80), 100, "test button");
 	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 101, "äöüÄÖÜßéèê");
-	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0x000000, agfx.cord_to_pnt(100, 5), 102);
 	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
-	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text");
+	gui_input* i1 = agui.add_input_box(
+	agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text");
 	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 450), 106, "blah");
+
 	// add 32 items
 	for(unsigned int i = 1; i <= 8; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1->add_item(tmp, i);
 	}
-	aevent.set_keyboard_layout(event::DE);
+
+	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102);
 
 	refresh_time = SDL_GetTicks();
 	while(!done)
@@ -109,7 +115,9 @@ int main(int argc, char *argv[])
 		// refresh every 1000/60 milliseconds (~ 60 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/60) {
 			e.start_draw();
+
 			agui.draw();
+
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}

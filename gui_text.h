@@ -77,7 +77,7 @@ public:
 
 	int power_of_two(int input);
 
-	GLuint SDL_GL_LoadTexture(SDL_Surface *surface);
+	GLuint SDL_GL_LoadTexture(SDL_Surface* surface);
 
 protected:
 	msg m;

@@ -168,7 +168,6 @@ void engine::start_draw() {
  */
 void engine::stop_draw() {
 	SDL_GL_SwapBuffers();
-	//SDL_Flip(screen);
 }
 
 /*! returns the surface used by the engine
@@ -212,6 +211,8 @@ int engine::initGL(GLvoid) {
 	glEnable(GL_TEXTURE_2D);
     // enable smooth shading
     glShadeModel(GL_SMOOTH);
+	// set clear color
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     // depth buffer setup
     glClearDepth(1.0f);
     // anable depth testing
@@ -233,7 +234,7 @@ int engine::drawGLScene(GLvoid) {
 	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
 	glClearColor((GLclampf)((float)((bgcolor&0xFF0000) >> 16) / 255),
 		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
-		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
+		(GLclampf)((float)(bgcolor&0xFF) / 255), 1.0f);
 
     // clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -267,13 +268,34 @@ int engine::resizeWindow(GLvoid) {
 }
 
 void engine::set_position(float xpos, float ypos, float zpos) {
-	engine::position->x = -xpos;
+	engine::position->x = xpos;
 	engine::position->y = ypos;
 	engine::position->z = zpos;
 
-	glTranslatef(-engine::position->x, engine::position->y, engine::position->z);
+	glTranslatef(engine::position->x, engine::position->y, engine::position->z);
 }
 
 core::vertex* engine::get_position() {
 	return engine::position;
+}
+
+void engine::start_2d_draw() {
+	glDisable(GL_TEXTURE_2D);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glOrtho(0.0, screen->w, 0.0, screen->h, -1.0, 1.0);
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+}
+
+void engine::stop_2d_draw() {
+	glPopMatrix();
+	glPopMatrix();
+
+	glEnable(GL_TEXTURE_2D);
 }

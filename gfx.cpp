@@ -50,32 +50,12 @@ void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
 	unsigned int width = point2->x - point1->x;
 	unsigned int height = point2->y - point1->y;
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, surface->w, 0.0, surface->h, -1.0, 1.0);
-	
-	glMatrixMode(GL_MODELVIEW);
-	
-	glPushMatrix();
-	glLoadIdentity();
-
-	glDrawBuffer(GL_BACK);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_LINES);
-	glColor3ub((color>>16) & 255, (color>>8) & 255, color & 255);
 	glVertex2i(point1->x, surface->h - point1->y);
-	glVertex2i(point2->x, surface->h - point2->y);
+	glVertex2i(point2->x + 1, surface->h - point2->y - 1);
 	glEnd();
-
-	glFlush();
-	
-	glPopMatrix();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 }
 
 /*! draws a rectangle on a surface
@@ -88,11 +68,8 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
 	int tmp;
 
-	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; }
-	else { dist_x1_x2++; }
-
-	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; }
-	else { dist_y1_y2++; }
+	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
+	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
 
 	if(dist_x1_x2 < dist_y1_y2) {
 	    tmp = dist_x1_x2;
@@ -135,11 +112,8 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	int dist_x1_x2 = rectangle->x2 - rectangle->x1;
 	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
 
-	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; }
-	else { dist_x1_x2++; }
-
-	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; }
-	else { dist_y1_y2++; }
+	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
+	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
 
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
@@ -173,34 +147,14 @@ void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	unsigned int width = rectangle->x2 - rectangle->x1;
 	unsigned int height = rectangle->y2 - rectangle->y1;
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, surface->w, 0.0, surface->h, -1.0, 1.0);
-	
-	glMatrixMode(GL_MODELVIEW);
-	
-	glPushMatrix();
-	glLoadIdentity();
-
-	glDrawBuffer(GL_BACK);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_QUADS);
-	glColor3ub((color>>16) & 255, (color>>8) & 255, color & 255);
+	glVertex2i(rectangle->x1, surface->h - rectangle->y2 - 1);
+	glVertex2i(rectangle->x2 + 1, surface->h - rectangle->y2 - 1);
+	glVertex2i(rectangle->x2 + 1, surface->h - rectangle->y1);
 	glVertex2i(rectangle->x1, surface->h - rectangle->y1);
-	glVertex2i(rectangle->x2, surface->h - rectangle->y1);
-	glVertex2i(rectangle->x2, surface->h - rectangle->y2);
-	glVertex2i(rectangle->x1, surface->h - rectangle->y2);
 	glEnd();
-
-	glFlush();
-	
-	glPopMatrix();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 }
 
 /*! returns the sdl_color, we get from the function arguments and surface

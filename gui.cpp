@@ -104,6 +104,9 @@ void gui::init(engine &iengine, event &ievent) {
 /*! draws all gui elements
  */
 void gui::draw() {
+	// start 2d drawing
+	engine_handler->start_2d_draw();
+
 	set_active_element(&gui::gui_elements[0]);
 	for(unsigned int i = 0; i < celements; i++) {
 		if(gui::gui_elements[i].is_drawn == true) {
@@ -181,6 +184,9 @@ void gui::draw() {
 			}
 		}
 	}
+
+	// stop 2d drawing
+	engine_handler->stop_2d_draw();
 }
 
 /*! adds a gui button element and returns it
