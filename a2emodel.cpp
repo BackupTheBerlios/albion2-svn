@@ -72,10 +72,10 @@ a2emodel::~a2emodel() {
 /*! draws the model
  */
 void a2emodel::draw_model() {
-	glColor3f(0.0f, 0.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glEnable(GL_TEXTURE_2D);
 	for(unsigned int i = 0; i < object_count; i++) {
 		glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
-
 		if(!a2emodel::draw_wireframe) {
 			glBegin(GL_TRIANGLES);
 			for(unsigned int j = 0; j < index_count[i]; j++) {
@@ -113,6 +113,7 @@ void a2emodel::draw_model() {
 			glEnd();
 		}
 	}
+	glDisable(GL_TEXTURE_2D);
 }
 
 /*! loads the textures of the model - .png preferred!

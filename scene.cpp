@@ -37,8 +37,10 @@ scene::scene() {
 	scene::mspecular[0] = scene::mspecular[1] = scene::mspecular[2] = scene::mspecular[3] = 0.0f;
 	scene::mshininess[0] = scene::mshininess[1] = scene::mshininess[2] = scene::mshininess[3] = 0.0f;
 
-	sphere = new a2emodel();
-	sphere->load_model("sphere.a2m");
+	/*sphere = new a2emodel();
+	sphere->load_model("sphere.a2m");*/
+
+	scene::is_light = false;
 }
 
 /*! there is no function currently
@@ -64,20 +66,27 @@ void scene::draw() {
         float pos[] = { lights[i]->get_position()->x, lights[i]->get_position()->y, lights[i]->get_position()->z };
         glLightfv(GL_LIGHT0, GL_POSITION, pos);
 		
-		core::vertex3* scale = (core::vertex3*)malloc(sizeof(core::vertex3));
+		/*core::vertex3* scale = (core::vertex3*)malloc(sizeof(core::vertex3));
 		scale->x = 1.0f;
 		scale->y = 1.0f;
 		scale->z = 1.0f;
 		scene::draw_sphere(lights[i]->get_position(), scale);
-		free(scale);
+		free(scale);*/
 	}
 
-	glEnable(GL_LIGHTING);
+	if(scene::is_light) {
+        glEnable(GL_LIGHTING);
+		glEnable(GL_TEXTURE_2D);
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, scene::mambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, scene::mdiffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, scene::mspecular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, scene::mshininess);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, scene::mambient);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, scene::mdiffuse);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, scene::mspecular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, scene::mshininess);
+	}
+	else {
+		glDisable(GL_LIGHTING);
+		glEnable(GL_TEXTURE_2D);
+	}
 
 	/*glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -111,6 +120,11 @@ void scene::add_model(a2emodel* model) {
  *  @param light pointer to the light
  */
 void scene::add_light(light* light) {
+	// enable light automatically if we had no light before
+	if(scene::clights == 0) {
+		scene::is_light = true;
+	}
+
 	lights[clights] = light;
 	float pos[] = { lights[clights]->get_position()->x, lights[clights]->get_position()->y, lights[clights]->get_position()->z };
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
@@ -170,6 +184,13 @@ void scene::set_mshininess(float* mshininess) {
 	scene::mshininess = mshininess;
 }
 
+/*! sets the light flag
+ *  @param state the state of the light flag we want to set
+ */
+void scene::set_light(bool state) {
+	scene::is_light = state;
+}
+
 /*! returns the scenes position
  */
 core::vertex3* scene::get_position() {
@@ -200,12 +221,18 @@ float* scene::get_mshininess() {
 	return scene::mshininess;
 }
 
+/*! returns true if the light delete flag is set
+ */
+bool scene::get_light() {
+	return scene::is_light;
+}
+
 /*! for debugging purposes - draws a sphere
  *  @param pos the spheres position
  *  @param size the spheres size
  */
 void scene::draw_sphere(core::vertex3* pos, core::vertex3* size) {
-	scene::sphere->set_position(pos->x, pos->y, pos->z);
+	/*scene::sphere->set_position(pos->x, pos->y, pos->z);
 	scene::sphere->set_scale(size->x, size->y, size->z);
-	scene::sphere->draw_model();
+	scene::sphere->draw_model();*/
 }

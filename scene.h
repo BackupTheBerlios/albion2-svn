@@ -54,12 +54,14 @@ public:
 	void set_mdiffuse(float* mdiffuse);
 	void set_mspecular(float* mspecular);
 	void set_mshininess(float* mshininess);
+	void set_light(bool state);
 
 	core::vertex3* get_position();
 	float* get_mambient();
 	float* get_mdiffuse();
 	float* get_mspecular();
 	float* get_mshininess();
+	bool get_light();
 
 	// for debugging purposes
 	void draw_sphere(core::vertex3* pos, core::vertex3* size);
@@ -80,6 +82,9 @@ protected:
 	float* mdiffuse;
 	float* mspecular;
 	float* mshininess;
+
+	//! specifies if lighting is enabled in this scene
+	bool is_light;
 
 	// for debugging purposes
 	a2emodel* sphere;

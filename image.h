@@ -45,6 +45,7 @@ public:
 	~image();
 
 	void draw();
+	void draw(unsigned int scale_x, unsigned int scale_y);
 	void open_image(char* filename);
 	void set_engine_handler(engine* iengine);
 

@@ -67,9 +67,9 @@ public:
 	gui_style get_gstyle();
 	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
 
-	int drawGLScene(GLvoid);
-	int initGL(GLvoid);
-	int resizeWindow(GLvoid);
+	bool draw_gl_scene();
+	bool init_gl();
+	bool resize_window();
 
 	void set_position(float xpos, float ypos, float zpos);
 	core::vertex3* get_position();

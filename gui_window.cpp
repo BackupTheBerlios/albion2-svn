@@ -179,7 +179,7 @@ void gui_window::set_moving(bool state) {
 }
 
 /*! sets the windows delete flag
- *  @param state the state of thedelete flag we want to set
+ *  @param state the state of the delete flag we want to set
  */
 void gui_window::set_deleted(bool state) {
 	gui_window::deleted = state;

@@ -28,11 +28,40 @@ OBJS = main.o \
        gui_check.o \
        gui_window.o
 
+INCLUDE = main.h \
+       msg.h \
+       core.h \
+       net.h \
+       gfx.h \
+       engine.h \
+       gui.h \
+       event.h \
+       gui_button.h \
+       gui_text.h \
+       gui_style.h \
+       gui_input.h \
+       gui_list.h \
+       gui_list_item.h \
+       gui_vbar.h \
+       file_io.h \
+       a2emodel.h \
+       camera.h \
+       scene.h \
+       ode.h \
+       ode_object.h \
+       shadow.h \
+       light.h \
+       image.h \
+       gui_check.h \
+       gui_window.h
+
 CC         = gcc
 LD         = gcc
 CC_FLAGS   = -Wall -Os -c `sdl-config --cflags` -I"/usr/include/freetype2" -I"/usr/include/FTGL"
 LD_FLAGS   = -L"/usr/X11R6/lib" -L"jpeglib" -L"zlib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg `sdl-config --libs` -lSDL_net -l -lSDL_image -lode -lOPCODE -lfreetype -lftgl -o
 BIN        = bin/liba2e.a
+LIB        = /usr/local/lib/
+INC        = /usr/local/include/
 
 #######################################################################
 # Files
@@ -141,5 +170,5 @@ docu:
 	doxygen
 
 install:
-	cp $(BIN) $(USR)/lib/$(BIN)
-	cp $(INCLUDE) $(USR)/include/
+	cp ./$(BIN) $(LIB)
+	cp ./$(INCLUDE) $(INC)

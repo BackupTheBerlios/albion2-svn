@@ -93,14 +93,14 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	switch(depth) {
 		case 16:
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
 			break;
 		case 24:
-			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 6);
 			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 6);
 			break;
 		case 32:
@@ -164,12 +164,12 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	gstyle.set_color_scheme(gui_style::WINDOWS);
 	m.print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
 
-	// initialize gl
-	initGL();
+	// initialize ogl
+	init_gl();
 	m.print(msg::MDEBUG, "engine.cpp", "opengl initialized");
 
 	// resize stuff
-	resizeWindow();
+	resize_window();
 	m.print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
 
 	// reserve memory for position ...
@@ -206,7 +206,7 @@ void engine::set_height(unsigned int height) {
  */
 void engine::start_draw() {
 	// draws ogl stuff
-	drawGLScene();
+	draw_gl_scene();
 }
 
 /*! stops drawing the window
@@ -251,7 +251,7 @@ void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 
 /*! opengl initialization function
  */
-int engine::initGL(GLvoid) {
+bool engine::init_gl() {
 	// enable texture mapping
 	glEnable(GL_TEXTURE_2D);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -261,7 +261,7 @@ int engine::initGL(GLvoid) {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// depth buffer setup
 	glClearDepth(1.0f);
-	// anable depth testing
+	// enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	// lequal depth test
 	glDepthFunc(GL_LEQUAL);
@@ -271,12 +271,12 @@ int engine::initGL(GLvoid) {
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	return 1;
+	return true;
 }
 
 /*! opengl drawing code
  */
-int engine::drawGLScene(GLvoid) {
+bool engine::draw_gl_scene() {
 	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
 	glClearColor((GLclampf)((float)((bgcolor & 0xFF0000) >> 16) / 255),
 		(GLclampf)((float)((bgcolor & 0xFF00) >> 8) / 255),
@@ -303,12 +303,12 @@ int engine::drawGLScene(GLvoid) {
 	// draw the shadows
 	engine::shd.draw();
 
-    return 1;
+	return true;
 }
 
 /* function to reset our viewport after a window resize
  */
-int engine::resizeWindow(GLvoid) {
+bool engine::resize_window() {
 	// set the viewport
 	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
 	m.print(msg::MDEBUG, "engine.cpp", "viewport set");
@@ -328,7 +328,7 @@ int engine::resizeWindow(GLvoid) {
 	glLoadIdentity();
 	m.print(msg::MDEBUG, "engine.cpp", "matrix mode (modelview) set");
 
-	return 1;
+	return true;
 }
 
 /*! sets the position of the user
@@ -354,6 +354,7 @@ core::vertex3* engine::get_position() {
  */
 void engine::start_2d_draw() {
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -376,4 +377,5 @@ void engine::stop_2d_draw() {
 	glPopMatrix();
 
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
 }

@@ -311,6 +311,16 @@ void load_settings() {
 		}
 	}
 	fio.close_file();
+        
+        port = 1337;
+        width = 800;
+        height = 600;
+        depth = 24;
+        scheme = gui_style::BLUE;
+        sprintf(client_name, "Flo");
+        client_name[3] = 0;
+        sprintf(server, "localhost");
+        client_name[9] = 0;   
 }
 
 int main(int argc, char *argv[])

@@ -43,7 +43,7 @@ image::~image() {
 
 /*! draws the image
  */
-void image::draw() {
+void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	image::engine_handler->start_2d_draw();
 	unsigned int screen_heigth = image::engine_handler->get_screen()->h;
 
@@ -56,20 +56,32 @@ void image::draw() {
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex2i(image::position->x, screen_heigth - image::position->y);
 		glTexCoord2f(0.0f, 1.0f);
-		glVertex2i(image::position->x, screen_heigth - (image::position->y + image::heigth));
+		glVertex2i(image::position->x, screen_heigth - (image::position->y + scale_y));
 		glTexCoord2f(1.0f, 1.0f);
-		glVertex2i(image::position->x + image::width, screen_heigth - (image::position->y + image::heigth));
+		glVertex2i(image::position->x + scale_x, screen_heigth - (image::position->y + scale_y));
 		glTexCoord2f(1.0f, 0.0f);
-		glVertex2i(image::position->x + image::width, screen_heigth - image::position->y);
+		glVertex2i(image::position->x + scale_x, screen_heigth - image::position->y);
 	glEnd();
 
+	// if we want to draw 3d stuff later on, we have to clear
+	// the depth buffer, otherwise nothing will be seen
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	image::engine_handler->stop_2d_draw();
+}
+
+/*! draws the image
+ */
+void image::draw() {
+	image::draw(image::width, image::heigth);
 }
 
 /*! opens an image file
  *  @param filename the image files name
  */
 void image::open_image(char* filename) {
+	if(image::texture) { glDeleteTextures(1, &(image::texture)); }
+
 	SDL_Surface* img_srf = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
 	if(!img_srf) {
 		m.print(msg::MERROR, "image.cpp", "error loading image file \"%s\"!", filename);
@@ -85,8 +97,8 @@ void image::open_image(char* filename) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 4, img_srf->w, img_srf->h,
-		GL_RGBA, GL_UNSIGNED_BYTE, img_srf->pixels);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, img_srf->w, img_srf->h,
+		GL_RGB, GL_UNSIGNED_BYTE, img_srf->pixels);
 
 	SDL_FreeSurface(img_srf);
 }

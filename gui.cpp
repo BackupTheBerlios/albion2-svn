@@ -113,6 +113,10 @@ void gui::init(engine &iengine, event &ievent) {
 /*! draws all gui elements
  */
 void gui::draw() {
+	// reset event stuff to camera - if there is a gui event,
+	// the active class type will be overwritten
+	event_handler->set_active(event::CAMERA);
+
 	// start 2d drawing
 	engine_handler->start_2d_draw();
 
@@ -331,15 +335,15 @@ void gui::draw() {
 							gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
 							set_active_element(&gui::gui_elements[i]);
 							event_handler->set_active(event::GUI);
+
+							event_handler->get_input_text(input_text);
+							gui::switch_input_text(input_text,
+								gui::gui_input_boxes[gui::gui_elements[i].num]);
 						}
 						else {
 							gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
-							event_handler->set_active(event::NONE);
 						}
 						
-						event_handler->get_input_text(input_text);
-						gui::switch_input_text(input_text,
-							gui::gui_input_boxes[gui::gui_elements[i].num]);
 						gui::gui_input_boxes[gui::gui_elements[i].num]->draw(wp->x, wp->y);
 					}
 					break;

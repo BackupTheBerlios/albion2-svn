@@ -1,10 +1,10 @@
 [enginedata]
 width=800
 height=600
-depth=32
+depth=24
 
 [userdata]
-name=User
+name=Flo
 scheme=blue
 
 [serverdata]

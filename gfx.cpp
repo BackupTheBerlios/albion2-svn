@@ -155,9 +155,6 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
  */
 void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 								unsigned int color) {
-	unsigned int width = rectangle->x2 - rectangle->x1;
-	unsigned int height = rectangle->y2 - rectangle->y1;
-
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_QUADS);

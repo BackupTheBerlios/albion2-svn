@@ -16,14 +16,14 @@
 
 #include "gui_sample.h"
 #include <iostream>
-#include <string.h>
+#include <cstring>
 
 /*!
  * \mainpage
  *
  * \author flo
  *
- * \date July 2004 - February 2005
+ * \date July 2004 - March 2005
  *
  * Albion 2 Engine Sample - GUI Sample
  */
@@ -31,7 +31,7 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e.init(800, 600, 32, false);
+	e.init(800, 600, 24, false);
 	e.set_caption("A2E Sample - GUI Sample");
 
 	// set a color scheme (blue)
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
 	gui_window* wnd2 = agui.add_window(agfx.pnt_to_rect(560, 100, 780, 450), 111, "test window 2", true);
 	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(10, 10, 200, 40), 100, "test button", 111);
-	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(10, 50, 200, 80), 101, "‰ˆ¸ƒ÷‹ﬂÈËÍ", 111);
+	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(10, 50, 200, 80), 101, "test button 2", 111);
 
 	// add 32 items
 	for(unsigned int i = 1; i <= 32; i++) {
@@ -117,8 +117,8 @@ int main(int argc, char *argv[])
 		// refresh every 1000/60 milliseconds (~ 60 fps)
 		//if(SDL_GetTicks() - refresh_time >= 1000/60) {
 			aevent.get_mouse_pos(mpos);
-			itoa(mpos->x, xpos, 10);
-			itoa(mpos->y, ypos, 10);
+			snprintf(xpos, 8, "%u", mpos->x);
+			snprintf(ypos, 8, "%u", mpos->y);
 			xpos_text->set_text(xpos);
 			ypos_text->set_text(ypos);
 

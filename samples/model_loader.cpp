@@ -15,24 +15,25 @@
  */
 
 #include "model_loader.h"
-#include <iostream>
+/*#include <iostream>
 #include <string.h>
-#include <SDL_image.h>
+#include <SDL_image.h>*/
 
 /*!
  * \mainpage
  *
  * \author flo
  *
- * \date August 2004 - February 2005
+ * \date August 2004 - March 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
 
 int main(int argc, char *argv[])
 {
+	cout << "blah!" << endl;
 	// initialize the engine
-	e.init(800, 600, 32, false);
+	e.init(800, 600, 24, false);
 	e.set_caption("A2E Sample - Model Loader");
 
 	// set a color scheme (blue)
@@ -74,12 +75,12 @@ int main(int argc, char *argv[])
 	// initialize ode
 	// note: ode isn't implemented totally atm and
 	// returns (many) errors, so don't use it ...
-	o.init();
+	//o.init();
 
 	// pass the models to ode
-	o.add_object(&plane, true, ode_object::TRIMESH);
-	o.add_object(&cube, false, ode_object::BOX);
-	o.add_object(&sphere, false, ode_object::SPHERE);
+	//o.add_object(&plane, true, ode_object::TRIMESH);
+	//o.add_object(&cube, false, ode_object::BOX);
+	//o.add_object(&sphere, false, ode_object::SPHERE);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -152,8 +153,9 @@ int main(int argc, char *argv[])
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
-					cam.get_position()->x, cam.get_position()->y, cam.get_position()->z);
+				/*sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
+					cam.get_position()->x, cam.get_position()->y, cam.get_position()->z);*/
+				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
 				fps = 0;
 				fps_time = SDL_GetTicks();
 			}
@@ -163,14 +165,14 @@ int main(int argc, char *argv[])
 
 			cam.run();
 			sce.draw();
-			o.run();
+			//o.run();
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();
 		}
 	}
 
-	o.close();
+	//o.close();
 
 	return 0;
 }

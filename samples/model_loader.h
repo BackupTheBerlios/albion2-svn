@@ -33,8 +33,8 @@
 #include <camera.h>
 #include <a2emodel.h>
 #include <scene.h>
-#include <ode.h>
-#include <ode_object.h>
+//#include <ode.h>
+//#include <ode_object.h>
 #include <shadow.h>
 #include <light.h>
 using namespace std;
@@ -46,7 +46,7 @@ engine e;
 gfx agfx;
 event aevent;
 camera cam;
-ode o;
+//ode o;
 
 scene sce;
 
