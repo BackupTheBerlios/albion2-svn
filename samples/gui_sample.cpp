@@ -36,15 +36,17 @@ int main(int argc, char *argv[])
 	unsigned int black = SDL_MapRGB(sf->format, 0, 0, 0);
 	unsigned int blue = SDL_MapRGB(sf->format, 0, 0, 255);
 	unsigned int red = SDL_MapRGB(sf->format, 255, 0, 0);
+	unsigned int white = SDL_MapRGB(sf->format, 255, 255, 255);
 	agfx.draw_point(sf, agfx.cord_to_pnt(10, 10), black);
 	agfx.draw_line(sf, agfx.cord_to_pnt(10, 20), agfx.cord_to_pnt(50, 40), black);
 	agfx.draw_rectangle(sf, agfx.pnt_to_rect(100, 100, 200, 120), black);
 	agfx.draw_2colored_rectangle(sf, agfx.pnt_to_rect(210, 210, 300, 300), blue, red);
 
 	agui.init(e, aevent);
-	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 100, "test button");
-	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(300, 50, 480, 80), 101, "töst zwei ;P");
+	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(300, 50, 480, 80), 100, "test button");
+	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 101, "äöüÄÖÜßéèê");
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0x000000, agfx.cord_to_pnt(100, 5), 102);
+	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
 
 	refresh_time = SDL_GetTicks();
 	while(!done)
@@ -60,6 +62,26 @@ int main(int argc, char *argv[])
 					switch(aevent.get_event().key.keysym.sym) {
 						case SDLK_ESCAPE:
 							done = true;
+							break;
+					}
+					break;
+			}
+		}
+
+		while(aevent.is_gui_event()) {
+			switch(aevent.get_gui_event().type) {
+				case aevent.BUTTON_PRESSED:
+					switch(aevent.get_gui_event().id) {
+						case 100:
+							agfx.draw_filled_rectangle(sf, agfx.pnt_to_rect(10, 580, 799, 599), white);
+							output_text->set_text("button with the id #100 was pressed!");
+							break;
+						case 101:
+							agfx.draw_filled_rectangle(sf, agfx.pnt_to_rect(10, 580, 799, 599), white);
+							output_text->set_text("button with the id #101 was pressed!");
+							break;
+						default:
+							int blubb = 0;
 							break;
 					}
 					break;

@@ -160,6 +160,11 @@ char* gui_button::get_text() {
 	return gui_button::text;
 }
 
+//! returns the buttons pressed bool
+bool gui_button::get_pressed() {
+	return gui_button::pressed;
+}
+
 /*! sets the text id
  *  @param id the id we want to set
  */
@@ -179,4 +184,12 @@ void gui_button::set_rectangle(gfx::rect* rectangle) {
  */
 void gui_button::set_text(char* text) {
 	gui_button::text = text;
+	gui_button::text_handler->set_text(text);
+}
+
+/*! sets the pressed bool
+ *  @param pressed bool if the button is pressed currently
+ */
+void gui_button::set_pressed(bool pressed) {
+	gui_button::pressed = pressed;
 }

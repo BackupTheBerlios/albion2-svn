@@ -75,8 +75,15 @@ void gui::draw() {
 						g.cord_to_pnt(event_handler->get_lm_pressed_x(),
 						event_handler->get_lm_pressed_y()))) {
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(true);
+						gui::gui_buttons[gui::gui_elements[i].num]->set_pressed(true);
 					}
 					else {
+						if(gui::gui_buttons[gui::gui_elements[i].num]->get_pressed() == true) {
+							gui::gui_buttons[gui::gui_elements[i].num]->set_pressed(false);
+							event_handler->add_gui_event(event_handler->BUTTON_PRESSED,
+								gui::gui_buttons[gui::gui_elements[i].num]->get_id());
+						}
+
 						gui::gui_buttons[gui::gui_elements[i].num]->draw_button(false);
 					}
 					break;
@@ -139,12 +146,18 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_elements[celements].num = ctexts;
 	gui::gui_elements[celements].is_drawn = true;
 
+	gui::gui_texts[ctexts]->set_init(false);
 	gui::gui_texts[ctexts]->set_engine_handler(gui::engine_handler);
 	gui::gui_texts[ctexts]->set_id(id);
 	// there were problems with TTF_RenderText_Solid, so it was just
 	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
 	gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Blended(font, text, col));
 	gui::gui_texts[ctexts]->set_point(point);
+	gui::gui_texts[ctexts]->set_text(text);
+	gui::gui_texts[ctexts]->set_color(col);
+	gui::gui_texts[ctexts]->set_font_name(font_name);
+	gui::gui_texts[ctexts]->set_font_size(font_size);
+	gui::gui_texts[ctexts]->set_init(true);
 
 	gui::gui_texts[ctexts]->close_font(font);
 

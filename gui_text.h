@@ -54,13 +54,24 @@ public:
 
 	// gui text element variables functions
 
+	void remake_text();
+
 	unsigned int get_id();
 	SDL_Surface* get_surface();
 	gfx::pnt* get_point();
+	char* get_text();
+	SDL_Color get_color();
+	char* get_font_name();
+	unsigned int get_font_size();
 
 	void set_id(unsigned int id);
 	void set_surface(SDL_Surface* surface);
 	void set_point(gfx::pnt* point);
+	void set_text(char* text);
+	void set_color(SDL_Color color);
+	void set_font_name(char* font_name);
+	void set_font_size(unsigned int font_size);
+	void set_init(bool state);
 
 protected:
 	msg m;
@@ -77,6 +88,16 @@ protected:
 	SDL_Surface* surface;
 	//! text starting point (x,y)
 	gfx::pnt* point;
+	//! the text itself
+	char* text;
+	//! the color if the text
+	SDL_Color color;
+	//! the font name
+	char* font_name;
+	//! the font size
+	unsigned int font_size;
+	//! bool if everything was initialized
+	bool is_init;
 
 };
 

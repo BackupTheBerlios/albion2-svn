@@ -33,6 +33,9 @@ event::~event() {
  */
 void event::init(SDL_Event ievent) {
 	event::event_handle = ievent;
+
+	event::gui_event_stack = (event::gevent*)malloc(sizeof(event::gevent)*512);
+	cgui_event = 0;
 }
 
 /*! returns 1 if the are any sdl events, otherwise it will return 0
@@ -90,4 +93,29 @@ void event::handle_events(unsigned int event_type) {
 		case SDL_KEYDOWN:
 			break;
 	}
+}
+
+/*! returns true if there is any gui event in stack
+ */
+bool event::is_gui_event() {
+	// if stack counter is equal to 0, then there are no gui events
+	if(cgui_event == 0) { return false; }
+	// else there is a gui event - decrement stack pointer
+	else { cgui_event--; return true; }
+}
+
+/*! returns the current gui event
+ */
+event::gevent event::get_gui_event() {
+	return gui_event_stack[cgui_event+1];
+}
+
+/*! adds a gui event to the stack
+ *  @param event_type the event type we want to add
+ *  @param id the id of the gui element
+ */
+void event::add_gui_event(GEVENT_TYPE event_type, unsigned int id) {
+	cgui_event++;
+	gui_event_stack[cgui_event].type = event_type;
+	gui_event_stack[cgui_event].id = id;
 }

@@ -93,6 +93,26 @@ gfx::pnt* gui_text::get_point() {
 	return gui_text::point;
 }
 
+//! returns the text
+char* gui_text::get_text() {
+	return gui_text::text;
+}
+
+//! returns the text color
+SDL_Color gui_text::get_color() {
+	return gui_text::color;
+}
+
+//! returns the text
+char* gui_text::get_font_name() {
+	return gui_text::font_name;
+}
+
+//! returns the text
+unsigned int gui_text::get_font_size() {
+	return gui_text::font_size;
+}
+
 /*! sets the text id
  *  @param id the id we want to set
  */
@@ -112,4 +132,54 @@ void gui_text::set_surface(SDL_Surface* surface) {
  */
 void gui_text::set_point(gfx::pnt* point) {
 	gui_text::point = point;
+}
+
+/*! sets the text
+ *  @param text the text we want to set
+ */
+void gui_text::set_text(char* text) {
+	gui_text::text = text;
+	gui_text::remake_text();
+}
+
+/*! sets the text color
+ *  @param color the text color we want to set
+ */
+void gui_text::set_color(SDL_Color color) {
+	gui_text::color = color;
+	gui_text::remake_text();
+}
+
+/*! sets the font name
+ *  @param font_name the font name we want to set
+ */
+void gui_text::set_font_name(char* font_name) {
+	gui_text::font_name = font_name;
+	gui_text::remake_text();
+}
+
+/*! sets the font size
+ *  @param font_size the font size we want to set
+ */
+void gui_text::set_font_size(unsigned int font_size) {
+	gui_text::font_size = font_size;
+	gui_text::remake_text();
+}
+
+/*! sets the init state
+ *  @param font_size the font size we want to set
+ */
+void gui_text::set_init(bool state) {
+	gui_text::is_init = state;
+}
+
+/*! remakes the text surface with the new parameters
+ */
+void gui_text::remake_text() {
+	// checks if everything was initialized
+	if(is_init) {
+		TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
+		gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
+		gui_text::close_font(font);
+	}
 }

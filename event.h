@@ -47,6 +47,25 @@ public:
 	SDL_Event get_event();
 	void handle_events(unsigned int event_type);
 
+	// gui event stuff
+
+	enum GEVENT_TYPE {
+		BUTTON_PRESSED
+	};
+
+	struct gevent {
+		GEVENT_TYPE type;
+		unsigned int id;
+	};
+
+	bool is_gui_event();
+	gevent get_gui_event();
+	void add_gui_event(GEVENT_TYPE event_type, unsigned int id);
+
+	unsigned int cgui_event;
+	gevent* gui_event_stack;
+
+
 	unsigned int get_lm_pressed_x();
 	unsigned int get_lm_pressed_y();
 protected:

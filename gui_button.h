@@ -62,6 +62,9 @@ public:
 	void set_rectangle(gfx::rect* rectangle);
 	void set_text(char* text);
 
+	void set_pressed(bool pressed);
+	bool get_pressed();
+
 protected:
 	msg m;
 	core c;
@@ -80,6 +83,10 @@ protected:
 	gfx::rect* rectangle;
 	//! button text
 	char* text;
+
+	// event handle stuff
+
+	bool pressed;
 };
 
 #endif
