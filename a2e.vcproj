@@ -141,6 +141,12 @@
 				RelativePath="gui_input.cpp">
 			</File>
 			<File
+				RelativePath="gui_list.cpp">
+			</File>
+			<File
+				RelativePath="gui_list_item.cpp">
+			</File>
+			<File
 				RelativePath="gui_style.cpp">
 			</File>
 			<File
@@ -176,6 +182,12 @@
 			</File>
 			<File
 				RelativePath="gui_input.h">
+			</File>
+			<File
+				RelativePath="gui_list.h">
+			</File>
+			<File
+				RelativePath="gui_list_item.h">
 			</File>
 			<File
 				RelativePath="gui_style.h">

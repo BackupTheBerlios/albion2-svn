@@ -32,8 +32,8 @@ using namespace std;
 /*! @class gui_style
  *  @brief gui style stuff
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/13
+ *  @version 0.2
+ *  @date 2004/08/18
  *  @todo more functions
  *  
  *  the gui_style class

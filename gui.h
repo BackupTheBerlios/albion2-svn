@@ -29,6 +29,7 @@
 #include "gui_text.h"
 #include "gui_button.h"
 #include "gui_input.h"
+#include "gui_list.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -36,8 +37,8 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.1.1
- *  @date 2004/08/14
+ *  @version 0.2
+ *  @date 2004/08/18
  *  @todo more functions
  *  
  *  the gui class
@@ -63,6 +64,8 @@ public:
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, gfx::pnt* point, unsigned int id);	
 	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text);
+	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text);
+
 	void switch_input_text(char* input_text, gui_input* input_box);
 
 	SDL_Surface* get_gui_surface();
@@ -85,7 +88,8 @@ protected:
 		BUTTON,	//!< @enum button type
 		INPUT,	//!< @enum input box type
 		TEXT,	//!< @enum static text type
-		FONT,	//!< @enum font type
+		EMPTY,	//!< @enum empty type
+		LIST	//!< @enum list box type
 	};
 
 	//! gui elements
@@ -107,6 +111,11 @@ protected:
 	gui_input* gui_input_boxes[128];
 	//! current amount of gui input box elements
 	unsigned int cinput_boxes;
+
+	//! gui list boxes
+	gui_list* gui_list_boxes[128];
+	//! current amount of gui input box elements
+	unsigned int clist_boxes;
 
 	//! current active gui element
 	gui_element* active_element;

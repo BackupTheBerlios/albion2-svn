@@ -36,8 +36,7 @@ gui_input::gui_input() {
 gui_input::~gui_input() {
 }
 
-/*! draws the input box
- *  @param is_pressed bool, if the input box should be drawn as pressed or unpressed
+/*! draws the input boxs
  */
 void gui_input::draw_input() {
 	// draw bg

@@ -21,6 +21,7 @@
 #include "engine.h"
 #include "gui_button.h"
 #include "gui_input.h"
+#include "gui_list.h"
 
 /*! there is no function currently
 */
@@ -75,17 +76,29 @@ void gui::init(engine &iengine, event &ievent) {
         gui_input_boxes[i] = new gui_input();
 	}
 
+	// reserve memory for 128 list input box elements
+	for(unsigned int i = 0; i < 128; i++) {
+        gui_list_boxes[i] = new gui_list();
+	}
+
 	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
 
 	if(TTF_Init()==-1) {
 		m.print(msg::MERROR, "gui.cpp", "TTF_Init: %s", TTF_GetError());
 	}
+
+	// empty element
+	gui::gui_elements[celements].id = 1;
+	gui::gui_elements[celements].type = gui::EMPTY;
+	gui::gui_elements[celements].num = celements;
+	gui::gui_elements[celements].is_drawn = false;
+	celements++;
 }
 
 /*! draws all gui elements
  */
 void gui::draw() {
-	set_active_element(NULL);
+	set_active_element(&gui::gui_elements[0]);
 	for(unsigned int i = 0; i < celements; i++) {
 		if(gui::gui_elements[i].is_drawn == true) {
 			switch(gui::gui_elements[i].type) {
@@ -126,6 +139,23 @@ void gui::draw() {
 					gui::switch_input_text(input_text,
 						gui::gui_input_boxes[gui::gui_elements[i].num]);
                     gui::gui_input_boxes[gui::gui_elements[i].num]->draw_input();
+				}
+				break;
+				case gui::LIST: {
+					/*p->x = event_handler->get_lm_last_pressed_x();
+					p->y = event_handler->get_lm_last_pressed_y();
+					if(g.is_pnt_in_rectangle(gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), p)) {
+						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
+						set_active_element(&gui::gui_elements[i]);
+					}
+					else {
+						gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
+					}*/
+					
+					/*event_handler->get_input_text(input_text);
+					gui::switch_input_text(input_text,
+						gui::gui_input_boxes[gui::gui_elements[i].num]);*/
+                    gui::gui_list_boxes[gui::gui_elements[i].num]->draw_list();
 				}
 				break;
 				default:
@@ -240,7 +270,44 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text)
 
 	cinput_boxes++;
 
-	return gui_input_boxes[cinput_boxes-2];
+	return gui_input_boxes[cinput_boxes-1];
+}
+
+/*! adds a gui list box element and returns it
+ *  @param rectangle the list boxes rectangle
+ *  @param id the list boxes (a2e event) id
+ *  @param text the list boxes text
+ */
+gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, char* text) {
+	gui::gui_elements[celements].id = id;
+	gui::gui_elements[celements].type = gui::LIST;
+	gui::gui_elements[celements].num = clist_boxes;
+	gui::gui_elements[celements].is_drawn = true;
+	
+	// celements has to be incremented _before_ we add the buttons, otherwise
+	// our list box stuff will be overwritten
+	celements++;
+
+	gui::gui_list_boxes[clist_boxes]->set_up_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
+		id+0xFFFFFF, "^"));
+	// don't draw our button automatically
+	// celements-1, because our text element, is the last initialized element
+	//gui::gui_elements[celements-1].is_drawn = false;
+
+	gui::gui_list_boxes[clist_boxes]->set_down_button_handler(add_button(g.pnt_to_rect(0,0,1,1),
+		id+0xFFFFFE, "v"));
+	// don't draw our button automatically
+	// celements-1, because our text element, is the last initialized element
+	//gui::gui_elements[celements-1].is_drawn = false;
+
+	gui::gui_list_boxes[clist_boxes]->set_engine_handler(gui::engine_handler);
+	gui::gui_list_boxes[clist_boxes]->set_id(id);
+	gui::gui_list_boxes[clist_boxes]->set_rectangle(rectangle);
+	gui::gui_list_boxes[clist_boxes]->set_position(0);
+
+	clist_boxes++;
+
+	return gui_list_boxes[clist_boxes-1];
 }
 
 //! returns the guis surface

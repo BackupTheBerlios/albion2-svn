@@ -50,6 +50,19 @@ int main(int argc, char *argv[])
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0x000000, agfx.cord_to_pnt(100, 5), 102);
 	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
 	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text");
+	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 450), 106, "blah");
+	l1->add_item("test3", 3);
+	l1->add_item("test8", 8);
+	l1->add_item("test4", 4);
+	l1->add_item("test19", 19);
+	l1->add_item("test2", 2);
+	l1->add_item("test1", 1);
+	l1->add_item("test6", 6);
+	l1->add_item("test11", 11);
+	l1->add_item("test10", 10);
+	l1->add_item("test9", 9);
+	l1->add_item("test7", 7);
+	l1->add_item("test5", 5);
 	aevent.set_keyboard_layout(event::DE);
 
 	refresh_time = SDL_GetTicks();

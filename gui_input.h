@@ -34,8 +34,8 @@ using namespace std;
 /*! @class gui_input
  *  @brief gui input box element functions
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/14
+ *  @version 0.2
+ *  @date 2004/08/18
  *  @todo more functions
  *  
  *  the gui_input class
@@ -65,7 +65,7 @@ public:
 	void set_text(char* text);
 	void set_text_position(unsigned int position);
 
-	void set_active(bool pressed);
+	void set_active(bool is_active);
 	bool get_active();
 
 	void set_notext();
@@ -77,7 +77,6 @@ protected:
 	gui_style gstyle;
 
 	engine* engine_handler;
-
 	gui_text* text_handler;
 
 	gui_text* blink_text_handler;
