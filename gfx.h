@@ -29,8 +29,8 @@ using namespace std;
 /*! @class gfx
  *  @brief graphical functions
  *  @author flo
- *  @version 0.1.2
- *  @date 2004/08/13
+ *  @version 0.1.3
+ *  @date 2004/08/22
  *  @todo more functions
  *  
  *  the gfx class

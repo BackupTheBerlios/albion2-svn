@@ -34,8 +34,8 @@ using namespace std;
 /*! @class gui_list_item
  *  @brief gui list box item element functions
  *  @author flo
- *  @version 0.1
- *  @date 2004/08/18
+ *  @version 0.1.1
+ *  @date 2004/08/22
  *  @todo more functions
  *  
  *  the gui_list_item class

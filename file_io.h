@@ -14,52 +14,40 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __ENGINE_H__
-#define __ENGINE_H__
+#ifndef __FILE_IO_H__
+#define __FILE_IO_H__
 
 #include <iostream>
+#include <fstream>
 #include <SDL.h>
 #include "msg.h"
-#include "core.h"
-#include "net.h"
-#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class engine
- *  @brief main engine
- *  @author laxity
+/*! @class file_io
+ *  @brief file input/output
  *  @author flo
- *  @version 0.2
- *  @date 2004/08/22
+ *  @version 0.1
+ *  @date 2004/08/21
  *  @todo more functions
  *  
- *  the main engine
+ *  the file input/output class
  */
 
-class A2E_API engine
+class A2E_API file_io
 {
 public:
-	engine();
-	~engine();
-	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
-	void set_width(unsigned int new_width);
-	void set_height(unsigned int new_height);
-	void start_draw();
-	void stop_draw();
-	SDL_Surface* get_screen();
+	file_io();
+	~file_io();
 
-	void set_caption(char* caption);
-	char* get_caption();
+	void open_file(char* filename);
+	void close_file();
+	void get_line(char* finput);
 
-	gui_style get_gstyle();
-	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
 protected:
-	unsigned int width, height, depth, flags;
-	SDL_Surface *screen;
 	msg m;
-	gui_style gstyle;
+	fstream filestream;
 };
 
 #endif
