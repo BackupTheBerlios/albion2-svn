@@ -17,8 +17,14 @@
 #ifndef __GUI_SAMPLE_H__
 #define __GUI_SAMPLE_H__
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <iostream>
 #include <SDL.h>
+#include <gl\gl.h>
+#include <gl\glu.h>
 #include <engine.h>
 #include <msg.h>
 #include <core.h>

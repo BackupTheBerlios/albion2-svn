@@ -1,9 +1,9 @@
 [userdata]
-name=User
+name=Flo
 scheme=blue
 
 [serverdata]
-server=flo88.dyndns.org
+server=localhost
 port=1337
 
 [EOF]

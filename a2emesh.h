@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __ENGINE_H__
-#define __ENGINE_H__
+
+#ifndef __A2EMESH_H__
+#define __A2EMESH_H__
 
 #ifdef WIN32
 #include <windows.h>
@@ -23,56 +23,47 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <SDL_image.h>
 #include <math.h>
 #include <gl\gl.h>
 #include <gl\glu.h>
 #include "msg.h"
 #include "core.h"
-#include "net.h"
-#include "gui_style.h"
+#include "file_io.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class engine
- *  @brief main engine
- *  @author laxity
+/*! @class a2emesh
+ *  @brief class for loading and displaying an a2e mesh
  *  @author flo
- *  @version 0.2
- *  @date 2004/08/22
+ *  @version 0.1
+ *  @date 2004/08/26
  *  @todo more functions
  *  
- *  the main engine
+ *  the a2emesh class
  */
 
-class A2E_API engine
+class A2E_API a2emesh
 {
 public:
-	engine();
-	~engine();
-	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
-	void set_width(unsigned int new_width);
-	void set_height(unsigned int new_height);
-	void start_draw();
-	void stop_draw();
-	SDL_Surface* get_screen();
+	a2emesh();
+	~a2emesh();
 
-	void set_caption(char* caption);
-	char* get_caption();
+	void load_mesh(char* filename);
+	void draw_mesh();
 
-	gui_style get_gstyle();
-	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
-
-	int drawGLScene(GLvoid);
-	int initGL(GLvoid);
-	int resizeWindow(GLvoid);
 protected:
-	unsigned int width, height, depth, flags;
-	SDL_Surface* screen;
-	const SDL_VideoInfo* video_info;
 	msg m;
-	gui_style gstyle;
+	file_io file;
+	core c;
+
+	char mesh_type[8];
+	char mesh_name[9];
+	unsigned int vertex_count;
+	unsigned int index_count;
+
+	core::vertex* vertices;
+	core::triangle* indices;
 };
 
 #endif

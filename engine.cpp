@@ -62,20 +62,72 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	}
 	atexit(SDL_Quit);
 
+	// get video info
+	video_info = SDL_GetVideoInfo();
+	if(!video_info) {
+		m.print(msg::MDEBUG, "engine.cpp", "video query failed: %s",
+			SDL_GetError());
+		exit(1);
+	}
+
+	// gl attributes
+	switch(depth) {
+		case 16:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
+			break;
+		case 24:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 6);
+			break;
+		case 32:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+			break;
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
 	// create screen
-	engine::flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
+	engine::flags |= SDL_HWPALETTE;
+	engine::flags |= SDL_OPENGL;
+	engine::flags |= SDL_GL_DOUBLEBUFFER;
+	if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
+	else { engine::flags |= SDL_SWSURFACE; }
+	if(video_info->blit_hw) { engine::flags |= SDL_HWACCEL;	}
+	if(fullscreen) { engine::flags |= SDL_FULLSCREEN; }
+
 	engine::height = height;
 	engine::width = width;
 	engine::depth = depth;
-	if(fullscreen) { flags = flags | SDL_FULLSCREEN; }
 	screen = SDL_SetVideoMode(width, height, depth, flags);
 	if(screen == NULL) {
 		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
 
+	// enable key repeat
+	if((SDL_EnableKeyRepeat(100, SDL_DEFAULT_REPEAT_INTERVAL))) {
+		m.print(msg::MDEBUG, "engine.cpp", "setting keyboard repeat failed: %s",
+				SDL_GetError());
+		exit(1);
+	}
+
 	gstyle.init(screen);
 	gstyle.set_color_scheme(gui_style::WINDOWS);
+
+	// initialize gl
+	initGL();
+
+	// resize stuff
+	resizeWindow();
 }
 
 /*! sets the window width
@@ -105,15 +157,15 @@ void engine::set_height(unsigned int new_height) {
 /*! starts drawing the window
  */
 void engine::start_draw() {
-	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
-	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, ((bgcolor&0xFF0000) >> 16),
-		((bgcolor&0xFF00) >> 8), bgcolor&0xFF));
+	// draws ogl stuff
+	drawGLScene();
 }
 
 /*! stops drawing the window
  */
 void engine::stop_draw() {
-	SDL_Flip(screen);
+	SDL_GL_SwapBuffers();
+	//SDL_Flip(screen);
 }
 
 /*! returns the surface used by the engine
@@ -148,4 +200,82 @@ gui_style engine::get_gstyle() {
  */
 void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 	gstyle.set_color_scheme(scheme);
+}
+
+/*! opengl initialization function
+ */
+int engine::initGL(GLvoid) {
+    /* Enable smooth shading */
+    glShadeModel( GL_SMOOTH );
+
+    /* Depth buffer setup */
+    glClearDepth( 1.0f );
+
+    /* Enables Depth Testing */
+    glEnable( GL_DEPTH_TEST );
+
+    /* The Type Of Depth Test To Do */
+    glDepthFunc( GL_LEQUAL );
+
+    /* Really Nice Perspective Calculations */
+    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
+
+	return 1;
+}
+
+/*! opengl drawing code
+ */
+int engine::drawGLScene(GLvoid) {
+	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
+	glClearColor((GLclampf)((float)((bgcolor&0xFF0000) >> 16) / 255),
+		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
+		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
+
+    static GLfloat v0[] = { -1.0f, -1.0f,  1.0f };
+    static GLfloat v1[] = {  1.0f, -1.0f,  1.0f };
+    static GLfloat v2[] = {  1.0f,  1.0f,  1.0f };
+    static GLfloat v3[] = { -1.0f,  1.0f,  1.0f };
+    static GLfloat v4[] = { -1.0f, -1.0f, -1.0f };
+    static GLfloat v5[] = {  1.0f, -1.0f, -1.0f };
+    static GLfloat v6[] = {  1.0f,  1.0f, -1.0f };
+    static GLfloat v7[] = { -1.0f,  1.0f, -1.0f };
+    static GLubyte red[]    = { 255,   0,   0, 255 };
+    static GLubyte green[]  = {   0, 255,   0, 255 };
+    static GLubyte blue[]   = {   0,   0, 255, 255 };
+    static GLubyte white[]  = { 255, 255, 255, 255 };
+    static GLubyte yellow[] = {   0, 255, 255, 255 };
+    static GLubyte black[]  = {   0,   0,   0, 255 };
+    static GLubyte orange[] = { 255, 255,   0, 255 };
+    static GLubyte purple[] = { 255,   0, 255,   0 };
+
+    /* Clear the color and depth buffers. */
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    /* We don't want to modify the projection matrix. */
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity( );
+
+    /* Move down the z-axis. */
+    glTranslatef( 0.0, 0.0, -250.0 );
+
+    //SDL_GL_SwapBuffers();
+
+    return 1;
+}
+
+/* function to reset our viewport after a window resize
+ */
+int engine::resizeWindow(GLvoid) {
+    glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+	gluPerspective(45.0f, engine::width/engine::height, 0.1f, 500.0f);
+
+    glMatrixMode(GL_MODELVIEW);
+
+    glLoadIdentity();
+
+    return 1;
 }

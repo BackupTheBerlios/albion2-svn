@@ -59,16 +59,57 @@ void gui_text::close_font(TTF_Font* font) {
 /*! draws the text
  */
 void gui_text::draw_text() {
-	SDL_Rect* dstrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_2D);
 
-	dstrect->x = gui_text::point->x;
-	dstrect->y = gui_text::point->y;
-	dstrect->w = gui_text::surface->w;
-	dstrect->h = gui_text::surface->h;
+	// This allows alpha blending of 2D textures with the scene
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	SDL_BlitSurface(gui_text::surface, 0, gui_text::engine_handler->get_screen(), dstrect);
+	glViewport(0, 0, engine_handler->get_screen()->w, engine_handler->get_screen()->h);
 
-	free(dstrect);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glOrtho(0.0, (GLdouble)engine_handler->get_screen()->w,
+		(GLdouble)engine_handler->get_screen()->h, 0.0, 0.0, 1.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+
+
+
+	glBindTexture(GL_TEXTURE_2D, gui_text::texture);
+	glBegin(GL_TRIANGLE_STRIP);
+
+	glTexCoord2f(0, 0);
+	glVertex2i(gui_text::point->x,   gui_text::point->y  );
+	glTexCoord2f(gui_text::texmaxx, 0);
+	glVertex2i(gui_text::point->x + gui_text::surface->w, gui_text::point->y  );
+	glTexCoord2f(0, gui_text::texmaxy);
+	glVertex2i(gui_text::point->x,   gui_text::point->y + gui_text::surface->h);
+	glTexCoord2f(gui_text::texmaxx, gui_text::texmaxy);
+	glVertex2i(gui_text::point->x + gui_text::surface->w, gui_text::point->y + gui_text::surface->h);
+
+	glEnd();
+
+
+
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
@@ -125,6 +166,8 @@ void gui_text::set_id(unsigned int id) {
  */
 void gui_text::set_surface(SDL_Surface* surface) {
 	gui_text::surface = surface;
+	// ogl stuff
+	gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::surface);
 }
 
 /*! sets the text starting point
@@ -184,12 +227,18 @@ void gui_text::remake_text() {
 			SDL_FreeSurface(gui_text::get_surface());
 			gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
 			gui_text::close_font(font);
+
+			// ogl stuff
+			gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::get_surface());
 		}
 		else {
 			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
 			SDL_FreeSurface(gui_text::get_surface());
 			gui_text::set_surface(TTF_RenderText_Blended(font, "  ", gui_text::color));
 			gui_text::close_font(font);
+
+			// ogl stuff
+			gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::get_surface());
 		}
 	}
 }
@@ -200,4 +249,93 @@ void gui_text::set_notext() {
 	gui_text::is_notext = true;
 	gui_text::text = "";
 	gui_text::remake_text();
+}
+
+/*! quick utility function for texture creation taken from the SDL_ttf source
+ *  @param input the input size
+ */
+int gui_text::power_of_two(int input) {
+	int value = 1;
+
+	while ( value < input ) {
+		value <<= 1;
+	}
+	return value;
+}
+
+/*! function taken from the SDL_ttf source for creating an
+ *! ogl texture out of a SDL Surface
+ *  @param surface the surface from which we want to create an ogl texture
+ */
+GLuint gui_text::SDL_GL_LoadTexture(SDL_Surface *surface) {
+	GLuint texture;
+	int w, h;
+	SDL_Surface *image;
+	SDL_Rect area;
+	Uint32 saved_flags;
+	Uint8  saved_alpha;
+
+	/* Use the surface width and height expanded to powers of 2 */
+	w = power_of_two(surface->w);
+	h = power_of_two(surface->h);
+	//texcoord[0] = 0.0f;			/* Min X */
+	//texcoord[1] = 0.0f;			/* Min Y */
+	gui_text::texmaxx = (GLfloat)surface->w / w;	/* Max X */
+	gui_text::texmaxy = (GLfloat)surface->h / h;	/* Max Y */
+
+	image = SDL_CreateRGBSurface(
+			SDL_SWSURFACE,
+			w, h,
+			32,
+/*#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+			0x000000FF, 
+			0x0000FF00, 
+			0x00FF0000, 
+			0xFF000000
+#else*/
+			0x00FF0000, 
+			0x0000FF00, 
+			0x000000FF,
+			0xFF000000
+//#endif
+		       );
+	if ( image == NULL ) {
+		return 0;
+	}
+
+	/* Save the alpha blending attributes */
+	saved_flags = surface->flags&(SDL_SRCALPHA|SDL_RLEACCELOK);
+	saved_alpha = surface->format->alpha;
+	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA ) {
+		SDL_SetAlpha(surface, 0, 0);
+	}
+
+	/* Copy the surface into the GL texture image */
+	area.x = 0;
+	area.y = 0;
+	area.w = surface->w;
+	area.h = surface->h;
+	SDL_BlitSurface(surface, &area, image, &area);
+
+	/* Restore the alpha blending attributes */
+	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA ) {
+		SDL_SetAlpha(surface, saved_flags, saved_alpha);
+	}
+
+	/* Create an OpenGL texture for the image */
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D,
+		     0,
+		     GL_RGBA,
+		     w, h,
+		     0,
+		     GL_RGBA,
+		     GL_UNSIGNED_BYTE,
+		     image->pixels);
+	SDL_FreeSurface(image); /* No longer needed */
+
+	return texture;
 }

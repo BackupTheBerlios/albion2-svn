@@ -41,42 +41,41 @@ public:
 	core();
 	~core();
 
-	struct vector3 {
-		float x;
-		float y;
-		float z;
+	struct vertex {
+		float x, y, z;
+		float u, v;
 	};
 
 	struct line {
-		vector3 v1;
-		vector3 v2;
+		vertex v1;
+		vertex v2;
 	};
 
 	struct triangle {
-		vector3 v1;
-		vector3 v2;
-		vector3 v3;
+		vertex v1;
+		vertex v2;
+		vertex v3;
 	};
 
 	struct quad {
-		vector3 v1;
-		vector3 v2;
-		vector3 v3;
-		vector3 v4;
+		vertex v1;
+		vertex v2;
+		vertex v3;
+		vertex v4;
 	};
 
 	unsigned int get_bit(unsigned int value, unsigned int bit);
 	unsigned int set_bit(unsigned int value, unsigned int bit, unsigned int num);
 
-	float get_distance(vector3 p1, vector3 p2);
+	float get_distance(vertex p1, vertex p2);
 
-	bool is_vector_in_line(line l1, vector3 p1, float precision = 1);
-	bool is_vector_in_triangle(triangle t1, vector3 p1, float precision = 1);
-	bool is_vector_in_quad(quad q1, vector3 p1, float precision = 1);
+	bool is_vertex_in_line(line l1, vertex p1, float precision = 1);
+	bool is_vertex_in_triangle(triangle t1, vertex p1, float precision = 1);
+	bool is_vertex_in_quad(quad q1, vertex p1, float precision = 1);
 
-	void vec_to_line(vector3 p1, vector3 p2, line &rline);
-	void vec_to_triangle(vector3 p1, vector3 p2, vector3 p3, triangle &rtriangle);
-	void vec_to_quad(vector3 p1, vector3 p2, vector3 p3, vector3 p4, quad &rquad);
+	void vertex_to_line(vertex p1, vertex p2, line &rline);
+	void vertex_to_triangle(vertex p1, vertex p2, vertex p3, triangle &rtriangle);
+	void vertex_to_quad(vertex p1, vertex p2, vertex p3, vertex p4, quad &rquad);
 protected:
 	unsigned int value, bit, num;
 };

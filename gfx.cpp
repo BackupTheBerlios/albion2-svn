@@ -34,11 +34,15 @@ gfx::~gfx() {
  *  @param color the color of the point
  */
 void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) {
-	int depth = surface->format->BytesPerPixel;
-    // p is the address to the pixel we want to draw
-    Uint8 *p = (Uint8*)surface->pixels + point->y * surface->pitch + point->x * depth;
+	// there is no need for a draw point function any more - commented out
 
-    switch(depth) {
+	//int depth = surface->format->BytesPerPixel;
+    // p is the address to the pixel we want to draw
+	//Uint8 *p = (Uint8*)malloc(depth);
+	//GLuint *p = new GLuint[1*1*depth*sizeof(GLuint)];
+	//free(p);
+
+    /*switch(depth) {
 		// 8bpp => 1 byte per pixel
 		case 1:
 			*p = color;
@@ -67,7 +71,32 @@ void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) 
 		case 4:
 			*(Uint32*)p = color;
 			break;
-    }
+    }*/
+
+	/*glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0, 800, 0.0, 600, -1.0, 1.0);
+	
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPushMatrix();
+	glLoadIdentity();
+
+	glDrawBuffer(GL_BACK);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glRasterPos2i(point->x, 599 - point->y);
+	//glDrawPixels(1, 1, GL_BGRA_EXT, GL_UNSIGNED_BYTE, p);
+
+	glFlush();
+	
+	glPopMatrix();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();*/
+
+	//free(p);
 }
 
 /*! draws a line on a surface
@@ -78,92 +107,35 @@ void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) 
  */
 void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
 					gfx::pnt* point2, unsigned int color) {
-	int cpx = surface->format->BytesPerPixel;
-	int cpy = surface->pitch;
-    // p is the address to the pixel we want to draw
-    Uint8 *p = (Uint8*)surface->pixels + point1->y * cpy + point1->x * cpx;
+	unsigned int width = point2->x - point1->x;
+	unsigned int height = point2->y - point1->y;
 
-	int x = 0, y = 0, tmp, sign_x, sign_y;
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0, surface->w, 0.0, surface->h, -1.0, 1.0);
+	
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPushMatrix();
+	glLoadIdentity();
 
-	int dist_x1_x2 = point2->x - point1->x;
-	int dist_y1_y2 = point2->y - point1->y;
+	glDrawBuffer(GL_BACK);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; sign_x = -1; }
-	else { dist_x1_x2++; sign_x = 1; }
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glBegin(GL_LINES);
+	glColor3ub((color>>16) & 255, (color>>8) & 255, color & 255);
+	glVertex2i(point1->x, surface->h - point1->y);
+	glVertex2i(point2->x, surface->h - point2->y);
+	glEnd();
 
-	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; sign_y = -1; }
-	else { dist_y1_y2++; sign_y = 1; }
-
-	cpx *= sign_x;
-	cpy *= sign_y;
-
-	if(dist_x1_x2 < dist_y1_y2) {
-	    tmp = dist_x1_x2;
-	    dist_x1_x2 = dist_y1_y2;
-	    dist_y1_y2 = tmp;
-	    tmp = cpx;
-	    cpx = cpy;
-	    cpy = tmp;
-	}
-
-    switch(surface->format->BytesPerPixel) {
-		// 8bpp => 1 byte per pixel
-		case 1:
-			for(; x < dist_x1_x2; x++, p += cpx) {
-				*p = color;
-				y += dist_y1_y2;
-				if(y >= dist_x1_x2) {
-					y -= dist_x1_x2;
-					p += cpy;
-				}
-			}
-			break;
-
-		// 16bpp => 2 byte per pixel
-		case 2:
-			for(; x < dist_x1_x2; x++, p += cpx) {
-				*(Uint16*)p = color;
-				y += dist_y1_y2;
-				if(y >= dist_x1_x2) {
-					y -= dist_x1_x2;
-					p += cpy;
-				}
-			}
-			break;
-
-		// 24bpp => 3 byte per pixel
-		case 3:
-			for(; x < dist_x1_x2; x++, p += cpx) {
-				if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-					p[0] = (color >> 16) & 0xff;
-					p[1] = (color >> 8) & 0xff;
-					p[2] = color & 0xff;
-				}
-				else {
-					p[0] = color & 0xff;
-					p[1] = (color >> 8) & 0xff;
-					p[2] = (color >> 16) & 0xff;
-				}
-				y += dist_y1_y2;
-				if(y >= dist_x1_x2) {
-					y -= dist_x1_x2;
-					p += cpy;
-				}
-			}
-			break;
-
-		// 32bpp => 4 byte per pixel
-		case 4:
-			for(; x < dist_x1_x2; x++, p += cpx) {
-				*(Uint32*)p = color;
-				y += dist_y1_y2;
-				if(y >= dist_x1_x2) {
-					y -= dist_x1_x2;
-					p += cpy;
-				}
-			}
-			break;
-    }
+	glFlush();
+	
+	glPopMatrix();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 }
 
 /*! draws a rectangle on a surface
@@ -265,14 +237,37 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
  */
 void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 								unsigned int color) {
-	gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	for(unsigned int i = rectangle->y1; i <= rectangle->y2; i++) {
-		for(unsigned int j = rectangle->x1; j <= rectangle->x2; j++) {
-			gfx::cord_to_pnt(p, j, i);
-			gfx::draw_point(surface, p, color);
-		}
-	}
-	free(p);
+	unsigned int width = rectangle->x2 - rectangle->x1;
+	unsigned int height = rectangle->y2 - rectangle->y1;
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0, surface->w, 0.0, surface->h, -1.0, 1.0);
+	
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPushMatrix();
+	glLoadIdentity();
+
+	glDrawBuffer(GL_BACK);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glBegin(GL_QUADS);
+	glColor3ub((color>>16) & 255, (color>>8) & 255, color & 255);
+	glVertex2i(rectangle->x1, surface->h - rectangle->y1);
+	glVertex2i(rectangle->x2, surface->h - rectangle->y1);
+	glVertex2i(rectangle->x2, surface->h - rectangle->y2);
+	glVertex2i(rectangle->x1, surface->h - rectangle->y2);
+	glEnd();
+
+	glFlush();
+	
+	glPopMatrix();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 }
 
 /*! returns the sdl_color, we get from the function arguments and surface
@@ -282,7 +277,7 @@ void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
  *  @param blue how much blue (0 - 255)
  */
 unsigned int gfx::get_color(SDL_Surface* surface, unsigned int red, unsigned int green, unsigned int blue) {
-	return (unsigned int)SDL_MapRGB(surface->format, red, green, blue);
+	return (unsigned int)SDL_MapRGBA(surface->format, red, green, blue, 255);
 }
 
 /*! returns the sdl_color, we get from the function arguments and surface

@@ -27,8 +27,9 @@ file_io::file_io() {
 file_io::~file_io() {
 }
 
-void file_io::open_file(char* filename) {
-	file_io::filestream.open(filename, fstream::in);
+void file_io::open_file(char* filename, bool binary) {
+	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::binary); }
+	else { file_io::filestream.open(filename, fstream::in); }
 	if(!file_io::filestream.is_open())
 	{
 		m.print(msg::MDEBUG, "file_io.cpp", "error while loading file \"%s\"!", filename);
@@ -41,4 +42,14 @@ void file_io::close_file() {
 
 void file_io::get_line(char* finput) {
 	file_io::filestream.getline(finput, 65536);
+}
+
+void file_io::get_block(char* data, unsigned int size) {
+	file_io::filestream.read(data, size);
+}
+
+char file_io::get_char() {
+	char c;
+	file_io::filestream.get(c);
+	return c;
 }

@@ -41,9 +41,11 @@ public:
 	file_io();
 	~file_io();
 
-	void open_file(char* filename);
+	void open_file(char* filename, bool binary);
 	void close_file();
 	void get_line(char* finput);
+	void get_block(char* data, unsigned int size);
+	char get_char();
 
 protected:
 	msg m;

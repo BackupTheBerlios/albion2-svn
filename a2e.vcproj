@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
 				OutputFile="bin/a2e-debug.dll"
 				SubSystem="1"
 				OptimizeReferences="1"
@@ -83,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_ttf.lib"
 				OutputFile="bin/a2e.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="FALSE"
@@ -119,6 +119,9 @@
 		<Filter
 			Name="Quelldateien"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
+			<File
+				RelativePath="a2emesh.cpp">
+			</File>
 			<File
 				RelativePath="core.cpp">
 			</File>
@@ -171,6 +174,9 @@
 		<Filter
 			Name="Headerdateien"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="a2emesh.h">
+			</File>
 			<File
 				RelativePath="core.h">
 			</File>

@@ -16,7 +16,8 @@ OBJS = main.o \
        gui_list.o \
        gui_list_item.o \
        gui_vbar.o \
-       file_io.o                                   
+       file_io.o \
+       a2emesh.o                           
 
 CC         = gcc
 LD         = gcc
@@ -78,6 +79,9 @@ gui_vbar.o: gui_vbar.cpp gui_vbar.h
 
 file_io.o: file_io.cpp file_io.h
 	$(CC) file_io.cpp $(CC_FLAGS)
+
+a2emesh.o: a2emesh.cpp a2emesh.h
+$(CC) a2emesh.cpp $(CC_FLAGS)
 
 #######################################################################
 # Other

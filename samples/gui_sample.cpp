@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July 2004
+ * \date July - August 2004
  *
  * Albion 2 Engine Sample - GUI Sample
  */

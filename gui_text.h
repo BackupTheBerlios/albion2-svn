@@ -75,6 +75,10 @@ public:
 
 	void set_notext();
 
+	int power_of_two(int input);
+
+	GLuint SDL_GL_LoadTexture(SDL_Surface *surface);
+
 protected:
 	msg m;
 	core c;
@@ -103,6 +107,10 @@ protected:
 
 	//! bool if there is text in the input box
 	bool is_notext;
+
+	GLuint texture;
+	float texmaxx;
+	float texmaxy;
 
 };
 
