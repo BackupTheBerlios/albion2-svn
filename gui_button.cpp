@@ -64,8 +64,10 @@ void gui_button::draw_button(bool is_pressed) {
 
 		if(icon == 0) {
 			// draw text
-			unsigned int width = text_handler->get_surface()->w;
-			unsigned int heigth = text_handler->get_surface()->h;
+			float x, y, z, ux, uy, uz = 0.0f;
+			text_handler->get_font()->BBox(text_handler->get_text(), x, y, z, ux, uy, uz);
+			unsigned int width = (unsigned int)(ux - x);
+			unsigned int heigth = (unsigned int)(uy - y);
 			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
 			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
 			// first we divide the buttons width/higth by 2, to get center point of the button.
@@ -185,8 +187,10 @@ void gui_button::draw_button(bool is_pressed) {
 
 		if(icon == 0) {
 			// draw text
-			unsigned int width = text_handler->get_surface()->w;
-			unsigned int heigth = text_handler->get_surface()->h;
+			float x, y, z, ux, uy, uz = 0.0f;
+			text_handler->get_font()->BBox(text_handler->get_text(), x, y, z, ux, uy, uz);
+			unsigned int width = (unsigned int)(ux - x - 1.0f);
+			unsigned int heigth = (unsigned int)(uy - y - 1.0f);
 			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
 			unsigned int heigth_button = gui_button::rectangle->y2 - gui_button::rectangle->y1;
 			// first we divide the buttons width/higth by 2, to get center point of the button.

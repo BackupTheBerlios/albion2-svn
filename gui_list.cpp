@@ -209,7 +209,7 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 
 	gui_text* gtext = (gui_text*)malloc(sizeof(gui_text));
 
-	TTF_Font* font = gtext->open_font("vera.ttf", 12);
+	//TTF_Font* font = gtext->open_font("vera.ttf", 12);
 	SDL_Color col;
 	col.b = engine_handler->get_gstyle().STYLE_FONT & 0xFF;
 	col.g = (engine_handler->get_gstyle().STYLE_FONT & 0xFF00) >> 8;
@@ -220,14 +220,15 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	gtext->set_id(id);
 	// there were problems with TTF_RenderText_Solid, so it was just
 	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
-	gtext->set_surface(TTF_RenderText_Blended(font, text, col));
+	//gtext->set_surface(TTF_RenderText_Blended(font, text, col));
+	gtext->new_text("vera.ttf", 12);
 	gtext->set_point(g.cord_to_pnt(0,0));
 	gtext->set_text(text);
 	gtext->set_color(col);
 	gtext->set_font_name("vera.ttf");
 	gtext->set_font_size(12);
 	gtext->set_init(true);
-	gtext->close_font(font);
+	//gtext->close_font(font);
 
 	items[citems] = new gui_list_item();
 	items[citems]->set_text_handler(gtext);

@@ -99,8 +99,9 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
 	engine::flags |= SDL_GL_DOUBLEBUFFER;
-	if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
-	else { engine::flags |= SDL_SWSURFACE; }
+	engine::flags |= SDL_HWSURFACE;
+	/*if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
+	else { engine::flags |= SDL_SWSURFACE; }*/
 	if(video_info->blit_hw) { engine::flags |= SDL_HWACCEL;	}
 	if(fullscreen) { engine::flags |= SDL_FULLSCREEN; }
 
@@ -209,18 +210,19 @@ void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 int engine::initGL(GLvoid) {
 	// enable texture mapping
 	glEnable(GL_TEXTURE_2D);
-    // enable smooth shading
-    glShadeModel(GL_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	// enable smooth shading
+	glShadeModel(GL_SMOOTH);
 	// set clear color
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-    // depth buffer setup
-    glClearDepth(1.0f);
-    // anable depth testing
-    glEnable(GL_DEPTH_TEST);
-    // lequal depth test
-    glDepthFunc(GL_LEQUAL);
-    // nice perspective calculations
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	// depth buffer setup
+	glClearDepth(1.0f);
+	// anable depth testing
+	glEnable(GL_DEPTH_TEST);
+	// lequal depth test
+	glDepthFunc(GL_LEQUAL);
+	// nice perspective calculations
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	// enable backface culling
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -234,13 +236,13 @@ int engine::drawGLScene(GLvoid) {
 	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
 	glClearColor((GLclampf)((float)((bgcolor&0xFF0000) >> 16) / 255),
 		(GLclampf)((float)((bgcolor&0xFF00) >> 8) / 255),
-		(GLclampf)((float)(bgcolor&0xFF) / 255), 1.0f);
+		(GLclampf)((float)(bgcolor&0xFF) / 255), 0.0f);
 
     // clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // we don't want to modify the projection matrix.
-    glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     return 1;
@@ -250,21 +252,21 @@ int engine::drawGLScene(GLvoid) {
  */
 int engine::resizeWindow(GLvoid) {
 	// set the viewport
-    glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
+	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
 
 	// projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 
 	// set perspective with fov = 45° and far value = 500.0f
 	gluPerspective(45.0f, engine::width/engine::height, 0.1f, 500.0f);
 
 	// model view matrix
-    glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 
-    glLoadIdentity();
+	glLoadIdentity();
 
-    return 1;
+	return 1;
 }
 
 void engine::set_position(float xpos, float ypos, float zpos) {
@@ -294,7 +296,9 @@ void engine::start_2d_draw() {
 }
 
 void engine::stop_2d_draw() {
+	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
 	glEnable(GL_TEXTURE_2D);

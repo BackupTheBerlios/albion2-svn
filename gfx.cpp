@@ -53,8 +53,10 @@ void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_LINES);
+	//glVertex2i(point1->x + 1, surface->h - point1->y - 1);
+	//glVertex2i(point2->x + 1, surface->h - point2->y - 1);
 	glVertex2i(point1->x, surface->h - point1->y);
-	glVertex2i(point2->x + 1, surface->h - point2->y - 1);
+	glVertex2i(point2->x, surface->h - point2->y);
 	glEnd();
 }
 
@@ -83,16 +85,16 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color);
 
+	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color);
+
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
 	gfx::draw_line(surface, p1, p2, color);
 
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(surface, p1, p2, color);
-
-	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
 	gfx::draw_line(surface, p1, p2, color);
 
 	free(p1);
@@ -121,13 +123,13 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color1);
 
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(surface, p1, p2, color1);
-
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
 	gfx::draw_line(surface, p1, p2, color2);
+
+	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
+	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
+	gfx::draw_line(surface, p1, p2, color1);
 
 	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
@@ -150,9 +152,13 @@ void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_QUADS);
-	glVertex2i(rectangle->x1, surface->h - rectangle->y2 - 1);
+	/*glVertex2i(rectangle->x1, surface->h - rectangle->y2 - 1);
 	glVertex2i(rectangle->x2 + 1, surface->h - rectangle->y2 - 1);
 	glVertex2i(rectangle->x2 + 1, surface->h - rectangle->y1);
+	glVertex2i(rectangle->x1, surface->h - rectangle->y1);*/
+	glVertex2i(rectangle->x1, surface->h - rectangle->y2);
+	glVertex2i(rectangle->x2, surface->h - rectangle->y2);
+	glVertex2i(rectangle->x2, surface->h - rectangle->y1);
 	glVertex2i(rectangle->x1, surface->h - rectangle->y1);
 	glEnd();
 }

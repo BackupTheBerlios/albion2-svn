@@ -20,6 +20,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <FTGLTextureFont.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
@@ -45,11 +46,9 @@ public:
 	gui_text();
 	~gui_text();
 
-	TTF_Font* open_font(char* font_name, unsigned int font_size);
-	void close_font(TTF_Font* font);
-
 	void draw_text();
 	void set_engine_handler(engine* iengine);
+	void new_text(char* font_name, unsigned int font_size);
 
 
 	// gui text element variables functions
@@ -57,27 +56,33 @@ public:
 	void remake_text();
 
 	unsigned int get_id();
-	SDL_Surface* get_surface();
 	gfx::pnt* get_point();
 	char* get_text();
 	SDL_Color get_color();
 	char* get_font_name();
 	unsigned int get_font_size();
+	FTFont* get_font();
 
 	void set_id(unsigned int id);
-	void set_surface(SDL_Surface* surface);
 	void set_point(gfx::pnt* point);
 	void set_text(char* text);
 	void set_color(SDL_Color color);
 	void set_font_name(char* font_name);
 	void set_font_size(unsigned int font_size);
 	void set_init(bool state);
+	void set_font(FTFont* font);
 
 	void set_notext();
+	unsigned int get_text_width();
+	unsigned int get_text_height();
 
-	int power_of_two(int input);
+	void set_blit_rectangles(gfx::rect* src, gfx::rect* dest);
+	bool get_blit();
+	void set_blit(bool state);
+	void make_blit_texture(unsigned int x, unsigned int y);
 
-	GLuint SDL_GL_LoadTexture(SDL_Surface* surface);
+	// for debug purposes
+	GLuint get_blittexture();
 
 protected:
 	msg m;
@@ -90,8 +95,6 @@ protected:
 
 	//! text id
 	unsigned int id;
-	//! text surface (no need to be changed or accessed)
-	SDL_Surface* surface;
 	//! text starting point (x,y)
 	gfx::pnt* point;
 	//! the text itself
@@ -111,6 +114,13 @@ protected:
 	GLuint texture;
 	float texmaxx;
 	float texmaxy;
+
+	FTFont* font;
+
+	bool is_blit;
+	gfx::rect* blit_src_rectangle;
+	gfx::rect* blit_dest_rectangle;
+	GLuint blit_texture;
 
 };
 

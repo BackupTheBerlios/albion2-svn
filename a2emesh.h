@@ -58,6 +58,9 @@ public:
 	void set_position(float x, float y, float z);
 	core::vertex* get_position();
 
+	// for debug purposes
+	void set_texture(GLuint texture, unsigned int num);
+
 protected:
 	msg m;
 	file_io file;

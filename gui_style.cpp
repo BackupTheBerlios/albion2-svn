@@ -64,7 +64,7 @@ void gui_style::set_color_scheme(COLOR_SCHEME scheme) {
 			gui_style::STYLE_INDARK = g.get_color(gui_style::screen, 0x2809A8);
 			gui_style::STYLE_ARROW = g.get_color(gui_style::screen, 0x2F66F1);
 			gui_style::STYLE_FONT = g.get_color(gui_style::screen, 0x000000);
-			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0x000000);
+			gui_style::STYLE_FONT2 = g.get_color(gui_style::screen, 0xFFFFFF);
 			break;
 		default:
 			gui_style::set_color_scheme(gui_style::WINDOWS);

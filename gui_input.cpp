@@ -60,45 +60,14 @@ void gui_input::draw_input() {
 	free(r1);
 
 	// get the input box text width
-	TTF_Font* font = blink_text_handler->open_font(blink_text_handler->get_font_name(),
-		blink_text_handler->get_font_size());
-	int glyph_width;
-	unsigned int text_width = 0;
-	unsigned int after_text_width = 0;
+	float glyph_width;
+	float text_width = 0;
+	float after_text_width = 0;
 	char* tmp_text = text_handler->get_text();
+	char tmp_char[1];
 	for(unsigned int i = 0; i < strlen(text_handler->get_text()); i++) {
-        TTF_GlyphMetrics(font, tmp_text[i], 0, 0, 0, 0, &glyph_width);
-		switch(tmp_text[i]) {
-			case 'ä':
-				glyph_width = 8;
-				break;
-			case 'ö':
-				glyph_width = 8;
-				break;
-			case 'ü':
-				glyph_width = 8;
-				break;
-			case 'Ä':
-				glyph_width = 8;
-				break;
-			case 'Ö':
-				glyph_width = 9;
-				break;
-			case 'Ü':
-				glyph_width = 9;
-				break;
-			case 'ß':
-				glyph_width = 8;
-				break;
-			case '°':
-				glyph_width = 6;
-				break;
-			case 'µ':
-				glyph_width = 8;
-				break;
-			default:
-				break;
-		}
+		sprintf(tmp_char, "%c", tmp_text[i]);
+		glyph_width = text_handler->get_font()->Advance(tmp_char);
 		if(i < text_pos) {
             text_width += glyph_width;
 		}
@@ -106,14 +75,12 @@ void gui_input::draw_input() {
 			after_text_width += glyph_width;
 		}
 	}
-	blink_text_handler->close_font(font);
-
 
 	// draw text
 	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	unsigned int width = text_handler->get_surface()->w;
-	unsigned int heigth = text_handler->get_surface()->h;
-	// -6, because we have a border of 2px*2 an empty pixel*2
+	unsigned int width = text_handler->get_text_width();
+	unsigned int heigth = text_handler->get_text_height();
+	// -6, because we have a border of 2px*2 and an empty pixel*2
 	unsigned int width_input_box = gui_input::rectangle->x2 - gui_input::rectangle->x1 - 6;
 	unsigned int heigth_input_box = gui_input::rectangle->y2 - gui_input::rectangle->y1;
 	// if the current text cursor position isn't in the available space of the text box,
@@ -125,35 +92,46 @@ void gui_input::draw_input() {
 		// than we have to make the (shown) surface smaller
 		
 		// is the current text cursor position behind the normal text box width?
-		if(text_width >= width_input_box) {
-			width_diff = text_width - width_input_box;
-			SDL_Rect* dstrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
-			dstrect->x = gui_input::rectangle->x1 + 3;
-			dstrect->y = gui_input::rectangle->y1 + 3;
-			dstrect->w = width_input_box;
-			dstrect->h = heigth_input_box;
-			SDL_Rect* srcrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
-			srcrect->x = width_diff;
-			srcrect->y = 0;
-			srcrect->w = width_input_box;
-			srcrect->h = heigth_input_box;
-			SDL_BlitSurface(text_handler->get_surface(), srcrect, engine_handler->get_screen(), dstrect);
+		if((unsigned int)text_width >= width_input_box) {
+			width_diff = (unsigned int)text_width - width_input_box;
+
+			gfx::rect* dstrect = (gfx::rect*)malloc(sizeof(gfx::rect));
+			dstrect->x1 = gui_input::rectangle->x1 + 3;
+			dstrect->y1 = gui_input::rectangle->y1 + 3;
+			dstrect->x2 = gui_input::rectangle->x1 + 3 + width_input_box;
+			dstrect->y2 = gui_input::rectangle->y1 + 3 + heigth_input_box;
+			gfx::rect* srcrect = (gfx::rect*)malloc(sizeof(gfx::rect));
+			srcrect->x1 = width_diff;
+			srcrect->y1 = 0;
+			srcrect->x2 = width_diff + width_input_box;
+			srcrect->y2 = heigth_input_box;
+			
+			text_handler->set_blit_rectangles(srcrect, dstrect);
+			text_handler->set_blit(true);
+			text_handler->draw_text();
+			
 			free(dstrect);
 			free(srcrect);
+
 			is_in_rectangle = false;
 		}
 		else {
-			SDL_Rect* dstrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
-			dstrect->x = gui_input::rectangle->x1 + 3;
-			dstrect->y = gui_input::rectangle->y1 + 3;
-			dstrect->w = width_input_box;
-			dstrect->h = heigth_input_box;
-			SDL_Rect* srcrect = (SDL_Rect*)malloc(sizeof(SDL_Rect));
-			srcrect->x = 0;
-			srcrect->y = 0;
-			srcrect->w = width_input_box;
-			srcrect->h = heigth_input_box;
-			SDL_BlitSurface(text_handler->get_surface(), srcrect, engine_handler->get_screen(), dstrect);
+			gfx::rect* dstrect = (gfx::rect*)malloc(sizeof(gfx::rect));
+
+			dstrect->x1 = gui_input::rectangle->x1 + 3;
+			dstrect->y1 = gui_input::rectangle->y1 + 3;
+			dstrect->x2 = width_input_box;
+			dstrect->y2 = heigth_input_box;
+			gfx::rect* srcrect = (gfx::rect*)malloc(sizeof(gfx::rect));
+			srcrect->x1 = 0;
+			srcrect->y1 = 0;
+			srcrect->x2 = width_input_box;
+			srcrect->y2 = heigth_input_box;
+
+			text_handler->set_blit_rectangles(srcrect, dstrect);
+			text_handler->set_blit(true);
+			text_handler->draw_text();
+
 			free(dstrect);
 			free(srcrect);
 		}
@@ -166,16 +144,19 @@ void gui_input::draw_input() {
 		// +4, because we want the text be drawn a bit more right
 
 		// just draw the text surface
+		/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
+			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2));*/
+		text_handler->set_blit(false);
 		g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
-			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2));
+			gui_input::rectangle->y1 + (heigth_input_box/2 - 14/2) + 1);
 		text_handler->set_point(p1);
 		text_handler->draw_text();
 	}
 	free(p1);
 
 	// draw blink text
-	width = blink_text_handler->get_surface()->w;
-	heigth = blink_text_handler->get_surface()->h;
+	width = blink_text_handler->get_text_width();
+	heigth = blink_text_handler->get_text_height();
 
 	// draw blink symbol
 	if(is_active) {
@@ -202,12 +183,16 @@ void gui_input::draw_input() {
 	// -1, because we want the text be drawn a bit more on top
 	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
 	if(is_in_rectangle) {
-		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + text_width,
-			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1);
+		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
+			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1);*/
+		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width,
+			gui_input::rectangle->y1 + (heigth_input_box/2 - 14/2) - 1);
 	}
 	else {
-		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + text_width - width_diff,
-			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1);
+		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width - width_diff,
+			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 1);*/
+		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width - width_diff,
+			gui_input::rectangle->y1 + (heigth_input_box/2 - 14/2) - 1);
 	}
 	blink_text_handler->set_point(p2);
 	blink_text_handler->draw_text();
@@ -310,4 +295,8 @@ void gui_input::set_notext() {
 	gui_input::text_handler->set_notext();
 	gui_input::text = "";
 	gui_input::text_length = 0;
+}
+
+gui_text* gui_input::get_text_handler() {
+	return gui_input::text_handler;
 }

@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July - August 2004
+ * \date July - November 2004
  *
  * Albion 2 Engine Sample - GUI Sample
  */
@@ -52,18 +52,29 @@ int main(int argc, char *argv[])
 	gui_button* b1 = agui.add_button(agfx.pnt_to_rect(300, 50, 480, 80), 100, "test button");
 	gui_button* b2 = agui.add_button(agfx.pnt_to_rect(520, 50, 700, 80), 101, "‰ˆ¸ƒ÷‹ﬂÈËÍ");
 	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0x000000, agfx.cord_to_pnt(10, 580), 103);
-	gui_input* i1 = agui.add_input_box(
-	agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text");
+	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105,
+		"input text");
 	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 450), 106, "blah");
 
 	// add 32 items
-	for(unsigned int i = 1; i <= 8; i++) {
+	for(unsigned int i = 1; i <= 7; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1->add_item(tmp, i);
 	}
 
 	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102);
+
+
+	// initialize the camera
+	/*cam.init(e, aevent);
+
+	// load the model/mesh and set a new position
+	mesh.load_mesh("cube.a2m");
+	mesh.set_position(0.0f, 0.0f, -250.0f);
+	sce.add_model(&mesh);*/
+
+
 
 	refresh_time = SDL_GetTicks();
 	while(!done)
@@ -117,6 +128,9 @@ int main(int argc, char *argv[])
 			e.start_draw();
 
 			agui.draw();
+
+			/*cam.run();
+			sce.draw();*/
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();

@@ -88,4 +88,5 @@ void gui_list_item::clear() {
 	gui_list_item::id = 0xFFFFFF+gui_list_item::id;
 	gui_list_item::text = "";
 	text_handler->set_notext();
+	delete text_handler;
 }

@@ -269,3 +269,7 @@ void a2emesh::set_position(float x, float y, float z) {
 core::vertex* a2emesh::get_position() {
 	return a2emesh::position;
 }
+
+void a2emesh::set_texture(GLuint texture, unsigned int num) {
+	a2emesh::textures[num] = texture;
+}

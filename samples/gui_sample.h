@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <SDL.h>
+#include <SDL_image.h>
 #include <gl\gl.h>
 #include <gl\glu.h>
 #include <engine.h>
@@ -34,6 +35,9 @@
 #include <gui_button.h>
 #include <gui_text.h>
 #include <event.h>
+#include <camera.h>
+#include <a2emesh.h>
+#include <scene.h>
 using namespace std;
 
 msg m;
@@ -51,5 +55,10 @@ bool done = false;
 SDL_Event ievent;
 
 unsigned int refresh_time;
+
+
+/*camera cam;
+scene sce;
+a2emesh mesh;*/
 
 #endif

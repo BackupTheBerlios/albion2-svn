@@ -241,7 +241,7 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text) {
  */
 gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, gfx::pnt* point, unsigned int id) {
-	TTF_Font* font = gui_texts[ctexts]->open_font(font_name, font_size);
+	//TTF_Font* font = gui_texts[ctexts]->open_font(font_name, font_size);
 	SDL_Color col;
 	col.r = (color & 0xFF0000) >> 16;
 	col.g = (color & 0x00FF00) >> 8;
@@ -257,7 +257,8 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_texts[ctexts]->set_id(id);
 	// there were problems with TTF_RenderText_Solid, so it was just
 	// changed to TTF_RenderText_Blended ;) its a bit slower, but nicer ;)
-	gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Blended(font, text, col));
+	//gui::gui_texts[ctexts]->set_surface(TTF_RenderText_Blended(font, text, col));
+	gui::gui_texts[ctexts]->new_text(font_name, font_size);
 	gui::gui_texts[ctexts]->set_point(point);
 	gui::gui_texts[ctexts]->set_text(text);
 	gui::gui_texts[ctexts]->set_color(col);
@@ -265,7 +266,7 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_texts[ctexts]->set_font_size(font_size);
 	gui::gui_texts[ctexts]->set_init(true);
 
-	gui::gui_texts[ctexts]->close_font(font);
+	//gui::gui_texts[ctexts]->close_font(font);
 
 	celements++;
 	ctexts++;

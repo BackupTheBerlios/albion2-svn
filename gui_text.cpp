@@ -15,6 +15,7 @@
  */
 
 #include "gui_text.h"
+#include <FTGLTextureFont.h>
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -27,65 +28,50 @@ gui_text::gui_text() {
 
 	// 1024 chars
 	gui_text::text = (char*)malloc(1024);
+
+	// the "blitting" stuff
+	is_blit = false;
+	gui_text::blit_src_rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gui_text::blit_dest_rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
+	blit_src_rectangle->x1 = 0;
+	blit_src_rectangle->y1 = 0;
+	blit_src_rectangle->x2 = 0;
+	blit_src_rectangle->y2 = 0;
+	blit_dest_rectangle->x1 = 0;
+	blit_dest_rectangle->y1 = 0;
+	blit_dest_rectangle->x2 = 0;
+	blit_dest_rectangle->y2 = 0;
 }
 
 /*! there is no function currently
  */
 gui_text::~gui_text() {
+	free(text);
+	free(blit_src_rectangle);
+	free(blit_dest_rectangle);
 }
 
-/*! opens a font and returns a pointer to the font
- *  @param font_name the fonts name
- *  @param font_size the size of the font (in px?)
- */
-TTF_Font* gui_text::open_font(char* font_name, unsigned int font_size) {
-	TTF_Font *font;
-	font = TTF_OpenFont(font_name, font_size);
-	if(!font) {
-		m.print(msg::MERROR, "gui.cpp", "TTF_OpenFont: %s", TTF_GetError());
-	}
-
-	TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
-	return font;
-}
-
-/*! closes a font
- */
-void gui_text::close_font(TTF_Font* font) {
-	TTF_CloseFont(font);
-	font = NULL;
+void gui_text::new_text(char* font_name, unsigned int font_size) {
+	font = new FTGLTextureFont(font_name);
+	font->FaceSize(font_size);
 }
 
 /*! draws the text
  */
 void gui_text::draw_text() {
-	unsigned int sheight = engine_handler->get_screen()->h;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glPushMatrix();
 
-	glBindTexture(GL_TEXTURE_2D, gui_text::texture);
+	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
+	glTranslatef((GLfloat)(point->x), (GLfloat)(engine_handler->get_screen()->h - point->y - 10.0f), 0.0f);
+	glColor3f((GLfloat)(color.r / 255), (GLfloat)(color.g / 255), (GLfloat)(color.b / 255));
+	font->Render(text);
 
-	// draw text
-	glBegin(GL_QUADS);
-	glTexCoord2f(0, gui_text::texmaxy);
-	glVertex2i(gui_text::point->x, sheight - (gui_text::point->y + gui_text::surface->h));
-	glTexCoord2f(gui_text::texmaxx, gui_text::texmaxy);
-	glVertex2i(gui_text::point->x + gui_text::surface->w, sheight - (gui_text::point->y + gui_text::surface->h));
-	glTexCoord2f(gui_text::texmaxx, 0);
-	glVertex2i(gui_text::point->x + gui_text::surface->w, sheight - gui_text::point->y);
-	glTexCoord2f(0, 0);
-	glVertex2i(gui_text::point->x, sheight - gui_text::point->y);
-	glEnd();
-	// draw end
-
+	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
-	glPopAttrib();
+	glDisable(GL_BLEND);
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
@@ -98,11 +84,6 @@ void gui_text::set_engine_handler(engine* iengine) {
 //! returns the text id
 unsigned int gui_text::get_id() {
 	return gui_text::id;
-}
-
-//! returns the text surface
-SDL_Surface* gui_text::get_surface() {
-	return gui_text::surface;
 }
 
 //! returns the text starting point
@@ -137,15 +118,6 @@ void gui_text::set_id(unsigned int id) {
 	gui_text::id = id;
 }
 
-/*! sets the text surface
- *  @param surface the text surface we want to set
- */
-void gui_text::set_surface(SDL_Surface* surface) {
-	gui_text::surface = surface;
-	// ogl stuff
-	gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::surface);
-}
-
 /*! sets the text starting point
  *  @param point the starting point we want to set
  */
@@ -159,7 +131,6 @@ void gui_text::set_point(gfx::pnt* point) {
 void gui_text::set_text(char* text) {
 	is_notext = false;
 	gui_text::text = text;
-	gui_text::remake_text();
 }
 
 /*! sets the text color
@@ -167,7 +138,6 @@ void gui_text::set_text(char* text) {
  */
 void gui_text::set_color(SDL_Color color) {
 	gui_text::color = color;
-	gui_text::remake_text();
 }
 
 /*! sets the font name
@@ -175,7 +145,8 @@ void gui_text::set_color(SDL_Color color) {
  */
 void gui_text::set_font_name(char* font_name) {
 	gui_text::font_name = font_name;
-	gui_text::remake_text();
+	delete font;
+	font = new FTGLTextureFont(font_name);
 }
 
 /*! sets the font size
@@ -183,7 +154,7 @@ void gui_text::set_font_name(char* font_name) {
  */
 void gui_text::set_font_size(unsigned int font_size) {
 	gui_text::font_size = font_size;
-	gui_text::remake_text();
+	font->FaceSize(font_size);
 }
 
 /*! sets the init state
@@ -193,146 +164,62 @@ void gui_text::set_init(bool state) {
 	gui_text::is_init = state;
 }
 
-/*! remakes the text surface with the new parameters
- */
-void gui_text::remake_text() {
-	// checks if everything was initialized
-	if(is_init) {
-		if(!is_notext) {
-			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
-			SDL_FreeSurface(gui_text::get_surface());
-			gui_text::set_surface(TTF_RenderText_Blended(font, gui_text::text, gui_text::color));
-			gui_text::close_font(font);
-
-			// ogl stuff
-			gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::get_surface());
-		}
-		else {
-			TTF_Font* font = gui_text::open_font(gui_text::font_name, gui_text::font_size);
-			SDL_FreeSurface(gui_text::get_surface());
-			gui_text::set_surface(TTF_RenderText_Blended(font, "  ", gui_text::color));
-			gui_text::close_font(font);
-
-			// ogl stuff
-			gui_text::texture = gui_text::SDL_GL_LoadTexture(gui_text::get_surface());
-		}
-	}
-}
-
 /*! sets the notext bool to true and the text to ""
  */
 void gui_text::set_notext() {
 	gui_text::is_notext = true;
 	gui_text::text = "";
-	gui_text::remake_text();
 }
 
-/*! quick utility function for texture creation taken from the SDL_ttf source
- *  @param input the input size
- */
-int gui_text::power_of_two(int input) {
-	int value = 1;
-
-	while ( value < input ) {
-		value <<= 1;
-	}
-	return value;
+FTFont* gui_text::get_font() {
+	return gui_text::font;
 }
 
-/*! function taken from the SDL_ttf source for creating an
- *! ogl texture out of a SDL Surface
- *  @param surface the surface from which we want to create an ogl texture
- */
-GLuint gui_text::SDL_GL_LoadTexture(SDL_Surface* surface) {
-	/*glGenTextures(1, &texture);
-	unsigned int width = surface->w;
-	unsigned int height = surface->h;
+unsigned int gui_text::get_text_width() {
+	float wide = font->Advance(text);
+	return (unsigned int)wide;
+}
 
-	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 0, 0));
-	SDL_Surface* alpha_image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 
-		32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-	SDL_BlitSurface(surface, NULL, alpha_image, NULL);
+unsigned int gui_text::get_text_height() {
+	float x, y, z, ux, uy, uz;
+	font->BBox(text, x, y, z, ux, uy, uz);
+	return (unsigned int)(uy - y);
+}
 
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, 
-		GL_RGBA, GL_UNSIGNED_BYTE, alpha_image->pixels);
-	//SDL_FreeSurface(surface);
-	SDL_FreeSurface(alpha_image);*/
-
-	GLuint texture;
-	int w, h;
-	SDL_Surface *image;
-	SDL_Rect area;
-	Uint32 saved_flags;
-	Uint8  saved_alpha;
-
-	// Use the surface width and height expanded to powers of 2
-	w = power_of_two(surface->w);
-	h = power_of_two(surface->h);
-	//texcoord[0] = 0.0f;
-	//texcoord[1] = 0.0f;
-	gui_text::texmaxx = (GLfloat)surface->w / w;
-	gui_text::texmaxy = (GLfloat)surface->h / h;
-
-	image = SDL_CreateRGBSurface(
-			SDL_SWSURFACE,
-			w, h,
-			32,
-/*			0x00FF0000, 
-			0x0000FF00, 
-			0x000000FF,
-			0xFF000000*/
-			0x000000FF, 
-			0x0000FF00, 
-			0x00FF0000,
-			0xFF000000
-			);
-	if ( image == NULL ) {
-		return 0;
+void gui_text::set_blit_rectangles(gfx::rect* src, gfx::rect* dest) {
+	if(blit_dest_rectangle->x1 != dest->x1 ||
+		blit_dest_rectangle->x2 != dest->x2 ||
+		blit_dest_rectangle->y1 != dest->y1 ||
+		blit_dest_rectangle->y2 != dest->y2 ||
+		blit_src_rectangle->x1 != src->x1 ||
+		blit_src_rectangle->x2 != src->x2 ||
+		blit_src_rectangle->y1 != src->y1 ||
+		blit_src_rectangle->y2 != src->y2) {
+			gui_text::make_blit_texture(src->x2 - src->x1, src->y2 - src->y1);
 	}
 
-	// Save the alpha blending attributes
-	saved_flags = surface->flags&(SDL_SRCALPHA|SDL_RLEACCELOK);
-	saved_alpha = surface->format->alpha;
-	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA ) {
-		SDL_SetAlpha(surface, 0, 0);
-	}
+	memcpy(gui_text::blit_src_rectangle, src, sizeof(gfx::rect));
+	memcpy(gui_text::blit_dest_rectangle, dest, sizeof(gfx::rect));
+}
 
-	// Copy the surface into the GL texture image
-	area.x = 0;
-	area.y = 0;
-	area.w = surface->w;
-	area.h = surface->h;
-	SDL_BlitSurface(surface, &area, image, &area);
+bool gui_text::get_blit() {
+	return gui_text::is_blit;
+}
 
-	// Restore the alpha blending attributes
-	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA ) {
-		SDL_SetAlpha(surface, saved_flags, saved_alpha);
-	}
+void gui_text::set_blit(bool state) {
+	gui_text::is_blit = state;
+}
 
-	// Create an OpenGL texture for the image
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D,
-		     0,
-			 GL_RGBA,
-		     w, h,
-		     0,
-		     GL_RGBA,
-		     GL_UNSIGNED_BYTE,
-		     image->pixels);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		image->pixels);
+void gui_text::make_blit_texture(unsigned int x, unsigned int y) {
+	unsigned int* data = (GLuint*)calloc(1, (x * y * 4 * sizeof(GLuint)));
+	glGenTextures(1, &blit_texture);								
+	glBindTexture(GL_TEXTURE_2D, blit_texture);					
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);						
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	free(data);
+}
 
-	SDL_FreeSurface(image); // No longer needed
-
-	return texture;
+GLuint gui_text::get_blittexture() {
+	return gui_text::blit_texture;
 }

@@ -69,6 +69,10 @@ public:
 
 	void set_notext();
 
+
+	// for debug purposes
+	gui_text* get_text_handler();
+
 protected:
 	msg m;
 	core c;
