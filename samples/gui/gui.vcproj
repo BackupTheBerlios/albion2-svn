@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.00"
-	Name="chat_server"
-	ProjectGUID="{66A3579C-6454-4C45-8572-74F065DF3849}"
+	Name="gui"
+	ProjectGUID="{CA64DB98-DC79-514B-AE15-E980EC93487B}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -36,11 +36,11 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions=""
 				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib OPCODE.lib a2e.lib"
-				OutputFile="$(OutDir)\chat.exe"
+				OutputFile="$(OutDir)\gui.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="obj\Debug\chat.pdb"
+				ProgramDatabaseFile="obj\Debug\gui.pdb"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"/>
@@ -90,7 +90,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions=""
 				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib OPCODE.lib a2e.lib"
-				OutputFile="$(OutDir)\chat.exe"
+				OutputFile="$(OutDir)\gui.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="FALSE"
@@ -118,10 +118,10 @@
 	</Configurations>
 	<Files>
 		<File
-			RelativePath="chat_server.cpp">
+			RelativePath="gui_sample.cpp">
 		</File>
 		<File
-			RelativePath="chat_server.h">
+			RelativePath="gui_sample.h">
 		</File>
 	</Files>
 	<Globals>

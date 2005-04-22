@@ -15,16 +15,13 @@
  */
 
 #include "model_loader.h"
-/*#include <iostream>
-#include <string.h>
-#include <SDL_image.h>*/
 
 /*!
  * \mainpage
  *
  * \author flo
  *
- * \date August 2004 - March 2005
+ * \date August 2004 - April 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
@@ -48,13 +45,13 @@ int main(int argc, char *argv[])
 	cam.set_position(0.0f, 0.0f, -30.0f);
 
 	// load the model and set a new position
-	plane.load_model("plane2.a2m");
+	plane.load_model("../data/plane2.a2m");
 	plane.set_position(0.0f, -15.0f, 0.0f);
 
-	cube.load_model("cube.a2m");
+	cube.load_model("../data/cube.a2m");
 	cube.set_position(0.0f, 10.0f, 0.0f);
 
-	sphere.load_model("sphere.a2m");
+	sphere.load_model("../data/sphere.a2m");
 	sphere.set_position(0.0f, 10.0f, 0.0f);
 	sphere.set_radius(2.5f);
 
@@ -151,7 +148,6 @@ int main(int argc, char *argv[])
 
 		// refresh every 1000/75 milliseconds (~ 75 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/75) {
-			cout << "inner loop - start" << endl;
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
@@ -163,21 +159,14 @@ int main(int argc, char *argv[])
 			}
 			e.set_caption(tmp);
 
-			cout << "start drawing" << endl;
 			e.start_draw();
 
-			cout << "running cam" << endl;
 			cam.run();
-			cout << "drawing scene" << endl;
 			sce.draw();
-			cout << "running ode" << endl;
 			o.run();
 
-			cout << "stop drawing" << endl;
 			e.stop_draw();
-			cout << "end stop drawing" << endl;
 			refresh_time = SDL_GetTicks();
-			cout << "inner loop - stop" << endl;
 		}
 	}
 

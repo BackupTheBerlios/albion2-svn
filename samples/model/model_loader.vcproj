@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="model_loader"
-	ProjectGUID="{87EC3E53-A6BA-45A0-A610-90CB2BC71732}"
+	ProjectGUID="{9D4BF2C2-633E-2440-8268-25E7987D1F94}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -12,17 +12,19 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="..\..\bin\..\samples\bin\"
+			IntermediateDirectory="obj\Debug"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32;_CONSOLE;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -31,14 +33,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib a2e.lib"
-				OutputFile="$(OutDir)/model_loader.exe"
+				IgnoreImportLibrary="TRUE"
+				AdditionalOptions=""
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib OPCODE.lib a2e.lib"
+				OutputFile="$(OutDir)\model.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/model_loader.pdb"
+				ProgramDatabaseFile="obj\Debug\model.pdb"
 				SubSystem="1"
-				OptimizeReferences="1"
-				EnableCOMDATFolding="1"
+				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -49,7 +53,8 @@
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories=""/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -57,34 +62,42 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="..\..\bin\..\samples\bin\"
+			IntermediateDirectory="obj\Release"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32;_CONSOLE;NDEBUG"
+				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="0"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib a2e.lib"
-				OutputFile="$(OutDir)/model_loader.exe"
+				IgnoreImportLibrary="TRUE"
+				AdditionalOptions=""
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib OPCODE.lib a2e.lib"
+				OutputFile="$(OutDir)\model.exe"
 				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"
+				AdditionalLibraryDirectories="..\..\lib"
+				GenerateDebugInformation="FALSE"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -95,7 +108,8 @@
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories=""/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -103,24 +117,12 @@
 		</Configuration>
 	</Configurations>
 	<Files>
-		<Filter
-			Name="Quelldateien"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
-			<File
-				RelativePath="model_loader.cpp">
-			</File>
-		</Filter>
-		<Filter
-			Name="Headerdateien"
-			Filter="h;hpp;hxx;hm;inl;inc">
-			<File
-				RelativePath="model_loader.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="Ressourcendateien"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
-		</Filter>
+		<File
+			RelativePath="model_loader.cpp">
+		</File>
+		<File
+			RelativePath="model_loader.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

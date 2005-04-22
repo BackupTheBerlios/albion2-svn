@@ -7,8 +7,10 @@ package.files = {
 
 if (OS == "windows") then
 	package.kind = "dll"
-	tinsert(package.defines, {"WIN32"})
-	tinsert(package.links, {"opengl32", "glu32", "glaux", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "OPCODE"})
+	tinsert(package.defines, {"WIN32", "_CONSOLE", "A2E_EXPORTS"})
+	tinsert(package.config["Debug"].defines, { "_DEBUG" })
+	tinsert(package.config["Release"].defines, { "NDEBUG" })
+	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "OPCODE"})
 else
 	package.kind = "lib"
 	tinsert(package.includepaths, {"/usr/include/freetype2", "/usr/include/FTGL", "/usr/include", "/usr/include/ode", "/usr/include/Ice"})

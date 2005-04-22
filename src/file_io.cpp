@@ -34,8 +34,7 @@ file_io::~file_io() {
 void file_io::open_file(char* filename, bool binary) {
 	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::binary); }
 	else { file_io::filestream.open(filename, fstream::in); }
-	if(!file_io::filestream.is_open())
-	{
+	if(!file_io::filestream.is_open()) {
 		m.print(msg::MDEBUG, "file_io.cpp", "error while loading file \"%s\"!", filename);
 	}
 }

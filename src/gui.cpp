@@ -586,7 +586,7 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text,
 	gui::gui_input_boxes[cinput_boxes]->set_id(id);
 	gui::gui_input_boxes[cinput_boxes]->set_rectangle(rectangle);
 	gui::gui_input_boxes[cinput_boxes]->set_text(text);
-	gui::gui_input_boxes[cinput_boxes]->set_text_position(strlen(text));
+	gui::gui_input_boxes[cinput_boxes]->set_text_position((unsigned int)strlen(text));
 
 	cinput_boxes++;
 
@@ -781,7 +781,7 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				input_box->set_text_position(input_box->get_text_position() + 1);
 				break;
 			case event::BACK: {
-				ib_text_length = strlen(input_box->get_text());
+				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
 				char* tok1 = (char*)malloc(ib_text_length+4);
@@ -828,7 +828,7 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 			}
 			break;
 			case event::DEL: {
-				ib_text_length = strlen(input_box->get_text());
+				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
 				char* tok1 = (char*)malloc(ib_text_length+4);
@@ -873,10 +873,10 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				input_box->set_text_position(0);
 				break;
 			case event::END:
-				input_box->set_text_position(strlen(input_box->get_text()));
+				input_box->set_text_position((unsigned int)strlen(input_box->get_text()));
 				break;
 			default: {
-				ib_text_length = strlen(input_box->get_text());
+				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
 				char* tok1 = (char*)malloc(ib_text_length+4);

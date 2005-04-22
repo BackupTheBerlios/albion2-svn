@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __a2emodel_H__
-#define __a2emodel_H__
+#ifndef __A2EMODEL_H__
+#define __A2EMODEL_H__
 
 #ifdef WIN32
 #include <windows.h>

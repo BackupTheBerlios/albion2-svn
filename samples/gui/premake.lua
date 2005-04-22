@@ -2,7 +2,7 @@ package.name = "gui"
 package.kind = "exe"
 package.language = "c++"
 
-package.target = "../bin/gui"
+package.target = "../samples/bin/gui"
 
 package.files = {
 	"gui_sample.cpp",
@@ -10,8 +10,10 @@ package.files = {
 }
 
 if (OS == "windows") then
-	tinsert(package.defines, {"WIN32"})
-	tinsert(package.links, {"opengl32", "glu32", "glaux", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode"})
+	tinsert(package.defines, {"WIN32", "_CONSOLE"})
+	tinsert(package.config["Debug"].defines, { "_DEBUG" })
+	tinsert(package.config["Release"].defines, { "NDEBUG" })
+	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "OPCODE", "a2e"})
 else
 	tinsert(package.includepaths, {"../../src", "/usr/include/freetype2", "/usr/include/FTGL"})
 	tinsert(package.libpaths, {findlib("Xxf86vm"), "jpeglib", "zlib", "../../bin",})

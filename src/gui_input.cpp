@@ -109,7 +109,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			width_diff = (unsigned int)text_width - width_input_box;
 
 			char* ptext = text_handler->get_text();
-			unsigned int len = strlen(ptext);
+			unsigned int len = (unsigned int)strlen(ptext);
 
 			char* tmp_text = (char*)malloc(len+1);
 			// set each byte of the string to 0
@@ -130,7 +130,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			tmp_text[pos] = 0;
 
 			// now, we just have to flip the string
-			len = strlen(tmp_text);
+			len = (unsigned int)strlen(tmp_text);
 			char* new_text = (char*)malloc(len+1);
 			new_text[len] = 0;
 			for(unsigned int i = 0; i < len; i++) {
@@ -181,7 +181,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				tmp_text[pos] = 0;
 
 				// now, we just have to flip the string
-				len = strlen(tmp_text);
+				len = (unsigned int)strlen(tmp_text);
 				char* new_text = (char*)malloc(len+1);
 				new_text[len] = 0;
 				for(unsigned int i = 0; i < len; i++) {
@@ -206,7 +206,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			// ... or not
 			else  {
 				char* ptext = text_handler->get_text();
-				unsigned int len = strlen(ptext);
+				unsigned int len = (unsigned int)strlen(ptext);
 
 				char* new_text = (char*)malloc(len+1);
 				// set each byte of the string to 0
@@ -371,7 +371,7 @@ void gui_input::set_text(char* text) {
 	memcpy(gui_input::text, text, strlen(text));
 	gui_input::text[strlen(text)] = 0;
 	gui_input::text_handler->set_text(text);
-	gui_input::text_length = strlen(text);
+	gui_input::text_length = (unsigned int)strlen(text);
 }
 
 /*! sets the is_active bool

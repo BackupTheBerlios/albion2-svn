@@ -1,8 +1,8 @@
-package.name = "chat-server"
+package.name = "chat_server"
 package.kind = "exe"
 package.language = "c++"
 
-package.target = "../bin/chat"
+package.target = "../samples/bin/chat"
 
 package.files = {
 	"chat_server.cpp",
@@ -10,8 +10,10 @@ package.files = {
 }
 
 if (OS == "windows") then
-	tinsert(package.defines, {"WIN32"})
-	tinsert(package.links, {"opengl32", "glu32", "glaux", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode"})
+	tinsert(package.defines, {"WIN32", "_CONSOLE"})
+	tinsert(package.config["Debug"].defines, { "_DEBUG" })
+	tinsert(package.config["Release"].defines, { "NDEBUG" })
+	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "OPCODE", "a2e"})
 else
 	tinsert(package.includepaths, { "/usr/include/freetype2", "/usr/include/FTGL", "../../src"})
 	tinsert(package.libpaths, {"../../bin", findlib("GL"), findlib("GLU"), findlib("Xxf86vm"), findlib("SDL"), findlib("ftgl"), findlib("ode")})

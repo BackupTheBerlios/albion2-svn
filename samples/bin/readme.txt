@@ -1,0 +1,1 @@
+if you receive an error when opening the binary, copy the binary to the ../data directory and execute it from there.

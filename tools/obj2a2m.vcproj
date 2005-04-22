@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="7.00"
 	Name="obj2a2m"
-	ProjectGUID="{C7C19F21-9FA7-3B59-72D4-D5CF30A03D1A}"
+	ProjectGUID="{A5CE392A-E063-7D46-8C7B-EFE8B1965E1C}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -19,8 +19,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="\usr\include\freetype2,\usr\include\FTGL"
-				PreprocessorDefinitions=""
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -34,11 +34,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalOptions=" `sdl-config --libs`"
-				AdditionalDependencies="GL.lib GLU.lib Xxf86vm.lib z.lib jpeg.lib SDL_net.lib ode.lib freetype.lib ftgl.lib"
+				AdditionalOptions=""
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib"
 				OutputFile="$(OutDir)\obj2a2m.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib;\usr\lib;\usr\X11R6\lib;\usr\X11R6\lib;\usr\lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="obj\Debug\obj2a2m.pdb"
 				SubSystem="1"
@@ -54,7 +54,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="\usr\include\freetype2,\usr\include\FTGL"/>
+				AdditionalIncludeDirectories=""/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -71,8 +71,8 @@
 				Optimization="3"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="\usr\include\freetype2,\usr\include\FTGL"
-				PreprocessorDefinitions=""
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
 				StringPooling="TRUE"
@@ -88,11 +88,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalOptions=" `sdl-config --libs`"
-				AdditionalDependencies="GL.lib GLU.lib Xxf86vm.lib z.lib jpeg.lib SDL_net.lib ode.lib freetype.lib ftgl.lib"
+				AdditionalOptions=""
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib"
 				OutputFile="$(OutDir)\obj2a2m.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\lib;\usr\lib;\usr\X11R6\lib;\usr\X11R6\lib;\usr\lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="FALSE"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -109,7 +109,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="\usr\include\freetype2,\usr\include\FTGL"/>
+				AdditionalIncludeDirectories=""/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool

@@ -23,7 +23,7 @@
  *
  * \author flo
  *
- * \date July 2004 - March 2005
+ * \date July 2004 - April 2005
  *
  * Albion 2 Engine Sample - GUI Sample
  */
@@ -45,14 +45,14 @@ int main(int argc, char *argv[])
 	// initialize the gui
 	agui.init(e, aevent);
 
-	gui_text* t1 = agui.add_text("vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102, 0);
-	gui_text* output_text = agui.add_text("vera.ttf", 12, "-", 0xFFFFFF, agfx.cord_to_pnt(10, 580), 103, 0);
+	gui_text* t1 = agui.add_text("../data/vera.ttf", 14, "test text", 0xFFFFFF, agfx.cord_to_pnt(100, 5), 102, 0);
+	gui_text* output_text = agui.add_text("../data/vera.ttf", 12, "-", 0xFFFFFF, agfx.cord_to_pnt(10, 580), 103, 0);
 	gui_input* i1 = agui.add_input_box(agfx.pnt_to_rect(10, 300, 100, 320), 105, "input text", 0);
 	gui_list* l1 = agui.add_list_box(agfx.pnt_to_rect(400, 200, 750, 440), 106, "blah", 0);
 
 	gui_window* wnd = agui.add_window(agfx.pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
-	gui_text* xpos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 20), 107, 110);
-	gui_text* ypos_text = agui.add_text("vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 40), 108, 110);
+	gui_text* xpos_text = agui.add_text("../data/vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 20), 107, 110);
+	gui_text* ypos_text = agui.add_text("../data/vera.ttf", 12, "0", 0x000000, agfx.cord_to_pnt(20, 40), 108, 110);
 	gui_check* cbox = agui.add_check_box(agfx.pnt_to_rect(10, 70, 200, 90), 109, "Test Check Box", 110);
 
 	gui_window* wnd2 = agui.add_window(agfx.pnt_to_rect(560, 100, 780, 450), 111, "test window 2", true);
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	}
 
 	image img(&e);
-	img.open_image("../data/engine_logo.png");
+	img.open_image("../../data/engine_logo.png");
 	img.set_position(800 - 446, 600 - 130);
 
 	gfx::pnt* mpos = (gfx::pnt*)malloc(sizeof(gfx::pnt));
