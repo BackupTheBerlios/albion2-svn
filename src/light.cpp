@@ -24,7 +24,7 @@
  *  @param z the lights z position
  */
 light::light(float x, float y, float z) {
-	position = (core::vertex3*)malloc(sizeof(core::vertex3));
+	position = new core::vertex3();
 	position->x = x;
 	position->y = y;
 	position->z = z;
@@ -45,7 +45,7 @@ light::light(core::vertex3* pos) {
 light::~light() {
 	m.print(msg::MDEBUG, "light.cpp", "freeing light stuff");
 
-	free(position);
+	delete position;
 	/*free(lambient);
 	free(ldiffuse);
 	free(lspecular);*/

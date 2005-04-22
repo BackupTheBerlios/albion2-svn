@@ -39,8 +39,8 @@ using namespace std;
 /*! @class a2emodel
  *  @brief class for loading and displaying an a2e model
  *  @author flo
- *  @version 0.1.5
- *  @date 2005/02/25
+ *  @version 0.2
+ *  @date 2005/04/22
  *  @todo more functions
  *  
  *  the a2emodel class

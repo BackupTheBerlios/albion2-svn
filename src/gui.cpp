@@ -19,9 +19,9 @@
 /*! there is no function currently
 */
 gui::gui() {
-	p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	r = (gfx::rect*)malloc(sizeof(gfx::rect));
-	input_text = (char*)malloc(512);
+	p = new gfx::pnt();
+	r = new gfx::rect();
+	input_text = new char[512];
 
 	//char* ib_text = (char*)malloc(1024);
 	ib_text_length = 0;
@@ -39,9 +39,9 @@ gui::gui() {
 gui::~gui() {
 	m.print(msg::MDEBUG, "gui.cpp", "freeing gui stuff");
 
-	free(p);
-	free(r);
-	free(input_text);
+	delete p;
+	delete r;
+	delete input_text;
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
 		delete gui_buttons[i];
@@ -94,9 +94,9 @@ void gui::init(engine &iengine, event &ievent) {
 	else { gui::gui_surface = gui::engine_handler->get_screen(); }
 
 	// reserve memory for 512 gui elements
-	gui::gui_elements = (gui::gui_element*)malloc(sizeof(gui::gui_element) * 512);
+	gui::gui_elements = new gui::gui_element[512];
 
-	gui::active_element = (gui::gui_element*)malloc(sizeof(gui::gui_element));
+	gui::active_element = new gui::gui_element();
 
 	// init the main window
 	main_window = gui::add_window(g.pnt_to_rect(0, 0, engine_handler->get_screen()->w,
@@ -124,8 +124,8 @@ void gui::draw() {
 	set_active_element(&gui::gui_elements[0]);
 
 	// sort from low to high id
-	unsigned int* wnds_lid = (unsigned int*)malloc(sizeof(unsigned int) * cwindows);
-	unsigned int* wnds_num = (unsigned int*)malloc(sizeof(unsigned int) * cwindows);
+	unsigned int* wnds_lid = new unsigned int[cwindows];
+	unsigned int* wnds_num = new unsigned int[cwindows];
 
 	for(unsigned int i = 0; i < cwindows; i++) {
 		wnds_lid[i] = gui::gui_windows[i]->get_lid();
@@ -217,7 +217,7 @@ void gui::draw() {
 		// check if we got a window with a title bar and border
 		if(gui::gui_windows[wnds_num[j]]->get_border()) {
 			// reposition the window if it has been moved or is moving
-			gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+			gfx::rect* r = new gfx::rect();
 			memcpy(r, gui::gui_windows[wnds_num[j]]->get_rectangle(), sizeof(gfx::rect));
 			r->x1 += 1;
 			r->x2 -= 1;
@@ -230,7 +230,7 @@ void gui::draw() {
 
 			if((g.is_pnt_in_rectangle(r, p) || gui::gui_windows[wnds_num[j]]->is_moving())
 				&& event_type == 2) {
-				gfx::pnt* tmp_point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+				gfx::pnt* tmp_point = new gfx::pnt();
 				event_handler->get_mouse_pos(tmp_point);
 				// well, for more performance we could uncomment this, but the
 				// windows moves smoother w/o it ;)
@@ -241,10 +241,10 @@ void gui::draw() {
 						(int)tmp_point->y - (int)event_handler->get_lm_pressed_y());
 					event_handler->set_pressed(tmp_point->x, tmp_point->y);
 				//}
-				free(tmp_point);
+				delete tmp_point;
 			}
 
-			free(r);
+			delete r;
 		}
 
 		// draw the window
@@ -252,7 +252,7 @@ void gui::draw() {
 
 		// set the "window point" that defines how much the
 		// gui elements have to be moved on the x and y axis
-		gfx::pnt* wp = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+		gfx::pnt* wp = new gfx::pnt();
 		if(gui::gui_windows[wnds_num[j]]->get_border()) {
             wp->x = gui::gui_windows[wnds_num[j]]->get_rectangle()->x1 + 2;
             wp->y = gui::gui_windows[wnds_num[j]]->get_rectangle()->y1 + 19;
@@ -265,7 +265,7 @@ void gui::draw() {
 		// we need a rectangle object to add the windows
 		// x and y coordinate to the gui elements rectangle,
 		// so we can check for a button press correctly
-		gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+		gfx::rect* r = new gfx::rect();
 
 		// draw the gui elements
 		for(unsigned int i = 0; i < celements; i++) {
@@ -400,13 +400,13 @@ void gui::draw() {
 							if(g.is_pnt_in_rectangle(r, p)) {
 								int cx;
 								int cy;
-								gfx::pnt* np = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+								gfx::pnt* np = new gfx::pnt();
 								SDL_GetMouseState(&cx, &cy);
 								np->x = cx;
 								np->y = cy;
 								gui::gui_vbars[gui::gui_elements[i].num]->set_active(true);
 								gui::gui_vbars[gui::gui_elements[i].num]->set_new_point(np);
-								free(np);
+								delete np;
 							}
 							else {
 								gui::gui_vbars[gui::gui_elements[i].num]->set_active(false);
@@ -442,8 +442,8 @@ void gui::draw() {
 			}
 		}
 
-		free(wp);
-		free(r);
+		delete wp;
+		delete r;
 	}
 
 	// window deleting routine
@@ -455,8 +455,8 @@ void gui::draw() {
 		}
 	}
 
-	free(wnds_lid);
-	free(wnds_num);
+	delete wnds_lid;
+	delete wnds_num;
 
 	// stop 2d drawing
 	engine_handler->stop_2d_draw();
@@ -784,12 +784,12 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
-				char* tok1 = (char*)malloc(ib_text_length+4);
+				char* tok1 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
 
-				char* tok2 = (char*)malloc(ib_text_length+4);
+				char* tok2 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
@@ -823,20 +823,20 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 					input_box->set_text_position(0);
 				}
 
-				free(tok1);
-				free(tok2);
+				delete tok1;
+				delete tok2;
 			}
 			break;
 			case event::DEL: {
 				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
-				char* tok1 = (char*)malloc(ib_text_length+4);
+				char* tok1 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
 
-				char* tok2 = (char*)malloc(ib_text_length+4);
+				char* tok2 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
@@ -865,8 +865,8 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 					input_box->set_notext();
 				}
 
-				free(tok1);
-				free(tok2);
+				delete tok1;
+				delete tok2;
 			}
 			break;
 			case event::HOME:
@@ -879,12 +879,12 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				ib_text_length = (unsigned int)strlen(input_box->get_text());
 				ib_text = input_box->get_text();
 
-				char* tok1 = (char*)malloc(ib_text_length+4);
+				char* tok1 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok1[a] = 0;
 				}
 
-				char* tok2 = (char*)malloc(ib_text_length+4);
+				char* tok2 = new char[ib_text_length+4];
 				for(unsigned int a = 0; a < ib_text_length+4; a++) {
 					tok2[a] = 0;
 				}
@@ -907,8 +907,8 @@ void gui::switch_input_text(char* input_text, gui_input* input_box) {
 				input_box->set_text(set_text);
 				input_box->set_text_position(input_box->get_text_position() + 1);
 
-				free(tok1);
-				free(tok2);
+				delete tok1;
+				delete tok2;
 			}
 			break;
 		}

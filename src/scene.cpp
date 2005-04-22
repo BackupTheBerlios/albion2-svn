@@ -23,15 +23,15 @@
 scene::scene() {
 	scene::cmodels = 0;
 	scene::clights = 0;
-	scene::position = (core::vertex3*)malloc(sizeof(core::vertex3));
+	scene::position = new core::vertex3();
 	scene::position->x = 0.0f;
 	scene::position->y = 0.0f;
 	scene::position->z = 0.0f;
 
-	scene::mambient = (float*)malloc(sizeof(float) * 4);
-	scene::mdiffuse = (float*)malloc(sizeof(float) * 4);
-	scene::mspecular = (float*)malloc(sizeof(float) * 4);
-	scene::mshininess = (float*)malloc(sizeof(float) * 4);
+	scene::mambient = new float[4];
+	scene::mdiffuse = new float[4];
+	scene::mspecular = new float[4];
+	scene::mshininess = new float[4];
 	scene::mambient[0] = scene::mambient[1] = scene::mambient[2] = scene::mambient[3] = 0.0f;
 	scene::mdiffuse[0] = scene::mdiffuse[1] = scene::mdiffuse[2] = scene::mdiffuse[3] = 0.0f;
 	scene::mspecular[0] = scene::mspecular[1] = scene::mspecular[2] = scene::mspecular[3] = 0.0f;
@@ -48,11 +48,11 @@ scene::scene() {
 scene::~scene() {
 	m.print(msg::MDEBUG, "scene.cpp", "freeing scene stuff");
 
-	free(scene::position);
-	free(scene::mambient);
-	free(scene::mdiffuse);
-	free(scene::mspecular);
-	free(scene::mshininess);
+	delete scene::position;
+	delete scene::mambient;
+	delete scene::mdiffuse;
+	delete scene::mspecular;
+	delete scene::mshininess;
 
 	delete sphere;
 

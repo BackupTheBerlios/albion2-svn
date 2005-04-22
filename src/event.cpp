@@ -30,7 +30,7 @@ event::~event() {
 	m.print(msg::MDEBUG, "event.cpp", "freeing event stuff");
 
 	if(event::gui_event_stack) {
-		free(event::gui_event_stack);
+		delete event::gui_event_stack;
 	}
 
 	m.print(msg::MDEBUG, "event.cpp", "event stuff freed");
@@ -42,7 +42,7 @@ event::~event() {
 void event::init(SDL_Event ievent) {
 	event::event_handle = ievent;
 
-	event::gui_event_stack = (event::gevent*)malloc(sizeof(event::gevent)*512);
+	event::gui_event_stack = new event::gevent[512];
 	cgui_event = 0;
 
 	for(int i = 0; i < 512; i++) {

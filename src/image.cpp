@@ -23,7 +23,7 @@
 image::image(engine* iengine) {
 	image::engine_handler = iengine;
 
-	image::position = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	image::position = new gfx::pnt();
 	image::position->x = 0;
 	image::position->y = 0;
 
@@ -36,7 +36,7 @@ image::image(engine* iengine) {
 image::~image() {
 	m.print(msg::MDEBUG, "image.cpp", "freeing image stuff");
 
-	free(image::position);
+	delete image::position;
 
 	m.print(msg::MDEBUG, "image.cpp", "image stuff freed");
 }

@@ -173,7 +173,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	m.print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
 
 	// reserve memory for position ...
-	engine::position = (core::vertex3*)malloc(sizeof(core::vertex3));
+	engine::position = new core::vertex3();
 }
 
 /*! sets the window width

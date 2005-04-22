@@ -28,7 +28,7 @@ ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool f
 	ode_object::set_geom(ode_object::get_model(), type);
 
 	if(!fixed) {
-		ode_object::mass = new dMass;
+		ode_object::mass = new dMass();
 		ode_object::set_body(type);
 	}
 }
@@ -41,27 +41,17 @@ ode_object::~ode_object() {
 	// destroy the geom
 	if(ode_object::geom) { dGeomDestroy(ode_object::geom); }
 
-	m.print(msg::MDEBUG, "ode_object.cpp", "test1");
-
 	// destroy the body
 	//if(ode_object::body) { dBodyDestroy(ode_object::body); }
-
-	m.print(msg::MDEBUG, "ode_object.cpp", "test2");
 
 	// delete the mass
 	//if(ode_object::mass) { delete ode_object::mass; }
 
-	m.print(msg::MDEBUG, "ode_object.cpp", "test3");
-
 	// destroy the trimesh
 	//if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
 
-	m.print(msg::MDEBUG, "ode_object.cpp", "test4");
-
 	// delete the vertices
 	//if(ode_object::dvertices) { delete [] ode_object::dvertices; }
-
-	m.print(msg::MDEBUG, "ode_object.cpp", "test5");
 
 	// and free the indices
 	//if(ode_object::dindices) { free(ode_object::dindices); }
@@ -94,7 +84,7 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 				ode_object::dvertices[i][2] = vertices[i].z;
 			}
 
-			ode_object::dindices = (unsigned int*)malloc(sizeof(unsigned int)*3*ode_object::index_count);
+			ode_object::dindices = new unsigned int[3*ode_object::index_count];
 			for(unsigned int i = 0; i < ode_object::index_count; i++) {
 				ode_object::dindices[i] = indices[i].i1;
 				i++;

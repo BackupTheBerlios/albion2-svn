@@ -27,7 +27,7 @@ gui_input::gui_input() {
 	is_active = false;
 
 	// 1024 chars
-	gui_input::text = (char*)malloc(1024);
+	gui_input::text = new char[1024];
 }
 
 /*! there is no function currently
@@ -35,7 +35,7 @@ gui_input::gui_input() {
 gui_input::~gui_input() {
 	m.print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
 
-	free(gui_input::text);
+	delete gui_input::text;
 
 	m.print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
 }
@@ -45,7 +45,7 @@ gui_input::~gui_input() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_input::draw(unsigned int x, unsigned int y) {
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::rect* r1 = new gfx::rect();
 
 	g.pnt_to_rect(r1, gui_input::rectangle->x1 + x, gui_input::rectangle->y1 + y,
 		gui_input::rectangle->x2 + x, gui_input::rectangle->y2 + y);
@@ -90,7 +90,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	}
 
 	// draw text
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p1 = new gfx::pnt();
 	unsigned int width = text_handler->get_text_width();
 	unsigned int heigth = text_handler->get_text_height();
 	// -6, because we have a border of 2px*2 and an empty pixel*2
@@ -111,7 +111,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			char* ptext = text_handler->get_text();
 			unsigned int len = (unsigned int)strlen(ptext);
 
-			char* tmp_text = (char*)malloc(len+1);
+			char* tmp_text = new char[len+1];
 			// set each byte of the string to 0
 			for(unsigned int i = 0; i < len+1; i++) {
 				tmp_text[i] = 0;
@@ -131,7 +131,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 
 			// now, we just have to flip the string
 			len = (unsigned int)strlen(tmp_text);
-			char* new_text = (char*)malloc(len+1);
+			char* new_text = new char[len+1];
 			new_text[len] = 0;
 			for(unsigned int i = 0; i < len; i++) {
 				new_text[i] = tmp_text[(len-1) - i];
@@ -145,8 +145,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			text_handler->set_point(p1);
 			text_handler->draw(new_text, x, y);
 
-			free(new_text);
-			free(tmp_text);
+			delete new_text;
+			delete tmp_text;
 
 			// we need to set a bool, if the marker is out of the drawable
 			// input box rectangle, so we can set it to the "end" of the input box
@@ -162,7 +162,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				//unsigned int len = strlen(ptext);
 				unsigned int len = text_pos;
 
-				char* tmp_text = (char*)malloc(len+1);
+				char* tmp_text = new char[len+1];
 				// set each byte of the string to 0
 				for(unsigned int i = 0; i < len+1; i++) {
 					tmp_text[i] = 0;
@@ -182,7 +182,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 
 				// now, we just have to flip the string
 				len = (unsigned int)strlen(tmp_text);
-				char* new_text = (char*)malloc(len+1);
+				char* new_text = new char[len+1];
 				new_text[len] = 0;
 				for(unsigned int i = 0; i < len; i++) {
 					new_text[i] = tmp_text[(len-1) - i];
@@ -196,8 +196,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
 
-				free(new_text);
-				free(tmp_text);
+				delete new_text;
+				delete tmp_text;
 
 				// we need to set a bool, if the marker is out of the drawable
 				// input box rectangle, so we can set it to the "end" of the input box
@@ -208,7 +208,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				char* ptext = text_handler->get_text();
 				unsigned int len = (unsigned int)strlen(ptext);
 
-				char* new_text = (char*)malloc(len+1);
+				char* new_text = new char[len+1];
 				// set each byte of the string to 0
 				for(unsigned int i = 0; i < len+1; i++) {
 					new_text[i] = 0;
@@ -234,7 +234,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
 
-				free(new_text);
+				delete new_text;
 			}
 		}
 	}
@@ -256,7 +256,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		text_handler->set_point(p1);
 		text_handler->draw(x, y);
 	}
-	free(p1);
+	delete p1;
 
 	// draw blink text
 	width = blink_text_handler->get_text_width();
@@ -286,7 +286,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	// after that we just add the position to our lengths.
 	// +1, because we want the text be drawn a bit more right
 	// -1, because we want the text be drawn a bit more on top
-	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p2 = new gfx::pnt();
 	if(is_in_rectangle) {
 		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
 			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 2);*/
@@ -301,7 +301,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	}
 	blink_text_handler->set_point(p2);
 	blink_text_handler->draw(x, y);
-	free(p2);
+	delete p2;
 	is_in_rectangle = true;
 }
 

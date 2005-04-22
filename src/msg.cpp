@@ -40,7 +40,7 @@ msg::~msg()
 void msg::print(unsigned int type, const char *file, const char *str, ...)
 {
 	va_list	argc;
-	char* ostr = (char*)malloc(256);
+	char* ostr = new char[256];
 
 	switch(type) {
 		// normal msg output
@@ -109,7 +109,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			break;
 	}
 
-	free(ostr);
+	delete ostr;
 }
 
 /*! gets user console input and returns it as a char*

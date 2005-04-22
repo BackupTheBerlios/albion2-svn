@@ -21,10 +21,11 @@
 /*! there is no function currently
  */
 camera::camera() {
-	camera::position = (core::vertex3*)malloc(sizeof(core::vertex3));
+	camera::position = new core::vertex3();
+	camera::rotation = new core::vertex3();
 
-	// thx to nehe for that piover stuff ;)
-	piover180 = 0.0174532925f;
+	// 2 pi / 360° = pi / 180
+	piover180 = (float)PI / 180.0f;
 
 	up_down = 0.0f;
 }
@@ -34,7 +35,8 @@ camera::camera() {
 camera::~camera() {
 	m.print(msg::MDEBUG, "camera.cpp", "freeing camera stuff");
 
-	free(camera::position);
+	delete camera::position;
+	delete camera::rotation;
 
 	m.print(msg::MDEBUG, "camera.cpp", "camera stuff freed");
 }
@@ -51,32 +53,58 @@ void camera::init(engine &iengine, event &ievent) {
 	camera::position->y = 0.0f;
 	camera::position->z = 0.0f;
 	
-	camera::rotation = 0.0f;
+	camera::rotation->x = 0.0f;
+	camera::rotation->y = 0.0f;
+	camera::rotation->z = 0.0f;
 }
 
 /*! runs the camera (expected to be called every draw)
  */
 void camera::run() {
+	// recalculate the cameras position
+
 	if(event_handler->is_key_right()) {
-		camera::rotation -= 1.5f;
+		position->x += (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
+		position->z += (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
 	}
+
 	if(event_handler->is_key_left()) {
-		camera::rotation += 1.5f;
+		position->x -= (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
+		position->z -= (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
 	}
-
+	
 	if(event_handler->is_key_up()) {
-		camera::position->x += (float)sin(camera::rotation * camera::piover180) * 0.75f;
-		camera::position->z += (float)cos(camera::rotation * camera::piover180) * 0.75f;
+		position->x += (float)sin(rotation->y * piover180) * 0.75f;
+		position->y += (float)sin(rotation->x * piover180) * 0.75f;
+		position->z += (float)cos(rotation->y * piover180) * 0.75f;
 	}
+	
 	if(event_handler->is_key_down()) {
-		camera::position->x -= (float)sin(camera::rotation * camera::piover180) * 0.75f;
-		camera::position->z -= (float)cos(camera::rotation * camera::piover180) * 0.75f;
+		position->x -= (float)sin(rotation->y * piover180) * 0.75f;
+		position->y -= (float)sin(rotation->x * piover180) * 0.75f;
+		position->z -= (float)cos(rotation->y * piover180) * 0.75f;
+	}
+	 
+	// calculate the rotation via the current mouse cursor position
+	int cursor_pos_x = 0;
+	int cursor_pos_y = 0;
+	SDL_GetMouseState((int*)&cursor_pos_x, (int*)&cursor_pos_y);
+
+	float xpos = (1.0f / (float)engine_handler->get_screen()->w) * (float)cursor_pos_x;
+	float ypos = (1.0f / (float)engine_handler->get_screen()->h) * (float)cursor_pos_y;
+
+	if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
+		rotation->x += (0.5f - ypos) * 100.0f;
+		rotation->y += (0.5f - xpos) * 100.0f;
+		SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
 	}
 
-    glRotatef(up_down, 1.0f, 0.0f , 0.0f);
-    glRotatef(360.0f - camera::rotation, 0.0f, 1.0f , 0.0f);
+	// rotate
+	glRotatef(360.0f - rotation->x, 1.0f, 0.0f , 0.0f);
+	glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
 
-	engine_handler->set_position(camera::position->x, -10.0f, camera::position->z);
+	// reposition
+	engine_handler->set_position(camera::position->x, -camera::position->y, camera::position->z);
 }
 
 /*! sets the position of the camera
@@ -94,13 +122,4 @@ void camera::set_position(float x, float y, float z) {
  */
 core::vertex3* camera::get_position() {
 	return camera::position;
-}
-
-/*! returns a 3d line (ray) from the screen position (ray)
- *  @param pos the x and y coordinate of the screen
- *  @param ray pointer to a ray object
- */
-void camera::get_ray_from_cord(gfx::pnt* pos, core::line* ray) {
-	ray->v1 = *camera::position;
-	//ray->v2 = ;
 }

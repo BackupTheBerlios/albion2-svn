@@ -25,9 +25,9 @@
 /*! there is no function currently
  */
 gui_list_item::gui_list_item() {
-	text = (char*)malloc(256);
+	text = new char[256];
 
-	point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	point = new gfx::pnt();
 
 	text_handler = NULL;
 }
@@ -37,8 +37,8 @@ gui_list_item::gui_list_item() {
 gui_list_item::~gui_list_item() {
 	m.print(msg::MDEBUG, "gui_list_item.cpp", "freeing gui_list_item stuff");
 
-	free(text);
-	free(point);
+	delete text;
+	delete point;
 
 	if(text_handler) {
 		delete text_handler;

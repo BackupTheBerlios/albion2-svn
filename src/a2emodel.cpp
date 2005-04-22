@@ -25,12 +25,12 @@ using namespace std;
 /*! there is no function currently
  */
 a2emodel::a2emodel() {
-	a2emodel::position = (core::vertex3*)malloc(sizeof(core::vertex3));
+	a2emodel::position = new core::vertex3();
 	a2emodel::position->x = 0.0f;
 	a2emodel::position->y = 0.0f;
 	a2emodel::position->z = 0.0f;
 
-	a2emodel::scale = (core::vertex3*)malloc(sizeof(core::vertex3));
+	a2emodel::scale = new core::vertex3();
 	a2emodel::scale->x = 0.0f;
 	a2emodel::scale->y = 0.0f;
 	a2emodel::scale->z = 0.0f;
@@ -53,17 +53,17 @@ a2emodel::a2emodel() {
 a2emodel::~a2emodel() {
 	m.print(msg::MDEBUG, "a2emodel.cpp", "freeing a2emodel stuff");
 
-	free(a2emodel::position);
-	free(a2emodel::scale);
-	if(a2emodel::bbox) { free(a2emodel::bbox); }
-	if(a2emodel::vertices) { free(a2emodel::vertices); }
-	if(a2emodel::index_count) { free(a2emodel::index_count); }
-	if(a2emodel::tex_value) { free(a2emodel::tex_value); }
+	delete a2emodel::position;
+	delete a2emodel::scale;
+	if(a2emodel::bbox) { delete a2emodel::bbox; }
+	if(a2emodel::vertices) { delete a2emodel::vertices; }
+	if(a2emodel::index_count) { delete a2emodel::index_count; }
+	if(a2emodel::tex_value) { delete a2emodel::tex_value; }
 
 	for(unsigned int i = 0; i < MAX_OBJS; i++) {
-		if(a2emodel::tex_names[i]) { free(a2emodel::tex_names[i]); }
-		if(a2emodel::indices[i]) { free(a2emodel::indices[i]); }
-		if(a2emodel::tex_cords[i]) { free(a2emodel::tex_cords[i]); }
+		if(a2emodel::tex_names[i]) { delete a2emodel::tex_names[i]; }
+		if(a2emodel::indices[i]) { delete a2emodel::indices[i]; }
+		if(a2emodel::tex_cords[i]) { delete a2emodel::tex_cords[i]; }
 	}
 
 	m.print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
@@ -160,7 +160,7 @@ void a2emodel::load_model(char* filename) {
 	model_name[9] = 0;
 
 	// get vertex3 count
-	char* vc = (char*)malloc(5);
+	char* vc = new char[5];
 	file.get_block(vc, 4);
 	vc[4] = 0;
 
@@ -170,11 +170,11 @@ void a2emodel::load_model(char* filename) {
 	vertex_count += (unsigned int)((vc[1] & 0xFF)*0x10000);
 	vertex_count += (unsigned int)((vc[2] & 0xFF)*0x100);
 	vertex_count += (unsigned int)(vc[3] & 0xFF);
-	free(vc);
+	delete vc;
 
 	// create vertices
 	char vertex[4];
-	vertices = (core::vertex3*)malloc(sizeof(core::vertex3)*vertex_count);
+	vertices = new core::vertex3[vertex_count];
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		file.get_block(vertex, 4);
 		memcpy(&vertices[i].x, vertex, 4);
@@ -185,7 +185,7 @@ void a2emodel::load_model(char* filename) {
 	}
 
 	// get texture count
-	char* tc = (char*)malloc(5);
+	char* tc = new char[5];
 	file.get_block(tc, 4);
 	tc[4] = 0;
 
@@ -195,11 +195,11 @@ void a2emodel::load_model(char* filename) {
 	texture_count += (unsigned int)((tc[1] & 0xFF)*0x10000);
 	texture_count += (unsigned int)((tc[2] & 0xFF)*0x100);
 	texture_count += (unsigned int)(tc[3] & 0xFF);
-	free(tc);
+	delete tc;
 
 	// get texture names
 	for(unsigned int i = 0; i < texture_count; i++) {
-		tex_names[i] = (char*)malloc(33);
+		tex_names[i] = new char[33];
 		for(unsigned int j = 0; j < 33; j++) {
 			tex_names[i][j] = 0;
 		}
@@ -211,7 +211,7 @@ void a2emodel::load_model(char* filename) {
 	a2emodel::load_textures();
 
 	// get object count
-	char* oc = (char*)malloc(5);
+	char* oc = new char[5];
 	file.get_block(oc, 4);
 	oc[4] = 0;
 
@@ -221,15 +221,15 @@ void a2emodel::load_model(char* filename) {
 	object_count += (unsigned int)((oc[1] & 0xFF)*0x10000);
 	object_count += (unsigned int)((oc[2] & 0xFF)*0x100);
 	object_count += (unsigned int)(oc[3] & 0xFF);
-	free(oc);
+	delete oc;
 
 	// init stuff
-	index_count = (unsigned int*)malloc(sizeof(unsigned int)*object_count);
+	index_count = new unsigned int[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
 		index_count[i] = 0;
 	}
 
-	tex_value = (unsigned int*)malloc(sizeof(unsigned int)*object_count);
+	tex_value = new unsigned int[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
 		tex_value[i] = 0;
 	}
@@ -237,7 +237,7 @@ void a2emodel::load_model(char* filename) {
 	// loop and load "sub"-objects
 	for(unsigned int i = 0; i < object_count; i++) {
 		// get object names
-		obj_names[i] = (char*)malloc(9);
+		obj_names[i] = new char[9];
 		for(unsigned int j = 0; j < 9; j++) {
 			obj_names[i][j] = 0;
 		}
@@ -246,7 +246,7 @@ void a2emodel::load_model(char* filename) {
 		obj_names[9] = 0;
 
 		// get index count
-		char* ic = (char*)malloc(5);
+		char* ic = new char[5];
 		file.get_block(ic, 4);
 		ic[4] = 0;
 
@@ -255,10 +255,10 @@ void a2emodel::load_model(char* filename) {
 		index_count[i] += (unsigned int)((ic[1] & 0xFF)*0x10000);
 		index_count[i] += (unsigned int)((ic[2] & 0xFF)*0x100);
 		index_count[i] += (unsigned int)(ic[3] & 0xFF);
-		free(ic);
+		delete ic;
 
 		// get texture value
-		char* tv = (char*)malloc(5);
+		char* tv = new char[5];
 		file.get_block(tv, 4);
 		tv[4] = 0;
 
@@ -267,12 +267,12 @@ void a2emodel::load_model(char* filename) {
 		tex_value[i] += (unsigned int)((tv[1] & 0xFF)*0x10000);
 		tex_value[i] += (unsigned int)((tv[2] & 0xFF)*0x100);
 		tex_value[i] += (unsigned int)(tv[3] & 0xFF);
-		free(tv);
+		delete tv;
 
 		// create indices/triangles
 		char index[4];
 		unsigned int uindex;
-		indices[i] = (core::index*)malloc(sizeof(core::index)*index_count[i]);
+		indices[i] = new core::index[index_count[i]];
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			file.get_block(index, 4);
 			uindex = (unsigned int)((index[0] & 0xFF)*0x1000000);
@@ -296,7 +296,7 @@ void a2emodel::load_model(char* filename) {
 
 		// create texture coordinates
 		//char vertex3[4];
-		tex_cords[i] = (core::triangle*)malloc(sizeof(core::triangle)*index_count[i]);
+		tex_cords[i] = new core::triangle[index_count[i]];
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			file.get_block(vertex, 4);
 			memcpy(&tex_cords[i][j].v1.x, vertex, 4);
@@ -383,12 +383,12 @@ core::vertex3* a2emodel::get_vertices() {
 /*! returns a pointer to the indices
  */
 core::index* a2emodel::get_indices() {
-	unsigned int total_size = 0;
+	unsigned int total_count = 0;
 	for(unsigned int i = 0; i < object_count; i++) {
-		total_size += index_count[i] * sizeof(core::index);
+		total_count += index_count[i];
 	}
 
-	core::index* total_indices = (core::index*)malloc(total_size);
+	core::index* total_indices = new core::index[total_count];
 
 	unsigned int cidx = 0;
 	for(unsigned int i = 0; i < object_count; i++) {
@@ -447,8 +447,8 @@ void a2emodel::build_bounding_box() {
 		}
 	}
 
-	if(a2emodel::bbox) { free(a2emodel::bbox); }
-	a2emodel::bbox = (core::aabbox*)malloc(sizeof(core::aabbox));
+	if(a2emodel::bbox) { delete a2emodel::bbox; }
+	a2emodel::bbox = new core::aabbox();
 	a2emodel::bbox->vmin.x = minx;
 	a2emodel::bbox->vmin.y = miny;
 	a2emodel::bbox->vmin.z = minz;

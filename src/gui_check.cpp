@@ -23,7 +23,7 @@
 /*! there is no function currently
  */
 gui_check::gui_check() {
-	gui_check::text = (char*)malloc(1024);
+	gui_check::text = new char[1024];
 
 	gui_check::checked = false;
 }
@@ -33,7 +33,7 @@ gui_check::gui_check() {
 gui_check::~gui_check() {
 	m.print(msg::MDEBUG, "gui_check.cpp", "freeing gui_check stuff");
 
-	free(gui_check::text);
+	delete gui_check::text;
 
 	m.print(msg::MDEBUG, "gui_check.cpp", "gui_check stuff freed");
 }
@@ -43,8 +43,8 @@ gui_check::~gui_check() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_check::draw(unsigned int x, unsigned int y) {
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::rect* r1 = new gfx::rect();
+	gfx::pnt* p1 = new gfx::pnt();
 	
 	g.pnt_to_rect(r1, gui_check::rectangle->x1 + x,
 		gui_check::rectangle->y1 + y,
@@ -71,7 +71,7 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 
 	if(gui_check::checked) {
 		// draw the check mark
-		gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+		gfx::pnt* p2 = new gfx::pnt();
 
 		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
 		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);
@@ -111,7 +111,7 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 		g.draw_line(engine_handler->get_screen(), p1, p2,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		free(p2);
+		delete p2;
 	}
 
 
@@ -121,8 +121,8 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 	gui_check::text_handler->draw(x, y);
 
 
-	free(r1);
-	free(p1);
+	delete r1;
+	delete p1;
 }
 
 /*! draws the check box

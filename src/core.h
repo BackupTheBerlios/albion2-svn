@@ -25,11 +25,13 @@ using namespace std;
 
 #include "win_dll_export.h"
 
+#define PI 3.1415926536
+
 /*! @class core
  *  @brief core stuff
  *  @author flo
- *  @version 0.1.6
- *  @date 2004/18/01
+ *  @version 0.1.7
+ *  @date 2005/04/22
  *  @todo more functions, write extra classes for each of these crappy structs ...
  *  
  *  the core stuff

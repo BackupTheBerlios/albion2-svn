@@ -30,7 +30,7 @@ gui_window::gui_window() {
 	gui_window::deleted = false;
 
 	// 1024 chars
-	gui_window::caption = (char*)malloc(64);
+	gui_window::caption = new char[64];
 }
 
 /*! there is no function currently
@@ -38,7 +38,7 @@ gui_window::gui_window() {
 gui_window::~gui_window() {
 	m.print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
 
-	free(gui_window::caption);
+	delete gui_window::caption;
 
 	m.print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
 }
@@ -58,7 +58,7 @@ void gui_window::draw() {
 			engine_handler->get_gstyle().STYLE_LIGHT,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+		gfx::rect* r = new gfx::rect();
 		memcpy(r, gui_window::rectangle, sizeof(gfx::rect));
 
 		r->x1 += 1;
@@ -74,14 +74,14 @@ void gui_window::draw() {
 			engine_handler->get_gstyle().STYLE_LIGHT,
 			engine_handler->get_gstyle().STYLE_DARK);
 
-		free(r);
+		delete r;
 
-		gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+		gfx::pnt* p = new gfx::pnt();
 		p->x = gui_window::rectangle->x1 + 2;
 		p->y = gui_window::rectangle->y1 + 3;
 		gui_window::text_handler->set_point(p);
 		gui_window::text_handler->draw(0, 0);
-		free(p);
+		delete p;
 
 		// button event handling
 		if(gui_window::exit_button_handler->get_pressed() == true) {

@@ -27,7 +27,7 @@ gui_text::gui_text() {
 	is_notext = false;
 
 	// 1024 chars
-	gui_text::text = (char*)malloc(1024);
+	gui_text::text = new char[1024];
 
 	// point font to NULL
 	font = NULL;
@@ -38,7 +38,7 @@ gui_text::gui_text() {
 gui_text::~gui_text() {
 	m.print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
 
-	free(text);
+	delete text;
 	if(font) {
         delete font;
 	}

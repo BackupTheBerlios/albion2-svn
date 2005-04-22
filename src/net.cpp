@@ -51,7 +51,7 @@ bool net::init() {
 void net::exit() {
 	SDLNet_Quit();
 	if(clients) {
-		free(clients);
+		delete clients;
 	}
 }
 
@@ -69,7 +69,7 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 	}
 
 	// client stuff
-	clients = (client*)malloc(sizeof(client)*net::max_clients);
+	clients = new client[net::max_clients];
 	for(unsigned int i = 0; i < net::max_clients; i++) {
 		clients[i].is_active = false;
 		clients[i].sock = NULL;
@@ -122,7 +122,7 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 	}
 
 	// client stuff
-	clients = (client*)malloc(sizeof(client)*net::max_clients);
+	clients = new client[net::max_clients];
 	for(unsigned int i = 0; i < net::max_clients; i++) {
 		clients[i].is_active = false;
 		sprintf(clients[i].name, "unknown");
@@ -294,7 +294,7 @@ void net::handle_client(unsigned int cur_client) {
 				ndata[4] = len & 0xFF;
 				ndata[5] = cur_client;
 				// put package data into new package (and into data that is printed out)
-				char* print_data = (char*)malloc(len);
+				char* print_data = new char[len];
 				unsigned int i;
 				for(i = 0; i < len; i++) {
 					ndata[i+6] = data[i+6];
@@ -306,7 +306,7 @@ void net::handle_client(unsigned int cur_client) {
 				// print out package data
 				m.print(msg::MMSG, "net.cpp", "data (%d bytes) send from %s(%d): %s",
 					len, clients[cur_client].name, cur_client, print_data);
-				free(print_data);
+				delete print_data;
 
 				// send package to all clients except the one who send the data
 				for(unsigned int i = 0; i < net::max_clients; i++) {

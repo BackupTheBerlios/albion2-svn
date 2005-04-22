@@ -31,8 +31,8 @@ using namespace std;
 /*! @class camera
  *  @brief a2e camera functions
  *  @author flo
- *  @version 0.1.2
- *  @date 2004/09/12
+ *  @version 0.2
+ *  @date 2005/04/22
  *  @todo more functions
  *  
  *  the camera class
@@ -50,18 +50,15 @@ public:
 	void set_position(float x, float y, float z);
 	core::vertex3* get_position();
 
-	//! returns a 3d line (ray) from the screen position (ray)
-	void get_ray_from_cord(gfx::pnt* pos, core::line* ray);
-
 protected:
 	msg m;
-	//core c;
+	core c;
 
 	event* event_handler;
 	engine* engine_handler;
 
 	core::vertex3* position;
-	float rotation;
+	core::vertex3* rotation;
 	float up_down;
 
 	float piover180;

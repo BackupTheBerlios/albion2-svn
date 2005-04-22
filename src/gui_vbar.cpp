@@ -23,7 +23,7 @@
 /*! there is no function currently
  */
 gui_vbar::gui_vbar() {
-	gui_vbar::last_point = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gui_vbar::last_point = new gfx::pnt();
 	gui_vbar::last_point->x = 0;
 	gui_vbar::last_point->y = 0;
 
@@ -54,7 +54,7 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 	}
 
 
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::rect* r1 = new gfx::rect();
 
 	g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + x, gui_vbar::rectangle->y1 + y,
 		gui_vbar::rectangle->x2 + x, gui_vbar::rectangle->y2 + y);
@@ -119,7 +119,7 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 		}
 	}
 
-	free(r1);
+	delete r1;
 }
 
 /*! draws the vertical bar box

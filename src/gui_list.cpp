@@ -31,7 +31,7 @@ gui_list::gui_list() {
 
 	drawable_items = 0;
 
-	rectangle = (gfx::rect*)malloc(sizeof(gfx::rect));
+	rectangle = new gfx::rect();
 	rectangle->x1 = 0;
 	rectangle->y1 = 0;
 	rectangle->x2 = 0;
@@ -45,7 +45,7 @@ gui_list::gui_list() {
 gui_list::~gui_list() {
 	m.print(msg::MDEBUG, "gui_list.cpp", "freeing gui_list stuff");
 
-	free(rectangle);
+	delete rectangle;
 
 	m.print(msg::MDEBUG, "gui_list.cpp", "gui_list stuff freed");
 }
@@ -55,7 +55,7 @@ gui_list::~gui_list() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_list::draw(unsigned int x, unsigned int y) {
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::rect* r1 = new gfx::rect();
 
 	g.pnt_to_rect(r1, gui_list::rectangle->x1 + x, gui_list::rectangle->y1 + y,
 		gui_list::rectangle->x2 + x, gui_list::rectangle->y2 + y);
@@ -81,8 +81,8 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 	unsigned int list_box_heigth = gui_list::rectangle->y2 - gui_list::rectangle->y1;
 	gui_list::drawable_items = (list_box_heigth - (list_box_heigth % 18)) / 18;
 	gui_list::vbar_handler->set_shown_lines(gui_list::drawable_items);
-	unsigned int* ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
-	unsigned int* new_ids = (unsigned int*)malloc(sizeof(unsigned int) * citems);
+	unsigned int* ids = new unsigned int[citems];
+	unsigned int* new_ids = new unsigned int[citems];
 	for(unsigned int i = 0; i < citems; i++) {
 		ids[i] = items[i]->get_id();
 	}
@@ -101,7 +101,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 		c--;
 	}
 
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p1 = new gfx::pnt();
 	// just loop for as many items as we have
 	unsigned int loop = 0;
 	if(drawable_items > citems) {
@@ -140,11 +140,11 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 			}
 		}
 	}
-	free(p1);
-	free(r1);
+	delete p1;
+	delete r1;
 
-	free(ids);
-	free(new_ids);
+	delete ids;
+	delete new_ids;
 
 	// vbar handling
 	gui_list::set_position(vbar_handler->get_position());
@@ -283,7 +283,7 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 void gui_list::delete_item(unsigned int id) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
-			free(items[i]->get_text_handler());
+			delete items[i]->get_text_handler();
 			items[i]->clear();
 		}
 	}
@@ -306,8 +306,8 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 		}
 	}
 
-	gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
-	gfx::pnt* pos = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::rect* r = new gfx::rect();
+	gfx::pnt* pos = new gfx::pnt();
 	pos->x = x;
 	pos->y = y;
 	r->x2 = gui_list::rectangle->x2 - 15;
@@ -324,8 +324,8 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 			}
 	}
 
-	free(r);
-	free(pos);
+	delete r;
+	delete pos;
 }
 
 /*! returns the id of the selected element

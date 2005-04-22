@@ -88,8 +88,8 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	    dist_y1_y2 = tmp;
 	}
 
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p1 = new gfx::pnt();
+	gfx::pnt* p2 = new gfx::pnt();
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color);
@@ -106,8 +106,8 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
 	gfx::draw_line(surface, p1, p2, color);
 
-	free(p1);
-	free(p2);
+	delete p1;
+	delete p2;
 }
 
 /*! draws a two colored rectangle on a surface
@@ -126,8 +126,8 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
 	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
 
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p1 = new gfx::pnt();
+	gfx::pnt* p2 = new gfx::pnt();
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color1);
@@ -144,8 +144,8 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
 	gfx::draw_line(surface, p1, p2, color2);
 
-	free(p1);
-	free(p2);
+	delete p1;
+	delete p2;
 }
 
 /*! draws a filled rectangle on a surface
@@ -211,7 +211,7 @@ void gfx::pnt_to_rect(gfx::rect* rectangle, unsigned int x1, unsigned int y1, un
  *  @param y2 y cord point 2
  */
 gfx::rect* gfx::pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
-	gfx::rect* r = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::rect* r = new gfx::rect();
 	r->x1 = x1;
 	r->y1 = y1;
 	r->x2 = x2;
@@ -234,7 +234,7 @@ void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
  *  @param y y cord
  */
 gfx::pnt* gfx::cord_to_pnt(unsigned int x, unsigned int y) {
-	gfx::pnt* p = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	gfx::pnt* p = new gfx::pnt();
 	p->x = x;
 	p->y = y;
 	return p;

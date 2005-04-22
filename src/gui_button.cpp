@@ -40,9 +40,9 @@ gui_button::~gui_button() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
-	gfx::pnt* p1 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	gfx::pnt* p2 = (gfx::pnt*)malloc(sizeof(gfx::pnt));
-	gfx::rect* r1 = (gfx::rect*)malloc(sizeof(gfx::rect));
+	gfx::pnt* p1 = new gfx::pnt();
+	gfx::pnt* p2 = new gfx::pnt();
+	gfx::rect* r1 = new gfx::rect();
 
 	if(!is_pressed) {
 		g.pnt_to_rect(r1, gui_button::rectangle->x1 + x, gui_button::rectangle->y1 + y,
@@ -313,9 +313,9 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 	}
 
 
-	free(p1);
-	free(p2);
-	free(r1);
+	delete p1;
+	delete p2;
+	delete r1;
 }
 
 /*! creates a engine_handler -> a pointer to the engine class
