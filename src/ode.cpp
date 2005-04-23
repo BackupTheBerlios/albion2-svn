@@ -21,8 +21,8 @@ dWorldID ode::world = 0;
 dSpaceID ode::space = 0;
 dJointGroupID ode::joint_group = 0;
 float ode::gravity = -9.8f;
-float ode::cfm = 1e-4f;
-float ode::erp = 0.8f;
+float ode::cfm = 1e-5f;
+float ode::erp = 0.2f;
 
 /*! there is no function currently
  */
@@ -48,7 +48,7 @@ void ode::init() {
 	ode::joint_group = dJointGroupCreate(0);
 
 	// set the error reduction parameter to 0.2
-	dWorldSetERP(ode::world, ode::erp);
+	//dWorldSetERP(ode::world, ode::erp);
 
 	// set the constraint force mixing to 10^-5
 	dWorldSetCFM(ode::world, ode::cfm);
@@ -62,9 +62,14 @@ void ode::init() {
 	// set auto enable depth
 	//dWorldSetAutoEnableDepthSF1(ode::world, 1);
 
-	dWorldSetAutoDisableFlag(ode::world, 1);
-	dWorldSetContactMaxCorrectingVel(ode::world, 1.0f);
-	dWorldSetQuickStepNumIterations(ode::world, 7);
+	// set auto disable flag
+	//dWorldSetAutoDisableFlag(ode::world, 1);
+
+	// set the contacts max correction velocity
+	//dWorldSetContactMaxCorrectingVel(ode::world, 5.0f);
+
+	// ?
+	//dWorldSetQuickStepNumIterations(ode::world, 7);
 
 	// initialize all ode objects
 	for(unsigned int i = 0; i < MAX_OBJECTS; i++) {
@@ -103,10 +108,8 @@ void ode::run() {
 	// execute a space collision
 	dSpaceCollide(ode::space, 0, &ode::collision_callback);
 
-	// execute a world step (1/fast) / quick step ...
-	//dWorldStepFast1(ode::world, 0.05, 10);
-	//dWorldStep(ode::world, 0.05);
-	dWorldStepFast1(ode::world, 0.1f, 10);
+	// execute a 0.05f world step
+	dWorldStep(ode::world, 0.05f);
 
 	// clean the joint group for the next step
 	dJointGroupEmpty(ode::joint_group);
@@ -133,49 +136,34 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.mu = dInfinity;
 		contact[i].surface.bounce = 0.1; // can be set to 0.1 too ;)
 		contact[i].surface.bounce_vel = 0.1; // can be set to 0.1 too ;)
-		//contact[i].surface.soft_cfm = 1e-5;
-		contact[i].surface.soft_cfm = 0;
+		contact[i].surface.soft_cfm = 1e-5;
+		//contact[i].surface.soft_cfm = 0;
 		contact[i].surface.soft_erp = 1;
 		contact[i].surface.slip1 = 0.0f;
 		contact[i].surface.slip2 = 0.0f;
 		//contact[i].surface.*/
 
-		/*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
-		contact[i].surface.mu = 0.5f;
-		contact[i].surface.slip1 = 0.00f;
-		contact[i].surface.slip2 = 0.00f;
-		contact[i].surface.soft_erp = 0.2f;
-		contact[i].surface.soft_cfm = 0.01f;*/
-
-		/*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM;
+		/*contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
-		contact[i].surface.slip1 = 1.0f;
-		contact[i].surface.slip2 = 0.5f;
-		contact[i].surface.soft_erp = 0.5f;
-		contact[i].surface.soft_cfm = 0.3f;*/
-
-        /*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM;
-        contact[i].surface.mu = dInfinity;
-        contact[i].surface.slip1 = 1.0;
-        contact[i].surface.slip2 = 0.5;
-        contact[i].surface.soft_erp = 0.2;
-        contact[i].surface.soft_cfm = 0.3;*/
+		contact[i].surface.slip1 = 0.0f; // friction
+		contact[i].surface.slip2 = 0.0f;
+		contact[i].surface.bounce= 0.2f;
+		contact[i].surface.soft_erp = 0.2f;
+		contact[i].surface.soft_cfm = 1e-5f;*/
 
 		/*contact[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
-		contact[i].surface.mu2 = 0;
-		contact[i].surface.bounce = 0.1;
-		contact[i].surface.bounce_vel = 0.1;
-		contact[i].surface.soft_cfm = 0.01;*/
+		contact[i].surface.mu2 = 0.0f;
+		contact[i].surface.bounce = 0.1f;
+		contact[i].surface.bounce_vel = 0.1f;
+		contact[i].surface.soft_cfm = 0.01f;*/
 
-		contact[i].surface.mode =dContactBounce |
-			dContactSoftERP | dContactSoftCFM;
-		contact[i].surface.mu = dInfinity;
-		contact[i].surface.slip1 = 0.1f; // friction
-		contact[i].surface.slip2 = 0.1f;
-		contact[i].surface.bounce= 0.2f;
-		contact[i].surface.soft_erp = 0.2f;
-		contact[i].surface.soft_cfm = 0.2f;
+        contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
+        contact[i].surface.mu = dInfinity;
+        contact[i].surface.slip1 = 0.1f;
+        contact[i].surface.slip2 = 0.1f;
+        contact[i].surface.soft_erp = 0.5f;
+        contact[i].surface.soft_cfm = 0.3f;
 	}
 
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
@@ -211,5 +199,18 @@ void ode::update_objects() {
 
 			// todo: rotation stuff
 		}
+	}
+}
+
+/*! returns the ode object #num
+ *  @param num the index/number of the object you want to get
+ */
+ode_object* ode::get_ode_object(unsigned int num) {
+	if(num < object_count) {
+		return ode::ode_objects[num];
+	}
+	else {
+		m.print(msg::MERROR, "ode.cpp", "object #%u does not exist!", num);
+		return 0;
 	}
 }

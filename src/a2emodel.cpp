@@ -95,7 +95,7 @@ void a2emodel::draw_model() {
 			glEnd();
 		}
 		else {
-			glBegin(GL_LINE_STRIP);
+			glBegin(GL_LINES);
 			for(unsigned int j = 0; j < index_count[i]; j++) {
 				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
 				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
@@ -358,6 +358,9 @@ void a2emodel::set_scale(float x, float y, float z) {
 		a2emodel::vertices[i].y *= a2emodel::scale->y;
 		a2emodel::vertices[i].z *= a2emodel::scale->z;
 	}
+
+	// rebuild the bounding box
+	a2emodel::build_bounding_box();
 }
 
 /*! returns the scale of the model

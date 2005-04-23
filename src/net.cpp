@@ -356,7 +356,7 @@ void net::check_events() {
 }
 
 /*! sends client data to the server and activates the client
- *  @param client_name the clients' name
+ *  @param client_name the clients name
  */
 void net::send_activation(char* client_name) {
 	char data[1+1+32];

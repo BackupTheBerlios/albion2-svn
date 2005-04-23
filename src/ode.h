@@ -29,7 +29,7 @@
 #include "ode_object.h"
 using namespace std;
 
-#define MAX_CONTACTS 128
+#define MAX_CONTACTS 256
 #define MAX_OBJECTS 4096
 
 #include "win_dll_export.h"
@@ -58,6 +58,8 @@ public:
 
 	void add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
 	void update_objects();
+
+	ode_object* get_ode_object(unsigned int num);
 
 protected:
 	msg m;

@@ -42,21 +42,23 @@ int main(int argc, char *argv[])
 
 	// initialize the camera
 	cam.init(e, aevent);
-	cam.set_position(0.0f, 0.0f, -30.0f);
+	cam.set_position(-5.0f, 30.0f, -55.0f);
 
 	// load the model and set a new position
-	plane.load_model("../data/plane2.a2m");
-	plane.set_position(0.0f, -15.0f, 0.0f);
+	plane.load_model("../data/ground.a2m");
+	plane.set_position(0.0f, -13.0f, 0.0f);
+	plane.set_draw_wireframe(wireframe);
 
-	cube.load_model("../data/cube.a2m");
-	cube.set_position(0.0f, 10.0f, 0.0f);
+	cottage.load_model("../data/celtic_cottage.a2m");
+	cottage.set_position(0.0f, 0.0f, 0.0f);
+	cottage.set_draw_wireframe(wireframe);
 
-	sphere.load_model("../data/sphere.a2m");
-	sphere.set_position(0.0f, 10.0f, 0.0f);
-	sphere.set_radius(2.5f);
+	sphere.load_model("../data/player_sphere.a2m");
+	sphere.set_position(45.0f, 20.0f, 20.0f);
+	sphere.set_radius(1.0f);
 
 	sce.add_model(&plane);
-	sce.add_model(&cube);
+	sce.add_model(&cottage);
 	sce.add_model(&sphere);
 
 	light l1(-50.0f, 0.0f, -50.0f);
@@ -75,8 +77,9 @@ int main(int argc, char *argv[])
 
 	// pass the models to ode
 	o.add_object(&plane, true, ode_object::TRIMESH);
-	o.add_object(&cube, false, ode_object::BOX);
 	o.add_object(&sphere, false, ode_object::SPHERE);
+
+	ode_object* osphere = o.get_ode_object(1);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -103,40 +106,31 @@ int main(int argc, char *argv[])
 							break;
 						case SDLK_RETURN:
 							break;
-						case SDLK_w: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->z += 1.0f;
-							l1.set_position(lpos);
-						}
-						break;
-						case SDLK_s: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->z -= 1.0f;
-							l1.set_position(lpos);
-						}
-						break;
-						case SDLK_a: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->x += 1.0f;
-							l1.set_position(lpos);
-						}
-						break;
-						case SDLK_d: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->x -= 1.0f;
-							l1.set_position(lpos);
-						}
-						break;
-						case SDLK_q: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->y += 1.0f;
-							l1.set_position(lpos);
+						case SDLK_r: {
+							osphere->reset();
+							dGeomSetPosition(osphere->get_geom(), 45.0f, 20.0f, 20.0f);
 						}
 						break;
 						case SDLK_e: {
-							core::vertex3* lpos = l1.get_position();
-							lpos->y -= 1.0f;
-							l1.set_position(lpos);
+							wireframe = wireframe ^ true;
+							plane.set_draw_wireframe(wireframe);
+							cottage.set_draw_wireframe(wireframe);
+						}
+						break;
+						case SDLK_w: {
+							dBodyAddForce(osphere->get_body(), 5.0f, 1.0f, 0.0f);
+						}
+						break;
+						case SDLK_s: {
+							dBodyAddForce(osphere->get_body(), -5.0f, 1.0f, 0.0f);
+						}
+						break;
+						case SDLK_a: {
+							dBodyAddForce(osphere->get_body(), 0.0f, 1.0f, 5.0f);
+						}
+						break;
+						case SDLK_d: {
+							dBodyAddForce(osphere->get_body(), 0.0f, 1.0f, -5.0f);
 						}
 						break;
 						default:

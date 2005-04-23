@@ -17,7 +17,7 @@
 #include "ode_object.h"
 
 // initialize static variables
-float ode_object::density = 1.0f;
+float ode_object::density = 5.0f;
 
 /*! there is no function currently
  */
@@ -84,19 +84,21 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 				ode_object::dvertices[i][2] = vertices[i].z;
 			}
 
+			unsigned int j = 0;
 			ode_object::dindices = new unsigned int[3*ode_object::index_count];
 			for(unsigned int i = 0; i < ode_object::index_count; i++) {
-				ode_object::dindices[i] = indices[i].i1;
-				i++;
-				ode_object::dindices[i] = indices[i].i2;
-				i++;
-				ode_object::dindices[i] = indices[i].i3;
+				ode_object::dindices[j] = indices[i].i1;
+				j++;
+				ode_object::dindices[j] = indices[i].i2;
+				j++;
+				ode_object::dindices[j] = indices[i].i3;
+				j++;
 			}
 
 			// and now build a simple trimesh out of the model vertices and indices
 			dGeomTriMeshDataBuildSimple(ode_object::trimesh, (dReal*)ode_object::dvertices,
 				ode_object::vertex_count, (const int*)ode_object::dindices,
-				ode_object::index_count);
+				ode_object::index_count*3);
 
 			// and finally create the tri mesh geom
 			ode_object::geom = dCreateTriMesh(*ode_object::space, ode_object::trimesh, 0, 0, 0);
@@ -110,6 +112,11 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 
 			// set its body to 0
 			dGeomSetBody(ode_object::geom, 0);
+
+			// contact caching
+			/*dGeomTriMeshEnableTC(ode_object::geom, 0, 1);
+			dGeomTriMeshEnableTC(ode_object::geom, 1, 1);
+			dGeomTriMeshEnableTC(ode_object::geom, 2, 1);*/
 		}
 		break;
 		case ode_object::BOX: {
@@ -177,6 +184,8 @@ void ode_object::set_body(ode_object::OTYPE type) {
 	// i already set the mass in setXYZ ... but the
 	// calculated value is mostly much bigger than
 	// the adjusted one ...
+	// add 20050423: it seems like that a lower
+	// mass increases the systems stability
 
 	switch(type) {
 		case ode_object::BOX: {
@@ -188,14 +197,14 @@ void ode_object::set_body(ode_object::OTYPE type) {
 				ode_object::model->get_bounding_box()->vmin.y),
 				(dReal)(ode_object::model->get_bounding_box()->vmax.z -
 				ode_object::model->get_bounding_box()->vmin.z));
-			dMassAdjust(ode_object::mass, 0.25);
+			dMassAdjust(ode_object::mass, 0.2f);
 		}
 		break;
 		case ode_object::SPHERE: {
 			// set the mass in the form of a sphere
 			ode_object::mass->setSphere(ode_object::density,
 				(dReal)ode_object::model->get_radius());
-			dMassAdjust(ode_object::mass, 0.25);
+			dMassAdjust(ode_object::mass, 0.2f);
 		}
 		break;
 		// need to be changed to capped cylinder some day ...
@@ -205,7 +214,7 @@ void ode_object::set_body(ode_object::OTYPE type) {
 			ode_object::mass->setCappedCylinder(ode_object::density, 2,
 				(dReal)ode_object::model->get_radius(),
 				(dReal)ode_object::model->get_length());
-			dMassAdjust(ode_object::mass, 0.25);
+			dMassAdjust(ode_object::mass, 0.2f);
 		}
 		break;
 		default:
@@ -235,4 +244,21 @@ void ode_object::set_body(ode_object::OTYPE type) {
  */
 dBodyID ode_object::get_body() {
 	return ode_object::body;
+}
+
+/*! for debugging purposes - reset the bodys position, rotation and velocity
+ */
+void ode_object::reset() {
+	dBodySetAngularVel(ode_object::body, 0, 0, 0);
+	dBodySetLinearVel(ode_object::body, 0, 0, 0);
+	dBodySetPosition(ode_object::body, 0, 0, 0);
+	//dBodySetRotation(ode_object::body);
+	dBodyEnable(ode_object::body);
+}
+
+/*! for debugging purposes - sets the objects mass
+ */
+void ode_object::set_mass(float mass) {
+	dMassAdjust(ode_object::mass, mass);
+	dBodySetMass(ode_object::body, ode_object::mass);
 }

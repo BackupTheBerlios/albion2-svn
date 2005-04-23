@@ -13,7 +13,7 @@ if (OS == "windows") then
 	tinsert(package.defines, {"WIN32", "_CONSOLE"})
 	tinsert(package.config["Debug"].defines, { "_DEBUG" })
 	tinsert(package.config["Release"].defines, { "NDEBUG" })
-	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "OPCODE", "a2e"})
+	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "a2e"})
 else
 	tinsert(package.includepaths, { "/usr/include/freetype2", "/usr/include/FTGL", "../../src"})
 	tinsert(package.libpaths, {"../../bin", findlib("GL"), findlib("GLU"), findlib("Xxf86vm"), findlib("SDL"), findlib("ftgl"), findlib("ode")})

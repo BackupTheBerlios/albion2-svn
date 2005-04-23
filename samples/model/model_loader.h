@@ -51,7 +51,7 @@ ode o;
 scene sce;
 
 a2emodel plane;
-a2emodel cube;
+a2emodel cottage;
 a2emodel sphere;
 
 SDL_Surface* sf;
@@ -61,5 +61,7 @@ bool done = false;
 SDL_Event ievent;
 
 unsigned int refresh_time;
+
+bool wireframe = false;
 
 #endif

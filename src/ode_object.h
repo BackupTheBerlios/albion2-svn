@@ -64,6 +64,10 @@ public:
 	void set_model(a2emodel* model);
 	a2emodel* get_model();
 
+	// for debugging purposes
+	void reset();
+	void set_mass(float mass);
+
 protected:
 	msg m;
 	core c;
