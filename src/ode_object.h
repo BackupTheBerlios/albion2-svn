@@ -64,6 +64,9 @@ public:
 	void set_model(a2emodel* model);
 	a2emodel* get_model();
 
+	void add_force(float x, float y, float z);
+	void set_max_force(float force);
+
 	// for debugging purposes
 	void reset();
 	void set_mass(float mass);
@@ -87,6 +90,8 @@ protected:
 	bool fixed;
 
 	static float density;
+
+	float max_force;
 
 };
 

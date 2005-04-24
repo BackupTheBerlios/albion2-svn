@@ -20,7 +20,7 @@
 #include <iostream>
 #include <SDL.h>
 #include "msg.h"
-//#include "core.h"
+#include "core.h"
 #include "engine.h"
 #include "event.h"
 #include <math.h>
@@ -48,7 +48,15 @@ public:
 	void run();
 
 	void set_position(float x, float y, float z);
+	void set_rotation(float x, float y, float z);
 	core::vertex3* get_position();
+	core::vertex3* get_rotation();
+
+	void set_rotation_speed(float speed);
+	float get_rotation_speed();
+
+	void set_cam_input(bool state);
+	bool get_cam_input();
 
 protected:
 	msg m;
@@ -60,8 +68,11 @@ protected:
 	core::vertex3* position;
 	core::vertex3* rotation;
 	float up_down;
+	float rotation_speed;
 
 	float piover180;
+
+	bool cam_input;
 };
 
 #endif

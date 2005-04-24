@@ -224,3 +224,10 @@ void core::mmatrix4_by_vertex4(matrix4 m, vertex4 v) {
 	v.z = result.z;
 	v.w = result.w;
 }
+
+/*! converts a radiant value into degrees
+ *  @param rad the radiant value
+ */
+float core::rad_to_deg(float rad) {
+	return ((rad * 360.0f) / (2.0f * (float)PI));
+}

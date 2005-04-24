@@ -20,7 +20,7 @@ OBJDIR = obj
   CFLAGS += $(CPPFLAGS)
   CXXFLAGS = $(CFLAGS)
   LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
-  TARGET = ../samples/bin/model
+  TARGET = ../samples/bin/move
 endif
 ifeq ($(CONFIG),Release)
 BINDIR = ../../bin
@@ -32,7 +32,7 @@ OBJDIR = obj
   CFLAGS += $(CPPFLAGS) -O2
   CXXFLAGS = $(CFLAGS)
   LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
-  TARGET = ../samples/bin/model
+  TARGET = ../samples/bin/move
 endif
 
 $(OBJDIR)/%.o : %.cc
@@ -86,20 +86,20 @@ $(OBJDIR)/%.o : %.s
 	rm -f $(OBJDIR)/$*.d
 
 OBJECTS = \
-	$(OBJDIR)/model_loader.o \
+	$(OBJDIR)/move.o \
 
 VPATH =
 
 .PHONY: clean
 
 $(OUTDIR)/$(TARGET): $(OBJECTS)
-	@echo Linking model_loader
+	@echo Linking move
 	-@if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
 	-@if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
 	@$(CXX) -o $@ $(filter-out %.so, $^) $(LDFLAGS)
 
 clean:
-	@echo Cleaning model_loader
+	@echo Cleaning move
 	-@rm -rf $(OUTDIR)/$(TARGET) $(OBJDIR)/*
 
 -include $(OBJECTS:%.o=%.P)

@@ -16,10 +16,10 @@ LIBDIR = ../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall 
+  CPPFLAGS = -MD -D "WIN32"
+  CFLAGS += $(CPPFLAGS)
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lode -lfreetype -lftgl
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
   TARGET = obj2a2m
 endif
 ifeq ($(CONFIG),Release)
@@ -28,10 +28,10 @@ LIBDIR = ../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall  -O2
+  CPPFLAGS = -MD -D "WIN32"
+  CFLAGS += $(CPPFLAGS) -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lode -lfreetype -lftgl
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
   TARGET = obj2a2m
 endif
 

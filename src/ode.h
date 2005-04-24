@@ -29,7 +29,7 @@
 #include "ode_object.h"
 using namespace std;
 
-#define MAX_CONTACTS 256
+#define MAX_CONTACTS 128
 #define MAX_OBJECTS 4096
 
 #include "win_dll_export.h"
@@ -52,7 +52,7 @@ public:
 
 	void init();
 	void close();
-	void run();
+	void run(unsigned int last_frame);
 
 	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 

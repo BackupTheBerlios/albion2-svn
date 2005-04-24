@@ -13,26 +13,26 @@ LDFLAGS = -L$(BINDIR) -L$(LIBDIR)
 ifeq ($(CONFIG),Debug)
 BINDIR = ../bin
 LIBDIR = ../lib
-OUTDIR = $(LIBDIR)
+OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include -I /usr/include/ode -I /usr/include/Ice
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall 
+  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "A2E_EXPORTS" -D "_DEBUG"
+  CFLAGS += $(CPPFLAGS)
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
-  TARGET = ./liba2e.a
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
+  TARGET = ./a2e.dll
 endif
 ifeq ($(CONFIG),Release)
 BINDIR = ../bin
 LIBDIR = ../lib
-OUTDIR = $(LIBDIR)
+OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include -I /usr/include/ode -I /usr/include/Ice
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall  -O2
+  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "A2E_EXPORTS" -D "NDEBUG"
+  CFLAGS += $(CPPFLAGS) -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
-  TARGET = ./liba2e.a
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
+  TARGET = ./a2e.dll
 endif
 
 $(OBJDIR)/%.o : %.cc
@@ -121,8 +121,7 @@ $(OUTDIR)/$(TARGET): $(OBJECTS)
 	@echo Linking a2e
 	-@if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
 	-@if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
-	@ar -cr $@ $^
-	@ranlib $@
+	@$(CXX) -o $@ $(filter-out %.so, $^) $(LDFLAGS)
 
 clean:
 	@echo Cleaning a2e

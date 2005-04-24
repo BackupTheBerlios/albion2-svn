@@ -59,6 +59,8 @@ public:
 	core::vertex3* get_position();
 	void set_scale(float x, float y, float z);
 	core::vertex3* get_scale();
+	void set_rotation(float x, float y, float z);
+	core::vertex3* get_rotation();
 
 	core::vertex3* get_vertices();
 	core::index* get_indices();
@@ -70,6 +72,9 @@ public:
 
 	void set_draw_wireframe(bool state);
 	bool get_draw_wireframe();
+
+	void set_visible(bool state);
+	bool get_visible();
 
 	// stuff for collision detection
 	void set_radius(float radius);
@@ -102,10 +107,13 @@ protected:
 
 	core::vertex3* position;
 	core::vertex3* scale;
+	core::vertex3* rotation;
 
 	core::aabbox* bbox;
 
 	bool draw_wireframe;
+
+	bool visible;
 
 	// some variables for collision detection
 	float radius;

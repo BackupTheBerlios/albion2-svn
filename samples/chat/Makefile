@@ -16,11 +16,11 @@ LIBDIR = ../../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I ../../src
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall 
+  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "_DEBUG"
+  CFLAGS += $(CPPFLAGS)
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L ../../bin -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -la2e
-  TARGET = ../bin/chat
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
+  TARGET = ../samples/bin/chat
 endif
 ifeq ($(CONFIG),Release)
 BINDIR = ../../bin
@@ -28,11 +28,11 @@ LIBDIR = ../../lib
 OUTDIR = $(BINDIR)
 OBJDIR = obj
 
-  CPPFLAGS = -MD -I /usr/include/freetype2 -I /usr/include/FTGL -I ../../src
-  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall  -O2
+  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "NDEBUG"
+  CFLAGS += $(CPPFLAGS) -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += `sdl-config --libs` -L ../../bin -L /usr/lib -L /usr/X11R6/lib -L /usr/X11R6/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -la2e
-  TARGET = ../bin/chat
+  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
+  TARGET = ../samples/bin/chat
 endif
 
 $(OBJDIR)/%.o : %.cc
@@ -93,13 +93,13 @@ VPATH =
 .PHONY: clean
 
 $(OUTDIR)/$(TARGET): $(OBJECTS)
-	@echo Linking chat-server
+	@echo Linking chat_server
 	-@if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
 	-@if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
 	@$(CXX) -o $@ $(filter-out %.so, $^) $(LDFLAGS)
 
 clean:
-	@echo Cleaning chat-server
+	@echo Cleaning chat_server
 	-@rm -rf $(OUTDIR)/$(TARGET) $(OBJDIR)/*
 
 -include $(OBJECTS:%.o=%.P)

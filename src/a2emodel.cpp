@@ -35,6 +35,11 @@ a2emodel::a2emodel() {
 	a2emodel::scale->y = 0.0f;
 	a2emodel::scale->z = 0.0f;
 
+	a2emodel::rotation = new core::vertex3();
+	a2emodel::rotation->x = 0.0f;
+	a2emodel::rotation->y = 0.0f;
+	a2emodel::rotation->z = 0.0f;
+
 	a2emodel::bbox = NULL;
 	a2emodel::vertices = NULL;
 	a2emodel::index_count = NULL;
@@ -46,6 +51,8 @@ a2emodel::a2emodel() {
 	}
 
 	draw_wireframe = false;
+
+	visible = true;
 }
 
 /*! there is no function currently
@@ -55,6 +62,7 @@ a2emodel::~a2emodel() {
 
 	delete a2emodel::position;
 	delete a2emodel::scale;
+	delete a2emodel::rotation;
 	if(a2emodel::bbox) { delete a2emodel::bbox; }
 	if(a2emodel::vertices) { delete a2emodel::vertices; }
 	if(a2emodel::index_count) { delete a2emodel::index_count; }
@@ -72,48 +80,60 @@ a2emodel::~a2emodel() {
 /*! draws the model
  */
 void a2emodel::draw_model() {
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glEnable(GL_TEXTURE_2D);
-	for(unsigned int i = 0; i < object_count; i++) {
-		glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
-		if(!a2emodel::draw_wireframe) {
-			glBegin(GL_TRIANGLES);
-			for(unsigned int j = 0; j < index_count[i]; j++) {
-				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
-					a2emodel::position->y + vertices[indices[i][j].i1].y,
-					a2emodel::position->z + vertices[indices[i][j].i1].z);
-				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
-					a2emodel::position->y + vertices[indices[i][j].i2].y,
-					a2emodel::position->z + vertices[indices[i][j].i2].z);
-				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
-					a2emodel::position->y + vertices[indices[i][j].i3].y,
-					a2emodel::position->z + vertices[indices[i][j].i3].z);
+	if(a2emodel::visible) {
+		glPushMatrix();
+		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		// rotate the model
+		glRotatef(rotation->x, 1.0f, 0.0f , 0.0f);
+		glRotatef(rotation->y, 0.0f, 1.0f , 0.0f);
+		glRotatef(rotation->z, 0.0f, 0.0f , 1.0f);
+
+		glEnable(GL_TEXTURE_2D);
+		for(unsigned int i = 0; i < object_count; i++) {
+			glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
+			if(!a2emodel::draw_wireframe) {
+				glBegin(GL_TRIANGLES);
+				for(unsigned int j = 0; j < index_count[i]; j++) {
+					glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+					glVertex3f(vertices[indices[i][j].i1].x,
+						vertices[indices[i][j].i1].y,
+						vertices[indices[i][j].i1].z);
+					glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+					glVertex3f(vertices[indices[i][j].i2].x,
+						vertices[indices[i][j].i2].y,
+						vertices[indices[i][j].i2].z);
+					glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+					glVertex3f(vertices[indices[i][j].i3].x,
+						vertices[indices[i][j].i3].y,
+						vertices[indices[i][j].i3].z);
+				}
+				glEnd();
 			}
-			glEnd();
-		}
-		else {
-			glBegin(GL_LINES);
-			for(unsigned int j = 0; j < index_count[i]; j++) {
-				glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i1].x,
-					a2emodel::position->y + vertices[indices[i][j].i1].y,
-					a2emodel::position->z + vertices[indices[i][j].i1].z);
-				glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i2].x,
-					a2emodel::position->y + vertices[indices[i][j].i2].y,
-					a2emodel::position->z + vertices[indices[i][j].i2].z);
-				glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-				glVertex3f(a2emodel::position->x + vertices[indices[i][j].i3].x,
-					a2emodel::position->y + vertices[indices[i][j].i3].y,
-					a2emodel::position->z + vertices[indices[i][j].i3].z);
+			else {
+				glBegin(GL_LINES);
+				for(unsigned int j = 0; j < index_count[i]; j++) {
+					glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+					glVertex3f(vertices[indices[i][j].i1].x,
+						vertices[indices[i][j].i1].y,
+						vertices[indices[i][j].i1].z);
+					glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+					glVertex3f(vertices[indices[i][j].i2].x,
+						vertices[indices[i][j].i2].y,
+						vertices[indices[i][j].i2].z);
+					glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+					glVertex3f(vertices[indices[i][j].i3].x,
+						vertices[indices[i][j].i3].y,
+						vertices[indices[i][j].i3].z);
+				}
+				glEnd();
 			}
-			glEnd();
 		}
+		glDisable(GL_TEXTURE_2D);
+
+		glPopMatrix();
 	}
-	glDisable(GL_TEXTURE_2D);
 }
 
 /*! loads the textures of the model - .png preferred!
@@ -369,6 +389,23 @@ core::vertex3* a2emodel::get_scale() {
 	return a2emodel::scale;
 }
 
+/*! sets the rotation of the model
+ *  @param x the x rotation
+ *  @param y the y rotation
+ *  @param z the z rotation
+ */
+void a2emodel::set_rotation(float x, float y, float z) {
+	a2emodel::rotation->x = x;
+	a2emodel::rotation->y = y;
+	a2emodel::rotation->z = z;
+}
+
+/*! returns the rotation of the model
+ */
+core::vertex3* a2emodel::get_rotation() {
+	return a2emodel::rotation;
+}
+
 /*! sets a texture of the model to a new one
  *  @param texture the texture data
  *  @param num the number of the texture that you want to replace
@@ -503,4 +540,17 @@ void a2emodel::set_draw_wireframe(bool state) {
  */
 bool a2emodel::get_draw_wireframe() {
 	return a2emodel::draw_wireframe;
+}
+
+/*! sets the models visible flag
+ *  @param state the new state
+ */
+void a2emodel::set_visible(bool state) {
+	a2emodel::visible = state;
+}
+
+/*! returns a true if the model is visible
+ */
+bool a2emodel::get_visible() {
+	return a2emodel::visible;
 }

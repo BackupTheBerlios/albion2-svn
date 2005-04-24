@@ -73,6 +73,10 @@ public:
 
 	void set_position(float xpos, float ypos, float zpos);
 	core::vertex3* get_position();
+
+	void set_cursor_visible(bool state);
+	bool get_cursor_visible();
+
 protected:
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
@@ -82,6 +86,8 @@ protected:
 	shadow shd;
 
 	core::vertex3* position;
+
+	bool cursor_visible;
 };
 
 #endif

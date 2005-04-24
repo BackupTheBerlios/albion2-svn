@@ -26,11 +26,14 @@ ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool f
 	ode_object::space = space;
 	ode_object::set_model(model);
 	ode_object::set_geom(ode_object::get_model(), type);
+	ode_object::body = 0;
 
 	if(!fixed) {
 		ode_object::mass = new dMass();
 		ode_object::set_body(type);
 	}
+
+	max_force = 10.0f;
 }
 
 /*! there is no function currently
@@ -261,4 +264,34 @@ void ode_object::reset() {
 void ode_object::set_mass(float mass) {
 	dMassAdjust(ode_object::mass, mass);
 	dBodySetMass(ode_object::body, ode_object::mass);
+}
+
+
+void ode_object::add_force(float x, float y, float z) {
+	const dReal* cur_force = dBodyGetForce(ode_object::body);
+
+	if(cur_force[0] + x >= ode_object::max_force || cur_force[0] - x <= -ode_object::max_force) {
+		dBodyAddForce(ode_object::body, ode_object::max_force - cur_force[0], 0.0f, 0.0f);
+	}
+	else {
+		dBodyAddForce(ode_object::body, x, 0.0f, 0.0f);
+	}
+
+	if(cur_force[1] + y >= ode_object::max_force || cur_force[1] - y <= -ode_object::max_force) {
+		dBodyAddForce(ode_object::body, 0.0f, ode_object::max_force - cur_force[1], 0.0f);
+	}
+	else {
+		dBodyAddForce(ode_object::body, 0.0f, y, 0.0f);
+	}
+
+	if(cur_force[2] + z >= ode_object::max_force || cur_force[2] - z <= -ode_object::max_force) {
+		dBodyAddForce(ode_object::body, 0.0f, 0.0f, ode_object::max_force - cur_force[2]);
+	}
+	else {
+		dBodyAddForce(ode_object::body, 0.0f, 0.0f, z);
+	}
+}
+
+void ode_object::set_max_force(float force) {
+	ode_object::max_force = force;
 }

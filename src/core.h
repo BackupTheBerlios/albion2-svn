@@ -98,6 +98,8 @@ public:
 
 	void mmatrix4_by_vertex4(matrix4 m, vertex4 v);
 
+	float rad_to_deg(float rad);
+
 protected:
 	unsigned int value, bit, num;
 };

@@ -28,6 +28,10 @@ camera::camera() {
 	piover180 = (float)PI / 180.0f;
 
 	up_down = 0.0f;
+
+	camera::cam_input = true;
+
+	rotation_speed = 100.0f;
 }
 
 /*! there is no function currently
@@ -61,28 +65,30 @@ void camera::init(engine &iengine, event &ievent) {
 /*! runs the camera (expected to be called every draw)
  */
 void camera::run() {
-	// recalculate the cameras position
+	// if camera class input flag is set, then ...
+	if(camera::cam_input) {
+		// ... recalculate the cameras position
+		if(event_handler->is_key_right()) {
+			position->x += (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
+			position->z += (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
+		}
 
-	if(event_handler->is_key_right()) {
-		position->x += (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
-		position->z += (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
-	}
-
-	if(event_handler->is_key_left()) {
-		position->x -= (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
-		position->z -= (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
-	}
-	
-	if(event_handler->is_key_up()) {
-		position->x += (float)sin(rotation->y * piover180) * 0.75f;
-		position->y += (float)sin(rotation->x * piover180) * 0.75f;
-		position->z += (float)cos(rotation->y * piover180) * 0.75f;
-	}
-	
-	if(event_handler->is_key_down()) {
-		position->x -= (float)sin(rotation->y * piover180) * 0.75f;
-		position->y -= (float)sin(rotation->x * piover180) * 0.75f;
-		position->z -= (float)cos(rotation->y * piover180) * 0.75f;
+		if(event_handler->is_key_left()) {
+			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
+			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
+		}
+		
+		if(event_handler->is_key_up()) {
+			position->x += (float)sin(rotation->y * piover180) * 0.75f;
+			position->y += (float)sin(rotation->x * piover180) * 0.75f;
+			position->z += (float)cos(rotation->y * piover180) * 0.75f;
+		}
+		
+		if(event_handler->is_key_down()) {
+			position->x -= (float)sin(rotation->y * piover180) * 0.75f;
+			position->y -= (float)sin(rotation->x * piover180) * 0.75f;
+			position->z -= (float)cos(rotation->y * piover180) * 0.75f;
+		}
 	}
 	 
 	// calculate the rotation via the current mouse cursor position
@@ -94,8 +100,8 @@ void camera::run() {
 	float ypos = (1.0f / (float)engine_handler->get_screen()->h) * (float)cursor_pos_y;
 
 	if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
-		rotation->x += (0.5f - ypos) * 100.0f;
-		rotation->y += (0.5f - xpos) * 100.0f;
+		rotation->x += (0.5f - ypos) * rotation_speed;
+		rotation->y += (0.5f - xpos) * rotation_speed;
 		SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
 	}
 
@@ -118,8 +124,53 @@ void camera::set_position(float x, float y, float z) {
 	camera::position->z = z;
 }
 
+/*! sets the rotation of the camera
+ *  @param x x rotation
+ *  @param y y rotation
+ *  @param z z rotation
+ */
+void camera::set_rotation(float x, float y, float z) {
+	camera::rotation->x = x;
+	camera::rotation->y = y;
+	camera::rotation->z = z;
+}
+
 /*! returns the position of the camera
  */
 core::vertex3* camera::get_position() {
 	return camera::position;
+}
+
+/*! returns the rotation of the camera
+ */
+core::vertex3* camera::get_rotation() {
+	return camera::rotation;
+}
+
+/*! if cam_input is set true then arrow key input and (auto-)reposition 
+ *! stuff is done automatically in the camera class. otherwise you have
+ *! to do it yourself.
+ *  @param state the cam_input state
+ */
+void camera::set_cam_input(bool state) {
+	camera::cam_input = state;
+}
+
+/*! returns the cam_input bool
+ */
+bool camera::get_cam_input() {
+	return camera::cam_input;
+}
+
+/*! sets the cameras rotation speed to speed
+ *  @param speed the new rotation speed
+ */
+void camera::set_rotation_speed(float speed) {
+	camera::rotation_speed = speed;
+}
+
+/*! returns cameras rotation speed
+ */
+float camera::get_rotation_speed() {
+	return camera::rotation_speed;
 }

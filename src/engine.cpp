@@ -42,6 +42,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 /*! there is no function currently
  */
 engine::engine() {
+	cursor_visible = true;
 }
 
 /*! there is no function currently
@@ -378,4 +379,18 @@ void engine::stop_2d_draw() {
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
+}
+
+/*! sets the cursors visibility to state
+ *  @param state the cursor visibility state
+ */
+void engine::set_cursor_visible(bool state) {
+	engine::cursor_visible = state;
+	SDL_ShowCursor(engine::cursor_visible);
+}
+
+/*! returns the cursor visibility state
+ */
+bool engine::get_cursor_visible() {
+	return engine::cursor_visible;
 }

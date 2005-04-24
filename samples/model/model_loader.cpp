@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
 			cam.run();
 			sce.draw();
-			o.run();
+			o.run(SDL_GetTicks() - refresh_time);
 
 			e.stop_draw();
 			refresh_time = SDL_GetTicks();

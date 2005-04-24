@@ -57,7 +57,7 @@ void ode::init() {
 	dWorldSetGravity(ode::world, 0.0f, gravity, 0.0f);
 
 	// - enable this if you notice jittering objects!
-	dWorldSetContactSurfaceLayer(ode::world, 0.001f);
+	//dWorldSetContactSurfaceLayer(ode::world, 0.001f);
 
 	// set auto enable depth
 	//dWorldSetAutoEnableDepthSF1(ode::world, 1);
@@ -66,7 +66,7 @@ void ode::init() {
 	//dWorldSetAutoDisableFlag(ode::world, 1);
 
 	// set the contacts max correction velocity
-	//dWorldSetContactMaxCorrectingVel(ode::world, 5.0f);
+	dWorldSetContactMaxCorrectingVel(ode::world, 2.0f);
 
 	// ?
 	//dWorldSetQuickStepNumIterations(ode::world, 7);
@@ -103,13 +103,14 @@ void ode::close() {
 }
 
 /*! runs the open dynamics engine
+ *  @param last_frame time that has elapsed since the last ode run
  */
-void ode::run() {
+void ode::run(unsigned int last_frame) {
 	// execute a space collision
 	dSpaceCollide(ode::space, 0, &ode::collision_callback);
 
 	// execute a 0.05f world step
-	dWorldStep(ode::world, 0.05f);
+	dWorldStep(ode::world, 1.0f / last_frame);
 
 	// clean the joint group for the next step
 	dJointGroupEmpty(ode::joint_group);
@@ -131,25 +132,26 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 
 	dContact contact[MAX_CONTACTS];
 	for(i = 0; i < MAX_CONTACTS; i++) {
-		/*contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM | dContactSlip1 | dContactSlip2 | dContactApprox1;
+		/*contact[i].surface.mode = dContactBounce | dContactSoftCFM | dContactSlip1 | dContactSlip2 | dContactApprox1;
 		//contact[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
-		contact[i].surface.bounce = 0.1; // can be set to 0.1 too ;)
-		contact[i].surface.bounce_vel = 0.1; // can be set to 0.1 too ;)
-		contact[i].surface.soft_cfm = 1e-5;
+		contact[i].surface.bounce = 0.1f; // can be set to 0.1 too ;)
+		contact[i].surface.bounce_vel = 0.1f; // can be set to 0.1 too ;)
+		contact[i].surface.soft_cfm = 1e-5f;
 		//contact[i].surface.soft_cfm = 0;
-		contact[i].surface.soft_erp = 1;
+		//contact[i].surface.soft_erp = 1.0f;
 		contact[i].surface.slip1 = 0.0f;
 		contact[i].surface.slip2 = 0.0f;
 		//contact[i].surface.*/
 
-		/*contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
+		contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
-		contact[i].surface.slip1 = 0.0f; // friction
-		contact[i].surface.slip2 = 0.0f;
-		contact[i].surface.bounce= 0.2f;
+		contact[i].surface.slip1 = 0.1f; // friction
+		contact[i].surface.slip2 = 0.1f;
+		contact[i].surface.bounce= 0.3f;
+		contact[i].surface.bounce_vel = 0.1f;
 		contact[i].surface.soft_erp = 0.2f;
-		contact[i].surface.soft_cfm = 1e-5f;*/
+		contact[i].surface.soft_cfm = 1e-5f;
 
 		/*contact[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
@@ -158,12 +160,12 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.bounce_vel = 0.1f;
 		contact[i].surface.soft_cfm = 0.01f;*/
 
-        contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
+        /*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
         contact[i].surface.mu = dInfinity;
         contact[i].surface.slip1 = 0.1f;
         contact[i].surface.slip2 = 0.1f;
         contact[i].surface.soft_erp = 0.5f;
-        contact[i].surface.soft_cfm = 0.3f;
+        contact[i].surface.soft_cfm = 0.3f;*/
 	}
 
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
@@ -192,12 +194,17 @@ void ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
 void ode::update_objects() {
 	for(unsigned int i = 0; i < object_count; i++) {
 		dGeomID geom = ode::ode_objects[i]->get_geom();
+		dBodyID body = ode::ode_objects[i]->get_body();
 		if(geom != 0) {
 			dReal* pos = (dReal*)dGeomGetPosition(geom);
 			ode::ode_objects[i]->get_model()->set_position((float)pos[0],
 				(float)pos[1], (float)pos[2]);
 
-			// todo: rotation stuff
+			if(body != 0) {
+				dReal* rotation = (dReal*)dBodyGetRotation(body);
+				ode::ode_objects[i]->get_model()->set_rotation(c.rad_to_deg(rotation[0]),
+					c.rad_to_deg(rotation[1]), c.rad_to_deg(rotation[2]));
+			}
 		}
 	}
 }
