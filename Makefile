@@ -8,11 +8,11 @@ endif
 
 export CONFIG
 
-.PHONY: all clean a2e obj2a2m chat_server gui model_loader move
+.PHONY: all clean a2e obj2a2m chat_server gui model_loader move world_client world_server
 
-all: a2e obj2a2m chat_server gui model_loader move
+all: a2e obj2a2m chat_server gui model_loader move world_client world_server
 
-Makefile: ./premake.lua ./src/premake.lua ./tools/premake.lua ./samples/chat/premake.lua ./samples/gui/premake.lua ./samples/model/premake.lua ./samples/move/premake.lua
+Makefile: ./premake.lua ./src/premake.lua ./tools/premake.lua ./samples/chat/premake.lua ./samples/gui/premake.lua ./samples/model/premake.lua ./samples/move/premake.lua ./samples/world_client/premake.lua ./samples/world_server/premake.lua
 	@echo ==== Regenerating Makefiles ====
 	@premake --cc gcc --target gnu
 
@@ -34,6 +34,12 @@ model_loader: a2e
 move: a2e
 	@echo ==== Building move ====
 	@$(MAKE) --no-print-directory -C ./samples/move/
+world_client: a2e
+	@echo ==== Building world_client ====
+	@$(MAKE) --no-print-directory -C ./samples/world_client/
+world_server: a2e
+	@echo ==== Building world_server ====
+	@$(MAKE) --no-print-directory -C ./samples/world_server/
 clean:
 	@$(MAKE) --no-print-directory -C ./src/ clean
 	@$(MAKE) --no-print-directory -C ./tools/ clean
@@ -41,3 +47,5 @@ clean:
 	@$(MAKE) --no-print-directory -C ./samples/gui/ clean
 	@$(MAKE) --no-print-directory -C ./samples/model/ clean
 	@$(MAKE) --no-print-directory -C ./samples/move/ clean
+	@$(MAKE) --no-print-directory -C ./samples/world_client/ clean
+	@$(MAKE) --no-print-directory -C ./samples/world_server/ clean

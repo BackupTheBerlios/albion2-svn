@@ -14,12 +14,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __MOVE_H__
-#define __MOVE_H__
+#ifndef __WORLD_SERVER_H__
+#define __WORLD_SERVER_H__
 
 #ifdef WIN32
 #include <windows.h>
 #endif
+
+#define MAX_CLIENTS 32
+#define PORT 1337
+#define OBJECTS 64
 
 #include <iostream>
 #include <math.h>
@@ -40,33 +44,41 @@
 #include <light.h>
 using namespace std;
 
-enum cam_type {
-	NONE,
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
+enum DATA_TYPE {
+	DT_MSG,
+	DT_MOVE,
+	DT_UPDATE
 };
 
-void update_cam(cam_type ctype);
+enum MOVE_TYPE {
+	MV_FORWARD,
+	MV_BACKWARD,
+	MV_LEFT,
+	MV_RIGHT
+};
+
+struct client {
+	unsigned int id;
+	char* name;
+	unsigned int status;
+	core::vertex3* position;
+	float rotation;
+	unsigned int walk_time;
+};
+
+void send_new_client(unsigned int snd_client, unsigned int rcv_client);
+void check_events();
+void handle_client(unsigned int cur_client);
+void add_model(char* name, core::vertex3* pos, bool fixed, ode_object::OTYPE type, float radius = 1.0f);
+void add_player(core::vertex3* pos);
+void delete_player(unsigned int num);
+void update_players();
 
 msg m;
 net n;
 core c;
 engine e;
-gfx agfx;
-event aevent;
-camera cam;
 ode o;
-
-scene sce;
-
-a2emodel level;
-a2emodel sphere;
-a2emodel player;
-a2emodel* spheres;
-unsigned int cspheres = 9; // should be a quadratic number
-ode_object* sphere_obj;
 
 SDL_Surface* sf;
 
@@ -74,11 +86,19 @@ bool done = false;
 
 SDL_Event ievent;
 
-unsigned int refresh_time;
-unsigned int walk_time;
-unsigned int min_walk_time = 100;
-float max_force = 10.0f;
+client* clients;
 
+unsigned int refresh_time;
 float piover180 = (float)PI / 180.0f;
+float max_force = 20.0f;
+unsigned int min_walk_time = 50;
+
+a2emodel* objects[OBJECTS];
+ode_object* ode_objects[OBJECTS];
+unsigned int cobjects = 0;
+
+a2emodel* players[MAX_CLIENTS];
+ode_object* ode_players[MAX_CLIENTS];
+unsigned int cplayers = 0;
 
 #endif

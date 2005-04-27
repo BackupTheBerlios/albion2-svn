@@ -56,10 +56,13 @@ public:
 
 	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 
-	void add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
+	ode_object* add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
+	void delete_object(unsigned int num);
 	void update_objects();
 
 	ode_object* get_ode_object(unsigned int num);
+
+	unsigned int get_object_count();
 
 protected:
 	msg m;

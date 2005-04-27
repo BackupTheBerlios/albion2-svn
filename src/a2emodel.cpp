@@ -48,6 +48,7 @@ a2emodel::a2emodel() {
         a2emodel::tex_names[i] = NULL;
 		a2emodel::indices[i] = NULL;
 		a2emodel::tex_cords[i] = NULL;
+		a2emodel::obj_names[i] = NULL;
 	}
 
 	draw_wireframe = false;
@@ -60,20 +61,30 @@ a2emodel::a2emodel() {
 a2emodel::~a2emodel() {
 	m.print(msg::MDEBUG, "a2emodel.cpp", "freeing a2emodel stuff");
 
+	//cout << "deleting position" << endl;
 	delete a2emodel::position;
+	//cout << "deleting scale" << endl;
 	delete a2emodel::scale;
+	//cout << "deleting rot" << endl;
 	delete a2emodel::rotation;
-	if(a2emodel::bbox) { delete a2emodel::bbox; }
-	if(a2emodel::vertices) { delete a2emodel::vertices; }
-	if(a2emodel::index_count) { delete a2emodel::index_count; }
-	if(a2emodel::tex_value) { delete a2emodel::tex_value; }
+	//cout << "deleting bbox" << endl;
+	if(a2emodel::bbox != NULL) { delete a2emodel::bbox; }
+	//cout << "deleting vertices" << endl;
+	if(a2emodel::vertices != NULL) { delete a2emodel::vertices; }
+	//cout << "deleting index count" << endl;
+	if(a2emodel::index_count != NULL) { delete a2emodel::index_count; }
+	//cout << "deleting tex value" << endl;
+	if(a2emodel::tex_value != NULL) { delete a2emodel::tex_value; }
 
+	//cout << "deleting tex names/cords, object names and indices" << endl;
 	for(unsigned int i = 0; i < MAX_OBJS; i++) {
-		if(a2emodel::tex_names[i]) { delete a2emodel::tex_names[i]; }
-		if(a2emodel::indices[i]) { delete a2emodel::indices[i]; }
-		if(a2emodel::tex_cords[i]) { delete a2emodel::tex_cords[i]; }
+		if(a2emodel::tex_names[i] != NULL) { delete a2emodel::tex_names[i]; }
+		if(a2emodel::indices[i] != NULL) { delete a2emodel::indices[i]; }
+		if(a2emodel::tex_cords[i] != NULL) { delete a2emodel::tex_cords[i]; }
+		if(a2emodel::obj_names[i] != NULL) { delete a2emodel::obj_names[i]; }
 	}
 
+	//cout << "end" << endl;
 	m.print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
 }
 
@@ -175,9 +186,9 @@ void a2emodel::load_model(char* filename) {
 
 	// get type and name
 	file.get_block(model_type, 8);
-	model_type[9] = 0;
+	model_type[8] = 0;
 	file.get_block(model_name, 8);
-	model_name[9] = 0;
+	model_name[8] = 0;
 
 	// get vertex3 count
 	char* vc = new char[5];

@@ -116,6 +116,37 @@ void scene::add_model(a2emodel* model) {
 	cmodels++;
 }
 
+/*! removes a model from the scene
+ *  @param model pointer to the model
+ */
+void scene::delete_model(a2emodel* model) {
+	unsigned int num = 0;
+	//cout << "getting number ..." << endl;
+	for(unsigned int i = 0; i < cmodels; i++) {
+		if(models[i] == model) {
+			//cout << "deleting model #" << i << endl;
+			//delete models[i];
+			//cout << "model deleted" << endl;
+			num = i;
+			i = cmodels;
+		}
+		else if(i == (cmodels-1)) {
+			m.print(msg::MDEBUG, "scene.cpp", "can't delete model: model doesn't exist!");
+			return;
+		}
+	}
+	//cout << "got number: " << num << endl;
+
+	for(unsigned int i = num; i < (cmodels-1); i++) {
+		models[i] = models[i+1];
+	}
+	models[(cmodels-1)] = NULL;
+	//cout << "objects repointed" << num << endl;
+
+	// decrease model count
+	cmodels--;
+}
+
 /*! adds a light to the scene
  *  @param light pointer to the light
  */

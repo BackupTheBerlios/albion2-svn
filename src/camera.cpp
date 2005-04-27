@@ -105,6 +105,20 @@ void camera::run() {
 		SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
 	}
 
+	if(rotation->x > 360.0f) {
+		rotation->x -= 360.0f;
+	}
+	else if(rotation->x < 0.0f) {
+		rotation->x += 360.0f;
+	}
+
+	if(rotation->y > 360.0f) {
+		rotation->y -= 360.0f;
+	}
+	else if(rotation->y < 0.0f) {
+		rotation->y += 360.0f;
+	}
+
 	// rotate
 	glRotatef(360.0f - rotation->x, 1.0f, 0.0f , 0.0f);
 	glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);

@@ -22,7 +22,7 @@ using namespace std;
 /*! there is no function currently
  */
 net::net():
-	max_clients(32)
+	max_clients(MAX_CLIENTS)
 {
 }
 
@@ -63,7 +63,7 @@ void net::exit() {
 bool net::create_server(unsigned int type, unsigned short int port, const unsigned int num_clients) {
 	net::max_clients = num_clients;
 
-	if(SDLNet_ResolveHost(&local_ip,NULL,port) == -1) {
+	if(SDLNet_ResolveHost(&local_ip, NULL, port) == -1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (local server): %s", SDLNet_GetError());
 		return false;
 	}
@@ -111,12 +111,12 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
  */
 bool net::create_client(char* server, unsigned int type, unsigned short int port, char* client_name) {
 	net::max_clients = 256;
-	if(SDLNet_ResolveHost(&server_ip,server,port)==-1) {
+	if(SDLNet_ResolveHost(&server_ip, server, port)==-1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
 		return false;
 	}
 
-	if(SDLNet_ResolveHost(&local_ip,NULL,port)==-1) {
+	if(SDLNet_ResolveHost(&local_ip, NULL, port)==-1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost (client->server): %s", SDLNet_GetError());
 		return false;
 	}
@@ -300,7 +300,7 @@ void net::handle_client(unsigned int cur_client) {
 					ndata[i+6] = data[i+6];
 					print_data[i] = data[i+6];
 				}
-				data[i+6] = 0;
+				ndata[i+6] = 0;
 				print_data[i] = 0;
 
 				// print out package data
@@ -352,7 +352,6 @@ void net::check_events() {
 			handle_client(i);
 		}
 	}
-	return;
 }
 
 /*! sends client data to the server and activates the client
@@ -363,7 +362,7 @@ void net::send_activation(char* client_name) {
 	int len;
 
 	// set all clients to inactive at first
-	for(unsigned int i = 0; i < net::max_clients; ++i) { // constant value of 32 clients ... has to be changed!
+	for(unsigned int i = 0; i < net::max_clients; i++) { // constant value of MAX_CLIENTS clients ... has to be changed!
 		clients[i].is_active = false;
 	}
 	if(!net::tcp_ssock == 0) {

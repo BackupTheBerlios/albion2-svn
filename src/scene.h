@@ -47,6 +47,7 @@ public:
 
 	void draw();
 	void add_model(a2emodel* model);
+	void delete_model(a2emodel* model);
 	void add_light(light* light);
 
 	void set_position(float x, float y, float z);

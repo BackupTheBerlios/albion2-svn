@@ -24,6 +24,8 @@
 #include "msg.h"
 using namespace std;
 
+#define MAX_CLIENTS 32
+
 #include "win_dll_export.h"
 
 /*! @class net
@@ -81,10 +83,6 @@ public:
 		DAT,	//!< enum data - can be used for "normal" data transfer
 		CDAT	//!< enum client data
 	};
-	
-protected:
-	unsigned int max_clients;
-	unsigned short int port;
 
 	struct client {
 		TCPsocket sock;
@@ -94,8 +92,13 @@ protected:
 		bool is_active;
 	};
 
-	msg m;
 	client* clients;
+	
+protected:
+	unsigned int max_clients;
+	unsigned short int port;
+
+	msg m;
 };
 
 #endif

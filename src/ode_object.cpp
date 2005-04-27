@@ -32,6 +32,14 @@ ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool f
 		ode_object::mass = new dMass();
 		ode_object::set_body(type);
 	}
+	else {
+		ode_object::body = NULL;
+		ode_object::mass = NULL;
+	}
+
+	if(type != ode_object::TRIMESH) {
+		ode_object::trimesh = NULL;
+	}
 
 	max_force = 10.0f;
 }
@@ -45,19 +53,13 @@ ode_object::~ode_object() {
 	if(ode_object::geom) { dGeomDestroy(ode_object::geom); }
 
 	// destroy the body
-	//if(ode_object::body) { dBodyDestroy(ode_object::body); }
+	if(ode_object::body) { dBodyDestroy(ode_object::body); }
 
 	// delete the mass
-	//if(ode_object::mass) { delete ode_object::mass; }
+	if(ode_object::mass) { delete ode_object::mass; }
 
 	// destroy the trimesh
-	//if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
-
-	// delete the vertices
-	//if(ode_object::dvertices) { delete [] ode_object::dvertices; }
-
-	// and free the indices
-	//if(ode_object::dindices) { free(ode_object::dindices); }
+	if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
 
 	m.print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }

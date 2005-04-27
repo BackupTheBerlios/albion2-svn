@@ -20,7 +20,8 @@
 dWorldID ode::world = 0;
 dSpaceID ode::space = 0;
 dJointGroupID ode::joint_group = 0;
-float ode::gravity = -9.8f;
+//float ode::gravity = -9.8f;
+float ode::gravity = -20.0f;
 float ode::cfm = 1e-5f;
 float ode::erp = 0.2f;
 
@@ -148,8 +149,8 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.mu = dInfinity;
 		contact[i].surface.slip1 = 0.1f; // friction
 		contact[i].surface.slip2 = 0.1f;
-		contact[i].surface.bounce= 0.3f;
-		contact[i].surface.bounce_vel = 0.1f;
+		contact[i].surface.bounce= 0.0f;
+		contact[i].surface.bounce_vel = 0.0f;
 		contact[i].surface.soft_erp = 0.2f;
 		contact[i].surface.soft_cfm = 1e-5f;
 
@@ -183,27 +184,45 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
  *  @param fixed bool, if the object can be moved or if its fixed
  *  @param type the type of the ode object
  */
-void ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
+ode_object* ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	// create an new ode object and pass it to the list
 	ode::ode_objects[ode::object_count] = new ode_object(&ode::world, &ode::space, model, fixed, type);
 
 	// increment object count
 	ode::object_count++;
+
+	return ode::ode_objects[(ode::object_count-1)];
+}
+
+/*! deletes an object of the world
+ *  @param num the objects number
+ */
+void ode::delete_object(unsigned int num) {
+	delete ode::ode_objects[num];
+	for(unsigned int i = num; i < (ode::object_count-1); i++) {
+		ode::ode_objects[i] = ode::ode_objects[i+1];
+	}
+	ode::ode_objects[(ode::object_count-1)] = NULL;
+	
+	// decrease object count
+	ode::object_count--;
 }
 
 void ode::update_objects() {
 	for(unsigned int i = 0; i < object_count; i++) {
-		dGeomID geom = ode::ode_objects[i]->get_geom();
-		dBodyID body = ode::ode_objects[i]->get_body();
-		if(geom != 0) {
-			dReal* pos = (dReal*)dGeomGetPosition(geom);
-			ode::ode_objects[i]->get_model()->set_position((float)pos[0],
-				(float)pos[1], (float)pos[2]);
+		if(ode::ode_objects[i]) {
+			dGeomID geom = ode::ode_objects[i]->get_geom();
+			dBodyID body = ode::ode_objects[i]->get_body();
+			if(geom != 0) {
+				dReal* pos = (dReal*)dGeomGetPosition(geom);
+				ode::ode_objects[i]->get_model()->set_position((float)pos[0],
+					(float)pos[1], (float)pos[2]);
 
-			if(body != 0) {
-				dReal* rotation = (dReal*)dBodyGetRotation(body);
-				ode::ode_objects[i]->get_model()->set_rotation(c.rad_to_deg(rotation[0]),
-					c.rad_to_deg(rotation[1]), c.rad_to_deg(rotation[2]));
+				if(body != 0) {
+					dReal* rotation = (dReal*)dBodyGetRotation(body);
+					ode::ode_objects[i]->get_model()->set_rotation(c.rad_to_deg(rotation[0]),
+						c.rad_to_deg(rotation[1]), c.rad_to_deg(rotation[2]));
+				}
 			}
 		}
 	}
@@ -220,4 +239,10 @@ ode_object* ode::get_ode_object(unsigned int num) {
 		m.print(msg::MERROR, "ode.cpp", "object #%u does not exist!", num);
 		return 0;
 	}
+}
+
+/*! returns the ode object count
+ */
+unsigned int ode::get_object_count() {
+	return ode::object_count;
 }

@@ -71,8 +71,6 @@ int main(int argc, char *argv[])
 	sce.add_light(&l1);
 
 	// initialize ode
-	// note: ode isn't implemented totally atm and
-	// returns (many) errors, so don't use it ...
 	o.init();
 
 	// pass the models to ode
