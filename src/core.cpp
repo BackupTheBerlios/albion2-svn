@@ -229,5 +229,29 @@ void core::mmatrix4_by_vertex4(matrix4 m, vertex4 v) {
  *  @param rad the radiant value
  */
 float core::rad_to_deg(float rad) {
-	return ((rad * 360.0f) / (2.0f * (float)PI));
+	return rad * (180.0f / (float)PI);
+}
+
+/*! converts (projects) a 3d vertex to a 2d screen position
+ *  @param v the 3d vertex
+ *  @param p the 2d screen position
+ */
+void core::get_2d_from_3d(vertex3* v, pnt* p) {
+	GLdouble* modelview = new GLdouble[16];
+	GLdouble* projection = new GLdouble[16];
+	GLint* viewport = new GLint[4];
+	GLdouble* output = new GLdouble[3];
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	gluProject(v->x, v->y, v->z, modelview, projection,
+		viewport, &output[0], &output[1], &output[2]);
+
+	p->x = (unsigned int)output[0];
+	p->y = (unsigned int)((GLdouble)viewport[3] - output[1]);
+
+	delete output;
+	delete modelview;
+	delete projection;
+	delete viewport;
 }

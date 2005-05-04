@@ -50,9 +50,9 @@ public:
 	void set_engine_handler(engine* iengine);
 
 	void set_position(unsigned int x, unsigned int y);
-	void set_position(gfx::pnt* position);
+	void set_position(core::pnt* position);
 
-	gfx::pnt* get_position();
+	core::pnt* get_position();
 
 protected:
 	msg m;
@@ -62,7 +62,7 @@ protected:
 
 	GLuint texture;
 
-	gfx::pnt* position;
+	core::pnt* position;
 	unsigned int width;
 	unsigned int heigth;
 

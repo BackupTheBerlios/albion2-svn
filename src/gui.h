@@ -70,7 +70,7 @@ public:
 	gui_button* add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, unsigned int wid = 0);
 	gui_button* add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
-				   unsigned int color, gfx::pnt* point, unsigned int id, unsigned int wid = 0);	
+				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid = 0);	
 	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
@@ -153,7 +153,7 @@ protected:
 	//! current active window (id)
 	unsigned int awid;
 
-	gfx::pnt* p;
+	core::pnt* p;
 	gfx::rect* r;
 	char* input_text;
 	char* ib_text;

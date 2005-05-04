@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	img.open_image("../../data/engine_logo.png");
 	img.set_position(800 - 446, 600 - 130);
 
-	gfx::pnt* mpos = (gfx::pnt*)malloc(sizeof(gfx::pnt));
+	core::pnt* mpos = (core::pnt*)malloc(sizeof(core::pnt));
 	char* xpos = (char*)malloc(8);
 	char* ypos = (char*)malloc(8);
 	refresh_time = SDL_GetTicks();

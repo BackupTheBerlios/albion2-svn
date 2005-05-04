@@ -104,7 +104,7 @@ unsigned int gui_text::get_id() {
 }
 
 //! returns the text starting point
-gfx::pnt* gui_text::get_point() {
+core::pnt* gui_text::get_point() {
 	return gui_text::point;
 }
 
@@ -138,7 +138,7 @@ void gui_text::set_id(unsigned int id) {
 /*! sets the text starting point
  *  @param point the starting point we want to set
  */
-void gui_text::set_point(gfx::pnt* point) {
+void gui_text::set_point(core::pnt* point) {
 	gui_text::point = point;
 }
 

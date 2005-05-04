@@ -85,6 +85,8 @@ public:
 	// for debug purposes
 	void set_texture(GLuint texture, unsigned int num);
 
+	void draw_normals();
+
 protected:
 	msg m;
 	file_io file;
@@ -96,12 +98,14 @@ protected:
 	core::vertex3* vertices;
 	unsigned int texture_count;
 	char* tex_names[MAX_OBJS];
+	unsigned int normal_count;
 	unsigned int object_count;
 	char* obj_names[MAX_OBJS];
 	unsigned int* index_count;
 	unsigned int* tex_value;
 	core::index* indices[MAX_OBJS];
 	core::triangle* tex_cords[MAX_OBJS];
+	core::triangle* normals[MAX_OBJS];
 
 	GLuint textures[MAX_OBJS];
 

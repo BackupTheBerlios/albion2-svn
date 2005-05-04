@@ -69,8 +69,8 @@ struct client {
 void send_new_client(unsigned int snd_client, unsigned int rcv_client);
 void check_events();
 void handle_client(unsigned int cur_client);
-void add_model(char* name, core::vertex3* pos, bool fixed, ode_object::OTYPE type, float radius = 1.0f);
-void add_player(core::vertex3* pos);
+a2emodel* add_model(char* name, core::vertex3* pos, core::vertex3* scale, bool fixed, ode_object::OTYPE type, float radius = 1.0f);
+a2emodel* add_player(core::vertex3* pos);
 void delete_player(unsigned int num);
 void update_players();
 
@@ -90,8 +90,8 @@ client* clients;
 
 unsigned int refresh_time;
 float piover180 = (float)PI / 180.0f;
-float max_force = 20.0f;
-unsigned int min_walk_time = 50;
+float max_force = 10.0f;
+unsigned int min_walk_time = 0;
 
 a2emodel* objects[OBJECTS];
 ode_object* ode_objects[OBJECTS];
@@ -100,5 +100,7 @@ unsigned int cobjects = 0;
 a2emodel* players[MAX_CLIENTS];
 ode_object* ode_players[MAX_CLIENTS];
 unsigned int cplayers = 0;
+
+core::vertex3* start_pos;
 
 #endif

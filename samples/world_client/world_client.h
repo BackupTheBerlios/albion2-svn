@@ -34,6 +34,7 @@
 #include <core.h>
 #include <net.h>
 #include <gfx.h>
+#include <gui.h>
 #include <event.h>
 #include <camera.h>
 #include <a2emodel.h>
@@ -65,12 +66,20 @@ struct client {
 	float rotation;
 	unsigned int host;
 	unsigned int port;
+
+	core::pnt* text_point;
+	gui_text* text;
 };
 
 int HandleServerData(char *data);
 void HandleServer(void);
+void send_msg();
+void add_msg(unsigned int length, char* msg, ...);
 void update();
 void move(MOVE_TYPE type);
+void init();
+void update_names();
+void draw_names();
 
 msg m;
 net n;
@@ -79,10 +88,13 @@ engine e;
 gfx agfx;
 event aevent;
 camera cam;
+file_io fio;
+gui agui;
 
 scene sce;
 
 a2emodel level;
+a2emodel sphere;
 
 SDL_Surface* sf;
 
@@ -93,6 +105,7 @@ SDL_Event ievent;
 client* clients;
 
 unsigned int refresh_time;
+unsigned int name_time;
 
 //a2emodel* objects;
 //unsigned int cobjects = 0;
@@ -102,9 +115,30 @@ unsigned int cplayers = 0;
 
 unsigned int max_clients = 0;
 bool is_networking = false;
+bool is_initialized = false;
 
 unsigned int client_num = 0;
 
 float piover180 = (float)PI / 180.0f;
+
+char* client_name;
+char* server;
+unsigned int port = 0;
+unsigned int width = 640;
+unsigned int height = 480;
+unsigned int depth = 24;
+
+light* l1;
+light* player_light;
+
+float range = 5.0f;
+
+unsigned int control_state = 0;
+
+gui_window* chat_window;
+gui_list* chat_msg_list;
+gui_input* chat_msg_input;
+gui_button* chat_msg_send;
+unsigned int lid = 0;
 
 #endif

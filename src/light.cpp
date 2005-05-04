@@ -24,14 +24,26 @@
  *  @param z the lights z position
  */
 light::light(float x, float y, float z) {
-	position = new core::vertex3();
-	position->x = x;
-	position->y = y;
-	position->z = z;
+	light::position = new core::vertex3();
+	light::position->x = x;
+	light::position->y = y;
+	light::position->z = z;
 
-	float lambient[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	float ldiffuse[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	float lspecular[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	light::lambient = new float[4];
+	light::ldiffuse = new float[4];
+	light::lspecular = new float[4];
+	light::spot_dir = new float[4];
+	for(unsigned int i = 0; i < 4; i++) {
+		light::lambient[i] = 0.0f;
+		light::ldiffuse[i] = 0.0f;
+		light::lspecular[i] = 0.0f;
+		light::spot_dir[i] = 0.0f;
+	}
+	light::cutoff = 180.0f;
+
+	constant_attenuation = 1.0f;
+	linear_attenuation = 0.0f;
+	quadratic_attenuation = 0.0f;
 }
 
 /*! creates a new light object
@@ -45,45 +57,59 @@ light::light(core::vertex3* pos) {
 light::~light() {
 	m.print(msg::MDEBUG, "light.cpp", "freeing light stuff");
 
-	delete position;
-	/*free(lambient);
-	free(ldiffuse);
-	free(lspecular);*/
+	delete light::position;
+	/*delete light::lambient;
+	delete light::ldiffuse;
+	delete light::lspecular;
+	delete light::spot_dir;*/
 
 	m.print(msg::MDEBUG, "light.cpp", "light stuff freed");
 }
 
-/*! draws the lights
- */
-//void light::draw() {
-//}
-
 /*! sets the lights position
- *  @param position the lights position (vertex3)
+ *  @param x the lights x position
+ *  @param y the lights y position
+ *  @param z the lights z position
  */
-void light::set_position(core::vertex3* position) {
-	light::position = position;
+void light::set_position(float x, float y, float z) {
+	light::position->x = x;
+	light::position->y = y;
+	light::position->z = z;
 }
 
 /*! sets the lights ambient color
- *  @param lambient the lights ambient color (vertex4)
+ *  @param lambient the lights ambient color (float[3])
  */
 void light::set_lambient(float* lambient) {
 	light::lambient = lambient;
 }
 
 /*! sets the lights diffuse color
- *  @param ldiffuse the lights diffuse color (vertex4)
+ *  @param ldiffuse the lights diffuse color (float[3])
  */
 void light::set_ldiffuse(float* ldiffuse) {
 	light::ldiffuse = ldiffuse;
 }
 
 /*! sets the lights specular color
- *  @param lspecular the lights specular color (vertex4)
+ *  @param lspecular the lights specular color (float[3])
  */
 void light::set_lspecular(float* lspecular) {
 	light::lspecular = lspecular;
+}
+
+/*! sets the lights spot (specular?) light direction
+ *  @param direction the spots direction (float[3])
+ */
+void light::set_spot_direction(float* direction) {
+	light::spot_dir = direction;
+}
+
+/*! sets the lights spot light cutoff angle
+ *  @param angle the spots cutoff angle (float)
+ */
+void light::set_spot_cutoff(float angle) {
+	light::cutoff = angle;
 }
 
 /*! sets the lights enabled flag
@@ -91,6 +117,27 @@ void light::set_lspecular(float* lspecular) {
  */
 void light::set_enabled(bool state) {
 	light::enabled = state;
+}
+
+/*! sets the lights constant attenuation value
+ *  @param constant the constant attenuation value (float)
+ */
+void light::set_constant_attenuation(float constant) {
+	light::constant_attenuation = constant;
+}
+
+/*! sets the lights linear attenuation value
+ *  @param linear the linear attenuation value (float)
+ */
+void light::set_linear_attenuation(float linear) {
+	light::linear_attenuation = linear;
+}
+
+/*! sets the lights quadratic attenuation value
+ *  @param quadratic the quadratic attenuation value (float)
+ */
+void light::set_quadratic_attenuation(float quadratic) {
+	light::quadratic_attenuation = quadratic;
 }
 
 /*! returns the lights position
@@ -117,8 +164,38 @@ float* light::get_lspecular() {
 	return light::lspecular;
 }
 
+/*! returns the lights spot direction
+ */
+float* light::get_spot_direction() {
+	return light::spot_dir;
+}
+
+/*! returns the spot cutoff
+ */
+float light::get_spot_cutoff() {
+	return light::cutoff;
+}
+
 /*! returns true if the light is enabled
  */
 bool light::is_enabled() {
 	return light::enabled;
+}
+
+/*! returns the constant attenuation value
+ */
+float light::get_constant_attenuation() {
+	return light::constant_attenuation;
+}
+
+/*! returns the linear attenuation value
+ */
+float light::get_linear_attenuation() {
+	return light::linear_attenuation;
+}
+
+/*! returns the quadratic attenuation value
+ */
+float light::get_quadratic_attenuation() {
+	return light::quadratic_attenuation;
 }

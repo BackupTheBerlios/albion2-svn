@@ -58,7 +58,7 @@ public:
 
 	char* get_text();
 	unsigned int get_id();
-	gfx::pnt* get_point();
+	core::pnt* get_point();
 
 	void set_text(char* text);
 	void set_id(unsigned int id);
@@ -79,7 +79,7 @@ protected:
 	//! list box item id
 	unsigned int id;
 	//! text starting point (x,y)
-	gfx::pnt* point;
+	core::pnt* point;
 };
 
 #endif

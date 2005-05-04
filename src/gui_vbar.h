@@ -58,8 +58,8 @@ public:
 	unsigned int get_shown_lines();
 	unsigned int get_position();
 	bool get_active();
-	//gfx::pnt* get_last_point();
-	gfx::pnt* get_new_point();
+	//core::pnt* get_last_point();
+	core::pnt* get_new_point();
 	bool get_slider_active();
 
 	void set_id(unsigned int id);
@@ -68,8 +68,8 @@ public:
 	void set_shown_lines(unsigned int shown_lines);
 	void set_position(unsigned int position);
 	void set_active(bool is_active);
-	//void set_last_point(gfx::pnt* last_point);
-	void set_new_point(gfx::pnt* new_point);
+	//void set_last_point(core::pnt* last_point);
+	void set_new_point(core::pnt* new_point);
 	void set_slider_active(bool state);
 
 	void set_up_button_handler(gui_button* ibutton);
@@ -105,8 +105,8 @@ protected:
 	// event handle stuff
 
 	bool is_active;
-	gfx::pnt* last_point;
-	gfx::pnt* new_point;
+	core::pnt* last_point;
+	core::pnt* new_point;
 };
 
 #endif

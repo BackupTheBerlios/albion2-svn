@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date April 2005
+ * \date April - May 2005
  *
  * Albion 2 Engine Sample - World Server Sample
  */
@@ -104,9 +104,9 @@ void handle_client(unsigned int cur_client) {
 				clients[cplayers].id = cplayers;
 				memcpy(clients[cplayers].name, &n.clients[cur_client].name, 31);
 				clients[cplayers].name[strlen(clients[cplayers].name)] = 0;
-				clients[cplayers].position->x = 0.0f;
-				clients[cplayers].position->y = 2.0f;
-				clients[cplayers].position->z = 0.0f;
+				clients[cplayers].position->x = start_pos->x;
+				clients[cplayers].position->y = start_pos->y + 2.0f;
+				clients[cplayers].position->z = start_pos->z;
 				clients[cplayers].rotation = 0.0f;
 				clients[cplayers].status = 0;
 
@@ -123,18 +123,21 @@ void handle_client(unsigned int cur_client) {
 						ndata[0] = net::DAT;
 						ndata[1] = DT_MSG;
 						// get data package length
-						unsigned int len = (unsigned int)(data[1]*0xFF0000 + data[2]*0xFF00 + data[3]*0xFF + data[4]);
+						unsigned int len = (unsigned int)(data[2]*0xFF0000 + data[3]*0xFF00 + data[4]*0xFF + data[5]);
 						ndata[2] = len & 0xFF000000;
 						ndata[3] = len & 0xFF0000;
 						ndata[4] = len & 0xFF00;
 						ndata[5] = len & 0xFF;
 						ndata[6] = cur_client;
 						// put package data into new package (and into data that is printed out)
+						char* message = new char[len+1];
 						unsigned int i;
 						for(i = 0; i < len; i++) {
 							ndata[i+7] = data[i+7];
+							message[i] = data[i+7];
 						}
 						ndata[i+7] = 0;
+						message[len] = 0;
 
 						// send package to all clients except the one who send the data
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
@@ -142,6 +145,12 @@ void handle_client(unsigned int cur_client) {
 								SDLNet_TCP_Send(n.clients[i].sock, ndata, len+1 + 7);
 							}
 						}
+
+						// print out the received message
+						m.print(msg::MDEBUG, "world_server.cpp", "received message from client %s (%u): %s",
+							clients[cur_client].name, cur_client, message);
+						delete message;
+
 						break;
 					}
 					case DT_MOVE: {
@@ -239,10 +248,11 @@ void check_events() {
 	}
 }
 
-void add_model(char* name, core::vertex3* pos, bool fixed, ode_object::OTYPE type, float radius) {
+a2emodel* add_model(char* name, core::vertex3* pos, core::vertex3* scale, bool fixed, ode_object::OTYPE type, float radius) {
 	objects[cobjects] = new a2emodel();
 	objects[cobjects]->load_model(name);
 	objects[cobjects]->set_position(pos->x, pos->y, pos->z);
+	objects[cobjects]->set_scale(scale->x, scale->y, scale->z);
 	if(type == ode_object::SPHERE) {
 		objects[cobjects]->set_radius(radius);
 	}
@@ -250,9 +260,11 @@ void add_model(char* name, core::vertex3* pos, bool fixed, ode_object::OTYPE typ
 	ode_objects[cobjects] = o.add_object(objects[cobjects], fixed, type);
 
 	cobjects++;
+
+	return objects[cobjects];
 }
 
-void add_player(core::vertex3* pos) {
+a2emodel* add_player(core::vertex3* pos) {
 	players[cplayers] = new a2emodel();
 	players[cplayers]->load_model("../data/player_sphere.a2m");
 	players[cplayers]->set_position(pos->x, pos->y, pos->z);
@@ -262,6 +274,8 @@ void add_player(core::vertex3* pos) {
 	ode_players[cplayers] = o.add_object(players[cplayers], false, ode_object::SPHERE);
 
 	cplayers++;
+
+	return players[cplayers];
 }
 
 void delete_player(unsigned int num) {
@@ -285,9 +299,9 @@ void delete_player(unsigned int num) {
 	clients[num].id = 0;
 	sprintf(clients[num].name, "unknown");
 	clients[num].status = 0;
-	clients[num].position->x = 0.0f;
-	clients[num].position->y = 2.0f;
-	clients[num].position->z = 0.0f;
+	clients[num].position->x = start_pos->x;
+	clients[num].position->y = start_pos->y + 2.0f;
+	clients[num].position->z = start_pos->z;
 	clients[num].rotation = 0.0f;
 	clients[num].walk_time = 0;
 
@@ -314,16 +328,27 @@ int main(int argc, char *argv[])
 		clients[i].walk_time = 0;
 	}
 
+	// set start position for all players
+	start_pos = new core::vertex3();
+	start_pos->x = 0.0f;
+	start_pos->y = 10.0f;
+	start_pos->z = 0.0f;
+
 	// init ode
 	o.init();
 
 	// add plane
 	core::vertex3* pos = new core::vertex3();
+	core::vertex3* scale = new core::vertex3();
 	pos->x = 0.0f;
 	pos->y = 0.0f;
 	pos->z = 0.0f;
-	add_model("../data/move_level.a2m", pos, true, ode_object::TRIMESH);
+	scale->x = 0.5f;
+	scale->y = 0.5f;
+	scale->z = 0.5f;
+	add_model("../data/move_level.a2m", pos, scale, true, ode_object::TRIMESH);
 	delete pos;
+	delete scale;
 
 	// init network stuff
 	bool is_networking = false;
@@ -359,16 +384,18 @@ int main(int argc, char *argv[])
 			refresh_time = SDL_GetTicks();
 
 			update_players();
-			if(cplayers != 0) {
+			/*if(cplayers != 0) {
 				cout << "player 0 pos: " << players[0]->get_position()->x << ", "
 					<< players[0]->get_position()->y << ", " << players[0]->get_position()->z
 					<< " - rot: " << clients[0].rotation << endl;
-			}
+			}*/
 		}
 	}
 
 	n.exit();
 	o.close();
+
+	delete start_pos;
 
 	return 0;
 }

@@ -64,9 +64,6 @@ public:
 	float* get_mshininess();
 	bool get_light();
 
-	// for debugging purposes
-	void draw_sphere(core::vertex3* pos, core::vertex3* size);
-
 protected:
 	msg m;
 	core c;
@@ -86,9 +83,6 @@ protected:
 
 	//! specifies if lighting is enabled in this scene
 	bool is_light;
-
-	// for debugging purposes
-	a2emodel* sphere;
 
 };
 

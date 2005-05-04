@@ -90,7 +90,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	}
 
 	// draw text
-	gfx::pnt* p1 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
 	unsigned int width = text_handler->get_text_width();
 	unsigned int heigth = text_handler->get_text_height();
 	// -6, because we have a border of 2px*2 and an empty pixel*2
@@ -286,7 +286,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	// after that we just add the position to our lengths.
 	// +1, because we want the text be drawn a bit more right
 	// -1, because we want the text be drawn a bit more on top
-	gfx::pnt* p2 = new gfx::pnt();
+	core::pnt* p2 = new core::pnt();
 	if(is_in_rectangle) {
 		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
 			gui_input::rectangle->y1 + (heigth_input_box/2 - heigth/2) - 2);*/

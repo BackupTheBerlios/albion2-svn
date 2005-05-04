@@ -19,7 +19,7 @@
 /*! there is no function currently
 */
 gui::gui() {
-	p = new gfx::pnt();
+	p = new core::pnt();
 	r = new gfx::rect();
 	input_text = new char[512];
 
@@ -230,7 +230,7 @@ void gui::draw() {
 
 			if((g.is_pnt_in_rectangle(r, p) || gui::gui_windows[wnds_num[j]]->is_moving())
 				&& event_type == 2) {
-				gfx::pnt* tmp_point = new gfx::pnt();
+				core::pnt* tmp_point = new core::pnt();
 				event_handler->get_mouse_pos(tmp_point);
 				// well, for more performance we could uncomment this, but the
 				// windows moves smoother w/o it ;)
@@ -252,7 +252,7 @@ void gui::draw() {
 
 		// set the "window point" that defines how much the
 		// gui elements have to be moved on the x and y axis
-		gfx::pnt* wp = new gfx::pnt();
+		core::pnt* wp = new core::pnt();
 		if(gui::gui_windows[wnds_num[j]]->get_border()) {
             wp->x = gui::gui_windows[wnds_num[j]]->get_rectangle()->x1 + 2;
             wp->y = gui::gui_windows[wnds_num[j]]->get_rectangle()->y1 + 19;
@@ -400,7 +400,7 @@ void gui::draw() {
 							if(g.is_pnt_in_rectangle(r, p)) {
 								int cx;
 								int cy;
-								gfx::pnt* np = new gfx::pnt();
+								core::pnt* np = new core::pnt();
 								SDL_GetMouseState(&cx, &cy);
 								np->x = cx;
 								np->y = cy;
@@ -520,7 +520,7 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, u
  *  @param wid the id of the window we want the element to be in (0 = no window)
  */
 gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
-				   unsigned int color, gfx::pnt* point, unsigned int id, unsigned int wid) {
+				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid) {
 	SDL_Color col;
 	col.r = (color & 0xFF0000) >> 16;
 	col.g = (color & 0x00FF00) >> 8;

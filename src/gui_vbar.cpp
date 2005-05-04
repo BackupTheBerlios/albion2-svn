@@ -23,7 +23,7 @@
 /*! there is no function currently
  */
 gui_vbar::gui_vbar() {
-	gui_vbar::last_point = new gfx::pnt();
+	gui_vbar::last_point = new core::pnt();
 	gui_vbar::last_point->x = 0;
 	gui_vbar::last_point->y = 0;
 
@@ -166,7 +166,7 @@ bool gui_vbar::get_active() {
 }
 
 //! returns the new mouse click point
-gfx::pnt* gui_vbar::get_new_point() {
+core::pnt* gui_vbar::get_new_point() {
 	return gui_vbar::new_point;
 }
 
@@ -246,7 +246,7 @@ void gui_vbar::set_down_button_handler(gui_button* ibutton) {
 /*! sets the new mouse click point
  *  @param new_point the new mouse click point point we want to set
  */
-void gui_vbar::set_new_point(gfx::pnt* new_point) {
+void gui_vbar::set_new_point(core::pnt* new_point) {
 	if(gui_vbar::slider_active) {
 		gui_vbar::new_point = new_point;
 		if(gui_vbar::last_point->x == 0 && gui_vbar::last_point->y == 0) {

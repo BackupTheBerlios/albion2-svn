@@ -121,9 +121,21 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
 	engine::flags |= SDL_GL_DOUBLEBUFFER;
-	if(video_info->hw_available) { engine::flags |= SDL_HWSURFACE; }
-	else { engine::flags |= SDL_SWSURFACE; }
-	if(video_info->blit_hw) { engine::flags |= SDL_HWACCEL;	}
+	if(video_info->hw_available) {
+		engine::flags |= SDL_HWSURFACE;
+		m.print(msg::MDEBUG, "engine.cpp", "using hardware surface");
+	}
+	else {
+		engine::flags |= SDL_SWSURFACE;
+		m.print(msg::MDEBUG, "engine.cpp", "using software surface");
+	}
+	if(video_info->blit_hw) {
+		engine::flags |= SDL_HWACCEL;
+		m.print(msg::MDEBUG, "engine.cpp", "hardware acceleration enabled");
+	}
+	else {
+		m.print(msg::MDEBUG, "engine.cpp", "hardware acceleration disabled");
+	}
 	if(fullscreen) {
 		engine::flags |= SDL_FULLSCREEN;
 		m.print(msg::MDEBUG, "engine.cpp", "fullscreen enabled");
@@ -321,7 +333,6 @@ bool engine::resize_window() {
 
 	// set perspective with fov = 60° and far value = 1500.0f
 	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
-	
 	m.print(msg::MDEBUG, "engine.cpp", "glu perspective set");
 
 	// model view matrix
@@ -332,7 +343,7 @@ bool engine::resize_window() {
 	return true;
 }
 
-/*! sets the position of the user
+/*! sets the position of the user/viewer
  *  @param xpos x coordinate
  *  @param ypos y coordinate
  *  @param zpos z coordinate

@@ -591,6 +591,6 @@ bool event::is_key_left() {
 
 /*! gets the mouses position (pnt)
  */
-void event::get_mouse_pos(gfx::pnt* pos) {
+void event::get_mouse_pos(core::pnt* pos) {
 	SDL_GetMouseState((int*)&pos->x, (int*)&pos->y);
 }

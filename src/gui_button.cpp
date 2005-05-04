@@ -40,8 +40,8 @@ gui_button::~gui_button() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
-	gfx::pnt* p1 = new gfx::pnt();
-	gfx::pnt* p2 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
+	core::pnt* p2 = new core::pnt();
 	gfx::rect* r1 = new gfx::rect();
 
 	if(!is_pressed) {

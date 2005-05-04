@@ -61,14 +61,22 @@ int main(int argc, char *argv[])
 	sce.add_model(&cottage);
 	sce.add_model(&sphere);
 
-	light l1(-50.0f, 0.0f, -50.0f);
-	float lamb[] = { 0.3f, 0.3f, 0.3f, 1.0f};
-	float ldif[] = { 0.7f, 0.7f, 0.7f, 1.0f};
-	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};
-	l1.set_lambient(lamb);
-	l1.set_ldiffuse(ldif);
-	l1.set_lspecular(lspc);
+	light l1(-50.0f, 100.0f, -50.0f);
+	light l2(0.0f, 50.0f, 0.0f);
+	float lamb1[] = { 0.3f, 0.3f, 0.3f, 1.0f};
+	float ldif1[] = { 0.7f, 0.7f, 0.7f, 1.0f};
+	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	float lamb2[] = { 0.0f, 0.1f, 0.3f, 0.5f};
+	float ldif2[] = { 0.1f, 0.3f, 0.5f, 0.5f};
+	float lspc2[] = { 0.0f, 0.2f, 0.6f, 0.5f};
+	l1.set_lambient(lamb1);
+	l1.set_ldiffuse(ldif1);
+	l1.set_lspecular(lspc1);
+	l2.set_lambient(lamb2);
+	l2.set_ldiffuse(ldif2);
+	l2.set_lspecular(lspc2);
 	sce.add_light(&l1);
+	sce.add_light(&l2);
 
 	// initialize ode
 	o.init();
@@ -143,9 +151,9 @@ int main(int argc, char *argv[])
 			// print out the fps count
 			fps++;
 			if(SDL_GetTicks() - fps_time > 1000) {
-				/*sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
-					cam.get_position()->x, cam.get_position()->y, cam.get_position()->z);*/
-				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
+				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
+					-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
+				//sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
 				fps = 0;
 				fps_time = SDL_GetTicks();
 			}

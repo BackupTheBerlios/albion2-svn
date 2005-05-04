@@ -33,7 +33,7 @@ gfx::~gfx() {
  *  @param point the position of the point
  *  @param color the color of the point
  */
-void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) {
+void gfx::draw_point(SDL_Surface* surface, core::pnt* point, unsigned int color) {
 	// outdated - should be taken out soon or be reimplemented,
 	// but remember that you need to much cpu power if you just
 	// draw a single point in opengl
@@ -45,8 +45,8 @@ void gfx::draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color) 
  *  @param point2 the position of the second point
  *  @param color the color of the line
  */
-void gfx::draw_line(SDL_Surface* surface, gfx::pnt* point1,
-					gfx::pnt* point2, unsigned int color) {
+void gfx::draw_line(SDL_Surface* surface, core::pnt* point1,
+					core::pnt* point2, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_LINES);
@@ -88,8 +88,8 @@ void gfx::draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned in
 	    dist_y1_y2 = tmp;
 	}
 
-	gfx::pnt* p1 = new gfx::pnt();
-	gfx::pnt* p2 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
+	core::pnt* p2 = new core::pnt();
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color);
@@ -126,8 +126,8 @@ void gfx::draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
 	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
 	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
 
-	gfx::pnt* p1 = new gfx::pnt();
-	gfx::pnt* p2 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
+	core::pnt* p2 = new core::pnt();
 	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
 	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
 	gfx::draw_line(surface, p1, p2, color1);
@@ -224,7 +224,7 @@ gfx::rect* gfx::pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, u
  *  @param x x coordinate
  *  @param y y coordinate
  */
-void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
+void gfx::cord_to_pnt(core::pnt* point, unsigned int x, unsigned int y) {
 	point->x = x;
 	point->y = y;
 }
@@ -233,8 +233,8 @@ void gfx::cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y) {
  *  @param x x cord
  *  @param y y cord
  */
-gfx::pnt* gfx::cord_to_pnt(unsigned int x, unsigned int y) {
-	gfx::pnt* p = new gfx::pnt();
+core::pnt* gfx::cord_to_pnt(unsigned int x, unsigned int y) {
+	core::pnt* p = new core::pnt();
 	p->x = x;
 	p->y = y;
 	return p;
@@ -244,7 +244,7 @@ gfx::pnt* gfx::cord_to_pnt(unsigned int x, unsigned int y) {
  *  @param rectangle the rectangle
  *  @param point the point we want to test
  */
-bool gfx::is_pnt_in_rectangle(gfx::rect* rectangle, gfx::pnt* point) {
+bool gfx::is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point) {
 	if(point->x >= rectangle->x1 && point->x <= rectangle->x2
 		&& point->y >= rectangle->y1 && point->y <= rectangle->y2) {
 		return true;

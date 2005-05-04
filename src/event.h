@@ -118,7 +118,7 @@ public:
 	bool is_key_left();
 
 	//! gets the mouses position (pnt)
-	void get_mouse_pos(gfx::pnt* pos);
+	void get_mouse_pos(core::pnt* pos);
 
 protected:
 	msg m;

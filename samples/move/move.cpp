@@ -102,17 +102,22 @@ int main(int argc, char *argv[])
 	level.set_position(0.0f, 0.0f, 0.0f);
 
 	sphere.load_model("../data/player_sphere.a2m");
-	sphere.set_position(-2.0f, 2.0f, -2.0f);
+	sphere.set_position(-2.0f, 15.0f, -2.0f);
 	sphere.set_visible(false);
 	sphere.set_radius(2.0f);
 
 	player.load_model("../data/player.a2m");
 	player.set_position(sphere.get_position()->x, sphere.get_position()->y - 2.0f, sphere.get_position()->z);
-	player.set_scale(2.0f, 2.0f, 2.0f);
+	//player.set_scale(2.0f, 2.0f, 2.0f);
 
 	sce.add_model(&level);
 	sce.add_model(&sphere);
 	sce.add_model(&player);
+
+	a2emodel* test = new a2emodel();
+	test->load_model("../data/a2logo.a2m");
+	test->set_position(0.0f, 50.0f, 0.0f);
+	sce.add_model(test);
 
 	spheres = new a2emodel[cspheres];
 	for(unsigned int i = 0; i < sqrt(cspheres); i++) {

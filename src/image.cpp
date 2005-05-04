@@ -23,7 +23,7 @@
 image::image(engine* iengine) {
 	image::engine_handler = iengine;
 
-	image::position = new gfx::pnt();
+	image::position = new core::pnt();
 	image::position->x = 0;
 	image::position->y = 0;
 
@@ -115,13 +115,13 @@ void image::set_position(unsigned int x, unsigned int y) {
 /*! sets the position (pnt) of the image
  *  @param position the (new) position of the image
  */
-void image::set_position(gfx::pnt* position) {
+void image::set_position(core::pnt* position) {
 	image::set_position(position->x, position->y);
 }
 
 /*! returns the position (pnt) of the image
  */
-gfx::pnt* image::get_position() {
+core::pnt* image::get_position() {
 	return image::position;
 }
 

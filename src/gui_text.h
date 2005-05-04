@@ -56,7 +56,7 @@ public:
 	void remake_text();
 
 	unsigned int get_id();
-	gfx::pnt* get_point();
+	core::pnt* get_point();
 	char* get_text();
 	SDL_Color get_color();
 	char* get_font_name();
@@ -64,7 +64,7 @@ public:
 	FTFont* get_font();
 
 	void set_id(unsigned int id);
-	void set_point(gfx::pnt* point);
+	void set_point(core::pnt* point);
 	void set_text(char* text);
 	void set_color(SDL_Color color);
 	void set_color(unsigned int color);
@@ -89,7 +89,7 @@ protected:
 	//! text id
 	unsigned int id;
 	//! text starting point (x,y)
-	gfx::pnt* point;
+	core::pnt* point;
 	//! the text itself
 	char* text;
 	//! the texts color

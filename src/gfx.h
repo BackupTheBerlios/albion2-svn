@@ -55,25 +55,20 @@ public:
 		unsigned int y2;
 	};
 
-	struct pnt {
-		unsigned int x;
-		unsigned int y;
-	};
-
-	void cord_to_pnt(gfx::pnt* point, unsigned int x, unsigned int y);
+	void cord_to_pnt(core::pnt* point, unsigned int x, unsigned int y);
 	void pnt_to_rect(gfx::rect* rectangle, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
-	gfx::pnt* cord_to_pnt(unsigned int x, unsigned int y);
+	core::pnt* cord_to_pnt(unsigned int x, unsigned int y);
 	gfx::rect* pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 
-	void draw_point(SDL_Surface* surface, gfx::pnt* point, unsigned int color);
+	void draw_point(SDL_Surface* surface, core::pnt* point, unsigned int color);
 
-	void draw_line(SDL_Surface* surface, gfx::pnt* point1, gfx::pnt* point2, unsigned int color);
+	void draw_line(SDL_Surface* surface, core::pnt* point1, core::pnt* point2, unsigned int color);
 	void draw_3d_line(core::vertex3* v1, core::vertex3* v2, unsigned int color);
 
 	void draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
 	void draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color1, unsigned int color2);
 	void draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
-	bool is_pnt_in_rectangle(gfx::rect* rectangle, gfx::pnt* point);
+	bool is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point);
 
 	unsigned int get_color(SDL_Surface* surface, unsigned int red, unsigned int green, unsigned int blue);
 	unsigned int get_color(SDL_Surface* surface, unsigned int rgb);

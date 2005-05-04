@@ -48,6 +48,7 @@ a2emodel::a2emodel() {
         a2emodel::tex_names[i] = NULL;
 		a2emodel::indices[i] = NULL;
 		a2emodel::tex_cords[i] = NULL;
+		a2emodel::normals[i] = NULL;
 		a2emodel::obj_names[i] = NULL;
 	}
 
@@ -81,6 +82,7 @@ a2emodel::~a2emodel() {
 		if(a2emodel::tex_names[i] != NULL) { delete a2emodel::tex_names[i]; }
 		if(a2emodel::indices[i] != NULL) { delete a2emodel::indices[i]; }
 		if(a2emodel::tex_cords[i] != NULL) { delete a2emodel::tex_cords[i]; }
+		if(a2emodel::normals[i] != NULL) { delete a2emodel::normals[i]; }
 		if(a2emodel::obj_names[i] != NULL) { delete a2emodel::obj_names[i]; }
 	}
 
@@ -108,14 +110,17 @@ void a2emodel::draw_model() {
 				glBegin(GL_TRIANGLES);
 				for(unsigned int j = 0; j < index_count[i]; j++) {
 					glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
+					glNormal3f(normals[i][j].v1.x, normals[i][j].v1.y, normals[i][j].v1.z);
 					glVertex3f(vertices[indices[i][j].i1].x,
 						vertices[indices[i][j].i1].y,
 						vertices[indices[i][j].i1].z);
 					glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
+					glNormal3f(normals[i][j].v2.x, normals[i][j].v2.y, normals[i][j].v2.z);
 					glVertex3f(vertices[indices[i][j].i2].x,
 						vertices[indices[i][j].i2].y,
 						vertices[indices[i][j].i2].z);
 					glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
+					glNormal3f(normals[i][j].v3.x, normals[i][j].v3.y, normals[i][j].v3.z);
 					glVertex3f(vertices[indices[i][j].i3].x,
 						vertices[indices[i][j].i3].y,
 						vertices[indices[i][j].i3].z);
@@ -143,6 +148,87 @@ void a2emodel::draw_model() {
 		}
 		glDisable(GL_TEXTURE_2D);
 
+		glPopMatrix();
+	}
+
+	//draw_normals(); // buggy and slow atm ...
+}
+
+void a2emodel::draw_normals() {
+	if(a2emodel::visible) {
+		glPushMatrix();
+		glDisable(GL_LIGHTING);
+		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		for(unsigned int i = 0; i < object_count; i++) {
+			glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
+			if(!a2emodel::draw_wireframe) {
+				for(unsigned int j = 0; j < index_count[i]; j++) {
+					glPushMatrix();
+					glTranslatef(vertices[indices[i][j].i1].x,
+						vertices[indices[i][j].i1].y,
+						vertices[indices[i][j].i1].z);
+					glRotatef(normals[i][j].v1.x * 360.0f, 1.0f, 0.0f , 0.0f);
+					glRotatef(normals[i][j].v1.y * 360.0f, 0.0f, 1.0f , 0.0f);
+					glRotatef(normals[i][j].v1.z * 360.0f, 0.0f, 0.0f , 1.0f);
+					glBegin(GL_LINES);
+						glColor3f(1.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.5f, 0.0f, 0.0f);
+						glColor3f(0.0f, 1.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.5f, 0.0f);
+						glColor3f(0.0f, 0.0f, 1.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.5f);
+					glEnd();
+					glPopMatrix();
+
+					glPushMatrix();
+					glTranslatef(vertices[indices[i][j].i2].x,
+						vertices[indices[i][j].i2].y,
+						vertices[indices[i][j].i2].z);
+					glRotatef(normals[i][j].v2.x * 360.0f, 1.0f, 0.0f , 0.0f);
+					glRotatef(normals[i][j].v2.y * 360.0f, 0.0f, 1.0f , 0.0f);
+					glRotatef(normals[i][j].v2.z * 360.0f, 0.0f, 0.0f , 1.0f);
+					glBegin(GL_LINES);
+						glColor3f(0.0f, 1.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.5f, 0.0f, 0.0f);
+						glColor3f(0.0f, 1.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.5f, 0.0f);
+						glColor3f(0.0f, 0.0f, 1.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.5f);
+					glEnd();
+					glPopMatrix();
+
+					glPushMatrix();
+					glTranslatef(vertices[indices[i][j].i3].x,
+						vertices[indices[i][j].i3].y,
+						vertices[indices[i][j].i3].z);
+					glRotatef(normals[i][j].v3.x * 360.0f, 1.0f, 0.0f , 0.0f);
+					glRotatef(normals[i][j].v3.y * 360.0f, 0.0f, 1.0f , 0.0f);
+					glRotatef(normals[i][j].v3.z * 360.0f, 0.0f, 0.0f , 1.0f);
+					glBegin(GL_LINES);
+						glColor3f(1.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.5f, 0.0f, 0.0f);
+						glColor3f(0.0f, 1.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.5f, 0.0f);
+						glColor3f(0.0f, 0.0f, 1.0f);
+						glVertex3f(0.0f, 0.0f, 0.0f);
+						glVertex3f(0.0f, 0.0f, 0.5f);
+					glEnd();
+					glPopMatrix();
+				}
+			}
+		}
+
+		glEnable(GL_LIGHTING);
 		glPopMatrix();
 	}
 }
@@ -240,6 +326,19 @@ void a2emodel::load_model(char* filename) {
 	}
 
 	a2emodel::load_textures();
+
+	// get normal count
+	char* nc = new char[5];
+	file.get_block(nc, 4);
+	nc[4] = 0;
+
+	// there seems to be "a bug" with read char stuff, so we have to AND 0xFF
+	normal_count = 0;
+	normal_count += (unsigned int)((nc[0] & 0xFF)*0x1000000);
+	normal_count += (unsigned int)((nc[1] & 0xFF)*0x10000);
+	normal_count += (unsigned int)((nc[2] & 0xFF)*0x100);
+	normal_count += (unsigned int)(nc[3] & 0xFF);
+	delete nc;
 
 	// get object count
 	char* oc = new char[5];
@@ -349,6 +448,31 @@ void a2emodel::load_model(char* filename) {
 			memcpy(&tex_cords[i][j].v3.y, vertex, 4);
 			file.get_block(vertex, 4);
 			memcpy(&tex_cords[i][j].v3.z, vertex, 4);
+		}
+
+		// create normal vertices
+		normals[i] = new core::triangle[index_count[i]];
+		for(unsigned int j = 0; j < index_count[i]; j++) {
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v1.x, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v1.y, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v1.z, vertex, 4);
+
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v2.x, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v2.y, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v2.z, vertex, 4);
+
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v3.x, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v3.y, vertex, 4);
+			file.get_block(vertex, 4);
+			memcpy(&normals[i][j].v3.z, vertex, 4);
 		}
 	}
 

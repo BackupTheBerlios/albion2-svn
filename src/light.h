@@ -43,19 +43,27 @@ public:
 	light(core::vertex3* pos);
 	~light();
 
-	//void draw();
-
-	void set_position(core::vertex3* position);
+	void set_position(float x, float y, float z);
 	void set_lambient(float* lambient);
 	void set_ldiffuse(float* ldiffuse);
 	void set_lspecular(float* lspecular);
+	void set_spot_direction(float* direction);
+	void set_spot_cutoff(float angle);
 	void set_enabled(bool state);
+	void set_constant_attenuation(float constant);
+	void set_linear_attenuation(float linear);
+	void set_quadratic_attenuation(float quadratic);
 
 	core::vertex3* get_position();
 	float* get_lambient();
 	float* get_ldiffuse();
 	float* get_lspecular();
+	float* get_spot_direction();
+	float get_spot_cutoff();
 	bool is_enabled();
+	float get_constant_attenuation();
+	float get_linear_attenuation();
+	float get_quadratic_attenuation();
 
 protected:
 	msg m;
@@ -66,6 +74,12 @@ protected:
 	float* lambient;
 	float* ldiffuse;
 	float* lspecular;
+	float* spot_dir;
+	float cutoff;
+
+	float constant_attenuation;
+	float linear_attenuation;
+	float quadratic_attenuation;
 
 	bool enabled;
 

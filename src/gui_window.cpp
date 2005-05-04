@@ -76,7 +76,7 @@ void gui_window::draw() {
 
 		delete r;
 
-		gfx::pnt* p = new gfx::pnt();
+		core::pnt* p = new core::pnt();
 		p->x = gui_window::rectangle->x1 + 2;
 		p->y = gui_window::rectangle->y1 + 3;
 		gui_window::text_handler->set_point(p);

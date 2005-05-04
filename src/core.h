@@ -17,9 +17,15 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <iostream>
 #include <SDL.h>
 #include <math.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "msg.h"
 using namespace std;
 
@@ -45,6 +51,11 @@ public:
 
 	struct vertex3 {
 		float x, y, z;
+	};
+
+	struct pnt {
+		unsigned int x;
+		unsigned int y;
 	};
 
 	// remeber that the 'w-float' is the fourth element!
@@ -99,6 +110,8 @@ public:
 	void mmatrix4_by_vertex4(matrix4 m, vertex4 v);
 
 	float rad_to_deg(float rad);
+
+	void get_2d_from_3d(vertex3* v, pnt* p);
 
 protected:
 	unsigned int value, bit, num;

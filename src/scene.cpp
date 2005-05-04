@@ -32,13 +32,26 @@ scene::scene() {
 	scene::mdiffuse = new float[4];
 	scene::mspecular = new float[4];
 	scene::mshininess = new float[4];
-	scene::mambient[0] = scene::mambient[1] = scene::mambient[2] = scene::mambient[3] = 0.0f;
-	scene::mdiffuse[0] = scene::mdiffuse[1] = scene::mdiffuse[2] = scene::mdiffuse[3] = 0.0f;
-	scene::mspecular[0] = scene::mspecular[1] = scene::mspecular[2] = scene::mspecular[3] = 0.0f;
-	scene::mshininess[0] = scene::mshininess[1] = scene::mshininess[2] = scene::mshininess[3] = 0.0f;
 
-	/*sphere = new a2emodel();
-	sphere->load_model("sphere.a2m");*/
+	scene::mambient[0] = 0.0f;
+	scene::mambient[1] = 0.0f;
+	scene::mambient[2] = 0.0f;
+	scene::mambient[3] = 0.0f;
+
+	scene::mdiffuse[0] = 0.0f;
+	scene::mdiffuse[1] = 0.0f;
+	scene::mdiffuse[2] = 0.0f;
+	scene::mdiffuse[3] = 0.0f;
+
+	scene::mspecular[0] = 0.0f;
+	scene::mspecular[1] = 0.0f;
+	scene::mspecular[2] = 0.0f;
+	scene::mspecular[3] = 0.0f;
+
+	scene::mshininess[0] = 0.0f;
+	scene::mshininess[1] = 0.0f;
+	scene::mshininess[2] = 0.0f;
+	scene::mshininess[3] = 0.0f;
 
 	scene::is_light = false;
 }
@@ -54,8 +67,6 @@ scene::~scene() {
 	delete scene::mspecular;
 	delete scene::mshininess;
 
-	delete sphere;
-
 	m.print(msg::MDEBUG, "scene.cpp", "scene stuff freed");
 }
 
@@ -63,15 +74,17 @@ scene::~scene() {
  */
 void scene::draw() {
 	for(unsigned int i = 0; i < clights; i++) {
-        float pos[] = { lights[i]->get_position()->x, lights[i]->get_position()->y, lights[i]->get_position()->z };
-        glLightfv(GL_LIGHT0, GL_POSITION, pos);
-		
-		/*core::vertex3* scale = (core::vertex3*)malloc(sizeof(core::vertex3));
-		scale->x = 1.0f;
-		scale->y = 1.0f;
-		scale->z = 1.0f;
-		scene::draw_sphere(lights[i]->get_position(), scale);
-		free(scale);*/
+		unsigned int light_num = GL_LIGHT0 + i;
+        float pos[] = { lights[i]->get_position()->x, lights[i]->get_position()->y, lights[i]->get_position()->z, 1.0f };
+		glLightfv(light_num, GL_POSITION, pos);
+		glLightfv(light_num, GL_AMBIENT, lights[i]->get_lambient());
+		glLightfv(light_num, GL_DIFFUSE, lights[i]->get_ldiffuse());
+		glLightfv(light_num, GL_SPECULAR, lights[i]->get_lspecular());
+		//glLightfv(light_num, GL_SPOT_DIRECTION, lights[i]->get_spot_direction());
+		//glLightf(light_num, GL_SPOT_CUTOFF, lights[i]->get_spot_cutoff());
+		glLightf(light_num, GL_CONSTANT_ATTENUATION, lights[i]->get_constant_attenuation());
+		glLightf(light_num, GL_LINEAR_ATTENUATION, lights[i]->get_linear_attenuation());
+		glLightf(light_num, GL_QUADRATIC_ATTENUATION, lights[i]->get_quadratic_attenuation());
 	}
 
 	if(scene::is_light) {
@@ -81,7 +94,8 @@ void scene::draw() {
 		glMaterialfv(GL_FRONT, GL_AMBIENT, scene::mambient);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, scene::mdiffuse);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, scene::mspecular);
-		glMaterialfv(GL_FRONT, GL_SHININESS, scene::mshininess);
+		//glMaterialfv(GL_FRONT, GL_SHININESS, scene::mshininess);
+		glMateriali(GL_FRONT, GL_SHININESS, 128);
 	}
 	else {
 		glDisable(GL_LIGHTING);
@@ -121,12 +135,9 @@ void scene::add_model(a2emodel* model) {
  */
 void scene::delete_model(a2emodel* model) {
 	unsigned int num = 0;
-	//cout << "getting number ..." << endl;
 	for(unsigned int i = 0; i < cmodels; i++) {
 		if(models[i] == model) {
-			//cout << "deleting model #" << i << endl;
 			//delete models[i];
-			//cout << "model deleted" << endl;
 			num = i;
 			i = cmodels;
 		}
@@ -135,13 +146,11 @@ void scene::delete_model(a2emodel* model) {
 			return;
 		}
 	}
-	//cout << "got number: " << num << endl;
 
 	for(unsigned int i = num; i < (cmodels-1); i++) {
 		models[i] = models[i+1];
 	}
 	models[(cmodels-1)] = NULL;
-	//cout << "objects repointed" << num << endl;
 
 	// decrease model count
 	cmodels--;
@@ -156,13 +165,23 @@ void scene::add_light(light* light) {
 		scene::is_light = true;
 	}
 
+	// num = 0x4000 (GL_LIGHT0) + current amount of lights
+	unsigned int light_num = GL_LIGHT0 + clights;
 	lights[clights] = light;
-	float pos[] = { lights[clights]->get_position()->x, lights[clights]->get_position()->y, lights[clights]->get_position()->z };
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lights[clights]->get_lambient());
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, lights[clights]->get_ldiffuse());
-	glLightfv(GL_LIGHT0, GL_SPECULAR, lights[clights]->get_lspecular());
-	glEnable(GL_LIGHT0);
+	float pos[] = { lights[clights]->get_position()->x, lights[clights]->get_position()->y, lights[clights]->get_position()->z, 1.0f };
+	glLightfv(light_num, GL_POSITION, pos);
+	glLightfv(light_num, GL_AMBIENT, lights[clights]->get_lambient());
+	glLightfv(light_num, GL_DIFFUSE, lights[clights]->get_ldiffuse());
+	glLightfv(light_num, GL_SPECULAR, lights[clights]->get_lspecular());
+	//glLightfv(light_num, GL_SPOT_DIRECTION, lights[clights]->get_spot_direction());
+	//glLightf(light_num, GL_SPOT_CUTOFF, lights[clights]->get_spot_cutoff());
+	//glLightf(light_num, GL_SPOT_EXPONENT, 25.0f);
+	// ( Kc + Kl*d + Kq*d*d )
+	glLightf(light_num, GL_CONSTANT_ATTENUATION, lights[clights]->get_constant_attenuation());
+    glLightf(light_num, GL_LINEAR_ATTENUATION, lights[clights]->get_linear_attenuation());
+    glLightf(light_num, GL_QUADRATIC_ATTENUATION, lights[clights]->get_quadratic_attenuation());
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
+	glEnable(light_num);
 
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -256,14 +275,4 @@ float* scene::get_mshininess() {
  */
 bool scene::get_light() {
 	return scene::is_light;
-}
-
-/*! for debugging purposes - draws a sphere
- *  @param pos the spheres position
- *  @param size the spheres size
- */
-void scene::draw_sphere(core::vertex3* pos, core::vertex3* size) {
-	/*scene::sphere->set_position(pos->x, pos->y, pos->z);
-	scene::sphere->set_scale(size->x, size->y, size->z);
-	scene::sphere->draw_model();*/
 }

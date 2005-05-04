@@ -44,7 +44,7 @@ gui_check::~gui_check() {
  */
 void gui_check::draw(unsigned int x, unsigned int y) {
 	gfx::rect* r1 = new gfx::rect();
-	gfx::pnt* p1 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
 	
 	g.pnt_to_rect(r1, gui_check::rectangle->x1 + x,
 		gui_check::rectangle->y1 + y,
@@ -71,7 +71,7 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 
 	if(gui_check::checked) {
 		// draw the check mark
-		gfx::pnt* p2 = new gfx::pnt();
+		core::pnt* p2 = new core::pnt();
 
 		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
 		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);

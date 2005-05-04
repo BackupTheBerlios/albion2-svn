@@ -27,7 +27,7 @@
 gui_list_item::gui_list_item() {
 	text = new char[256];
 
-	point = new gfx::pnt();
+	point = new core::pnt();
 
 	text_handler = NULL;
 }
@@ -79,7 +79,7 @@ unsigned int gui_list_item::get_id() {
 }
 
 //! returns the text starting point
-gfx::pnt* gui_list_item::get_point() {
+core::pnt* gui_list_item::get_point() {
 	return gui_list_item::point;
 }
 

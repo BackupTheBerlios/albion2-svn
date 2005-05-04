@@ -101,7 +101,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 		c--;
 	}
 
-	gfx::pnt* p1 = new gfx::pnt();
+	core::pnt* p1 = new core::pnt();
 	// just loop for as many items as we have
 	unsigned int loop = 0;
 	if(drawable_items > citems) {
@@ -307,7 +307,7 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 	}
 
 	gfx::rect* r = new gfx::rect();
-	gfx::pnt* pos = new gfx::pnt();
+	core::pnt* pos = new core::pnt();
 	pos->x = x;
 	pos->y = y;
 	r->x2 = gui_list::rectangle->x2 - 15;

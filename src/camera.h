@@ -56,7 +56,9 @@ public:
 	float get_rotation_speed();
 
 	void set_cam_input(bool state);
+	void set_mouse_input(bool state);
 	bool get_cam_input();
+	bool get_mouse_input();
 
 protected:
 	msg m;
@@ -73,6 +75,7 @@ protected:
 	float piover180;
 
 	bool cam_input;
+	bool mouse_input;
 };
 
 #endif

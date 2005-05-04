@@ -30,6 +30,7 @@ camera::camera() {
 	up_down = 0.0f;
 
 	camera::cam_input = true;
+	camera::mouse_input = true;
 
 	rotation_speed = 100.0f;
 }
@@ -90,19 +91,21 @@ void camera::run() {
 			position->z -= (float)cos(rotation->y * piover180) * 0.75f;
 		}
 	}
-	 
-	// calculate the rotation via the current mouse cursor position
-	int cursor_pos_x = 0;
-	int cursor_pos_y = 0;
-	SDL_GetMouseState((int*)&cursor_pos_x, (int*)&cursor_pos_y);
 
-	float xpos = (1.0f / (float)engine_handler->get_screen()->w) * (float)cursor_pos_x;
-	float ypos = (1.0f / (float)engine_handler->get_screen()->h) * (float)cursor_pos_y;
+	if(camera::mouse_input) {
+		// calculate the rotation via the current mouse cursor position
+		int cursor_pos_x = 0;
+		int cursor_pos_y = 0;
+		SDL_GetMouseState((int*)&cursor_pos_x, (int*)&cursor_pos_y);
 
-	if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
-		rotation->x += (0.5f - ypos) * rotation_speed;
-		rotation->y += (0.5f - xpos) * rotation_speed;
-		SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
+		float xpos = (1.0f / (float)engine_handler->get_screen()->w) * (float)cursor_pos_x;
+		float ypos = (1.0f / (float)engine_handler->get_screen()->h) * (float)cursor_pos_y;
+
+		if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
+			rotation->x += (0.5f - ypos) * rotation_speed;
+			rotation->y += (0.5f - xpos) * rotation_speed;
+			SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
+		}
 	}
 
 	if(rotation->x > 360.0f) {
@@ -170,10 +173,25 @@ void camera::set_cam_input(bool state) {
 	camera::cam_input = state;
 }
 
+/*! if mouse_input is set true then the cameras rotation is controlled via
+ *! the mouse - furthermore the mouse cursor is reset to (0.5, 0.5) every cycle.
+ *! if it's set to false nothing (no rotation) happens.
+ *  @param state the cam_input state
+ */
+void camera::set_mouse_input(bool state) {
+	camera::mouse_input = state;
+}
+
 /*! returns the cam_input bool
  */
 bool camera::get_cam_input() {
 	return camera::cam_input;
+}
+
+/*! returns the mouse_input bool
+ */
+bool camera::get_mouse_input() {
+	return camera::mouse_input;
 }
 
 /*! sets the cameras rotation speed to speed

@@ -40,6 +40,7 @@ using namespace std;
  * [VERTICES - 4 bytes * VERTEX COUNT]
  * [TEXTURE COUNT - 4 bytes]
  * [TEXTURE NAMES - 32 bytes * TEXTURE COUNT]
+ * [NORMAL COUNT - 4 bytes]
  * [OBJECT COUNT - 4 bytes]
  * [FOR EACH OBJECT COUNT]
  * 	[OBJECT NAME - 8 bytes]
@@ -47,6 +48,7 @@ using namespace std;
  * 	[TEXTURE VALUE - 4 bytes]
  * 	[INDICES - 4 bytes * INDEX COUNT]
  * 	[TEXTURE COORDINATES - 4 bytes * INDEX COUNT * 3]
+ * 	[NORMAL VERTICES - 4 bytes * INDEX COUNT * 3]
  * [END FOR]
  */
 
@@ -204,10 +206,13 @@ int main(int argc, char *argv[])
 			break;
 			case 'v':
 				if(line[1] == ' ') {
-                    vertex_count++;
+					vertex_count++;
 				}
 				else if(line[1] == 't') {
 					tex_vertex_count++;
+				}
+				else if(line[1] == 'n') {
+					normal_vertex_count++;
 				}
 				break;
 			case 'f':
@@ -231,6 +236,10 @@ int main(int argc, char *argv[])
 	texcords2 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
 	texcords3 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
 
+	normcords1 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
+	normcords2 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
+	normcords3 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
+
 	for(unsigned int i = 0; i < object_count; i++) {
 		indices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 		indices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
@@ -238,6 +247,9 @@ int main(int argc, char *argv[])
 		texindices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 		texindices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 		texindices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
+		normindices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
+		normindices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
+		normindices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 	}
 
 	tex_number = (unsigned int*)malloc(sizeof(unsigned int)*object_count);
@@ -245,6 +257,7 @@ int main(int argc, char *argv[])
 	unsigned int vc = 0;
 	unsigned int ic = 0;
 	unsigned int tc = 0;
+	unsigned int nc = 0;
 	unsigned int oc = 0;
 	bool is_first_obj = false;
 
@@ -309,6 +322,28 @@ int main(int argc, char *argv[])
 						tc++;
 					}
 					break;
+					case 'n': {
+						// tokenize(tm) the line
+						unsigned int x = 0;
+						//char* line_tok[8];
+						line_tok[x] = strtok(line, " ");
+						while(line_tok[x] != NULL) {
+							x++;
+							line_tok[x] = strtok(NULL, " ");
+						}
+
+						float flt;
+
+						flt = (float)atof(line_tok[1]);
+						memcpy(&normcords1[nc], &flt, 4);
+						flt = (float)atof(line_tok[2]);
+						memcpy(&normcords2[nc], &flt, 4);
+						flt = (float)atof(line_tok[3]);
+						memcpy(&normcords3[nc], &flt, 4);
+
+						nc++;
+					}
+					break;
 					default:
 						break;
 				}
@@ -334,6 +369,7 @@ int main(int argc, char *argv[])
 				}
 				indices1[oc][ic] = atoi(itok[0]) - 1;
 				texindices1[oc][ic] = atoi(itok[1]) - 1;
+				normindices1[oc][ic] = atoi(itok[2]) - 1;
 
 				// and the same again ...
 				y = 0;
@@ -344,6 +380,7 @@ int main(int argc, char *argv[])
 				}
 				indices2[oc][ic] = atoi(itok[0]) - 1;
 				texindices2[oc][ic] = atoi(itok[1]) - 1;
+				normindices2[oc][ic] = atoi(itok[2]) - 1;
 
 				// ... and again ...
 				y = 0;
@@ -354,6 +391,7 @@ int main(int argc, char *argv[])
 				}
 				indices3[oc][ic] = atoi(itok[0]) - 1;
 				texindices3[oc][ic] = atoi(itok[1]) - 1;
+				normindices3[oc][ic] = atoi(itok[2]) - 1;
 
 				ic++;
 			}
@@ -443,6 +481,12 @@ int main(int argc, char *argv[])
 	for(unsigned int i = 0; i < texture_count; i++) {
 		afile.write(tex_names[i], 32);
 	}
+
+	tmp[0] = (char)(normal_vertex_count >> 24) & 0xFF;
+	tmp[1] = (char)(normal_vertex_count >> 16) & 0xFF;
+	tmp[2] = (char)(normal_vertex_count >> 8) & 0xFF;
+	tmp[3] = (char)(normal_vertex_count & 0xFF);
+	afile.write(tmp, 4);
 
 	tmp[0] = (object_count >> 24) & 0xFF;
 	tmp[1] = (object_count >> 16) & 0xFF;
@@ -540,11 +584,67 @@ int main(int argc, char *argv[])
 			tmp[0] = (char)(texcords3[texindices3[i][j]] & 0xFF);
 			afile.write(tmp, 4);
 		}
+
+		for(unsigned int j = 0; j < index_count[i]; j++) {
+			tmp[3] = (char)(normcords1[normindices1[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords1[normindices1[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords1[normindices1[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords1[normindices1[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords2[normindices1[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords2[normindices1[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords2[normindices1[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords2[normindices1[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords3[normindices1[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords3[normindices1[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords3[normindices1[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords3[normindices1[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords1[normindices2[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords1[normindices2[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords1[normindices2[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords1[normindices2[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords2[normindices2[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords2[normindices2[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords2[normindices2[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords2[normindices2[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords3[normindices2[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords3[normindices2[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords3[normindices2[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords3[normindices2[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords1[normindices3[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords1[normindices3[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords1[normindices3[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords1[normindices3[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords2[normindices3[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords2[normindices3[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords2[normindices3[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords2[normindices3[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+
+			tmp[3] = (char)(normcords3[normindices3[i][j]] >> 24) & 0xFF;
+			tmp[2] = (char)(normcords3[normindices3[i][j]] >> 16) & 0xFF;
+			tmp[1] = (char)(normcords3[normindices3[i][j]] >> 8) & 0xFF;
+			tmp[0] = (char)(normcords3[normindices3[i][j]] & 0xFF);
+			afile.write(tmp, 4);
+		}
 	}
 	
 	afile.close();
 
-	cout << vertex_count << " vertices, " << total_index_count << " indices and " << total_index_count*3 << " texture vertices successfully converted!" << endl;
+	cout << vertex_count << " vertices, " << total_index_count << " indices, " << total_index_count*3 << " texture vertices and " << normal_vertex_count << " normal vertices successfully converted!" << endl;
 
 	return 0;
 }
