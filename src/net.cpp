@@ -407,3 +407,15 @@ void net::close_socket(UDPsocket &sock) {
 	SDLNet_UDP_Close(sock);
 	sock = NULL;
 }
+
+/*! deletes a client of the server
+ *  @param num the clients num
+ */
+void net::delete_client(unsigned int num) {
+	sprintf(clients[num].name, "unknown");
+	client* ctmp = &clients[num];
+	for(unsigned int i = num; i < MAX_CLIENTS; i++) {
+		clients[i] = clients[i+1];
+	}
+	clients[(MAX_CLIENTS-1)] = *ctmp;
+}

@@ -24,7 +24,7 @@
  *  @param z the lights z position
  */
 light::light(float x, float y, float z) {
-	light::position = new core::vertex3();
+	light::position = new vertex3();
 	light::position->x = x;
 	light::position->y = y;
 	light::position->z = z;
@@ -48,7 +48,7 @@ light::light(float x, float y, float z) {
 
 /*! creates a new light object
  */
-light::light(core::vertex3* pos) {
+light::light(vertex3* pos) {
 	light::light(pos->x, pos->y, pos->z);
 }
 
@@ -142,7 +142,7 @@ void light::set_quadratic_attenuation(float quadratic) {
 
 /*! returns the lights position
  */
-core::vertex3* light::get_position() {
+vertex3* light::get_position() {
 	return light::position;
 }
 

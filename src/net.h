@@ -59,6 +59,8 @@ public:
 	void close_socket(TCPsocket &sock);
 	void close_socket(UDPsocket &sock);
 
+	void delete_client(unsigned int num);
+
 	//! protocol type
 	enum PTYPE
 	{

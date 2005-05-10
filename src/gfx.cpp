@@ -60,7 +60,7 @@ void gfx::draw_line(SDL_Surface* surface, core::pnt* point1,
  *  @param v2 the position of the second vertex
  *  @param color the color of the line
  */
-void gfx::draw_3d_line(core::vertex3* v1, core::vertex3* v2, unsigned int color) {
+void gfx::draw_3d_line(vertex3* v1, vertex3* v2, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	glBegin(GL_LINES);

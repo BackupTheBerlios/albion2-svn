@@ -72,7 +72,7 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 	switch(type) {
 		case ode_object::TRIMESH: {
 			// initialize pointers to our a2emodel stuff
-			core::vertex3* vertices = model->get_vertices();
+			vertex3* vertices = model->get_vertices();
 			core::index* indices = model->get_indices();
 			ode_object::vertex_count = model->get_vertex_count();
 			ode_object::index_count = model->get_index_count();

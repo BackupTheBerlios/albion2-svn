@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __WORLD_SERVER_H__
-#define __WORLD_SERVER_H__
+#ifndef __WORLD_CLIENT_H__
+#define __WORLD_CLIENT_H__
 
 #ifdef WIN32
 #include <windows.h>
@@ -62,7 +62,7 @@ struct client {
 	unsigned int id;
 	char* name;
 	unsigned int status;
-	core::vertex3* position;
+	vertex3* position;
 	float rotation;
 	unsigned int host;
 	unsigned int port;
@@ -103,6 +103,8 @@ bool done = false;
 SDL_Event ievent;
 
 client* clients;
+
+gui_style::COLOR_SCHEME scheme = gui_style::BLUE;
 
 unsigned int refresh_time;
 unsigned int name_time;

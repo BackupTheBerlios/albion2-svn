@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="a2e"
-	ProjectGUID="{1E526D20-C298-234D-8FE6-9024F84CD860}"
+	ProjectGUID="{73937C8A-930A-B34A-ABFB-4DAA1D014B9C}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -118,6 +118,12 @@
 	</Configurations>
 	<Files>
 		<File
+			RelativePath="a2eanim.h">
+		</File>
+		<File
+			RelativePath="a2ematerial.h">
+		</File>
+		<File
 			RelativePath="a2emodel.h">
 		</File>
 		<File
@@ -190,13 +196,25 @@
 			RelativePath="ode_object.h">
 		</File>
 		<File
+			RelativePath="quaternion.h">
+		</File>
+		<File
 			RelativePath="scene.h">
 		</File>
 		<File
 			RelativePath="shadow.h">
 		</File>
 		<File
+			RelativePath="vertex3.h">
+		</File>
+		<File
 			RelativePath="win_dll_export.h">
+		</File>
+		<File
+			RelativePath="a2eanim.cpp">
+		</File>
+		<File
+			RelativePath="a2ematerial.cpp">
 		</File>
 		<File
 			RelativePath="a2emodel.cpp">
@@ -271,10 +289,16 @@
 			RelativePath="ode_object.cpp">
 		</File>
 		<File
+			RelativePath="quaternion.cpp">
+		</File>
+		<File
 			RelativePath="scene.cpp">
 		</File>
 		<File
 			RelativePath="shadow.cpp">
+		</File>
+		<File
+			RelativePath="vertex3.cpp">
 		</File>
 	</Files>
 	<Globals>

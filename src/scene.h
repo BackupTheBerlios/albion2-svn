@@ -23,6 +23,7 @@
 #include "core.h"
 #include "engine.h"
 #include "a2emodel.h"
+#include "a2eanim.h"
 #include "light.h"
 #include <math.h>
 using namespace std;
@@ -47,6 +48,7 @@ public:
 
 	void draw();
 	void add_model(a2emodel* model);
+	void add_model(a2eanim* model);
 	void delete_model(a2emodel* model);
 	void add_light(light* light);
 
@@ -57,7 +59,7 @@ public:
 	void set_mshininess(float* mshininess);
 	void set_light(bool state);
 
-	core::vertex3* get_position();
+	vertex3* get_position();
 	float* get_mambient();
 	float* get_mdiffuse();
 	float* get_mspecular();
@@ -68,10 +70,13 @@ protected:
 	msg m;
 	core c;
 
-	core::vertex3* position;
+	vertex3* position;
 
 	unsigned int cmodels;
 	a2emodel* models[256];
+
+	unsigned int camodels;
+	a2eanim* amodels[256];
 
 	unsigned int clights;
 	light* lights[8];

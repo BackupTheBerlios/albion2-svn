@@ -63,7 +63,7 @@ public:
 	void draw_point(SDL_Surface* surface, core::pnt* point, unsigned int color);
 
 	void draw_line(SDL_Surface* surface, core::pnt* point1, core::pnt* point2, unsigned int color);
-	void draw_3d_line(core::vertex3* v1, core::vertex3* v2, unsigned int color);
+	void draw_3d_line(vertex3* v1, vertex3* v2, unsigned int color);
 
 	void draw_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color);
 	void draw_2colored_rectangle(SDL_Surface* surface, gfx::rect* rectangle, unsigned int color1, unsigned int color2);

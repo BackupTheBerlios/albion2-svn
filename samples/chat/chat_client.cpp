@@ -291,7 +291,7 @@ void load_settings() {
 					else if(strcmp(fline_tok[1], "blue") == 0) {
 						scheme = gui_style::BLUE;
 					}
-					else if(strcmp(fline_tok[1], "blachwhite") == 0) {
+					else if(strcmp(fline_tok[1], "blackwhite") == 0) {
 						scheme = gui_style::BLACKWHITE;
 					}
 				}

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="chat_server"
-	ProjectGUID="{29D17DC9-D42A-3744-BF40-92EBA0684491}"
+	ProjectGUID="{EEB4C5A9-E5CC-374C-9D01-3FAFE2143619}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

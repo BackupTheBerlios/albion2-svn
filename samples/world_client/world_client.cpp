@@ -30,39 +30,46 @@ int HandleServerData(char *data) {
 	int used = 0;
 	switch ((data[0] & 0xFF)) {
 		case net::CDAT: {
-			max_clients = (data[1] & 0xFF);
-			client_num = (data[2] & 0xFF);
+			if(!is_initialized) {
+				max_clients = (data[1] & 0xFF);
+				client_num = (data[2] & 0xFF);
 
-			is_initialized = true;
+				is_initialized = true;
 
-			players = new a2emodel[max_clients];
+				players = new a2emodel[max_clients];
 
-			// init clients
-			clients = new client[max_clients];
-			for(unsigned int i = 0; i < max_clients; i++) {
-				clients[i].id = 0;
-				clients[i].name = new char[32];
-				sprintf(clients[i].name, "unknown");
-				clients[i].status = 0;
-				clients[i].position = new core::vertex3();
-				clients[i].position->x = 0.0f;
-				clients[i].position->y = 0.0f;
-				clients[i].position->z = 0.0f;
-				clients[i].rotation = 0.0f;
-				clients[i].host = 0;
-				clients[i].port = 0;
-				clients[i].text_point = new core::pnt();
-				clients[i].text_point->x = 10;
-				clients[i].text_point->y = 10;
-				clients[i].text = agui.add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
-				// we don't want to show up the text already
-				clients[i].text->set_notext();
+				// init clients
+				clients = new client[max_clients];
+				for(unsigned int i = 0; i < max_clients; i++) {
+					clients[i].id = 0;
+					clients[i].name = new char[32];
+					sprintf(clients[i].name, "unknown");
+					clients[i].status = 0;
+					clients[i].position = new vertex3();
+					clients[i].position->x = 0.0f;
+					clients[i].position->y = 0.0f;
+					clients[i].position->z = 0.0f;
+					clients[i].rotation = 0.0f;
+					clients[i].host = 0;
+					clients[i].port = 0;
+					clients[i].text_point = new core::pnt();
+					clients[i].text_point->x = 10;
+					clients[i].text_point->y = 10;
+					clients[i].text = agui.add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
+					// we don't want to show up the text already
+					clients[i].text->set_notext();
 
-				players[i].load_model("../data/player.a2m");
-				players[i].set_visible(false);
-				sce.add_model(&players[i]);
+					players[i].load_model("../data/player.a2m");
+					players[i].set_visible(false);
+					sce.add_model(&players[i]);
+				}
+				cout << "rcv cdat size: " << 3 << endl;
+				used = 3;
 			}
-			used = 3;
+			else {
+				m.print(msg::MDEBUG, "world_client.cpp", "network and clients are already initialized");
+				used = 3;
+			}
 			break;
 		}
 		case net::DAT: {
@@ -70,7 +77,7 @@ int HandleServerData(char *data) {
 				case DT_MSG: {
 					// get data package length
 					unsigned int plen = (unsigned int)((data[2] & 0xFF)*0xFF0000 + (data[3] & 0xFF)*0xFF00 + (data[4] & 0xFF)*0xFF + (data[5] & 0xFF));
-					char* message = new char[plen];
+					char* message = new char[plen+1];
 					unsigned int j;
 					for(j = 0; j < plen; j++) {
 						message[j] = (data[j+7] & 0xFF);
@@ -78,20 +85,30 @@ int HandleServerData(char *data) {
 					message[j] = 0;
 
 					// add message to list box
+					cout << "adding message ..." << endl;
 					add_msg(plen + 2 + (unsigned int)strlen(clients[(data[6] & 0xFF)].name), "%s: %s", clients[(data[6] & 0xFF)].name, message);
+					cout << "message added - deleting message data!" << endl;
 					delete message;
+					cout << "message data deleted!" << endl;
 
-					used = 7 + plen;
+					cout << "rcv dt_msg size: " << 7 + plen + 1 << endl;
+					used = 7 + plen + 1;
+					cout << "DT_MSG end!" << endl;
 					break;
 				}
 				case DT_UPDATE: {
 					unsigned int cnum = (data[2] & 0xFF);
-					memcpy(&clients[cnum].position->x, &data[3], 4);
-					memcpy(&clients[cnum].position->y, &data[3+4], 4);
-					memcpy(&clients[cnum].position->z, &data[3+8], 4);
-					// -- not needed -- don't reset the rotation of our own client, b/c
-					// it can cause jerking/lagging ...
-					memcpy(&clients[cnum].rotation, &data[3+12], 4);
+					if(clients[cnum].status != 0) {
+						memcpy(&clients[cnum].position->x, &data[3], 4);
+						memcpy(&clients[cnum].position->y, &data[3+4], 4);
+						memcpy(&clients[cnum].position->z, &data[3+8], 4);
+						// -- not needed -- don't reset the rotation of our own client, b/c
+						// it can cause jerking/lagging ...
+						memcpy(&clients[cnum].rotation, &data[3+12], 4);
+					}
+					else {
+						m.print(msg::MDEBUG, "world_client.cpp", "client doesn't exist anymore (update routine)");
+					}
 
 					used = 3 + 16;
 					break;
@@ -107,6 +124,7 @@ int HandleServerData(char *data) {
 			cur_client = (data[1] & 0xFF);
 			if((cur_client >= max_clients) || clients[cur_client].status == 1) {
 				// client doesn't exist / all client "ports" are in use -> break
+				m.print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already initalized! (add routine)", cur_client);
 				break;
 			}
 
@@ -131,36 +149,47 @@ int HandleServerData(char *data) {
 			cplayers++;
 			players[cur_client].set_visible(true);
 
+			cout << "rcv add size: " << 9 + len << endl;
 			used = 9 + len;
 			break;
 		}
 		case net::DEL: {
-			unsigned int cur_client;
-
 			// which client should be deleted?
-			cur_client = (data[1] & 0xFF);
-			if ((cur_client >= max_clients) || clients[cur_client].status != 1) {
+			unsigned int cur_client = (data[1] & 0xFF);
+			if((cur_client >= max_clients) || clients[cur_client].status != 1) {
 				// client doesn't exist / all client "ports" are in use -> break
+				m.print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already deleted! (delete routine)", cur_client);
 				break;
 			}
+
+			// delete player data
 			clients[cur_client].status = 0;
+			clients[cur_client].text->set_notext();
+			sprintf(clients[cur_client].name, "unknown");
+			players[cur_client].set_visible(false);
+
+			// TODO: RESORT CLIENT DATA!!!
 
 			// print out what happened
 			m.print(msg::MDEBUG, "world_client.cpp", "lost client %d: %s", cur_client, clients[cur_client].name);
 		}
+		cout << "rcv delete size: " << 2 << endl;
 		used = 2;
 		break;
 		case net::KICK: {
 			// there are some errors with that, but i absolutely dunno y ...
 			m.print(msg::MDEBUG, "world_client.cpp", "sorry, but the server is full!");
 		}
+		cout << "rcv kick size: " << 1 << endl;
 		used = 1;
 		break;
 		default: {
 			// unknown package type
-			m.print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type");
+			m.print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type (%u)! - skipping byte",
+				(unsigned int)(data[0] & 0xFF));
 		}
-		used = 0;
+		cout << "rcv unknown size: " << 1 << endl;
+		used = 1;
 		break;
 	}
 	return used;
@@ -168,11 +197,11 @@ int HandleServerData(char *data) {
 
 void HandleServer(void) {
 	char* data = new char[512];
-	int pos, len, used;
+	unsigned int pos, len, used;
 
 	// checks if client is still connected to the server
-	len = SDLNet_TCP_Recv(n.tcp_ssock, (char*)data, 512);
-	if (len <= 0) {
+	len = SDLNet_TCP_Recv(n.tcp_ssock, data, 512);
+	if(len <= 0) {
 		n.close_socket(n.tcp_ssock);
 	}
 	else {
@@ -182,7 +211,8 @@ void HandleServer(void) {
 			pos += used;
 			len -= used;
 			if(used == 0) {
-				// data was lost ...
+				// lost data ...
+				m.print(msg::MDEBUG, "world_client.cpp", "lost data - server down or disconnect? (handle server routine)");
 				len = 0;
 			}
 		}
@@ -211,6 +241,7 @@ void send_msg() {
 			data[i+7] = msg[i];
 		}
 		data[i+7] = 0;
+		cout << "dt_msg size: " << length+1 + 7 << endl;
 		if(n.tcp_ssock != NULL) {
 			SDLNet_TCP_Send(n.tcp_ssock, data, length+1 + 7);
 		}
@@ -338,7 +369,6 @@ void add_msg(unsigned int length, char* msg, ...) {
 		lid++;
 
 		delete tmp;
-		//delete tokens;
 	}
 	else {
 		// add message to list box
@@ -360,19 +390,20 @@ void update() {
 	char* data = new char[7];
 	data[0] = net::DAT;
 	data[1] = DT_UPDATE;
-	data[2] = client_num;
-	memcpy(&data[3], &cam.get_rotation()->y, 4);
+	memcpy(&data[2], &cam.get_rotation()->y, 4);
 
 	// send data
 	if(n.tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n.tcp_ssock, data, 7);
+        SDLNet_TCP_Send(n.tcp_ssock, data, 6);
 	}
 	delete data;
 
 	// update players data
 	for(unsigned int i = 0; i < cplayers; i++) {
-		players[i].set_position(clients[i].position->x, clients[i].position->y - 2.0f, clients[i].position->z);
-		players[i].set_rotation(0.0f, clients[i].rotation - 90.0f, 0.0f);
+		if(clients[i].status != 0) {
+			players[i].set_position(clients[i].position->x, clients[i].position->y - 2.0f, clients[i].position->z);
+			players[i].set_rotation(0.0f, clients[i].rotation - 90.0f, 0.0f);
+		}
 	}
 
 	// update the players cam
@@ -392,12 +423,12 @@ void move(MOVE_TYPE type) {
 
 	data[0] = net::DAT;
 	data[1] = DT_MOVE;
-	data[2] = client_num;
-	data[3] = type;
+	//data[2] = client_num;
+	data[2] = type;
 
 	// send data
 	if(n.tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n.tcp_ssock, data, 4);
+        SDLNet_TCP_Send(n.tcp_ssock, data, 3);
 	}
 	delete data;
 }
@@ -441,17 +472,17 @@ void init() {
 					port = atoi(fline_tok[1]);
 				}
 				// get color scheme
-				/*else if(strcmp(fline_tok[0], "scheme") == 0) {
+				else if(strcmp(fline_tok[0], "scheme") == 0) {
 					if(strcmp(fline_tok[1], "windows") == 0) {
 						scheme = gui_style::WINDOWS;
 					}
 					else if(strcmp(fline_tok[1], "blue") == 0) {
 						scheme = gui_style::BLUE;
 					}
-					else if(strcmp(fline_tok[1], "blachwhite") == 0) {
+					else if(strcmp(fline_tok[1], "blackwhite") == 0) {
 						scheme = gui_style::BLACKWHITE;
 					}
-				}*/
+				}
 				// get width
 				else if(strcmp(fline_tok[0], "width") == 0) {
 					width = atoi(fline_tok[1]);
@@ -472,9 +503,11 @@ void init() {
 
 void update_names() {
 	for(unsigned int i = 0; i < cplayers; i++) {
-		// set new player text position
-		c.get_2d_from_3d(clients[i].position, clients[i].text_point);
-		clients[i].text_point->y -= 50;
+		if(clients[i].status != 0) {
+			// set new player text position
+			c.get_2d_from_3d(clients[i].position, clients[i].text_point);
+			clients[i].text_point->y -= 50;
+		}
 	}
 }
 
@@ -482,14 +515,16 @@ void draw_names() {
 	e.start_2d_draw();
 	gfx::rect* r = new gfx::rect();
 	for(unsigned int i = 0; i < cplayers; i++) {
-		core::pnt* p = clients[i].text_point;
-		r->x1 = p->x - 4;
-		r->y1 = p->y - 4;
+		if(clients[i].status != 0) {
+			core::pnt* p = clients[i].text_point;
+			r->x1 = p->x - 4;
+			r->y1 = p->y - 4;
 
-		r->x2 = p->x + clients[i].text->get_text_width() + 4;
-		r->y2 = p->y + clients[i].text->get_text_height() + 4;
-		agfx.draw_filled_rectangle(sf, r, 0xFFFFFF);
-		agfx.draw_rectangle(sf, r, 0x000000);
+			r->x2 = p->x + clients[i].text->get_text_width() + 4;
+			r->y2 = p->y + clients[i].text->get_text_height() + 4;
+			agfx.draw_filled_rectangle(sf, r, 0xFFFFFF);
+			agfx.draw_rectangle(sf, r, 0x000000);
+		}
 	}
 	delete r;
 	e.stop_2d_draw();
@@ -506,7 +541,7 @@ int main(int argc, char *argv[])
 	e.set_cursor_visible(false);
 
 	// set a color scheme (blue)
-	e.set_color_scheme(gui_style::BLUE);
+	e.set_color_scheme(scheme);
 	sf = e.get_screen();
 
 	// initialize the a2e events
@@ -635,6 +670,21 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		while(aevent.is_gui_event()) {
+			switch(aevent.get_gui_event().type) {
+				case event::BUTTON_PRESSED:
+					switch(aevent.get_gui_event().id) {
+						case 103: {
+							if(control_state == 1) { send_msg(); }
+						}
+						break;
+						default:
+							break;
+					}
+					break;
+			}
+		}
+
 		if(is_networking) {
 			// client stuff
 			SDLNet_CheckSockets(n.socketset, 0);
@@ -694,7 +744,6 @@ int main(int argc, char *argv[])
 	}
 
 	delete clients;
-
 	delete client_name;
 	delete server;
 

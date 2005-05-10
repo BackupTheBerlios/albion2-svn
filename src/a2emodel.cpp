@@ -25,17 +25,17 @@ using namespace std;
 /*! there is no function currently
  */
 a2emodel::a2emodel() {
-	a2emodel::position = new core::vertex3();
+	a2emodel::position = new vertex3();
 	a2emodel::position->x = 0.0f;
 	a2emodel::position->y = 0.0f;
 	a2emodel::position->z = 0.0f;
 
-	a2emodel::scale = new core::vertex3();
+	a2emodel::scale = new vertex3();
 	a2emodel::scale->x = 0.0f;
 	a2emodel::scale->y = 0.0f;
 	a2emodel::scale->z = 0.0f;
 
-	a2emodel::rotation = new core::vertex3();
+	a2emodel::rotation = new vertex3();
 	a2emodel::rotation->x = 0.0f;
 	a2emodel::rotation->y = 0.0f;
 	a2emodel::rotation->z = 0.0f;
@@ -92,7 +92,7 @@ a2emodel::~a2emodel() {
 
 /*! draws the model
  */
-void a2emodel::draw_model() {
+void a2emodel::draw() {
 	if(a2emodel::visible) {
 		glPushMatrix();
 		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
@@ -291,7 +291,7 @@ void a2emodel::load_model(char* filename) {
 
 	// create vertices
 	char vertex[4];
-	vertices = new core::vertex3[vertex_count];
+	vertices = new vertex3[vertex_count];
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		file.get_block(vertex, 4);
 		memcpy(&vertices[i].x, vertex, 4);
@@ -494,7 +494,7 @@ void a2emodel::set_position(float x, float y, float z) {
 
 /*! returns the position of the model
  */
-core::vertex3* a2emodel::get_position() {
+vertex3* a2emodel::get_position() {
 	return a2emodel::position;
 }
 
@@ -520,7 +520,7 @@ void a2emodel::set_scale(float x, float y, float z) {
 
 /*! returns the scale of the model
  */
-core::vertex3* a2emodel::get_scale() {
+vertex3* a2emodel::get_scale() {
 	return a2emodel::scale;
 }
 
@@ -537,7 +537,7 @@ void a2emodel::set_rotation(float x, float y, float z) {
 
 /*! returns the rotation of the model
  */
-core::vertex3* a2emodel::get_rotation() {
+vertex3* a2emodel::get_rotation() {
 	return a2emodel::rotation;
 }
 
@@ -551,7 +551,7 @@ void a2emodel::set_texture(GLuint texture, unsigned int num) {
 
 /*! returns a pointer to the vertices
  */
-core::vertex3* a2emodel::get_vertices() {
+vertex3* a2emodel::get_vertices() {
 	return a2emodel::vertices;
 }
 

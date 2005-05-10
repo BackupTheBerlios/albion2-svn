@@ -49,8 +49,8 @@ public:
 
 	void set_position(float x, float y, float z);
 	void set_rotation(float x, float y, float z);
-	core::vertex3* get_position();
-	core::vertex3* get_rotation();
+	vertex3* get_position();
+	vertex3* get_rotation();
 
 	void set_rotation_speed(float speed);
 	float get_rotation_speed();
@@ -67,8 +67,8 @@ protected:
 	event* event_handler;
 	engine* engine_handler;
 
-	core::vertex3* position;
-	core::vertex3* rotation;
+	vertex3* position;
+	vertex3* rotation;
 	float up_down;
 	float rotation_speed;
 

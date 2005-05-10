@@ -40,7 +40,7 @@ class A2E_API light
 {
 public:
 	light(float x, float y, float z);
-	light(core::vertex3* pos);
+	light(vertex3* pos);
 	~light();
 
 	void set_position(float x, float y, float z);
@@ -54,7 +54,7 @@ public:
 	void set_linear_attenuation(float linear);
 	void set_quadratic_attenuation(float quadratic);
 
-	core::vertex3* get_position();
+	vertex3* get_position();
 	float* get_lambient();
 	float* get_ldiffuse();
 	float* get_lspecular();
@@ -69,7 +69,7 @@ protected:
 	msg m;
 	core c;
 
-	core::vertex3* position;
+	vertex3* position;
 
 	float* lambient;
 	float* ldiffuse;

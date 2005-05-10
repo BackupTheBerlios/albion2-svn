@@ -67,3 +67,57 @@ char file_io::get_char() {
 	file_io::filestream.get(c);
 	return c;
 }
+
+/*! reads a single int from the current file input stream and returns it
+ */
+int file_io::get_int() {
+	int i = 0;
+	char* tmp = new char[4];
+	file_io::filestream.read(tmp, 4);
+	i = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
+	delete tmp;
+
+	return i;
+}
+
+/*! reads a single unsigned int from the current file input stream and returns it
+ */
+unsigned int file_io::get_uint() {
+	unsigned int u = 0;
+	char* tmp = new char[4];
+	file_io::filestream.read(tmp, 4);
+	u = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
+	delete tmp;
+
+	return u;
+}
+
+/*! reads a single float from the current file input stream and returns it
+ */
+float file_io::get_float() {
+	float f = 0.0f;
+	char* tmp = new char[4];
+	file_io::filestream.read(tmp, 4);
+	memcpy(&f, tmp, 4);
+	delete tmp;
+
+	return f;
+}
+
+/*! returns the filesize
+ */
+unsigned int file_io::get_filesize() {
+	// get current get pointer position
+	unsigned int cur_position = file_io::filestream.tellg();
+
+	// get the file size
+	file_io::filestream.seekg(0, ios::end);
+	unsigned int size = file_io::filestream.tellg();
+	file_io::filestream.seekg(0, ios::beg);
+
+	// reset get pointer position
+	file_io::filestream.seekg(cur_position, ios::beg);
+
+	// return file size
+	return size;
+}

@@ -23,7 +23,7 @@
 scene::scene() {
 	scene::cmodels = 0;
 	scene::clights = 0;
-	scene::position = new core::vertex3();
+	scene::position = new vertex3();
 	scene::position->x = 0.0f;
 	scene::position->y = 0.0f;
 	scene::position->z = 0.0f;
@@ -111,7 +111,11 @@ void scene::draw() {
 	//LightModelfv(LIGHT_MODEL_AMBIENT, &globalAmbient);
 
 	for(unsigned int i = 0; i < cmodels; i++) {
-		models[i]->draw_model();
+		models[i]->draw();
+	}
+
+	for(unsigned int i = 0; i < camodels; i++) {
+		amodels[i]->draw();
 	}
 
 	/*glDepthMask(0);
@@ -122,12 +126,20 @@ void scene::draw() {
 
 }
 
-/*! adds a model to the scene
+/*! adds a static model to the scene
  *  @param model pointer to the model
  */
 void scene::add_model(a2emodel* model) {
 	models[cmodels] = model;
 	cmodels++;
+}
+
+/*! adds a dynamic model to the scene
+ *  @param model pointer to the model
+ */
+void scene::add_model(a2eanim* model) {
+	amodels[camodels] = model;
+	camodels++;
 }
 
 /*! removes a model from the scene
@@ -243,7 +255,7 @@ void scene::set_light(bool state) {
 
 /*! returns the scenes position
  */
-core::vertex3* scene::get_position() {
+vertex3* scene::get_position() {
 	return scene::position;
 }
 

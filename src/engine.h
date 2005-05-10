@@ -72,7 +72,7 @@ public:
 	bool resize_window();
 
 	void set_position(float xpos, float ypos, float zpos);
-	core::vertex3* get_position();
+	vertex3* get_position();
 
 	void set_cursor_visible(bool state);
 	bool get_cursor_visible();
@@ -85,7 +85,7 @@ protected:
 	gui_style gstyle;
 	shadow shd;
 
-	core::vertex3* position;
+	vertex3* position;
 
 	bool cursor_visible;
 };

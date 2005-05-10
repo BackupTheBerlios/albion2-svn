@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="world_client"
-	ProjectGUID="{6FB45ABD-28E0-B14D-AE1D-4C7244CEF0ED}"
+	ProjectGUID="{21E7E313-92DB-1D44-8E23-872C49389CEA}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

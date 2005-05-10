@@ -21,8 +21,8 @@
 /*! there is no function currently
  */
 camera::camera() {
-	camera::position = new core::vertex3();
-	camera::rotation = new core::vertex3();
+	camera::position = new vertex3();
+	camera::rotation = new vertex3();
 
 	// 2 pi / 360° = pi / 180
 	piover180 = (float)PI / 180.0f;
@@ -154,13 +154,13 @@ void camera::set_rotation(float x, float y, float z) {
 
 /*! returns the position of the camera
  */
-core::vertex3* camera::get_position() {
+vertex3* camera::get_position() {
 	return camera::position;
 }
 
 /*! returns the rotation of the camera
  */
-core::vertex3* camera::get_rotation() {
+vertex3* camera::get_rotation() {
 	return camera::rotation;
 }
 

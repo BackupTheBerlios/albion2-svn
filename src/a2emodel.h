@@ -31,6 +31,7 @@
 #include <GL/glu.h>
 #include "msg.h"
 #include "core.h"
+#include "vertex3.h"
 #include "file_io.h"
 using namespace std;
 
@@ -53,16 +54,16 @@ public:
 	~a2emodel();
 
 	void load_model(char* filename);
-	void draw_model();
+	void draw();
 	void load_textures();
 	void set_position(float x, float y, float z);
-	core::vertex3* get_position();
+	vertex3* get_position();
 	void set_scale(float x, float y, float z);
-	core::vertex3* get_scale();
+	vertex3* get_scale();
 	void set_rotation(float x, float y, float z);
-	core::vertex3* get_rotation();
+	vertex3* get_rotation();
 
-	core::vertex3* get_vertices();
+	vertex3* get_vertices();
 	core::index* get_indices();
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
@@ -95,7 +96,7 @@ protected:
 	char model_type[9];
 	char model_name[9];
 	unsigned int vertex_count;
-	core::vertex3* vertices;
+	vertex3* vertices;
 	unsigned int texture_count;
 	char* tex_names[MAX_OBJS];
 	unsigned int normal_count;
@@ -109,9 +110,9 @@ protected:
 
 	GLuint textures[MAX_OBJS];
 
-	core::vertex3* position;
-	core::vertex3* scale;
-	core::vertex3* rotation;
+	vertex3* position;
+	vertex3* scale;
+	vertex3* rotation;
 
 	core::aabbox* bbox;
 

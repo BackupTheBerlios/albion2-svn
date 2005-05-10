@@ -37,6 +37,7 @@ void send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	data[8] = nm;
 	data[9+nm] = 0;
 	memcpy(&data[9], n.clients[snd_client].name, nm);
+	cout << "add size: " << 9+nm << endl;
 	SDLNet_TCP_Send(n.clients[rcv_client].sock, data, 9+nm);
 
 	delete data;
@@ -49,6 +50,7 @@ void handle_client(unsigned int cur_client) {
 
 	// checks if connection has been closed
 	if(SDLNet_TCP_Recv(n.clients[cur_client].sock, data, 512) <= 0) {
+		cout << "deleting routine ..." << endl;
         m.print(msg::MDEBUG, "world_server.cpp", "closing %s socket (%d)",
 			n.clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
@@ -58,6 +60,7 @@ void handle_client(unsigned int cur_client) {
 			data[1] = cur_client;
 			for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 				if(n.clients[i].is_active) {
+					cout << "delete size: " << 2 << endl;
 					SDLNet_TCP_Send(n.clients[i].sock, data, 2);
 				}
 			}
@@ -67,8 +70,11 @@ void handle_client(unsigned int cur_client) {
 
 		// close socket
 		n.close_socket(n.clients[cur_client].sock);
+		n.delete_client(cur_client);
 	}
 	else {
+		cout << "receiving routine ..." << endl;
+		cout << (unsigned int)(data[0] & 0xFF) << "-" << (unsigned int)(data[1] & 0xFF) << "-" << (unsigned int)(data[2] & 0xFF) << endl;
 		switch(data[0]) {
 			case net::NEW: {
 				// active connection
@@ -77,6 +83,7 @@ void handle_client(unsigned int cur_client) {
 				cdata[0] = net::CDAT;
 				cdata[1] = MAX_CLIENTS;
 				cdata[2] = (cplayers & 0xFF); // the clients number/id
+				cout << "cdat size: " << 3 << endl;
 				SDLNet_TCP_Send(n.clients[cur_client].sock, cdata, 3);
 
 				// get client data
@@ -108,7 +115,7 @@ void handle_client(unsigned int cur_client) {
 				clients[cplayers].position->y = start_pos->y + 2.0f;
 				clients[cplayers].position->z = start_pos->z;
 				clients[cplayers].rotation = 0.0f;
-				clients[cplayers].status = 0;
+				clients[cplayers].status = 1;
 
 				// add player to physics engine object/player stack
 				add_player(clients[cplayers].position);
@@ -140,6 +147,7 @@ void handle_client(unsigned int cur_client) {
 						message[len] = 0;
 
 						// send package to all clients except the one who send the data
+						cout << "dt_msg size: " << len+1 + 7 << endl;
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 							if(n.clients[i].is_active && i != cur_client) {
 								SDLNet_TCP_Send(n.clients[i].sock, ndata, len+1 + 7);
@@ -154,26 +162,25 @@ void handle_client(unsigned int cur_client) {
 						break;
 					}
 					case DT_MOVE: {
-						if(SDL_GetTicks() - clients[(data[2] & 0xFF)].walk_time >= min_walk_time) {
-							// data[2] = player num / id
-                            const dReal* clvel = dBodyGetLinearVel(ode_players[(data[2] & 0xFF)]->get_body());
-							float xrot = clients[(data[2] & 0xFF)].rotation * piover180;
-							float zrot = clients[(data[2] & 0xFF)].rotation * piover180;
+						if(SDL_GetTicks() - clients[cur_client].walk_time >= min_walk_time) {
+                            const dReal* clvel = dBodyGetLinearVel(ode_players[cur_client]->get_body());
+							float xrot = clients[cur_client].rotation * piover180;
+							float zrot = clients[cur_client].rotation * piover180;
 
-							// data[3] = move type
+							// data[2] = move type
 							switch((data[3] & 0xFF)) {
 								case MV_FORWARD: {
 									xrot = sinf(xrot) * -max_force;
 									zrot = cosf(zrot) * -max_force;
-									dBodySetLinearVel(ode_players[(data[2] & 0xFF)]->get_body(), xrot, clvel[1], zrot);
-									clients[(data[2] & 0xFF)].walk_time = SDL_GetTicks();
+									dBodySetLinearVel(ode_players[cur_client]->get_body(), xrot, clvel[1], zrot);
+									clients[cur_client].walk_time = SDL_GetTicks();
 									break;
 								}
 								case MV_BACKWARD: {
 									xrot = sinf(xrot) * max_force;
 									zrot = cosf(zrot) * max_force;
-									dBodySetLinearVel(ode_players[(data[2] & 0xFF)]->get_body(), xrot, clvel[1], zrot);
-									clients[(data[2] & 0xFF)].walk_time = SDL_GetTicks();
+									dBodySetLinearVel(ode_players[cur_client]->get_body(), xrot, clvel[1], zrot);
+									clients[cur_client].walk_time = SDL_GetTicks();
 									break;
 								}
 								default:
@@ -183,20 +190,20 @@ void handle_client(unsigned int cur_client) {
 						break;
 					}
 					case DT_UPDATE: {
+						cout << "update routine ..." << endl;
 						// handle update data
-						unsigned int cnum = (data[2] & 0xFF);
 						float rot = 0.0f;
-						memcpy(&rot, &data[3], 4);
-						clients[cnum].rotation = rot;
+						memcpy(&rot, &data[2], 4);
+						clients[cur_client].rotation = rot;
 
 						// make new data
 						ndata[0] = net::DAT;
 						ndata[1] = DT_UPDATE;
-						ndata[2] = cnum;
-						memcpy(&ndata[3], &clients[cnum].position->x, 4);
-						memcpy(&ndata[3+4], &clients[cnum].position->y, 4);
-						memcpy(&ndata[3+8], &clients[cnum].position->z, 4);
-						memcpy(&ndata[3+12], &clients[cnum].rotation, 4);
+						ndata[2] = cur_client;
+						memcpy(&ndata[3], &clients[cur_client].position->x, 4);
+						memcpy(&ndata[3+4], &clients[cur_client].position->y, 4);
+						memcpy(&ndata[3+8], &clients[cur_client].position->z, 4);
+						memcpy(&ndata[3+12], &clients[cur_client].rotation, 4);
 
 						// send data to all clients
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
@@ -225,7 +232,7 @@ void update_players() {
 	// set velocity to 0 if the last time the player was walking
 	// is at least _min_walk_time_ (100 ms) ago
 	for(unsigned int i = 0; i < cplayers; i++) {
-		if(clients[i].walk_time >= min_walk_time) {
+		if(clients[i].walk_time >= min_walk_time && clients[i].status != 0) {
 			const dReal* clvel = dBodyGetLinearVel(ode_players[i]->get_body());
 			dBodySetLinearVel(ode_players[i]->get_body(), 0.0f, clvel[1], 0.0f);
 		}
@@ -233,22 +240,32 @@ void update_players() {
 
 	// update player positions
 	for(unsigned int i = 0; i < cplayers; ++i) {
-		const dReal* clpos = dBodyGetPosition(ode_players[i]->get_body());
-		clients[i].position->x = clpos[0];
-		clients[i].position->y = clpos[1];
-		clients[i].position->z = clpos[2];
+		if(clients[i].status != 0) {
+			const dReal* clpos = dBodyGetPosition(ode_players[i]->get_body());
+			clients[i].position->x = clpos[0];
+			clients[i].position->y = clpos[1];
+			clients[i].position->z = clpos[2];
+		}
 	}
 }
 
 void check_events() {
-	for(unsigned int i = 0; i < MAX_CLIENTS; ++i) {
+	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 		if(SDLNet_SocketReady(n.clients[i].sock)) {
+			/*unsigned int cnum = 0;
+			for(unsigned int j = 0; j < MAX_CLIENTS; j++) {
+				if(strcmp(n.clients[i].name, clients[j].name) == 0) {
+					cnum = j;
+					j = MAX_CLIENTS;
+				}
+			}
+			cout << cnum << "-" << n.clients[i].name << "-" << clients[cnum].name << endl;*/
 			handle_client(i);
 		}
 	}
 }
 
-a2emodel* add_model(char* name, core::vertex3* pos, core::vertex3* scale, bool fixed, ode_object::OTYPE type, float radius) {
+a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_object::OTYPE type, float radius) {
 	objects[cobjects] = new a2emodel();
 	objects[cobjects]->load_model(name);
 	objects[cobjects]->set_position(pos->x, pos->y, pos->z);
@@ -264,7 +281,7 @@ a2emodel* add_model(char* name, core::vertex3* pos, core::vertex3* scale, bool f
 	return objects[cobjects];
 }
 
-a2emodel* add_player(core::vertex3* pos) {
+a2emodel* add_player(vertex3* pos) {
 	players[cplayers] = new a2emodel();
 	players[cplayers]->load_model("../data/player_sphere.a2m");
 	players[cplayers]->set_position(pos->x, pos->y, pos->z);
@@ -294,6 +311,10 @@ void delete_player(unsigned int num) {
 		}
 	}
 	o.delete_object(oo_num);
+	for(unsigned int i = num; i < (cplayers-1); i++) {
+		ode_players[i] = ode_players[i+1];
+	}
+	ode_players[(cplayers-1)] = NULL;
 
 	// reset client stuff
 	clients[num].id = 0;
@@ -322,14 +343,15 @@ int main(int argc, char *argv[])
 	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 		clients[i].id = 0;
 		clients[i].name = new char[32];
+		sprintf(clients[i].name, "unknown");
 		clients[i].status = 0;
-		clients[i].position = new core::vertex3();
+		clients[i].position = new vertex3();
 		clients[i].rotation = 0.0f;
 		clients[i].walk_time = 0;
 	}
 
 	// set start position for all players
-	start_pos = new core::vertex3();
+	start_pos = new vertex3();
 	start_pos->x = 0.0f;
 	start_pos->y = 10.0f;
 	start_pos->z = 0.0f;
@@ -338,8 +360,8 @@ int main(int argc, char *argv[])
 	o.init();
 
 	// add plane
-	core::vertex3* pos = new core::vertex3();
-	core::vertex3* scale = new core::vertex3();
+	vertex3* pos = new vertex3();
+	vertex3* scale = new vertex3();
 	pos->x = 0.0f;
 	pos->y = 0.0f;
 	pos->z = 0.0f;

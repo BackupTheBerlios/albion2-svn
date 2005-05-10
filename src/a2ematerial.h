@@ -14,46 +14,49 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __FILE_IO_H__
-#define __FILE_IO_H__
+#ifndef __A2EMATERIAL_H__
+#define __A2EMATERIAL_H__
 
 #include <iostream>
-#include <fstream>
-#include <SDL.h>
+#include <SDL_image.h>
 #include "msg.h"
+#include "core.h"
+#include "file_io.h"
+#include <cmath>
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class file_io
- *  @brief file input/output
+/*! @class a2ematerial
+ *  @brief material routines
  *  @author flo
- *  @version 0.1.1
- *  @date 2004/09/08
- *  @todo more functions
+ *  @version 0.1
+ *  @date 2005/05/08
+ *  @todo nothing atm
  *  
- *  the file input/output class
+ *  the a2ematerial class
  */
 
-class A2E_API file_io
+class A2E_API a2ematerial
 {
 public:
-	file_io();
-	~file_io();
+	a2ematerial();
+	~a2ematerial();
 
-	void open_file(char* filename, bool binary);
-	void close_file();
-	unsigned int get_filesize();
-	void get_line(char* finput);
-	void get_block(char* data, unsigned int size);
-	char get_char();
-	int get_int();
-	unsigned int get_uint();
-	float get_float();
+	void load_material(char* filename);
+	void load_textures();
+
+	GLuint* get_texture(unsigned int num);
 
 protected:
 	msg m;
-	fstream filestream;
+	core c;
+	file_io file;
+
+	unsigned int texture_count;
+	char** tex_names;
+	GLuint* textures;
+
 };
 
 #endif

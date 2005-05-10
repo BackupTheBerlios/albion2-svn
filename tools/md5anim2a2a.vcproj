@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.00"
-	Name="model_loader"
-	ProjectGUID="{C685177C-1F44-EE49-9637-1C35BC88ECAC}"
+	Name="md5anim2a2a"
+	ProjectGUID="{18073F1E-6108-D24F-AFC2-27080F13B0A5}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -12,7 +12,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\..\samples\bin\"
+			OutputDirectory="..\bin"
 			IntermediateDirectory="obj\Debug"
 			ConfigurationType="1"
 			CharacterSet="2">
@@ -35,12 +35,12 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions=""
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib a2e.lib"
-				OutputFile="$(OutDir)\model.exe"
+				AdditionalDependencies="a2e.lib"
+				OutputFile="$(OutDir)\md5anim2a2a.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="obj\Debug\model.pdb"
+				ProgramDatabaseFile="obj\Debug\md5anim2a2a.pdb"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"/>
@@ -62,7 +62,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\..\samples\bin\"
+			OutputDirectory="..\bin"
 			IntermediateDirectory="obj\Release"
 			ConfigurationType="1"
 			CharacterSet="2">
@@ -89,10 +89,10 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions=""
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib a2e.lib"
-				OutputFile="$(OutDir)\model.exe"
+				AdditionalDependencies="a2e.lib"
+				OutputFile="$(OutDir)\md5anim2a2a.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="FALSE"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -118,10 +118,10 @@
 	</Configurations>
 	<Files>
 		<File
-			RelativePath="model_loader.cpp">
+			RelativePath="md5anim2a2a.cpp">
 		</File>
 		<File
-			RelativePath="model_loader.h">
+			RelativePath="md5anim2a2a.h">
 		</File>
 	</Files>
 	<Globals>

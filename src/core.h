@@ -22,11 +22,11 @@
 #endif
 
 #include <iostream>
-#include <SDL.h>
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "msg.h"
+#include "vertex3.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -49,13 +49,13 @@ public:
 	core();
 	~core();
 
-	struct vertex3 {
-		float x, y, z;
-	};
-
 	struct pnt {
 		unsigned int x;
 		unsigned int y;
+	};
+	
+	struct coord {
+		float u, v;
 	};
 
 	// remeber that the 'w-float' is the fourth element!

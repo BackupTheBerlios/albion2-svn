@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="obj2a2m"
-	ProjectGUID="{2D471164-E1D4-554E-B747-89924FB4EF9E}"
+	ProjectGUID="{14446A74-7DA1-E341-97FE-3C3686079638}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -118,10 +118,10 @@
 	</Configurations>
 	<Files>
 		<File
-			RelativePath="obj2a2m.h">
+			RelativePath="obj2a2m.cpp">
 		</File>
 		<File
-			RelativePath="obj2a2m.cpp">
+			RelativePath="obj2a2m.h">
 		</File>
 	</Files>
 	<Globals>

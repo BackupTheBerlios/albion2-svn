@@ -61,7 +61,7 @@ struct client {
 	unsigned int id;
 	char* name;
 	unsigned int status;
-	core::vertex3* position;
+	vertex3* position;
 	float rotation;
 	unsigned int walk_time;
 };
@@ -69,8 +69,8 @@ struct client {
 void send_new_client(unsigned int snd_client, unsigned int rcv_client);
 void check_events();
 void handle_client(unsigned int cur_client);
-a2emodel* add_model(char* name, core::vertex3* pos, core::vertex3* scale, bool fixed, ode_object::OTYPE type, float radius = 1.0f);
-a2emodel* add_player(core::vertex3* pos);
+a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_object::OTYPE type, float radius = 1.0f);
+a2emodel* add_player(vertex3* pos);
 void delete_player(unsigned int num);
 void update_players();
 
@@ -101,6 +101,6 @@ a2emodel* players[MAX_CLIENTS];
 ode_object* ode_players[MAX_CLIENTS];
 unsigned int cplayers = 0;
 
-core::vertex3* start_pos;
+vertex3* start_pos;
 
 #endif

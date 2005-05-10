@@ -14,46 +14,47 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __FILE_IO_H__
-#define __FILE_IO_H__
+#ifndef __VERTEX3_H__
+#define __VERTEX3_H__
 
 #include <iostream>
-#include <fstream>
-#include <SDL.h>
-#include "msg.h"
+#include <cmath>
 using namespace std;
 
 #include "win_dll_export.h"
 
-/*! @class file_io
- *  @brief file input/output
+/*! @class vertex3
+ *  @brief vertex3 routines
  *  @author flo
- *  @version 0.1.1
- *  @date 2004/09/08
- *  @todo more functions
+ *  @version 0.1
+ *  @date 2005/05/06
+ *  @todo nothing atm
  *  
- *  the file input/output class
+ *  the vertex3 class
  */
 
-class A2E_API file_io
+class A2E_API vertex3
 {
 public:
-	file_io();
-	~file_io();
+	float x;
+	float y;
+	float z;
 
-	void open_file(char* filename, bool binary);
-	void close_file();
-	unsigned int get_filesize();
-	void get_line(char* finput);
-	void get_block(char* data, unsigned int size);
-	char get_char();
-	int get_int();
-	unsigned int get_uint();
-	float get_float();
+	vertex3();
+	vertex3(float x, float y, float z);
+	vertex3(vertex3* v);
+	~vertex3();
 
-protected:
-	msg m;
-	fstream filestream;
+	// overloading routines ...
+	vertex3 operator+(vertex3 &v);
+	vertex3 operator-(vertex3 &v);
+	vertex3 operator/(float f);
+	vertex3 operator*(float f);
+	vertex3& operator+=(vertex3 &v);
+	vertex3& operator-=(vertex3 &v);
+
+	vertex3 normalize();
+
 };
 
 #endif
