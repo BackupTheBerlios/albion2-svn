@@ -149,6 +149,7 @@ void scene::delete_model(a2emodel* model) {
 	unsigned int num = 0;
 	for(unsigned int i = 0; i < cmodels; i++) {
 		if(models[i] == model) {
+			// shouldn't be deleted automatically
 			//delete models[i];
 			num = i;
 			i = cmodels;

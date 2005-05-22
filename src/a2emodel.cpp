@@ -71,7 +71,7 @@ a2emodel::~a2emodel() {
 	//cout << "deleting bbox" << endl;
 	if(a2emodel::bbox != NULL) { delete a2emodel::bbox; }
 	//cout << "deleting vertices" << endl;
-	if(a2emodel::vertices != NULL) { delete a2emodel::vertices; }
+	if(a2emodel::vertices != NULL) { delete [] a2emodel::vertices; }
 	//cout << "deleting index count" << endl;
 	if(a2emodel::index_count != NULL) { delete a2emodel::index_count; }
 	//cout << "deleting tex value" << endl;
@@ -81,12 +81,12 @@ a2emodel::~a2emodel() {
 	for(unsigned int i = 0; i < MAX_OBJS; i++) {
 		if(a2emodel::tex_names[i] != NULL) { delete a2emodel::tex_names[i]; }
 		if(a2emodel::indices[i] != NULL) { delete a2emodel::indices[i]; }
-		if(a2emodel::tex_cords[i] != NULL) { delete a2emodel::tex_cords[i]; }
-		if(a2emodel::normals[i] != NULL) { delete a2emodel::normals[i]; }
-		if(a2emodel::obj_names[i] != NULL) { delete a2emodel::obj_names[i]; }
+		if(a2emodel::tex_cords[i] != NULL) { delete [] a2emodel::tex_cords[i]; }
+		if(a2emodel::normals[i] != NULL) { delete [] a2emodel::normals[i]; }
+		if(a2emodel::obj_names[i] != NULL) { delete [] a2emodel::obj_names[i]; }
 	}
 
-	//cout << "end" << endl;
+	cout << "end" << endl;
 	m.print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
 }
 

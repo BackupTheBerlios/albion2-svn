@@ -35,16 +35,20 @@ class A2E_API msg
 public:
 	msg();
 	~msg();
+
 	void print(unsigned int type, const char *file, const char *str = NULL, ...);
 	void scan(unsigned int length, char* str);
+
 	enum PRINT
 	{
 		MMSG,	//!< enum simple message
 		MERROR,	//!< enum error message
 		MDEBUG,	//!< enum debug message
 	};
+
 protected:
 	unsigned long int err_counter;
+
 };
 
 #endif

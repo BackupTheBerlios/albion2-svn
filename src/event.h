@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <SDL.h>
-#include <string.h>
+#include <cstring>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"

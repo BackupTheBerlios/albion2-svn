@@ -29,6 +29,13 @@ a2ematerial::a2ematerial() {
 a2ematerial::~a2ematerial() {
 	m.print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
 
+	if(tex_names != NULL) {
+		delete [] tex_names;
+	}
+
+	if(textures != NULL) {
+		delete textures;
+	}
 
 	m.print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
 }

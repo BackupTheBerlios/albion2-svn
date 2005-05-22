@@ -50,7 +50,6 @@ void handle_client(unsigned int cur_client) {
 
 	// checks if connection has been closed
 	if(SDLNet_TCP_Recv(n.clients[cur_client].sock, data, 512) <= 0) {
-		cout << "deleting routine ..." << endl;
         m.print(msg::MDEBUG, "world_server.cpp", "closing %s socket (%d)",
 			n.clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
@@ -73,8 +72,6 @@ void handle_client(unsigned int cur_client) {
 		n.delete_client(cur_client);
 	}
 	else {
-		cout << "receiving routine ..." << endl;
-		cout << (unsigned int)(data[0] & 0xFF) << "-" << (unsigned int)(data[1] & 0xFF) << "-" << (unsigned int)(data[2] & 0xFF) << endl;
 		switch(data[0]) {
 			case net::NEW: {
 				// active connection
@@ -168,7 +165,7 @@ void handle_client(unsigned int cur_client) {
 							float zrot = clients[cur_client].rotation * piover180;
 
 							// data[2] = move type
-							switch((data[3] & 0xFF)) {
+							switch((data[2] & 0xFF)) {
 								case MV_FORWARD: {
 									xrot = sinf(xrot) * -max_force;
 									zrot = cosf(zrot) * -max_force;
@@ -190,7 +187,6 @@ void handle_client(unsigned int cur_client) {
 						break;
 					}
 					case DT_UPDATE: {
-						cout << "update routine ..." << endl;
 						// handle update data
 						float rot = 0.0f;
 						memcpy(&rot, &data[2], 4);
@@ -298,10 +294,10 @@ a2emodel* add_player(vertex3* pos) {
 void delete_player(unsigned int num) {
 	// delete player stuff
 	delete players[num];
-	for(unsigned int i = num; i < (cplayers-1); i++) {
+	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		players[i] = players[i+1];
 	}
-	players[(cplayers-1)] = NULL;
+	players[(MAX_CLIENTS-1)] = NULL;
 
 	// delete ode player (object)
 	unsigned int oo_num = 0;
@@ -311,10 +307,10 @@ void delete_player(unsigned int num) {
 		}
 	}
 	o.delete_object(oo_num);
-	for(unsigned int i = num; i < (cplayers-1); i++) {
+	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		ode_players[i] = ode_players[i+1];
 	}
-	ode_players[(cplayers-1)] = NULL;
+	ode_players[(MAX_CLIENTS-1)] = NULL;
 
 	// reset client stuff
 	clients[num].id = 0;
@@ -326,11 +322,10 @@ void delete_player(unsigned int num) {
 	clients[num].rotation = 0.0f;
 	clients[num].walk_time = 0;
 
-	client* ctmp = &clients[num];
-	for(unsigned int i = num; i < (cplayers-1); i++) {
+	clients[(MAX_CLIENTS-1)] = clients[num];
+	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		clients[i] = clients[i+1];
 	}
-	clients[(cplayers-1)] = *ctmp;
 
 	// decrease player count
 	cplayers--;
@@ -406,12 +401,24 @@ int main(int argc, char *argv[])
 			refresh_time = SDL_GetTicks();
 
 			update_players();
-			/*if(cplayers != 0) {
-				cout << "player 0 pos: " << players[0]->get_position()->x << ", "
-					<< players[0]->get_position()->y << ", " << players[0]->get_position()->z
-					<< " - rot: " << clients[0].rotation << endl;
-			}*/
 		}
+
+		// debug print out
+		/*cout << "----------------------" << endl;
+		cout << "status: " << clients[0].status << " | name: " << clients[0].name << " | id: " << clients[0].id << endl;
+		cout << "status: " << clients[1].status << " | name: " << clients[1].name << " | id: " << clients[1].id << endl;
+		cout << "status: " << clients[30].status << " | name: " << clients[30].name << " | id: " << clients[30].id << endl;
+		cout << "status: " << clients[31].status << " | name: " << clients[31].name << " | id: " << clients[31].id << endl;
+		cout << "----------------------" << endl;
+		cout << "status: " << (n.clients[0].is_active ? "1" : "0") << " | name: " << n.clients[0].name << " | ip host: " << n.clients[0].ip.host <<
+			" | ip port: " << n.clients[0].ip.port << " | port: " << n.clients[0].port << " | sock: " << n.clients[0].sock << endl;
+		cout << "status: " << (n.clients[1].is_active ? "1" : "0") << " | name: " << n.clients[1].name << " | ip host: " << n.clients[1].ip.host <<
+			" | ip port: " << n.clients[1].ip.port << " | port: " << n.clients[1].port << " | sock: " << n.clients[1].sock << endl;
+		cout << "status: " << (n.clients[30].is_active ? "1" : "0") << " | name: " << n.clients[30].name << " | ip host: " << n.clients[30].ip.host <<
+			" | ip port: " << n.clients[30].ip.port << " | port: " << n.clients[30].port << " | sock: " << n.clients[30].sock << endl;
+		cout << "status: " << (n.clients[31].is_active ? "1" : "0") << " | name: " << n.clients[31].name << " | ip host: " << n.clients[31].ip.host <<
+			" | ip port: " << n.clients[31].ip.port << " | port: " << n.clients[31].port << " | sock: " << n.clients[31].sock << endl;
+		cout << "----------------------" << endl;*/
 	}
 
 	n.exit();

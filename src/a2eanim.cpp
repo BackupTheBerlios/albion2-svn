@@ -32,6 +32,7 @@ a2eanim::a2eanim() {
 	joints = NULL;
 	meshes = NULL;
 	animations = NULL;
+	base_joints = NULL;
 
 	is_material = false;
 	material = NULL;
@@ -44,14 +45,25 @@ a2eanim::a2eanim() {
 a2eanim::~a2eanim() {
 	m.print(msg::MDEBUG, "a2eanim.cpp", "freeing a2eanim stuff");
 
-	// no need to delete the joints and meshes?
-	/*if(joints != NULL) {
-		delete joints;
+	if(a2eanim::joints != NULL) {
+		delete a2eanim::joints;
 	}
-	
-	if(meshes != NULL) {
-		delete meshes;
-	}*/
+
+	if(a2eanim::meshes != NULL) {
+		delete a2eanim::meshes;
+	}
+
+	if(a2eanim::base_joints != NULL) {
+		delete [] a2eanim::base_joints;
+	}
+
+	if(a2eanim::animations != NULL) {
+		delete [] a2eanim::animations;
+	}
+
+	if(a2eanim::material != NULL) {
+		delete a2eanim::material;
+	}
 
 	m.print(msg::MDEBUG, "a2eanim.cpp", "a2eanim stuff freed");
 }

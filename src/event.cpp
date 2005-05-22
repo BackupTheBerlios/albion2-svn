@@ -14,10 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
-using namespace std;
 #include "event.h"
-#include <string.h>
 
 /*! there is no function currently
  */
@@ -229,21 +226,6 @@ void event::handle_events(unsigned int event_type) {
 								case SDLK_AT:
 								case SDLK_CARET:
 								case SDLK_UNDERSCORE:
-								case SDLK_KP0:
-								case SDLK_KP1:
-								case SDLK_KP2:
-								case SDLK_KP3:
-								case SDLK_KP4:
-								case SDLK_KP5:
-								case SDLK_KP6:
-								case SDLK_KP7:
-								case SDLK_KP8:
-								case SDLK_KP9:
-								case SDLK_KP_PERIOD:
-								case SDLK_KP_DIVIDE:
-								case SDLK_KP_MULTIPLY:
-								case SDLK_KP_MINUS:
-								case SDLK_KP_PLUS:
 								case SDLK_KP_ENTER:
 								case SDLK_KP_EQUALS:
 								case SDLK_UP:
@@ -290,9 +272,10 @@ void event::handle_events(unsigned int event_type) {
 									//m.print(msg::MDEBUG, NULL, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 									break;
 								default:
+									m.print(msg::MDEBUG, NULL, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 									sprintf(tmp_text, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 
-									if(keyboard_layout == event::DE) {
+									if(event::keyboard_layout == event::DE) {
 										switch(event::get_event().key.keysym.sym) {
 											case SDLK_QUOTE:
 												sprintf(tmp_text, "%s", "ä");
@@ -330,6 +313,57 @@ void event::handle_events(unsigned int event_type) {
 											default:
 												break;
 										}
+									}
+
+
+									switch(event::get_event().key.keysym.sym) {
+										case SDLK_KP0:
+											sprintf(tmp_text, "%s", "0");
+											break;
+										case SDLK_KP1:
+											sprintf(tmp_text, "%s", "1");
+											break;
+										case SDLK_KP2:
+											sprintf(tmp_text, "%s", "2");
+											break;
+										case SDLK_KP3:
+											sprintf(tmp_text, "%s", "3");
+											break;
+										case SDLK_KP4:
+											sprintf(tmp_text, "%s", "4");
+											break;
+										case SDLK_KP5:
+											sprintf(tmp_text, "%s", "5");
+											break;
+										case SDLK_KP6:
+											sprintf(tmp_text, "%s", "6");
+											break;
+										case SDLK_KP7:
+											sprintf(tmp_text, "%s", "7");
+											break;
+										case SDLK_KP8:
+											sprintf(tmp_text, "%s", "8");
+											break;
+										case SDLK_KP9:
+											sprintf(tmp_text, "%s", "9");
+											break;
+										case SDLK_KP_PERIOD:
+											sprintf(tmp_text, "%s", ",");
+											break;
+										case SDLK_KP_DIVIDE:
+											sprintf(tmp_text, "%s", "/");
+											break;
+										case SDLK_KP_MULTIPLY:
+											sprintf(tmp_text, "%s", "*");
+											break;
+										case SDLK_KP_MINUS:
+											sprintf(tmp_text, "%s", "-");
+											break;
+										case SDLK_KP_PLUS:
+											sprintf(tmp_text, "%s", "+");
+											break;
+										default:
+											break;
 									}
 
 									keys = SDL_GetKeyState(NULL);
@@ -409,12 +443,6 @@ void event::handle_events(unsigned int event_type) {
 												case '^':
 													key = '°';
 													break;
-												/*case '':
-													key = '';
-													break;
-												case '':
-													key = '';
-													break;*/
 											}
 										}
 									}
@@ -452,12 +480,9 @@ void event::handle_events(unsigned int event_type) {
 												case '+':
 													key = '~';
 													break;
-												/*case '':
-													key = '';
+												case 'e':
+													key = '€';
 													break;
-												case '':
-													key = '';
-													break;*/
 											}
 										}
 									}

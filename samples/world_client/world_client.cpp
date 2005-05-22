@@ -26,7 +26,7 @@
  * Albion 2 Engine Sample - World Client Sample
  */
 
-int HandleServerData(char *data) {
+int handle_server_data(char *data) {
 	int used = 0;
 	switch ((data[0] & 0xFF)) {
 		case net::CDAT: {
@@ -35,8 +35,6 @@ int HandleServerData(char *data) {
 				client_num = (data[2] & 0xFF);
 
 				is_initialized = true;
-
-				players = new a2emodel[max_clients];
 
 				// init clients
 				clients = new client[max_clients];
@@ -59,9 +57,7 @@ int HandleServerData(char *data) {
 					// we don't want to show up the text already
 					clients[i].text->set_notext();
 
-					players[i].load_model("../data/player.a2m");
-					players[i].set_visible(false);
-					sce.add_model(&players[i]);
+					clients[i].model = NULL;
 				}
 				cout << "rcv cdat size: " << 3 << endl;
 				used = 3;
@@ -85,15 +81,12 @@ int HandleServerData(char *data) {
 					message[j] = 0;
 
 					// add message to list box
-					cout << "adding message ..." << endl;
 					add_msg(plen + 2 + (unsigned int)strlen(clients[(data[6] & 0xFF)].name), "%s: %s", clients[(data[6] & 0xFF)].name, message);
 					cout << "message added - deleting message data!" << endl;
 					delete message;
-					cout << "message data deleted!" << endl;
 
 					cout << "rcv dt_msg size: " << 7 + plen + 1 << endl;
 					used = 7 + plen + 1;
-					cout << "DT_MSG end!" << endl;
 					break;
 				}
 				case DT_UPDATE: {
@@ -102,8 +95,6 @@ int HandleServerData(char *data) {
 						memcpy(&clients[cnum].position->x, &data[3], 4);
 						memcpy(&clients[cnum].position->y, &data[3+4], 4);
 						memcpy(&clients[cnum].position->z, &data[3+8], 4);
-						// -- not needed -- don't reset the rotation of our own client, b/c
-						// it can cause jerking/lagging ...
 						memcpy(&clients[cnum].rotation, &data[3+12], 4);
 					}
 					else {
@@ -147,7 +138,12 @@ int HandleServerData(char *data) {
 				clients[cur_client].port, clients[cur_client].name);
 
 			cplayers++;
-			players[cur_client].set_visible(true);
+
+			// create the players model
+			clients[cur_client].model = new a2emodel();
+			clients[cur_client].model->load_model("../data/player.a2m");
+			clients[cur_client].model->set_visible(true);
+			sce.add_model(clients[cur_client].model);
 
 			cout << "rcv add size: " << 9 + len << endl;
 			used = 9 + len;
@@ -162,16 +158,11 @@ int HandleServerData(char *data) {
 				break;
 			}
 
-			// delete player data
-			clients[cur_client].status = 0;
-			clients[cur_client].text->set_notext();
-			sprintf(clients[cur_client].name, "unknown");
-			players[cur_client].set_visible(false);
-
-			// TODO: RESORT CLIENT DATA!!!
-
 			// print out what happened
 			m.print(msg::MDEBUG, "world_client.cpp", "lost client %d: %s", cur_client, clients[cur_client].name);
+
+			// delete the client and resort the data
+			delete_player(cur_client);
 		}
 		cout << "rcv delete size: " << 2 << endl;
 		used = 2;
@@ -195,7 +186,7 @@ int HandleServerData(char *data) {
 	return used;
 }
 
-void HandleServer(void) {
+void handle_server(void) {
 	char* data = new char[512];
 	unsigned int pos, len, used;
 
@@ -207,7 +198,7 @@ void HandleServer(void) {
 	else {
 		pos = 0;
 		while(len > 0) {
-			used = HandleServerData(&data[pos]);
+			used = handle_server_data(&data[pos]);
 			pos += used;
 			len -= used;
 			if(used == 0) {
@@ -218,6 +209,42 @@ void HandleServer(void) {
 		}
 	}
 	delete data;
+}
+
+void delete_player(unsigned int num) {
+	// set new (own) client number
+	if(client_num > num) {
+		client_num--;
+	}
+
+	// reset all data
+	clients[num].id = 0;
+	clients[num].position->x = 0.0f;
+	clients[num].position->y = 0.0f;
+	clients[num].position->z = 0.0f;
+	clients[num].rotation = 0.0f;
+	clients[num].host = 0;
+	clients[num].port = 0;
+	clients[num].status = 0;
+	clients[num].text->set_notext();
+	sprintf(clients[num].name, "unknown");
+
+	// delete the players objects
+	sce.delete_model(clients[num].model);
+	delete clients[num].model;
+	clients[num].model = NULL;
+
+	// resort the clients
+	clients[(max_clients-1)] = clients[num];
+	for(unsigned int i = num; i < (max_clients-1); i++) {
+		clients[i] = clients[i+1];
+	}
+
+	// delete player from net class client list
+	n.delete_client(num);
+
+	// decrease player count
+	cplayers--;
 }
 
 void send_msg() {
@@ -401,8 +428,8 @@ void update() {
 	// update players data
 	for(unsigned int i = 0; i < cplayers; i++) {
 		if(clients[i].status != 0) {
-			players[i].set_position(clients[i].position->x, clients[i].position->y - 2.0f, clients[i].position->z);
-			players[i].set_rotation(0.0f, clients[i].rotation - 90.0f, 0.0f);
+			clients[i].model->set_position(clients[i].position->x, clients[i].position->y - 2.0f, clients[i].position->z);
+			clients[i].model->set_rotation(0.0f, clients[i].rotation - 90.0f, 0.0f);
 		}
 	}
 
@@ -571,9 +598,6 @@ int main(int argc, char *argv[])
 	sce.add_model(&sphere);
 
 	player_light = new light(0.0f, 50.0f, 0.0f);
-	/*float pamb[] = { 0.0f, 0.0f, 1.0f, 0.0f};
-	float pdif[] = { 0.105f, 0.316f, 0.7f, 0.0f};
-	float pspc[] = { 0.105f, 0.316f, 0.7f, 0.0f};*/
 	float pamb[] = { 1.0f, 1.0f, 1.0f, 0.0f};
 	float pdif[] = { 1.0f, 1.0f, 1.0f, 0.0f};
 	float pspc[] = { 1.0f, 1.0f, 1.0f, 0.0f};
@@ -689,7 +713,7 @@ int main(int argc, char *argv[])
 			// client stuff
 			SDLNet_CheckSockets(n.socketset, 0);
 			if(SDLNet_SocketReady(n.tcp_ssock)) {
-				HandleServer();
+				handle_server();
 			}
 
 			if(n.tcp_ssock == NULL) {
@@ -700,47 +724,46 @@ int main(int argc, char *argv[])
 			done = true;
 		}
 
-		// refresh every 1000/75 milliseconds (~ 40 fps)
-		if(SDL_GetTicks() - refresh_time >= 1000/40) {
-			// print out the fps count
-			fps++;
-			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - World Client Sample | FPS: %u | Pos: %f %f %f", fps,
-					-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
-				fps = 0;
-				fps_time = SDL_GetTicks();
-			}
-			e.set_caption(tmp);
-
-			// send new client data to server
-			if(is_initialized) { update(); }
-
-			// start drawing the scene
-			e.start_draw();
-
-			cam.run();
-			sce.draw();
-
-			// draw names
-			if(SDL_GetTicks() - name_time >= 1000/40) {
-				update_names();
-				name_time = SDL_GetTicks();
-			}
-			draw_names();
-			agui.draw();
-
-			e.stop_draw();
-
-			refresh_time = SDL_GetTicks();
+		// print out the fps count
+		fps++;
+		if(SDL_GetTicks() - fps_time > 1000) {
+			sprintf(tmp, "A2E Sample - World Client Sample | FPS: %u | Pos: %f %f %f", fps,
+				-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
+			fps = 0;
+			fps_time = SDL_GetTicks();
 		}
+		e.set_caption(tmp);
+
+		// send new client data to server
+		if(is_initialized) { update(); }
+
+		// start drawing the scene
+		e.start_draw();
+
+		cam.run();
+		sce.draw();
+
+		update_names();
+
+		draw_names();
+		agui.draw();
+
+		e.stop_draw();
+
+		// delay for 1000/75 ms to get an fps rate of 75 fps and
+		// to reduce the cpu usage (so its no more 100%)
+		SDL_Delay((unsigned int)1000/75);
 	}
 
 	delete tmp;
 
 	n.exit();
 
+	// remove player models from the scene list
 	for(unsigned int i = 0; i < max_clients; i++) {
-		sce.delete_model(&players[i]);
+		if(clients[i].status != 0) {
+            sce.delete_model(clients[i].model);
+		}
 	}
 
 	delete clients;

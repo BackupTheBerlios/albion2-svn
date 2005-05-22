@@ -21,9 +21,8 @@ using namespace std;
 
 /*! there is no function currently
  */
-net::net():
-	max_clients(MAX_CLIENTS)
-{
+net::net() {
+	max_clients = MAX_CLIENTS;
 }
 
 /*! there is no function currently
@@ -38,7 +37,7 @@ net::~net() {
 /*! initialize the networking functions - returns true if successful, otherwise false
  */
 bool net::init() {
-	if(SDLNet_Init()==-1) {
+	if(SDLNet_Init() == -1) {
 		m.print(msg::MERROR, "net.cpp", "SDLNet_Init", "%s", SDLNet_GetError());
 		return false;
 	}
@@ -50,6 +49,7 @@ bool net::init() {
  */
 void net::exit() {
 	SDLNet_Quit();
+
 	if(clients) {
 		delete clients;
 	}
@@ -412,10 +412,15 @@ void net::close_socket(UDPsocket &sock) {
  *  @param num the clients num
  */
 void net::delete_client(unsigned int num) {
+	// reset everything
 	sprintf(clients[num].name, "unknown");
-	client* ctmp = &clients[num];
-	for(unsigned int i = num; i < MAX_CLIENTS; i++) {
+	clients[num].sock = NULL;
+	clients[num].ip.port = 0;
+	clients[num].ip.host = 0;
+	clients[num].port = 0;
+
+	clients[(MAX_CLIENTS-1)] = clients[num];
+	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		clients[i] = clients[i+1];
 	}
-	clients[(MAX_CLIENTS-1)] = *ctmp;
 }

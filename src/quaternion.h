@@ -50,7 +50,7 @@ public:
 	quaternion(quaternion* q);
 	quaternion(float f, vertex3 v);
  	~quaternion();
-	
+
 	quaternion operator=(quaternion& q);
 	quaternion operator+(quaternion& q);
 	quaternion operator-(quaternion& q);
@@ -68,7 +68,7 @@ public:
 	float magnitude();
 	void normalize();
 	void compute_r();
-	
+
 	quaternion inverse();
 	quaternion conjugate();
 	quaternion unit();

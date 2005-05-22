@@ -69,10 +69,12 @@ struct client {
 
 	core::pnt* text_point;
 	gui_text* text;
+
+	a2emodel* model;
 };
 
-int HandleServerData(char *data);
-void HandleServer(void);
+int handle_server_data(char *data);
+void handle_server(void);
 void send_msg();
 void add_msg(unsigned int length, char* msg, ...);
 void update();
@@ -80,6 +82,7 @@ void move(MOVE_TYPE type);
 void init();
 void update_names();
 void draw_names();
+void delete_player(unsigned int num);
 
 msg m;
 net n;
@@ -112,7 +115,6 @@ unsigned int name_time;
 //a2emodel* objects;
 //unsigned int cobjects = 0;
 
-a2emodel* players;
 unsigned int cplayers = 0;
 
 unsigned int max_clients = 0;

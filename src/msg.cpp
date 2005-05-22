@@ -21,15 +21,13 @@ using namespace std;
 
 /*! Sets the counter to 0
  */
-msg::msg():
-	err_counter(0)
-{
+msg::msg() {
+	err_counter = 0;
 }
 
 /*! Does nothing
  */
-msg::~msg()
-{
+msg::~msg() {
 }
 
 /*! Prints the error number and an error string
