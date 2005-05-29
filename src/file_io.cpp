@@ -32,7 +32,7 @@ file_io::~file_io() {
  *  @param binary flag if we read the file content binary of ascii wise
  */
 void file_io::open_file(char* filename, bool binary) {
-	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::binary); }
+	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::out | fstream::binary); }
 	else { file_io::filestream.open(filename, fstream::in); }
 	if(!file_io::filestream.is_open()) {
 		m.print(msg::MDEBUG, "file_io.cpp", "error while loading file \"%s\"!", filename);
@@ -120,4 +120,25 @@ unsigned int file_io::get_filesize() {
 
 	// return file size
 	return size;
+}
+
+/*! seeks to offset
+ *  @param offset the offset we you want to seek the file
+ */
+void file_io::seek(unsigned int offset) {
+	file_io::filestream.seekg(offset, ios::beg);
+}
+
+/*! returns the current file offset
+ */
+unsigned int file_io::get_current_offset() {
+	return file_io::filestream.tellg();
+}
+
+/*! writes a block to the current file (offset)
+ *  @param data a pointer to the block we want to write
+ *  @param size the size of the block
+ */
+void file_io::write_block(char* data, unsigned int size) {
+	file_io::filestream.write(data, size);
 }

@@ -50,6 +50,9 @@ public:
 	int get_int();
 	unsigned int get_uint();
 	float get_float();
+	void seek(unsigned int offset);
+	unsigned int get_current_offset();
+	void write_block(char* data, unsigned int size);
 
 protected:
 	msg m;
