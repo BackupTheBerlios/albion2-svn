@@ -18,8 +18,8 @@
 #define __GUI_TEXT_H__
 
 #include <iostream>
-#include <SDL.h>
-#include <FTGLTextureFont.h>
+#include <SDL/SDL.h>
+#include <FTGL/FTGLTextureFont.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"

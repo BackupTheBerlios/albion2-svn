@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "msg.h"
 using namespace std;
 

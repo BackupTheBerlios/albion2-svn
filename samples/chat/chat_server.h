@@ -18,7 +18,7 @@
 #define __CHAT_SERVER_H__
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <engine.h>
 #include <msg.h>
 #include <core.h>

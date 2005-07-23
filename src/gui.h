@@ -20,7 +20,7 @@
 #define MAX_ELEMENTS 128
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "net.h"

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="chat_server"
-	ProjectGUID="{EEB4C5A9-E5CC-374C-9D01-3FAFE2143619}"
+	ProjectGUID="{5BEB1B99-3FF3-5747-898A-AA05ABFAC24D}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

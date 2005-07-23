@@ -108,15 +108,15 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			// and finally create the tri mesh geom
 			ode_object::geom = dCreateTriMesh(*ode_object::space, ode_object::trimesh, 0, 0, 0);
 
-			// set the geoms position
-			dGeomSetPosition(ode_object::geom, model->get_position()->x,
-				model->get_position()->y, model->get_position()->z);
-
 			// set the geoms data
 			dGeomSetData(ode_object::geom, (void*)this);
 
 			// set its body to 0
 			dGeomSetBody(ode_object::geom, 0);
+
+			// set the geoms position
+			dGeomSetPosition(ode_object::geom, model->get_position()->x,
+				model->get_position()->y, model->get_position()->z);
 
 			// contact caching
 			/*dGeomTriMeshEnableTC(ode_object::geom, 0, 1);

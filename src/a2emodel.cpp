@@ -86,7 +86,6 @@ a2emodel::~a2emodel() {
 		if(a2emodel::obj_names[i] != NULL) { delete [] a2emodel::obj_names[i]; }
 	}
 
-	cout << "end" << endl;
 	m.print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
 }
 
@@ -240,7 +239,7 @@ void a2emodel::load_textures() {
 
 	for(unsigned int i = 0; i < texture_count; i++) {
 		tex_surface[i] = IMG_LoadPNG_RW(SDL_RWFromFile(tex_names[i], "rb"));
-		if(!tex_surface) {
+		if(!tex_surface[i]) {
 			m.print(msg::MERROR, "a2emodel.cpp", "error loading texture file \"%s\"!", tex_names[i]);
 			return;
 		}
@@ -255,6 +254,8 @@ void a2emodel::load_textures() {
 
 		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tex_surface[i]->w, tex_surface[i]->h,
 			GL_RGB, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);
+		/*glTexImage2D(GL_TEXTURE_2D, 0, 3, tex_surface[i]->w, tex_surface[i]->h, 0,
+			GL_RGB, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);*/
 	}
 
 	for(unsigned int i = 0; i < texture_count; i++) {

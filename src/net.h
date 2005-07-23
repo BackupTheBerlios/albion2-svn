@@ -18,8 +18,8 @@
 #define __NET_H__
 
 #include <iostream>
-#include <SDL.h>
-#include <SDL_net.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_net.h>
 #include <math.h>
 #include "msg.h"
 using namespace std;

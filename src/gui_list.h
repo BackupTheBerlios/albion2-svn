@@ -18,8 +18,7 @@
 #define __GUI_LIST_H__
 
 #include <iostream>
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"

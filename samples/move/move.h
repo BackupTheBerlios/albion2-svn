@@ -23,8 +23,8 @@
 
 #include <iostream>
 #include <math.h>
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 #include <engine.h>
 #include <msg.h>
 #include <core.h>
@@ -80,5 +80,11 @@ unsigned int min_walk_time = 100;
 float max_force = 10.0f;
 
 float piover180 = (float)PI / 180.0f;
+
+bool moved = false;
+float lastxforce;
+float lastzforce;
+
+bool player_init = false;
 
 #endif

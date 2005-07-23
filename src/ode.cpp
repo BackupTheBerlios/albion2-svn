@@ -161,12 +161,12 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.bounce_vel = 0.1f;
 		contact[i].surface.soft_cfm = 0.01f;*/
 
-        /*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
-        contact[i].surface.mu = dInfinity;
-        contact[i].surface.slip1 = 0.1f;
-        contact[i].surface.slip2 = 0.1f;
-        contact[i].surface.soft_erp = 0.5f;
-        contact[i].surface.soft_cfm = 0.3f;*/
+		/*contact[i].surface.mode = dContactSlip1 | dContactSlip2 | dContactSoftERP | dContactSoftCFM | dContactApprox1;
+		contact[i].surface.mu = dInfinity;
+		contact[i].surface.slip1 = 0.1f;
+		contact[i].surface.slip2 = 0.1f;
+		contact[i].surface.soft_erp = 0.5f;
+		contact[i].surface.soft_cfm = 0.3f;*/
 	}
 
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
@@ -213,13 +213,18 @@ void ode::update_objects() {
 		if(ode::ode_objects[i]) {
 			dGeomID geom = ode::ode_objects[i]->get_geom();
 			dBodyID body = ode::ode_objects[i]->get_body();
+//cout << "--->" << endl;
+//cout << geom << "/" << body << endl;
 			if(geom != 0) {
 				dReal* pos = (dReal*)dGeomGetPosition(geom);
+//cout << pos[0] << "/" << pos[1] << "/" << pos[2] << "/" << pos[3] << endl;
 				ode::ode_objects[i]->get_model()->set_position((float)pos[0],
 					(float)pos[1], (float)pos[2]);
 
 				if(body != 0) {
 					dReal* rotation = (dReal*)dBodyGetRotation(body);
+//cout << rotation[0] << "/" << rotation[1] << "/" << rotation[2] << "/" << rotation[3] << endl;
+//cout << "<---" << endl;
 					ode::ode_objects[i]->get_model()->set_rotation(c.rad_to_deg(rotation[0]),
 						c.rad_to_deg(rotation[1]), c.rad_to_deg(rotation[2]));
 				}

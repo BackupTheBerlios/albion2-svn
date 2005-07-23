@@ -18,7 +18,7 @@
 #define __ODE_H__
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <ode/ode.h>
 #include <cmath>
 #include <list>

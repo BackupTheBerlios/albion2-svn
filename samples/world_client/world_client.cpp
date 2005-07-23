@@ -749,10 +749,6 @@ int main(int argc, char *argv[])
 		agui.draw();
 
 		e.stop_draw();
-
-		// delay for 1000/75 ms to get an fps rate of 75 fps and
-		// to reduce the cpu usage (so its no more 100%)
-		SDL_Delay((unsigned int)1000/75);
 	}
 
 	delete tmp;

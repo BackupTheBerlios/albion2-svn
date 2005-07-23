@@ -18,7 +18,7 @@
 #define __SCENE_H__
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"

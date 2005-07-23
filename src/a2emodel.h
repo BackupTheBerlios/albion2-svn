@@ -24,8 +24,8 @@
 #define MAX_OBJS 32
 
 #include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>

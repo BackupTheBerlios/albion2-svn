@@ -18,7 +18,7 @@
 #define __EVENT_H__
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <cstring>
 #include "msg.h"
 #include "core.h"

@@ -118,22 +118,19 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		// refresh every 1000/60 milliseconds (~ 60 fps)
-		//if(SDL_GetTicks() - refresh_time >= 1000/60) {
-			aevent.get_mouse_pos(mpos);
-			snprintf(xpos, 8, "%u", mpos->x);
-			snprintf(ypos, 8, "%u", mpos->y);
-			xpos_text->set_text(xpos);
-			ypos_text->set_text(ypos);
+		aevent.get_mouse_pos(mpos);
+		snprintf(xpos, 8, "%u", mpos->x);
+		snprintf(ypos, 8, "%u", mpos->y);
+		xpos_text->set_text(xpos);
+		ypos_text->set_text(ypos);
 
-			e.start_draw();
+		e.start_draw();
 
-			img.draw();
-			agui.draw();
+		img.draw();
+		agui.draw();
 
-			e.stop_draw();
-			refresh_time = SDL_GetTicks();
-		//}
+		e.stop_draw();
+		refresh_time = SDL_GetTicks();
 	}
 
 	free(mpos);

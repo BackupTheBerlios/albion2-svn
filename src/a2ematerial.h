@@ -18,7 +18,7 @@
 #define __A2EMATERIAL_H__
 
 #include <iostream>
-#include <SDL_image.h>
+#include <SDL/SDL_image.h>
 #include "msg.h"
 #include "core.h"
 #include "file_io.h"

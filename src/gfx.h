@@ -22,7 +22,7 @@
 #endif
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "msg.h"

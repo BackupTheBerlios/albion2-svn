@@ -22,8 +22,8 @@
 #endif
 
 #include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -77,6 +77,9 @@ public:
 	void set_cursor_visible(bool state);
 	bool get_cursor_visible();
 
+	void set_fps_limit(unsigned int ms);
+	unsigned int get_fps_limit();
+
 protected:
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
@@ -88,6 +91,8 @@ protected:
 	vertex3* position;
 
 	bool cursor_visible;
+
+	unsigned int fps_limit;
 };
 
 #endif

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="model_loader"
-	ProjectGUID="{C685177C-1F44-EE49-9637-1C35BC88ECAC}"
+	ProjectGUID="{9FFE9328-96AE-F04C-BB85-AC8379BBC5C6}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

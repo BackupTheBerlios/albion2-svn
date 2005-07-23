@@ -21,7 +21,7 @@
 #include "msg.h"
 #include "gfx.h"
 #include "engine.h"
-#include <SDL_image.h>
+#include <SDL/SDL_image.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 using namespace std;

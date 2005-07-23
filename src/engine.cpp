@@ -43,6 +43,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
  */
 engine::engine() {
 	cursor_visible = true;
+	fps_limit = 10;
 }
 
 /*! there is no function currently
@@ -226,6 +227,9 @@ void engine::start_draw() {
  */
 void engine::stop_draw() {
 	SDL_GL_SwapBuffers();
+
+	// fps limiter
+	Sleep(fps_limit);
 }
 
 /*! returns the surface used by the engine
@@ -404,4 +408,18 @@ void engine::set_cursor_visible(bool state) {
  */
 bool engine::get_cursor_visible() {
 	return engine::cursor_visible;
+}
+
+/*! sets the fps limit (max. fps = 1000 / ms)
+ *! note that a value of 0 increases the cpu usage to 100%
+ *  @param ms how many milliseconds the engine should "sleep" after a frame is rendered
+ */
+void engine::set_fps_limit(unsigned int ms) {
+	engine::fps_limit = ms;
+}
+
+/*! returns how many milliseconds the engine is "sleeping" after a frame is rendered
+ */
+unsigned int engine::get_fps_limit() {
+	return engine::fps_limit;
 }

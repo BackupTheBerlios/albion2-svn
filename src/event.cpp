@@ -272,7 +272,7 @@ void event::handle_events(unsigned int event_type) {
 									//m.print(msg::MDEBUG, NULL, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 									break;
 								default:
-									m.print(msg::MDEBUG, NULL, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
+									//m.print(msg::MDEBUG, NULL, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 									sprintf(tmp_text, "%s", SDL_GetKeyName(event::get_event().key.keysym.sym));
 
 									if(event::keyboard_layout == event::DE) {

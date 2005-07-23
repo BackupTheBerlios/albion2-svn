@@ -146,28 +146,25 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		// refresh every 1000/75 milliseconds (~ 75 fps)
-		if(SDL_GetTicks() - refresh_time >= 1000/75) {
-			// print out the fps count
-			fps++;
-			if(SDL_GetTicks() - fps_time > 1000) {
-				sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
-					-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
-				//sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
-				fps = 0;
-				fps_time = SDL_GetTicks();
-			}
-			e.set_caption(tmp);
-
-			e.start_draw();
-
-			cam.run();
-			sce.draw();
-			o.run(SDL_GetTicks() - refresh_time);
-
-			e.stop_draw();
-			refresh_time = SDL_GetTicks();
+		// print out the fps count
+		fps++;
+		if(SDL_GetTicks() - fps_time > 1000) {
+			sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
+				-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
+			//sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
+			fps = 0;
+			fps_time = SDL_GetTicks();
 		}
+		e.set_caption(tmp);
+
+		e.start_draw();
+
+		cam.run();
+		sce.draw();
+		o.run(SDL_GetTicks() - refresh_time);
+
+		e.stop_draw();
+		refresh_time = SDL_GetTicks();
 	}
 
 	o.close();

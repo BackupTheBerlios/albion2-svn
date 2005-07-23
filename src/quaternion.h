@@ -51,7 +51,7 @@ public:
 	quaternion(float f, vertex3 v);
  	~quaternion();
 
-	quaternion operator=(quaternion& q);
+	quaternion operator=(quaternion q);
 	quaternion operator+(quaternion& q);
 	quaternion operator-(quaternion& q);
 	quaternion operator*(quaternion q);
@@ -74,8 +74,8 @@ public:
 	quaternion unit();
 
 	vertex3 rotate(vertex3& v);
-	void set_rotation(float, vertex3&);
-	void set_rotation(float, float, float, float);
+	void set_rotation(float a, vertex3 tv);
+	void set_rotation(float a, float i, float j, float k);
 
 protected:
 	msg m;

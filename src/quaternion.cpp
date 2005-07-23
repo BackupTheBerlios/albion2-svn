@@ -63,7 +63,7 @@ quaternion::~quaternion() {
 
 /*! = operator overload
  */
-quaternion quaternion::operator=(quaternion& q) {
+quaternion quaternion::operator=(quaternion q) {
 	quaternion::r = q.r;
 	quaternion::x = q.x;
 	quaternion::y = q.y;
@@ -207,7 +207,7 @@ vertex3 quaternion::rotate(vertex3& v) {
  *  @param a resize float?
  *  @param v rotation vector
  */
-void quaternion::set_rotation(float a, vertex3& tv) {
+void quaternion::set_rotation(float a, vertex3 tv) {
 	vertex3 tmp = tv.normalize();
 	a *= (float)PI / 180.0f;
 	float sin_a = sinf (a / 2);

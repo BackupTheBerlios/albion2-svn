@@ -176,7 +176,7 @@ void a2eanim::load_model(char* filename) {
 	// get model type and abort if it's not 0x01
 	char model_type = file.get_char();
 	if(model_type != 0x01) {
-		m.print(msg::MERROR, "non supported model type: %u!", (char*)model_type);
+		m.print(msg::MERROR, "a2eanim.cpp", "non supported model type: %u!", (unsigned int)(model_type & 0xFF));
 		return;
 	}
 
@@ -393,7 +393,13 @@ void a2eanim::skin_mesh() {
 				int bone_index = a2eanim::meshes[i].bone_indices[base_index + k];
 
 				position = a2eanim::joints[bone_index].orientation.rotate(a2eanim::meshes[i].weights[base_index + k]);
-				a2eanim::meshes[i].vertices[j] += (position + joints[bone_index].position) * a2eanim::meshes[i].weight_strenghts[base_index + k];
+				vertex3* tmp = new vertex3(position + joints[bone_index].position);
+				tmp->x *= a2eanim::meshes[i].weight_strenghts[base_index + k];
+				tmp->y *= a2eanim::meshes[i].weight_strenghts[base_index + k];
+				tmp->z *= a2eanim::meshes[i].weight_strenghts[base_index + k];
+				a2eanim::meshes[i].vertices[j] += *tmp;
+				delete tmp;
+				/*a2eanim::meshes[i].vertices[j] += (position + joints[bone_index].position) * a2eanim::meshes[i].weight_strenghts[base_index + k];*/
 			}
 		}
 	}

@@ -15,7 +15,6 @@
  */
 
 #include "gui_text.h"
-#include <FTGLTextureFont.h>
 #include "gfx.h"
 #include "msg.h"
 #include "core.h"
@@ -40,7 +39,7 @@ gui_text::~gui_text() {
 
 	delete text;
 	if(font) {
-        delete font;
+		delete font;
 	}
 
 	m.print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");

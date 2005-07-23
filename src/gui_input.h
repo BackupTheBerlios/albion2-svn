@@ -18,7 +18,7 @@
 #define __GUI_INPUT_H__
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"

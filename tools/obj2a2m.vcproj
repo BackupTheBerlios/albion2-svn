@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="obj2a2m"
-	ProjectGUID="{14446A74-7DA1-E341-97FE-3C3686079638}"
+	ProjectGUID="{6170B262-EAAD-5F47-B2CE-8C4091B2A8AF}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
