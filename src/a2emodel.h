@@ -33,6 +33,7 @@
 #include "core.h"
 #include "vertex3.h"
 #include "file_io.h"
+#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -41,7 +42,6 @@ using namespace std;
  *  @brief class for loading and displaying an a2e model
  *  @author flo
  *  @version 0.2
- *  @date 2005/04/22
  *  @todo more functions
  *  
  *  the a2emodel class
@@ -50,7 +50,7 @@ using namespace std;
 class A2E_API a2emodel
 {
 public:
-	a2emodel();
+	a2emodel(engine* e);
 	~a2emodel();
 
 	void load_model(char* filename);
@@ -86,12 +86,11 @@ public:
 	// for debug purposes
 	void set_texture(GLuint texture, unsigned int num);
 
-	void draw_normals();
-
 protected:
-	msg m;
-	file_io file;
-	core c;
+	msg* m;
+	file_io* file;
+	core* c;
+	engine* e;
 
 	char model_type[9];
 	char model_name[9];

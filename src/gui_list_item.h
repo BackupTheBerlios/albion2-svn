@@ -34,7 +34,6 @@ using namespace std;
  *  @brief gui list box item element functions
  *  @author flo
  *  @version 0.2.1
- *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_list_item class
@@ -43,11 +42,10 @@ using namespace std;
 class A2E_API gui_list_item
 {
 public:
-	gui_list_item();
+	gui_list_item(engine* e);
 	~gui_list_item();
 	
 	void draw(unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 	gui_text* get_text_handler();
 	void clear();
@@ -64,11 +62,12 @@ public:
 	void set_point(unsigned int x, unsigned int y);
 
 protected:
-	msg m;
-	gfx g;
-	gui_style gstyle;
+	core* c;
+	msg* m;
+	gui_style* gstyle;
+	engine* e;
+	gfx* g;
 
-	engine* engine_handler;
 	gui_text* text_handler;
 
 	// gui list box element variables

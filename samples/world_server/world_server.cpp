@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date April - May 2005
+ * \date April - August 2005
  *
  * Albion 2 Engine Sample - World Server Sample
  */
@@ -29,16 +29,16 @@
 void send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	char* data = new char[512];
 
-	unsigned int nm = (unsigned int)strlen((char*)n.clients[snd_client].name) + 1;
+	unsigned int nm = (unsigned int)strlen((char*)n->clients[snd_client].name) + 1;
 	data[0] = net::ADD;
 	data[1] = snd_client;
-	memcpy(&data[2], &n.clients[snd_client].ip.host, 4);
-	memcpy(&data[6], &n.clients[snd_client].ip.port, 2);
+	memcpy(&data[2], &n->clients[snd_client].ip.host, 4);
+	memcpy(&data[6], &n->clients[snd_client].ip.port, 2);
 	data[8] = nm;
 	data[9+nm] = 0;
-	memcpy(&data[9], n.clients[snd_client].name, nm);
+	memcpy(&data[9], n->clients[snd_client].name, nm);
 	cout << "add size: " << 9+nm << endl;
-	SDLNet_TCP_Send(n.clients[rcv_client].sock, data, 9+nm);
+	SDLNet_TCP_Send(n->clients[rcv_client].sock, data, 9+nm);
 
 	delete data;
 }
@@ -49,18 +49,18 @@ void handle_client(unsigned int cur_client) {
 	char cdata[32];
 
 	// checks if connection has been closed
-	if(SDLNet_TCP_Recv(n.clients[cur_client].sock, data, 512) <= 0) {
-        m.print(msg::MDEBUG, "world_server.cpp", "closing %s socket (%d)",
-			n.clients[cur_client].is_active ? "active" : "inactive", cur_client);
+	if(SDLNet_TCP_Recv(n->clients[cur_client].sock, data, 512) <= 0) {
+        m->print(msg::MDEBUG, "world_server.cpp", "closing %s socket (%d)",
+			n->clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
-		if(n.clients[cur_client].is_active) {
-			n.clients[cur_client].is_active = false;
+		if(n->clients[cur_client].is_active) {
+			n->clients[cur_client].is_active = false;
 			data[0] = net::DEL;
 			data[1] = cur_client;
 			for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-				if(n.clients[i].is_active) {
+				if(n->clients[i].is_active) {
 					cout << "delete size: " << 2 << endl;
-					SDLNet_TCP_Send(n.clients[i].sock, data, 2);
+					SDLNet_TCP_Send(n->clients[i].sock, data, 2);
 				}
 			}
 		}
@@ -68,8 +68,8 @@ void handle_client(unsigned int cur_client) {
 		delete_player(cur_client);
 
 		// close socket
-		n.close_socket(n.clients[cur_client].sock);
-		n.delete_client(cur_client);
+		n->close_socket(n->clients[cur_client].sock);
+		n->delete_client(cur_client);
 	}
 	else {
 		switch(data[0]) {
@@ -81,32 +81,32 @@ void handle_client(unsigned int cur_client) {
 				cdata[1] = MAX_CLIENTS;
 				cdata[2] = (cplayers & 0xFF); // the clients number/id
 				cout << "cdat size: " << 3 << endl;
-				SDLNet_TCP_Send(n.clients[cur_client].sock, cdata, 3);
+				SDLNet_TCP_Send(n->clients[cur_client].sock, cdata, 3);
 
 				// get client data
-				memcpy(&n.clients[cur_client].ip.port, &data[1], 2);
-				memcpy(&n.clients[cur_client].name, &data[4], 32);
-				n.clients[cur_client].name[32] = 0;
-				m.print(msg::MDEBUG, "world_server.cpp", "activating socket (%d: %s)",
-					cur_client, n.clients[cur_client].name);
+				memcpy(&n->clients[cur_client].ip.port, &data[1], 2);
+				memcpy(&n->clients[cur_client].name, &data[4], 32);
+				n->clients[cur_client].name[32] = 0;
+				m->print(msg::MDEBUG, "world_server.cpp", "activating socket (%d: %s)",
+					cur_client, n->clients[cur_client].name);
 				// send data to all clients
 				for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-					if(n.clients[i].is_active) {
+					if(n->clients[i].is_active) {
 						send_new_client(cur_client, i);
 					}
 				}
 
-				n.clients[cur_client].is_active = true;
+				n->clients[cur_client].is_active = true;
 				// send data of all clients to current client
 				for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-					if(n.clients[i].is_active) {
+					if(n->clients[i].is_active) {
 						send_new_client(i, cur_client);
 					}
 				}
 
 				// actualize server data
 				clients[cplayers].id = cplayers;
-				memcpy(clients[cplayers].name, &n.clients[cur_client].name, 31);
+				memcpy(clients[cplayers].name, &n->clients[cur_client].name, 31);
 				clients[cplayers].name[strlen(clients[cplayers].name)] = 0;
 				clients[cplayers].position->x = start_pos->x;
 				clients[cplayers].position->y = start_pos->y + 2.0f;
@@ -146,13 +146,13 @@ void handle_client(unsigned int cur_client) {
 						// send package to all clients except the one who send the data
 						cout << "dt_msg size: " << len+1 + 7 << endl;
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-							if(n.clients[i].is_active && i != cur_client) {
-								SDLNet_TCP_Send(n.clients[i].sock, ndata, len+1 + 7);
+							if(n->clients[i].is_active && i != cur_client) {
+								SDLNet_TCP_Send(n->clients[i].sock, ndata, len+1 + 7);
 							}
 						}
 
 						// print out the received message
-						m.print(msg::MDEBUG, "world_server.cpp", "received message from client %s (%u): %s",
+						m->print(msg::MDEBUG, "world_server.cpp", "received message from client %s (%u): %s",
 							clients[cur_client].name, cur_client, message);
 						delete message;
 
@@ -203,8 +203,8 @@ void handle_client(unsigned int cur_client) {
 
 						// send data to all clients
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-							if(n.clients[i].is_active) {
-								SDLNet_TCP_Send(n.clients[i].sock, ndata, 3 + 16);
+							if(n->clients[i].is_active) {
+								SDLNet_TCP_Send(n->clients[i].sock, ndata, 3 + 16);
 							}
 						}
 						break;
@@ -217,7 +217,7 @@ void handle_client(unsigned int cur_client) {
 
 			default: {
 				// unknown packet type
-				m.print(msg::MDEBUG, "world_server.cpp", "a package with an unknown package type was send! type: %u", data[0]);
+				m->print(msg::MDEBUG, "world_server.cpp", "a package with an unknown package type was send! type: %u", data[0]);
 			}
 			break;
 		}
@@ -247,22 +247,22 @@ void update_players() {
 
 void check_events() {
 	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
-		if(SDLNet_SocketReady(n.clients[i].sock)) {
+		if(SDLNet_SocketReady(n->clients[i].sock)) {
 			/*unsigned int cnum = 0;
 			for(unsigned int j = 0; j < MAX_CLIENTS; j++) {
-				if(strcmp(n.clients[i].name, clients[j].name) == 0) {
+				if(strcmp(n->clients[i].name, clients[j].name) == 0) {
 					cnum = j;
 					j = MAX_CLIENTS;
 				}
 			}
-			cout << cnum << "-" << n.clients[i].name << "-" << clients[cnum].name << endl;*/
+			cout << cnum << "-" << n->clients[i].name << "-" << clients[cnum].name << endl;*/
 			handle_client(i);
 		}
 	}
 }
 
 a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_object::OTYPE type, float radius) {
-	objects[cobjects] = new a2emodel();
+	objects[cobjects] = new a2emodel(e);
 	objects[cobjects]->load_model(name);
 	objects[cobjects]->set_position(pos->x, pos->y, pos->z);
 	objects[cobjects]->set_scale(scale->x, scale->y, scale->z);
@@ -270,7 +270,7 @@ a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_ob
 		objects[cobjects]->set_radius(radius);
 	}
 
-	ode_objects[cobjects] = o.add_object(objects[cobjects], fixed, type);
+	ode_objects[cobjects] = o->add_object(objects[cobjects], fixed, type);
 
 	cobjects++;
 
@@ -278,13 +278,13 @@ a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_ob
 }
 
 a2emodel* add_player(vertex3* pos) {
-	players[cplayers] = new a2emodel();
+	players[cplayers] = new a2emodel(e);
 	players[cplayers]->load_model("../data/player_sphere.a2m");
 	players[cplayers]->set_position(pos->x, pos->y, pos->z);
 	players[cplayers]->set_radius(2.0f);
 	players[cplayers]->set_visible(true);
 
-	ode_players[cplayers] = o.add_object(players[cplayers], false, ode_object::SPHERE);
+	ode_players[cplayers] = o->add_object(players[cplayers], false, ode_object::SPHERE);
 
 	cplayers++;
 
@@ -301,12 +301,12 @@ void delete_player(unsigned int num) {
 
 	// delete ode player (object)
 	unsigned int oo_num = 0;
-	for(unsigned int i = 0; i < o.get_object_count(); i++) {
-		if(o.get_ode_object(i) == ode_players[num]) {
+	for(unsigned int i = 0; i < o->get_object_count(); i++) {
+		if(o->get_ode_object(i) == ode_players[num]) {
 			oo_num = i;
 		}
 	}
-	o.delete_object(oo_num);
+	o->delete_object(oo_num);
 	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		ode_players[i] = ode_players[i+1];
 	}
@@ -333,6 +333,16 @@ void delete_player(unsigned int num) {
 
 int main(int argc, char *argv[])
 {
+	// initialize the engine
+	e = new engine();
+	e->init(true);
+
+	// init class pointers
+	c = e->get_core();
+	m = e->get_msg();
+	o = new ode(e);
+	n = new net(e);
+
 	// init clients
 	clients = new client[MAX_CLIENTS];
 	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
@@ -352,7 +362,7 @@ int main(int argc, char *argv[])
 	start_pos->z = 0.0f;
 
 	// init ode
-	o.init();
+	o->init();
 
 	// add plane
 	vertex3* pos = new vertex3();
@@ -369,9 +379,9 @@ int main(int argc, char *argv[])
 
 	// init network stuff
 	bool is_networking = false;
-	if(n.init()) {
+	if(n->init()) {
 		cout << "net class initialized" << endl;
-		if(n.create_server(net::TCP, PORT, MAX_CLIENTS)) {
+		if(n->create_server(net::TCP, PORT, MAX_CLIENTS)) {
 			cout << "server created" << endl;
 			is_networking = true;
 		}
@@ -382,10 +392,10 @@ int main(int argc, char *argv[])
 	while(!done) {
 		if(is_networking) {
 			// server stuff
-			SDLNet_CheckSockets(n.socketset, ~0);
+			SDLNet_CheckSockets(n->socketset, ~0);
 
-			if(SDLNet_SocketReady(n.tcp_ssock)) {
-				n.handle_server();
+			if(SDLNet_SocketReady(n->tcp_ssock)) {
+				n->handle_server();
 			}
 
 			check_events();
@@ -397,7 +407,7 @@ int main(int argc, char *argv[])
 		// refresh ode every 1000/40 milliseconds (~ 40 fps)
 		if(SDL_GetTicks() - refresh_time >= 1000/40) {
 			// run ode
-			o.run(SDL_GetTicks() - refresh_time);
+			o->run(SDL_GetTicks() - refresh_time);
 			refresh_time = SDL_GetTicks();
 
 			update_players();
@@ -410,19 +420,19 @@ int main(int argc, char *argv[])
 		cout << "status: " << clients[30].status << " | name: " << clients[30].name << " | id: " << clients[30].id << endl;
 		cout << "status: " << clients[31].status << " | name: " << clients[31].name << " | id: " << clients[31].id << endl;
 		cout << "----------------------" << endl;
-		cout << "status: " << (n.clients[0].is_active ? "1" : "0") << " | name: " << n.clients[0].name << " | ip host: " << n.clients[0].ip.host <<
-			" | ip port: " << n.clients[0].ip.port << " | port: " << n.clients[0].port << " | sock: " << n.clients[0].sock << endl;
-		cout << "status: " << (n.clients[1].is_active ? "1" : "0") << " | name: " << n.clients[1].name << " | ip host: " << n.clients[1].ip.host <<
-			" | ip port: " << n.clients[1].ip.port << " | port: " << n.clients[1].port << " | sock: " << n.clients[1].sock << endl;
-		cout << "status: " << (n.clients[30].is_active ? "1" : "0") << " | name: " << n.clients[30].name << " | ip host: " << n.clients[30].ip.host <<
-			" | ip port: " << n.clients[30].ip.port << " | port: " << n.clients[30].port << " | sock: " << n.clients[30].sock << endl;
-		cout << "status: " << (n.clients[31].is_active ? "1" : "0") << " | name: " << n.clients[31].name << " | ip host: " << n.clients[31].ip.host <<
-			" | ip port: " << n.clients[31].ip.port << " | port: " << n.clients[31].port << " | sock: " << n.clients[31].sock << endl;
+		cout << "status: " << (n->clients[0].is_active ? "1" : "0") << " | name: " << n->clients[0].name << " | ip host: " << n->clients[0].ip.host <<
+			" | ip port: " << n->clients[0].ip.port << " | port: " << n->clients[0].port << " | sock: " << n->clients[0].sock << endl;
+		cout << "status: " << (n->clients[1].is_active ? "1" : "0") << " | name: " << n->clients[1].name << " | ip host: " << n->clients[1].ip.host <<
+			" | ip port: " << n->clients[1].ip.port << " | port: " << n->clients[1].port << " | sock: " << n->clients[1].sock << endl;
+		cout << "status: " << (n->clients[30].is_active ? "1" : "0") << " | name: " << n->clients[30].name << " | ip host: " << n->clients[30].ip.host <<
+			" | ip port: " << n->clients[30].ip.port << " | port: " << n->clients[30].port << " | sock: " << n->clients[30].sock << endl;
+		cout << "status: " << (n->clients[31].is_active ? "1" : "0") << " | name: " << n->clients[31].name << " | ip host: " << n->clients[31].ip.host <<
+			" | ip port: " << n->clients[31].ip.port << " | port: " << n->clients[31].port << " | sock: " << n->clients[31].sock << endl;
 		cout << "----------------------" << endl;*/
 	}
 
-	n.exit();
-	o.close();
+	n->exit();
+	o->close();
 
 	delete start_pos;
 

@@ -27,7 +27,6 @@ using namespace std;
  *  @brief vertex3 routines
  *  @author flo
  *  @version 0.1
- *  @date 2005/05/06
  *  @todo nothing atm
  *  
  *  the vertex3 class
@@ -46,12 +45,12 @@ public:
 	~vertex3();
 
 	// overloading routines ...
-	vertex3 operator+(vertex3 &v);
-	vertex3 operator-(vertex3 &v);
+	vertex3 operator+(vertex3& v);
+	vertex3 operator-(vertex3& v);
 	vertex3 operator/(float f);
 	vertex3 operator*(float f);
-	vertex3& operator+=(vertex3 &v);
-	vertex3& operator-=(vertex3 &v);
+	vertex3& operator+=(vertex3& v);
+	vertex3& operator-=(vertex3& v);
 
 	vertex3 normalize();
 

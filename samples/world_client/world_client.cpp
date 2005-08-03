@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date April - May 2005
+ * \date April - August 2005
  *
  * Albion 2 Engine Sample - World Client Sample
  */
@@ -53,7 +53,7 @@ int handle_server_data(char *data) {
 					clients[i].text_point = new core::pnt();
 					clients[i].text_point->x = 10;
 					clients[i].text_point->y = 10;
-					clients[i].text = agui.add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
+					clients[i].text = agui->add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
 					// we don't want to show up the text already
 					clients[i].text->set_notext();
 
@@ -63,7 +63,7 @@ int handle_server_data(char *data) {
 				used = 3;
 			}
 			else {
-				m.print(msg::MDEBUG, "world_client.cpp", "network and clients are already initialized");
+				m->print(msg::MDEBUG, "world_client.cpp", "network and clients are already initialized");
 				used = 3;
 			}
 			break;
@@ -98,7 +98,7 @@ int handle_server_data(char *data) {
 						memcpy(&clients[cnum].rotation, &data[3+12], 4);
 					}
 					else {
-						m.print(msg::MDEBUG, "world_client.cpp", "client doesn't exist anymore (update routine)");
+						m->print(msg::MDEBUG, "world_client.cpp", "client doesn't exist anymore (update routine)");
 					}
 
 					used = 3 + 16;
@@ -115,7 +115,7 @@ int handle_server_data(char *data) {
 			cur_client = (data[1] & 0xFF);
 			if((cur_client >= max_clients) || clients[cur_client].status == 1) {
 				// client doesn't exist / all client "ports" are in use -> break
-				m.print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already initalized! (add routine)", cur_client);
+				m->print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already initalized! (add routine)", cur_client);
 				break;
 			}
 
@@ -130,7 +130,7 @@ int handle_server_data(char *data) {
 			clients[cur_client].port = (unsigned int)SDLNet_Read16(&data[6]);
 
 			// print out some data
-			m.print(msg::MDEBUG, "world_client.cpp", "new client on %d from %d.%d.%d.%d:%d (%s)",
+			m->print(msg::MDEBUG, "world_client.cpp", "new client on %d from %d.%d.%d.%d:%d (%s)",
 				cur_client, (clients[cur_client].host >> 24) & 0xFF,
 				(clients[cur_client].host >> 16) & 0xFF,
 				(clients[cur_client].host >> 8) & 0xFF,
@@ -140,10 +140,10 @@ int handle_server_data(char *data) {
 			cplayers++;
 
 			// create the players model
-			clients[cur_client].model = new a2emodel();
+			clients[cur_client].model = sce->create_a2emodel();
 			clients[cur_client].model->load_model("../data/player.a2m");
 			clients[cur_client].model->set_visible(true);
-			sce.add_model(clients[cur_client].model);
+			sce->add_model(clients[cur_client].model);
 
 			cout << "rcv add size: " << 9 + len << endl;
 			used = 9 + len;
@@ -154,12 +154,12 @@ int handle_server_data(char *data) {
 			unsigned int cur_client = (data[1] & 0xFF);
 			if((cur_client >= max_clients) || clients[cur_client].status != 1) {
 				// client doesn't exist / all client "ports" are in use -> break
-				m.print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already deleted! (delete routine)", cur_client);
+				m->print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already deleted! (delete routine)", cur_client);
 				break;
 			}
 
 			// print out what happened
-			m.print(msg::MDEBUG, "world_client.cpp", "lost client %d: %s", cur_client, clients[cur_client].name);
+			m->print(msg::MDEBUG, "world_client.cpp", "lost client %d: %s", cur_client, clients[cur_client].name);
 
 			// delete the client and resort the data
 			delete_player(cur_client);
@@ -169,14 +169,14 @@ int handle_server_data(char *data) {
 		break;
 		case net::KICK: {
 			// there are some errors with that, but i absolutely dunno y ...
-			m.print(msg::MDEBUG, "world_client.cpp", "sorry, but the server is full!");
+			m->print(msg::MDEBUG, "world_client.cpp", "sorry, but the server is full!");
 		}
 		cout << "rcv kick size: " << 1 << endl;
 		used = 1;
 		break;
 		default: {
 			// unknown package type
-			m.print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type (%u)! - skipping byte",
+			m->print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type (%u)! - skipping byte",
 				(unsigned int)(data[0] & 0xFF));
 		}
 		cout << "rcv unknown size: " << 1 << endl;
@@ -191,9 +191,9 @@ void handle_server(void) {
 	unsigned int pos, len, used;
 
 	// checks if client is still connected to the server
-	len = SDLNet_TCP_Recv(n.tcp_ssock, data, 512);
+	len = SDLNet_TCP_Recv(n->tcp_ssock, data, 512);
 	if(len <= 0) {
-		n.close_socket(n.tcp_ssock);
+		n->close_socket(n->tcp_ssock);
 	}
 	else {
 		pos = 0;
@@ -203,7 +203,7 @@ void handle_server(void) {
 			len -= used;
 			if(used == 0) {
 				// lost data ...
-				m.print(msg::MDEBUG, "world_client.cpp", "lost data - server down or disconnect? (handle server routine)");
+				m->print(msg::MDEBUG, "world_client.cpp", "lost data - server down or disconnect? (handle server routine)");
 				len = 0;
 			}
 		}
@@ -230,7 +230,7 @@ void delete_player(unsigned int num) {
 	sprintf(clients[num].name, "unknown");
 
 	// delete the players objects
-	sce.delete_model(clients[num].model);
+	sce->delete_model(clients[num].model);
 	delete clients[num].model;
 	clients[num].model = NULL;
 
@@ -241,7 +241,7 @@ void delete_player(unsigned int num) {
 	}
 
 	// delete player from net class client list
-	n.delete_client(num);
+	n->delete_client(num);
 
 	// decrease player count
 	cplayers--;
@@ -269,8 +269,8 @@ void send_msg() {
 		}
 		data[i+7] = 0;
 		cout << "dt_msg size: " << length+1 + 7 << endl;
-		if(n.tcp_ssock != NULL) {
-			SDLNet_TCP_Send(n.tcp_ssock, data, length+1 + 7);
+		if(n->tcp_ssock != NULL) {
+			SDLNet_TCP_Send(n->tcp_ssock, data, length+1 + 7);
 		}
 
 		// add msg to the list box
@@ -291,7 +291,7 @@ void add_msg(unsigned int length, char* msg, ...) {
 	va_end(argc);
 
 	// word wrap ...
-	gui_text* tmp_text = new gui_text();
+	gui_text* tmp_text = new gui_text(e);
 	tmp_text->new_text("../data/vera.ttf", 12);
 	tmp_text->set_text(new_msg);
 
@@ -417,11 +417,11 @@ void update() {
 	char* data = new char[7];
 	data[0] = net::DAT;
 	data[1] = DT_UPDATE;
-	memcpy(&data[2], &cam.get_rotation()->y, 4);
+	memcpy(&data[2], &cam->get_rotation()->y, 4);
 
 	// send data
-	if(n.tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n.tcp_ssock, data, 6);
+	if(n->tcp_ssock != NULL) {
+        SDLNet_TCP_Send(n->tcp_ssock, data, 6);
 	}
 	delete data;
 
@@ -434,7 +434,7 @@ void update() {
 	}
 
 	// update the players cam
-	cam.set_position(-clients[client_num].position->x - sinf(clients[client_num].rotation * piover180) * 15.0f,
+	cam->set_position(-clients[client_num].position->x - sinf(clients[client_num].rotation * piover180) * 15.0f,
 		clients[client_num].position->y + 10.0f,
 		-clients[client_num].position->z - cosf(clients[client_num].rotation * piover180) * 15.0f);
 
@@ -454,8 +454,8 @@ void move(MOVE_TYPE type) {
 	data[2] = type;
 
 	// send data
-	if(n.tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n.tcp_ssock, data, 3);
+	if(n->tcp_ssock != NULL) {
+        SDLNet_TCP_Send(n->tcp_ssock, data, 3);
 	}
 	delete data;
 }
@@ -464,12 +464,12 @@ void init() {
 	client_name = new char[32];
 	server = new char[32];
 
-	fio.open_file("settings.dat", false);
+	fio->open_file("settings.dat", false);
 	char fline[256];
 	bool end = false;
 
 	while(!end) {
-        fio.get_line(fline);
+        fio->get_line(fline);
 
 		// file end reached?
 		if(strcmp(fline, "[EOF]") == 0) {
@@ -525,21 +525,21 @@ void init() {
 			}
 		}
 	}
-	fio.close_file();
+	fio->close_file();
 }
 
 void update_names() {
 	for(unsigned int i = 0; i < cplayers; i++) {
 		if(clients[i].status != 0) {
 			// set new player text position
-			c.get_2d_from_3d(clients[i].position, clients[i].text_point);
+			c->get_2d_from_3d(clients[i].position, clients[i].text_point);
 			clients[i].text_point->y -= 50;
 		}
 	}
 }
 
 void draw_names() {
-	e.start_2d_draw();
+	e->start_2d_draw();
 	gfx::rect* r = new gfx::rect();
 	for(unsigned int i = 0; i < cplayers; i++) {
 		if(clients[i].status != 0) {
@@ -549,55 +549,72 @@ void draw_names() {
 
 			r->x2 = p->x + clients[i].text->get_text_width() + 4;
 			r->y2 = p->y + clients[i].text->get_text_height() + 4;
-			agfx.draw_filled_rectangle(sf, r, 0xFFFFFF);
-			agfx.draw_rectangle(sf, r, 0x000000);
+			agfx->draw_filled_rectangle(sf, r, 0xFFFFFF);
+			agfx->draw_rectangle(sf, r, 0x000000);
 		}
 	}
 	delete r;
-	e.stop_2d_draw();
+	e->stop_2d_draw();
 }
 
 int main(int argc, char *argv[])
 {
+	// create engine object
+	e = new engine();
+
+	// get file_io class
+	fio = e->get_file_io();
+
 	// itialize everything (and load the settings)
 	init();
 
 	// initialize the engine
-	e.init(width, height, depth, false);
-	e.set_caption("A2E Sample - World Client Sample");
-	e.set_cursor_visible(false);
+	e->init(width, height, depth, false);
+	e->set_caption("A2E Sample - World Client Sample");
+	e->set_cursor_visible(false);
+
+	// init class pointers
+	c = e->get_core();
+	m = e->get_msg();
+	aevent = e->get_event();
+	sce = new scene(e);
+	agfx = new gfx();
+	cam = new camera(e);
+	n = new net(e);
+	agui = new gui(e);
 
 	// set a color scheme (blue)
-	e.set_color_scheme(scheme);
-	sf = e.get_screen();
+	e->set_color_scheme(scheme);
+	sf = e->get_screen();
 
 	// initialize the a2e events
-	aevent.init(ievent);
-	aevent.set_keyboard_layout(event::DE);
+	aevent->init(ievent);
+	aevent->set_keyboard_layout(event::DE);
 
 	// initialize gui and chat sutff
-	agui.init(e, aevent);
+	agui->init();
 
-	chat_window = agui.add_window(agfx.pnt_to_rect(0, 0, 250 + 4, 275 + 21), 100, "World Chat", true);
-	chat_msg_list = agui.add_list_box(agfx.pnt_to_rect(0, 0, 250, 250), 101, "Chat List Box", 100);
-	chat_msg_input = agui.add_input_box(agfx.pnt_to_rect(0, 250, 200, 275), 102, "", 100);
-	chat_msg_send = agui.add_button(agfx.pnt_to_rect(200, 250, 250, 275), 103, "Send", 100);
+	chat_window = agui->add_window(agfx->pnt_to_rect(0, 0, 250 + 4, 275 + 21), 100, "World Chat", true);
+	chat_msg_list = agui->add_list_box(agfx->pnt_to_rect(0, 0, 250, 250), 101, "Chat List Box", 100);
+	chat_msg_input = agui->add_input_box(agfx->pnt_to_rect(0, 250, 200, 275), 102, "", 100);
+	chat_msg_send = agui->add_button(agfx->pnt_to_rect(200, 250, 250, 275), 103, "Send", 100);
 
 	// initialize the camera
-	cam.init(e, aevent);
-	cam.set_position(0.0f, 50.0f, 0.0f);
-	cam.set_cam_input(false);
-	cam.set_rotation_speed(50.0f);
+	cam->set_position(0.0f, 50.0f, 0.0f);
+	cam->set_cam_input(false);
+	cam->set_rotation_speed(50.0f);
 
 	// load the models and set new positions
-	level.load_model("../data/move_level.a2m"); 
-	level.set_scale(0.5f, 0.5f, 0.5f);
-	sce.add_model(&level);
+	level = sce->create_a2emodel();
+	level->load_model("../data/move_level.a2m"); 
+	level->set_scale(0.5f, 0.5f, 0.5f);
+	sce->add_model(level);
 
-	sphere.load_model("../data/player_sphere.a2m"); 
-	sce.add_model(&sphere);
+	sphere = sce->create_a2emodel();
+	sphere->load_model("../data/player_sphere.a2m"); 
+	sce->add_model(sphere);
 
-	player_light = new light(0.0f, 50.0f, 0.0f);
+	player_light = new light(e, 0.0f, 50.0f, 0.0f);
 	float pamb[] = { 1.0f, 1.0f, 1.0f, 0.0f};
 	float pdif[] = { 1.0f, 1.0f, 1.0f, 0.0f};
 	float pspc[] = { 1.0f, 1.0f, 1.0f, 0.0f};
@@ -607,32 +624,32 @@ int main(int argc, char *argv[])
 	player_light->set_constant_attenuation(0.0f);
 	player_light->set_linear_attenuation(1.0f / range);
 	player_light->set_quadratic_attenuation(0.0f);
-	sce.add_light(player_light);
+	sce->add_light(player_light);
 
-	l1 = new light(-50.0f, 100.0f, -50.0f);
+	l1 = new light(e, -50.0f, 100.0f, -50.0f);
 	float lamb[] = { 0.1f, 0.1f, 0.1f, 0.0f};
 	float ldif[] = { 0.2f, 0.2f, 0.2f, 0.0f};
 	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};
 	l1->set_lambient(lamb);
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
-	sce.add_light(l1);
+	sce->add_light(l1);
 
 	// init network stuff
-	if(n.init()) {
-		m.print(msg::MDEBUG, "world_client.cpp", "net class initialized!");
+	if(n->init()) {
+		m->print(msg::MDEBUG, "world_client.cpp", "net class initialized!");
 		SDL_Delay(1000);
 		// we just want a client program
-		if(n.create_client(server, net::TCP, port, client_name)) {
-			m.print(msg::MDEBUG, "world_client.cpp", "client created!");
+		if(n->create_client(server, net::TCP, port, client_name)) {
+			m->print(msg::MDEBUG, "world_client.cpp", "client created!");
 			is_networking = true;
 		}
 		else {
-			m.print(msg::MDEBUG, "world_client.cpp", "client couldn't be created!");
+			m->print(msg::MDEBUG, "world_client.cpp", "client couldn't be created!");
 		}
 	}
 	else {
-		m.print(msg::MDEBUG, "world_client.cpp", "net class couldn't be initialized!");
+		m->print(msg::MDEBUG, "world_client.cpp", "net class couldn't be initialized!");
 	}
 
 	// needed for fps counting
@@ -646,15 +663,15 @@ int main(int argc, char *argv[])
 	// main loop
 	while(!done)
 	{
-		while(aevent.is_event())
+		while(aevent->is_event())
 		{
-			aevent.handle_events(aevent.get_event().type);
-			switch(aevent.get_event().type) {
+			aevent->handle_events(aevent->get_event().type);
+			switch(aevent->get_event().type) {
 				case SDL_QUIT:
 					done = true;
 					break;
 				case SDL_KEYDOWN:
-					switch(aevent.get_event().key.keysym.sym) {
+					switch(aevent->get_event().key.keysym.sym) {
 						case SDLK_ESCAPE:
 							done = true;
 							break;
@@ -672,17 +689,17 @@ int main(int argc, char *argv[])
 					}
 					break;
 				case SDL_MOUSEBUTTONDOWN:
-					switch(aevent.get_event().button.button) {
+					switch(aevent->get_event().button.button) {
 						case SDL_BUTTON_RIGHT:
 							// toggle control state
 							control_state = !control_state;
 							if(control_state == 0) {
-								e.set_cursor_visible(false);
-								cam.set_mouse_input(true);
+								e->set_cursor_visible(false);
+								cam->set_mouse_input(true);
 							}
 							else {
-								e.set_cursor_visible(true);
-								cam.set_mouse_input(false);
+								e->set_cursor_visible(true);
+								cam->set_mouse_input(false);
 							}
 							break;
 						default:
@@ -694,10 +711,10 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		while(aevent.is_gui_event()) {
-			switch(aevent.get_gui_event().type) {
+		while(aevent->is_gui_event()) {
+			switch(aevent->get_gui_event().type) {
 				case event::BUTTON_PRESSED:
-					switch(aevent.get_gui_event().id) {
+					switch(aevent->get_gui_event().id) {
 						case 103: {
 							if(control_state == 1) { send_msg(); }
 						}
@@ -711,12 +728,12 @@ int main(int argc, char *argv[])
 
 		if(is_networking) {
 			// client stuff
-			SDLNet_CheckSockets(n.socketset, 0);
-			if(SDLNet_SocketReady(n.tcp_ssock)) {
+			SDLNet_CheckSockets(n->socketset, 0);
+			if(SDLNet_SocketReady(n->tcp_ssock)) {
 				handle_server();
 			}
 
-			if(n.tcp_ssock == NULL) {
+			if(n->tcp_ssock == NULL) {
 				done = true;
 			}
 		}
@@ -728,37 +745,37 @@ int main(int argc, char *argv[])
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
 			sprintf(tmp, "A2E Sample - World Client Sample | FPS: %u | Pos: %f %f %f", fps,
-				-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
+				-cam->get_position()->x, cam->get_position()->y, -cam->get_position()->z);
 			fps = 0;
 			fps_time = SDL_GetTicks();
 		}
-		e.set_caption(tmp);
+		e->set_caption(tmp);
 
 		// send new client data to server
 		if(is_initialized) { update(); }
 
 		// start drawing the scene
-		e.start_draw();
+		e->start_draw();
 
-		cam.run();
-		sce.draw();
+		cam->run();
+		sce->draw();
 
 		update_names();
 
 		draw_names();
-		agui.draw();
+		agui->draw();
 
-		e.stop_draw();
+		e->stop_draw();
 	}
 
 	delete tmp;
 
-	n.exit();
+	n->exit();
 
 	// remove player models from the scene list
 	for(unsigned int i = 0; i < max_clients; i++) {
 		if(clients[i].status != 0) {
-            sce.delete_model(clients[i].model);
+            sce->delete_model(clients[i].model);
 		}
 	}
 

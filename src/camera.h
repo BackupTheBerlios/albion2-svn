@@ -32,7 +32,6 @@ using namespace std;
  *  @brief a2e camera functions
  *  @author flo
  *  @version 0.2
- *  @date 2005/04/22
  *  @todo more functions
  *  
  *  the camera class
@@ -41,10 +40,9 @@ using namespace std;
 class A2E_API camera
 {
 public:
-	camera();
+	camera(engine* e);
 	~camera();
 
-	void init(engine &iengine, event &ievent);
 	void run();
 
 	void set_position(float x, float y, float z);
@@ -61,11 +59,10 @@ public:
 	bool get_mouse_input();
 
 protected:
-	msg m;
-	core c;
-
-	event* event_handler;
-	engine* engine_handler;
+	msg* m;
+	core* c;
+	event* evt;
+	engine* e;
 
 	vertex3* position;
 	vertex3* rotation;

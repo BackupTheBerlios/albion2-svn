@@ -36,7 +36,6 @@
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
-#include <shadow.h>
 #include <light.h>
 using namespace std;
 
@@ -50,21 +49,20 @@ enum cam_type {
 
 void update_cam(cam_type ctype);
 
-msg m;
-net n;
-core c;
-engine e;
-gfx agfx;
-event aevent;
-camera cam;
-ode o;
+msg* m;
+net* n;
+core* c;
+engine* e;
+gfx* agfx;
+event* aevent;
+camera* cam;
+ode* o;
+scene* sce;
 
-scene sce;
-
-a2emodel level;
-a2emodel sphere;
-a2emodel player;
-a2emodel* spheres;
+a2emodel* level;
+a2emodel* sphere;
+a2emodel* player;
+a2emodel** spheres;
 unsigned int cspheres = 9; // should be a quadratic number
 ode_object* sphere_obj;
 
@@ -86,5 +84,7 @@ float lastxforce;
 float lastzforce;
 
 bool player_init = false;
+
+float yrot = 0.0f;
 
 #endif

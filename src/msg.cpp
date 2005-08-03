@@ -22,12 +22,17 @@ using namespace std;
 /*! Sets the counter to 0
  */
 msg::msg() {
-	err_counter = 0;
+	msg::err_counter = 0;
+	msg::log = true;
+	msg::file = new fstream();
+	msg::file->open("log.txt", fstream::out);
 }
 
 /*! Does nothing
  */
 msg::~msg() {
+	file->close();
+	delete file;
 }
 
 /*! Prints the error number and an error string
@@ -45,6 +50,9 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 		case msg::MMSG:
 			if(str == NULL) {
 				cout << "MSG: " << file << endl;
+				if(msg::log) {
+					*(msg::file) << "MSG: " << file << endl;
+				}
 			}
 			else if(file == NULL) {
 				cout << "MSG: ";
@@ -54,6 +62,10 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				va_end(argc);
 
 				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "MSG: " << ostr << endl;
+				}
 			}
 			else {
 				cout << "MSG: " << file << ": ";
@@ -63,6 +75,10 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				va_end(argc);
 
 				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "MSG: " << file << ": " << ostr << endl;
+				}
 			}
 			break;
 		// error msg output
@@ -70,6 +86,10 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			err_counter++;
 			if(str == NULL) {
 				cerr << "ERROR #" << err_counter << ": " << file << endl;
+
+				if(msg::log) {
+					*(msg::file) << "ERROR #" << err_counter << ": " << file << endl;
+				}
 			}
 			else {
 				cerr << "ERROR #" << err_counter << ": " << file << ": ";
@@ -79,12 +99,20 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				va_end(argc);
 
 				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "ERROR #" << err_counter << ": " << file << ": " << ostr << endl;
+				}
 			}
 			break;
 		// debug msg output
 		case msg::MDEBUG:
 			if(str == NULL) {
 				cout << "DEBUG: " << file << endl;
+
+				if(msg::log) {
+					*(msg::file) << "DEBUG: " << file << endl;
+				}
 			}
 			else if(file == NULL) {
 				cout << "DEBUG: ";
@@ -94,6 +122,10 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				va_end(argc);
 
 				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "DEBUG: " << ostr << endl;
+				}
 			}
 			else {
 				cout << "DEBUG: " << file << ": ";
@@ -103,6 +135,10 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				va_end(argc);
 
 				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "DEBUG: " << file << ": " << ostr << endl;
+				}
 			}
 			break;
 	}
@@ -120,4 +156,17 @@ void msg::scan(unsigned int length, char* str) {
 	for(int i = 0; i < 512; i++) {
 		str[i] = input[i];
 	}
+}
+
+/*! sets the log mode
+ *  @param mode the mode (true = enabled, false = disabled)
+ */
+void msg::set_log_mode(bool mode) {
+	msg::log = mode;
+}
+
+/*! returns true if logging is enabled and false if it is disabled
+ */
+bool msg::get_log_mode() {
+	return msg::log;
 }

@@ -24,7 +24,7 @@
 
 /*! there is no function currently
  */
-gui_list::gui_list() {
+gui_list::gui_list(engine* e) {
 	is_active = false;
 
 	citems = 0;
@@ -38,16 +38,22 @@ gui_list::gui_list() {
 	rectangle->y2 = 0;
 
 	sid = 0;
+
+	// get classes
+	gui_list::e = e;
+	gui_list::c = e->get_core();
+	gui_list::m = e->get_msg();
+	gui_list::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_list::~gui_list() {
-	m.print(msg::MDEBUG, "gui_list.cpp", "freeing gui_list stuff");
+	m->print(msg::MDEBUG, "gui_list.cpp", "freeing gui_list stuff");
 
 	delete rectangle;
 
-	m.print(msg::MDEBUG, "gui_list.cpp", "gui_list stuff freed");
+	m->print(msg::MDEBUG, "gui_list.cpp", "gui_list stuff freed");
 }
 
 /*! draws the list box
@@ -57,24 +63,24 @@ gui_list::~gui_list() {
 void gui_list::draw(unsigned int x, unsigned int y) {
 	gfx::rect* r1 = new gfx::rect();
 
-	g.pnt_to_rect(r1, gui_list::rectangle->x1 + x, gui_list::rectangle->y1 + y,
+	g->pnt_to_rect(r1, gui_list::rectangle->x1 + x, gui_list::rectangle->y1 + y,
 		gui_list::rectangle->x2 + x, gui_list::rectangle->y2 + y);
 
 	// draw bg
-	g.draw_filled_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_BG2);
+	g->draw_filled_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_INDARK,
-		engine_handler->get_gstyle().STYLE_LIGHT);
+	g->draw_2colored_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_INDARK,
+		e->get_gui_style()->STYLE_LIGHT);
 
 	// draw 2 colored border
-	g.pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1,
+	g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1,
 		gui_list::rectangle->x2 + x - 1, gui_list::rectangle->y2 + y - 1);
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, engine_handler->get_gstyle().STYLE_DARK,
-		engine_handler->get_gstyle().STYLE_DARK2);
+	g->draw_2colored_rectangle(e->get_screen(),
+		r1, e->get_gui_style()->STYLE_DARK,
+		e->get_gui_style()->STYLE_DARK2);
 
 	// draw items
 	// we need a height of 18px for each item
@@ -120,7 +126,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 	for(unsigned int i = 0; i < loop; i++) {
 		for(unsigned int j = 0; j < citems; j++) {
 			if(items[j]->get_id() == new_ids[i + position]) {
-				g.cord_to_pnt(p1, gui_list::rectangle->x1 + 3,
+				g->cord_to_pnt(p1, gui_list::rectangle->x1 + 3,
 					gui_list::rectangle->y1 + 6 + i*18);
 				items[j]->set_point(p1->x, p1->y);
 
@@ -130,10 +136,10 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 					r1->y1 = p1->y - 4 + y;
 					r1->x2 = gui_list::rectangle->x2 - 15 + x;
 					r1->y2 = p1->y + 13 + y;
-					g.draw_filled_rectangle(engine_handler->get_screen(),
-						r1, engine_handler->get_gstyle().STYLE_SELECTED);
-					g.draw_rectangle(engine_handler->get_screen(),
-						r1, engine_handler->get_gstyle().STYLE_DARK);
+					g->draw_filled_rectangle(e->get_screen(),
+						r1, e->get_gui_style()->STYLE_SELECTED);
+					g->draw_rectangle(e->get_screen(),
+						r1, e->get_gui_style()->STYLE_DARK);
 				}
 
 				items[j]->draw(x, y);
@@ -148,13 +154,6 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 
 	// vbar handling
 	gui_list::set_position(vbar_handler->get_position());
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_list::set_engine_handler(engine* iengine) {
-	gui_list::engine_handler = iengine;
 }
 
 /*! creates a vbar -> a pointer to the vbar class
@@ -240,28 +239,27 @@ void gui_list::set_position(unsigned int position) {
 gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == id) {
-			m.print(m.MERROR, "gui_list.cpp", "gui list item with such an id already exists!");
+			m->print(msg::MERROR, "gui_list.cpp", "gui list item with such an id already exists!");
 			return 0;
 		}
 	}
 
 	SDL_Color col;
-	col.b = engine_handler->get_gstyle().STYLE_FONT & 0xFF;
-	col.g = (engine_handler->get_gstyle().STYLE_FONT & 0xFF00) >> 8;
-	col.r = (engine_handler->get_gstyle().STYLE_FONT & 0xFF0000) >> 16;
+	col.b = e->get_gui_style()->STYLE_FONT & 0xFF;
+	col.g = (e->get_gui_style()->STYLE_FONT & 0xFF00) >> 8;
+	col.r = (e->get_gui_style()->STYLE_FONT & 0xFF0000) >> 16;
 
-	gui_text* gtext = new gui_text();
+	gui_text* gtext = new gui_text(e);
 
 	gtext->set_init(false);
-	gtext->set_engine_handler(gui_list::engine_handler);
 	gtext->set_id(id);
 	gtext->new_text("vera.ttf", 12);
-	gtext->set_point(g.cord_to_pnt(0,0));
+	gtext->set_point(g->cord_to_pnt(0,0));
 	gtext->set_text(text);
 	gtext->set_color(col);
 	gtext->set_init(true);
 
-	items[citems] = new gui_list_item();
+	items[citems] = new gui_list_item(e);
 	items[citems]->set_text_handler(gtext);
 	items[citems]->set_text(text);
 	items[citems]->set_id(id);
@@ -302,7 +300,7 @@ unsigned int gui_list::get_citems() {
 void gui_list::select_pos(unsigned int x, unsigned int y) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == sid) {
-            items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT);
+            items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT);
 		}
 	}
 
@@ -317,9 +315,9 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 			r->y1 = items[i]->get_point()->y - 4;
 			r->y2 = items[i]->get_point()->y + 13;
 
-			if(g.is_pnt_in_rectangle(r, pos)) {
+			if(g->is_pnt_in_rectangle(r, pos)) {
 				sid = items[i]->get_id();
-				items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT2);
+				items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT2);
 				i = citems;
 			}
 	}
@@ -340,10 +338,10 @@ unsigned int gui_list::get_selected_id() {
 void gui_list::set_selected_id(unsigned int sid) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == gui_list::sid) {
-            items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT);
+            items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT);
 		}
 		else if(items[i]->get_id() == sid) {
-			items[i]->get_text_handler()->set_color(engine_handler->get_gstyle().STYLE_FONT2);
+			items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT2);
 		}
 	}
 

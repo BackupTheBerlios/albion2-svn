@@ -20,7 +20,7 @@
 
 /*! there is no function currently
  */
-a2eanim::a2eanim() {
+a2eanim::a2eanim(engine* e) {
 	joint_count = 0;
 	base_joint_count = 0;
 	mesh_count = 0;
@@ -38,12 +38,18 @@ a2eanim::a2eanim() {
 	material = NULL;
 
 	is_draw_joints = false;
+
+	// get classes
+	a2eanim::e = e;
+	a2eanim::c = e->get_core();
+	a2eanim::m = e->get_msg();
+	a2eanim::file = e->get_file_io();
 }
 
 /*! there is no function currently
  */
 a2eanim::~a2eanim() {
-	m.print(msg::MDEBUG, "a2eanim.cpp", "freeing a2eanim stuff");
+	m->print(msg::MDEBUG, "a2eanim.cpp", "freeing a2eanim stuff");
 
 	if(a2eanim::joints != NULL) {
 		delete a2eanim::joints;
@@ -65,7 +71,7 @@ a2eanim::~a2eanim() {
 		delete a2eanim::material;
 	}
 
-	m.print(msg::MDEBUG, "a2eanim.cpp", "a2eanim stuff freed");
+	m->print(msg::MDEBUG, "a2eanim.cpp", "a2eanim stuff freed");
 }
 
 /*! draws the model
@@ -167,23 +173,23 @@ void a2eanim::draw_joints() {
  *  @param filename the name of the .a2m model file
  */
 void a2eanim::load_model(char* filename) {
-	file.open_file(filename, true);
+	file->open_file(filename, true);
 
 	// get file type
-	file.get_block(a2eanim::file_type, 8);
+	file->get_block(a2eanim::file_type, 8);
 	a2eanim::file_type[8] = 0;
 
 	// get model type and abort if it's not 0x01
-	char model_type = file.get_char();
+	char model_type = file->get_char();
 	if(model_type != 0x01) {
-		m.print(msg::MERROR, "a2eanim.cpp", "non supported model type: %u!", (unsigned int)(model_type & 0xFF));
+		m->print(msg::MERROR, "a2eanim.cpp", "non supported model type: %u!", (unsigned int)(model_type & 0xFF));
 		return;
 	}
 
 	// joint count
-	a2eanim::joint_count = file.get_uint();
+	a2eanim::joint_count = file->get_uint();
 	// base joint count
-	a2eanim::base_joint_count = file.get_uint();
+	a2eanim::base_joint_count = file->get_uint();
 
 	// get joint data
 	a2eanim::joints = new joint[a2eanim::joint_count];
@@ -191,28 +197,28 @@ void a2eanim::load_model(char* filename) {
 		// joint number
 		a2eanim::joints[i].num = i;
 		// joint parent
-		a2eanim::joints[i].parent_num = file.get_uint();
+		a2eanim::joints[i].parent_num = file->get_uint();
 		// joint children count
 		a2eanim::joints[i].children_count = 0;
 		// joint translation
-		a2eanim::joints[i].position.x = file.get_float();
-		a2eanim::joints[i].position.y = file.get_float();
-		a2eanim::joints[i].position.z = file.get_float();
+		a2eanim::joints[i].position.x = file->get_float();
+		a2eanim::joints[i].position.y = file->get_float();
+		a2eanim::joints[i].position.z = file->get_float();
 		// joint orientation
-		a2eanim::joints[i].orientation.r = file.get_float();
-		a2eanim::joints[i].orientation.x = file.get_float();
-		a2eanim::joints[i].orientation.y = file.get_float();
-		a2eanim::joints[i].orientation.z = file.get_float();
+		a2eanim::joints[i].orientation.r = file->get_float();
+		a2eanim::joints[i].orientation.x = file->get_float();
+		a2eanim::joints[i].orientation.y = file->get_float();
+		a2eanim::joints[i].orientation.z = file->get_float();
 	}
 
 	// object/mesh count
-	a2eanim::mesh_count = file.get_uint();
+	a2eanim::mesh_count = file->get_uint();
 
 	// get mesh data
 	a2eanim::meshes = new mesh[a2eanim::mesh_count];
 	for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
 		// vertex count
-		a2eanim::meshes[i].vertex_count = file.get_uint();
+		a2eanim::meshes[i].vertex_count = file->get_uint();
 
 		// vertex data
 		a2eanim::meshes[i].tex_coords = new core::coord[a2eanim::meshes[i].vertex_count];
@@ -221,12 +227,12 @@ void a2eanim::load_model(char* filename) {
 		a2eanim::meshes[i].vertices = new vertex3[a2eanim::meshes[i].vertex_count];
 		for(unsigned int j = 0; j < a2eanim::meshes[i].vertex_count; j++) {
 			// uv coordinates
-			a2eanim::meshes[i].tex_coords[j].u = file.get_float();
-			a2eanim::meshes[i].tex_coords[j].v = file.get_float();
+			a2eanim::meshes[i].tex_coords[j].u = file->get_float();
+			a2eanim::meshes[i].tex_coords[j].v = file->get_float();
 			// weight index
-			a2eanim::meshes[i].weight_indices[j] = file.get_uint();
+			a2eanim::meshes[i].weight_indices[j] = file->get_uint();
 			// weight count
-			a2eanim::meshes[i].weight_counts[j] = file.get_uint();
+			a2eanim::meshes[i].weight_counts[j] = file->get_uint();
 			// vertices
 			a2eanim::meshes[i].vertices[j].x = 0.0f;
 			a2eanim::meshes[i].vertices[j].y = 0.0f;
@@ -234,19 +240,19 @@ void a2eanim::load_model(char* filename) {
 		}
 
 		// triangle count
-		a2eanim::meshes[i].triangle_count = file.get_uint();
+		a2eanim::meshes[i].triangle_count = file->get_uint();
 
 		// triangle data
 		a2eanim::meshes[i].indices = new core::index[a2eanim::meshes[i].triangle_count];
 		for(unsigned int j = 0; j < a2eanim::meshes[i].triangle_count; j++) {
 			// indices
-			a2eanim::meshes[i].indices[j].i1 = file.get_uint();
-			a2eanim::meshes[i].indices[j].i2 = file.get_uint();
-			a2eanim::meshes[i].indices[j].i3 = file.get_uint();
+			a2eanim::meshes[i].indices[j].i1 = file->get_uint();
+			a2eanim::meshes[i].indices[j].i2 = file->get_uint();
+			a2eanim::meshes[i].indices[j].i3 = file->get_uint();
 		}
 
 		// weight count
-		a2eanim::meshes[i].weight_count = file.get_uint();
+		a2eanim::meshes[i].weight_count = file->get_uint();
 
 		// weight data
 		a2eanim::meshes[i].bone_indices = new int[a2eanim::meshes[i].weight_count];
@@ -254,17 +260,17 @@ void a2eanim::load_model(char* filename) {
 		a2eanim::meshes[i].weights = new vertex3[a2eanim::meshes[i].weight_count];
 		for(unsigned int j = 0; j < a2eanim::meshes[i].weight_count; j++) {
 			// bone index
-			a2eanim::meshes[i].bone_indices[j] = file.get_int();
+			a2eanim::meshes[i].bone_indices[j] = file->get_int();
 			// weight strength
-			a2eanim::meshes[i].weight_strenghts[j] = file.get_float();
+			a2eanim::meshes[i].weight_strenghts[j] = file->get_float();
 			// weight itself
-			a2eanim::meshes[i].weights[j].x = file.get_float();
-			a2eanim::meshes[i].weights[j].y = file.get_float();
-			a2eanim::meshes[i].weights[j].z = file.get_float();
+			a2eanim::meshes[i].weights[j].x = file->get_float();
+			a2eanim::meshes[i].weights[j].y = file->get_float();
+			a2eanim::meshes[i].weights[j].z = file->get_float();
 		}
 	}
 
-	file.close_file();
+	file->close_file();
 
 	// compute parent<->children connections
 	a2eanim::base_joints = new joint*[a2eanim::base_joint_count];
@@ -312,18 +318,18 @@ void a2eanim::add_animation(char* filename) {
 
 
 	// load animation file
-	file.open_file(filename, true);
+	file->open_file(filename, true);
 
 	// create new animation
 	animation* ani = new animation();
 
 	// get file type
 	char* file_type = new char[7];
-	file.get_block(file_type, 7);
+	file->get_block(file_type, 7);
 	delete file_type;
 
 	// joint count
-	ani->joint_count = file.get_uint();
+	ani->joint_count = file->get_uint();
 
 	// get joint data
 	ani->joint_parents = new int[ani->joint_count];
@@ -333,28 +339,28 @@ void a2eanim::add_animation(char* filename) {
 	ani->joint_base_orientation = new quaternion[ani->joint_count];
 	for(unsigned int i = 0; i < ani->joint_count; i++) {
 		// joint parent
-		ani->joint_parents[i] = file.get_int();
+		ani->joint_parents[i] = file->get_int();
 		// joint flags
-		ani->joint_flags[i] = file.get_uint();
+		ani->joint_flags[i] = file->get_uint();
 		// joint start index
-		ani->joint_start_indices[i] = file.get_uint();
+		ani->joint_start_indices[i] = file->get_uint();
 		// joint base translation
-		ani->joint_base_translation[i].x = file.get_float();
-		ani->joint_base_translation[i].y = file.get_float();
-		ani->joint_base_translation[i].z = file.get_float();
+		ani->joint_base_translation[i].x = file->get_float();
+		ani->joint_base_translation[i].y = file->get_float();
+		ani->joint_base_translation[i].z = file->get_float();
 		// joint base orientation
-		ani->joint_base_orientation[i].r = file.get_float();
-		ani->joint_base_orientation[i].x = file.get_float();
-		ani->joint_base_orientation[i].y = file.get_float();
-		ani->joint_base_orientation[i].z = file.get_float();
+		ani->joint_base_orientation[i].r = file->get_float();
+		ani->joint_base_orientation[i].x = file->get_float();
+		ani->joint_base_orientation[i].y = file->get_float();
+		ani->joint_base_orientation[i].z = file->get_float();
 	}
 
 	// frame count
-	ani->frame_count = file.get_uint();
+	ani->frame_count = file->get_uint();
 	// frame time
-	ani->frame_time = file.get_float();
+	ani->frame_time = file->get_float();
 	// animated components count
-	ani->animated_components_count = file.get_uint();
+	ani->animated_components_count = file->get_uint();
 
 	// write frame data
 	ani->frames = new float*[ani->frame_count];
@@ -362,12 +368,12 @@ void a2eanim::add_animation(char* filename) {
 		// animated components data
 		ani->frames[i] = new float[ani->animated_components_count];
 		for(unsigned int j = 0; j < ani->animated_components_count; j++) {
-			ani->frames[i][j] = file.get_float();
+			ani->frames[i][j] = file->get_float();
 		}
 	}
 
 	// close animation file
-	file.close_file();
+	file->close_file();
 
 
 	// assign new animation
@@ -399,6 +405,7 @@ void a2eanim::skin_mesh() {
 				tmp->z *= a2eanim::meshes[i].weight_strenghts[base_index + k];
 				a2eanim::meshes[i].vertices[j] += *tmp;
 				delete tmp;
+				// gcc doesn't get along with this ... dunno y :/
 				/*a2eanim::meshes[i].vertices[j] += (position + joints[bone_index].position) * a2eanim::meshes[i].weight_strenghts[base_index + k];*/
 			}
 		}

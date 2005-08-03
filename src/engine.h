@@ -24,14 +24,15 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
-#include <math.h>
+#include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "msg.h"
 #include "core.h"
-#include "net.h"
 #include "gui_style.h"
-#include "shadow.h"
+#include "file_io.h"
+#include "event.h"
+#include "gfx.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -41,7 +42,6 @@ using namespace std;
  *  @author laxity
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the main engine
@@ -52,6 +52,9 @@ class A2E_API engine
 public:
 	engine();
 	~engine();
+
+	// graphic control functions
+	void init(bool console);
 	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
@@ -60,16 +63,15 @@ public:
 	void start_2d_draw();
 	void stop_2d_draw();
 	SDL_Surface* get_screen();
-
-	void set_caption(char* caption);
-	char* get_caption();
-
-	gui_style get_gstyle();
-	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
-
 	bool draw_gl_scene();
 	bool init_gl();
 	bool resize_window();
+
+	// miscellaneous control functions
+	void set_caption(char* caption);
+	char* get_caption();
+
+	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
 
 	void set_position(float xpos, float ypos, float zpos);
 	vertex3* get_position();
@@ -80,13 +82,25 @@ public:
 	void set_fps_limit(unsigned int ms);
 	unsigned int get_fps_limit();
 
+	// class return functions
+	core* get_core();
+	msg* get_msg();
+	file_io* get_file_io();
+	event* get_event();
+	gui_style* get_gui_style();
+	gfx* get_gfx();
+
 protected:
+	core* c;
+	msg* m;
+	gui_style* gstyle;
+	file_io* f;
+	event* e;
+	gfx* g;
+
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
 	const SDL_VideoInfo* video_info;
-	msg m;
-	gui_style gstyle;
-	shadow shd;
 
 	vertex3* position;
 

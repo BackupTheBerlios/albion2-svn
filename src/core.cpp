@@ -96,6 +96,7 @@ bool core::is_vertex_in_line(line l1, vertex3 p1, float precision) {
  *  1 = less precision / 0.1 = more precision (float)
  */
 bool core::is_vertex_in_triangle(triangle t1, vertex3 p1, float precision) {
+	// obsolete ... and probably totally fussily ...
 	float dist_t10_t11 = core::get_distance(t1.v1, t1.v2);
 	float dist_t10_t12 = core::get_distance(t1.v1, t1.v3);
 	float dist_t11_t12 = core::get_distance(t1.v2, t1.v3);

@@ -18,13 +18,14 @@
 #define __MSG_H__
 
 #include "win_dll_export.h"
+#include <fstream>
+using namespace std;
 
 /*! @class msg
  *  @brief msg handling
  *  @author laxity
  *  @author flo
  *  @version 0.3.6
- *  @date 2004/08/13
  *  @todo logfile support
  *
  *  This is the msg handling class
@@ -38,6 +39,8 @@ public:
 
 	void print(unsigned int type, const char *file, const char *str = NULL, ...);
 	void scan(unsigned int length, char* str);
+	void set_log_mode(bool mode);
+	bool get_log_mode();
 
 	enum PRINT
 	{
@@ -48,6 +51,8 @@ public:
 
 protected:
 	unsigned long int err_counter;
+	bool log;
+	fstream* file;
 
 };
 

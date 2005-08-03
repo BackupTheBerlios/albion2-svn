@@ -33,7 +33,6 @@ using namespace std;
  *  @brief class for ode objects (bodies) and their functions
  *  @author flo
  *  @version 0.1
- *  @date 2005/01/10
  *  @todo more functions
  *  
  *  ode object (body) functions
@@ -51,7 +50,7 @@ public:
 		CYLINDER	//!< enum cylinder geometry
 	};
 
-	ode_object(dWorldID* world, dSpaceID* space, a2emodel* model,
+	ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model,
 		bool fixed,	ode_object::OTYPE type);
 	~ode_object();
 
@@ -72,8 +71,9 @@ public:
 	void set_mass(float mass);
 
 protected:
-	msg m;
-	core c;
+	msg* m;
+	core* c;
+	engine* e;
 
 	dWorldID* world;
 	dSpaceID* space;

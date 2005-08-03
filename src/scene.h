@@ -34,7 +34,6 @@ using namespace std;
  *  @brief a2e scene manager
  *  @author flo
  *  @version 0.2
- *  @date 2005/02/15
  *  @todo more functions
  *  
  *  the scene manager class
@@ -43,8 +42,11 @@ using namespace std;
 class A2E_API scene
 {
 public:
-	scene();
+	scene(engine* e);
 	~scene();
+
+	a2eanim* create_a2eanim();
+	a2emodel* create_a2emodel();
 
 	void draw();
 	void add_model(a2emodel* model);
@@ -67,8 +69,9 @@ public:
 	bool get_light();
 
 protected:
-	msg m;
-	core c;
+	msg* m;
+	core* c;
+	engine* e;
 
 	vertex3* position;
 

@@ -41,11 +41,11 @@ quaternion::quaternion(float r, float x, float y, float z) {
 /*! creates a quaternion object
  *  @param q another quaternion that you want to copy
  */
-quaternion::quaternion(quaternion* q) {
-	quaternion::r = q->r;
-	quaternion::x = q->x;
-	quaternion::y = q->y;
-	quaternion::z = q->z;
+quaternion::quaternion(quaternion& q) {
+	quaternion::r = q.r;
+	quaternion::x = q.x;
+	quaternion::y = q.y;
+	quaternion::z = q.z;
 }
 
 /*! creates a quaternion object
@@ -63,7 +63,7 @@ quaternion::~quaternion() {
 
 /*! = operator overload
  */
-quaternion quaternion::operator=(quaternion q) {
+quaternion quaternion::operator=(quaternion& q) {
 	quaternion::r = q.r;
 	quaternion::x = q.x;
 	quaternion::y = q.y;
@@ -85,7 +85,7 @@ quaternion quaternion::operator-(quaternion& q) {
 
 /*! * operator overload
  */
-quaternion quaternion::operator*(quaternion q) {
+quaternion quaternion::operator*(quaternion& q) {
 	return quaternion(quaternion::r * q.r - quaternion::x * q.x - quaternion::y * q.y - quaternion::z * q.z, 
 				quaternion::r * q.x + quaternion::x * q.r + quaternion::y * q.z - quaternion::z * q.y,
 				quaternion::r * q.y + quaternion::y * q.r + quaternion::z * q.x - quaternion::x * q.z,
@@ -100,7 +100,7 @@ quaternion quaternion::operator*(float f) {
 
 /*! / operator overload
  */
-quaternion quaternion::operator/(quaternion q) {
+quaternion quaternion::operator/(quaternion& q) {
 	return (*this) * q.inverse();
 }
 
@@ -126,7 +126,7 @@ quaternion quaternion::operator-=(quaternion& q) {
 
 /*! *= operator overload
  */
-quaternion quaternion::operator*=(quaternion q) {
+quaternion quaternion::operator*=(quaternion& q) {
 	(*this) = q * (*this);
 	return (*this);
 }
@@ -140,7 +140,7 @@ quaternion quaternion::operator*=(float f) {
 
 /*! /= operator overload
  */
-quaternion quaternion::operator/=(quaternion q) {
+quaternion quaternion::operator/=(quaternion& q) {
 	(*this) = (*this) * q.inverse();
   	return (*this);
 }

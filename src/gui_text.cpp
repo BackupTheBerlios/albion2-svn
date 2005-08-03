@@ -22,7 +22,7 @@
 
 /*! there is no function currently
  */
-gui_text::gui_text() {
+gui_text::gui_text(engine* e) {
 	is_notext = false;
 
 	// 1024 chars
@@ -30,19 +30,25 @@ gui_text::gui_text() {
 
 	// point font to NULL
 	font = NULL;
+
+	// get classes
+	gui_text::e = e;
+	gui_text::c = e->get_core();
+	gui_text::m = e->get_msg();
+	gui_text::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_text::~gui_text() {
-	m.print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
+	m->print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
 
 	delete text;
 	if(font) {
 		delete font;
 	}
 
-	m.print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");
+	m->print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");
 }
 
 /*! creates a new FTFont element and sets it as the currently used font
@@ -78,7 +84,7 @@ void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 
 	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
 	glTranslatef((GLfloat)(gui_text::point->x + x),
-		(GLfloat)(gui_text::engine_handler->get_screen()->h - gui_text::point->y - 10.0f - y),
+		(GLfloat)(gui_text::e->get_screen()->h - gui_text::point->y - 10.0f - y),
 		0.0f);
 	glColor3f((GLfloat)(gui_text::color.r / 255),
 		(GLfloat)(gui_text::color.g / 255),
@@ -88,13 +94,6 @@ void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_text::set_engine_handler(engine* iengine) {
-	gui_text::engine_handler = iengine;
 }
 
 //! returns the text id

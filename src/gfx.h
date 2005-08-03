@@ -25,9 +25,7 @@
 #include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "msg.h"
 #include "core.h"
-#include "net.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -36,7 +34,6 @@ using namespace std;
  *  @brief graphical functions
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/15
  *  @todo more functions
  *  
  *  the gfx class
@@ -73,9 +70,6 @@ public:
 	unsigned int get_color(SDL_Surface* surface, unsigned int red, unsigned int green, unsigned int blue);
 	unsigned int get_color(SDL_Surface* surface, unsigned int rgb);
 protected:
-	msg m;
-	core c;
-
 	SDL_Surface* screen;
 };
 

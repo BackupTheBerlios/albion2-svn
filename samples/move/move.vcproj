@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="move"
-	ProjectGUID="{63B7869A-AE09-E64B-955E-A2E98513A077}"
+	ProjectGUID="{7700044F-D131-AE40-A523-77DDC35C6505}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

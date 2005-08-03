@@ -36,6 +36,7 @@
 #include "quaternion.h"
 #include "file_io.h"
 #include "a2ematerial.h"
+#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -44,7 +45,6 @@ using namespace std;
  *  @brief class for loading and displaying an a2e skeletal animated model
  *  @author flo
  *  @version 0.1
- *  @date 2005/05/07
  *  @todo more functions
  *  
  *  the a2e skeletal animation class
@@ -59,7 +59,7 @@ protected:
 	struct joint;
 
 public:
-	a2eanim();
+	a2eanim(engine* e);
 	~a2eanim();
 
 	void draw();
@@ -78,9 +78,10 @@ public:
 
 
 protected:
-	msg m;
-	file_io file;
-	core c;
+	msg* m;
+	file_io* file;
+	core* c;
+	engine* e;
 
 	struct joint {
 		int num;

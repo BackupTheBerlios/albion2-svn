@@ -27,7 +27,6 @@
 #include <engine.h>
 #include <msg.h>
 #include <core.h>
-#include <net.h>
 #include <gfx.h>
 #include <event.h>
 #include <camera.h>
@@ -35,24 +34,22 @@
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
-#include <shadow.h>
 #include <light.h>
 using namespace std;
 
-msg m;
-net n;
-core c;
-engine e;
-gfx agfx;
-event aevent;
-camera cam;
-ode o;
+engine* e;
+msg* m;
+core* c;
+gfx* agfx;
+event* aevent;
+camera* cam;
+ode* o;
 
-scene sce;
+scene* sce;
 
-a2emodel plane;
-a2emodel cottage;
-a2emodel sphere;
+a2emodel* plane;
+a2emodel* cottage;
+a2emodel* sphere;
 
 SDL_Surface* sf;
 

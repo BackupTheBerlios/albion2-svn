@@ -51,13 +51,13 @@ vertex3::~vertex3() {
 
 /*! + operator overload
  */
-vertex3 vertex3::operator+(vertex3 &v) {
+vertex3 vertex3::operator+(vertex3& v) {
 	return vertex3(vertex3::x + v.x, vertex3::y + v.y, vertex3::z + v.z);
 }
 
 /*! - operator overload
  */
-vertex3 vertex3::operator-(vertex3 &v) {
+vertex3 vertex3::operator-(vertex3& v) {
 	return vertex3(vertex3::x - v.x, vertex3::y - v.y, vertex3::z - v.z);
 }
 
@@ -75,7 +75,7 @@ vertex3 vertex3::operator*(float f) {
 
 /*! += operator overload
  */
-vertex3& vertex3::operator+=(vertex3 &v) {
+vertex3& vertex3::operator+=(vertex3& v) {
 	vertex3::x += v.x;
 	vertex3::y += v.y;
 	vertex3::z += v.z;
@@ -84,7 +84,7 @@ vertex3& vertex3::operator+=(vertex3 &v) {
 
 /*! -= operator overload
  */
-vertex3& vertex3::operator-=(vertex3 &v) {
+vertex3& vertex3::operator-=(vertex3& v) {
 	vertex3::x -= v.x;
 	vertex3::y -= v.y;
 	vertex3::z -= v.z;

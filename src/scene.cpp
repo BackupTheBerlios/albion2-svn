@@ -20,9 +20,11 @@
 
 /*! there is no function currently
  */
-scene::scene() {
+scene::scene(engine* e) {
 	scene::cmodels = 0;
+	scene::camodels = 0;
 	scene::clights = 0;
+
 	scene::position = new vertex3();
 	scene::position->x = 0.0f;
 	scene::position->y = 0.0f;
@@ -54,12 +56,17 @@ scene::scene() {
 	scene::mshininess[3] = 0.0f;
 
 	scene::is_light = false;
+
+	// get classes
+	scene::e = e;
+	scene::c = e->get_core();
+	scene::m = e->get_msg();
 }
 
 /*! there is no function currently
  */
 scene::~scene() {
-	m.print(msg::MDEBUG, "scene.cpp", "freeing scene stuff");
+	m->print(msg::MDEBUG, "scene.cpp", "freeing scene stuff");
 
 	delete scene::position;
 	delete scene::mambient;
@@ -67,7 +74,7 @@ scene::~scene() {
 	delete scene::mspecular;
 	delete scene::mshininess;
 
-	m.print(msg::MDEBUG, "scene.cpp", "scene stuff freed");
+	m->print(msg::MDEBUG, "scene.cpp", "scene stuff freed");
 }
 
 /*! draws the scene
@@ -155,7 +162,7 @@ void scene::delete_model(a2emodel* model) {
 			i = cmodels;
 		}
 		else if(i == (cmodels-1)) {
-			m.print(msg::MDEBUG, "scene.cpp", "can't delete model: model doesn't exist!");
+			m->print(msg::MDEBUG, "scene.cpp", "can't delete model: model doesn't exist!");
 			return;
 		}
 	}
@@ -288,4 +295,14 @@ float* scene::get_mshininess() {
  */
 bool scene::get_light() {
 	return scene::is_light;
+}
+
+a2eanim* scene::create_a2eanim() {
+	a2eanim* a2ea = new a2eanim(e);
+	return a2ea;
+}
+
+a2emodel* scene::create_a2emodel() {
+	a2emodel* a2em = new a2emodel(e);
+	return a2em;
 }

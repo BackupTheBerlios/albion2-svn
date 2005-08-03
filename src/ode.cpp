@@ -27,8 +27,13 @@ float ode::erp = 0.2f;
 
 /*! there is no function currently
  */
-ode::ode() {
+ode::ode(engine* e) {
 	object_count = 0;
+
+	// get classes
+	ode::e = e;
+	ode::c = e->get_core();
+	ode::m = e->get_msg();
 }
 
 /*! there is no function currently
@@ -81,7 +86,7 @@ void ode::init() {
 /*! destroys all ode relevant stuff
  */
 void ode::close() {
-	m.print(msg::MDEBUG, "ode.cpp", "freeing ode stuff");
+	m->print(msg::MDEBUG, "ode.cpp", "freeing ode stuff");
 
 	// destroy all ode objects
 	for(unsigned int i = 0; i < ode::object_count; i++) {
@@ -100,7 +105,7 @@ void ode::close() {
 	// ... and finally close ode
 	dCloseODE();
 
-	m.print(msg::MDEBUG, "ode_object.cpp", "ode stuff freed");
+	m->print(msg::MDEBUG, "ode_object.cpp", "ode stuff freed");
 }
 
 /*! runs the open dynamics engine
@@ -186,7 +191,7 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
  */
 ode_object* ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	// create an new ode object and pass it to the list
-	ode::ode_objects[ode::object_count] = new ode_object(&ode::world, &ode::space, model, fixed, type);
+	ode::ode_objects[ode::object_count] = new ode_object(e, &ode::world, &ode::space, model, fixed, type);
 
 	// increment object count
 	ode::object_count++;
@@ -213,20 +218,15 @@ void ode::update_objects() {
 		if(ode::ode_objects[i]) {
 			dGeomID geom = ode::ode_objects[i]->get_geom();
 			dBodyID body = ode::ode_objects[i]->get_body();
-//cout << "--->" << endl;
-//cout << geom << "/" << body << endl;
 			if(geom != 0) {
 				dReal* pos = (dReal*)dGeomGetPosition(geom);
-//cout << pos[0] << "/" << pos[1] << "/" << pos[2] << "/" << pos[3] << endl;
 				ode::ode_objects[i]->get_model()->set_position((float)pos[0],
 					(float)pos[1], (float)pos[2]);
 
 				if(body != 0) {
 					dReal* rotation = (dReal*)dBodyGetRotation(body);
-//cout << rotation[0] << "/" << rotation[1] << "/" << rotation[2] << "/" << rotation[3] << endl;
-//cout << "<---" << endl;
-					ode::ode_objects[i]->get_model()->set_rotation(c.rad_to_deg(rotation[0]),
-						c.rad_to_deg(rotation[1]), c.rad_to_deg(rotation[2]));
+					ode::ode_objects[i]->get_model()->set_rotation(c->rad_to_deg(rotation[0]),
+						c->rad_to_deg(rotation[1]), c->rad_to_deg(rotation[2]));
 				}
 			}
 		}
@@ -241,7 +241,7 @@ ode_object* ode::get_ode_object(unsigned int num) {
 		return ode::ode_objects[num];
 	}
 	else {
-		m.print(msg::MERROR, "ode.cpp", "object #%u does not exist!", num);
+		m->print(msg::MERROR, "ode.cpp", "object #%u does not exist!", num);
 		return 0;
 	}
 }

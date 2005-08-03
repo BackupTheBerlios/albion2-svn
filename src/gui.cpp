@@ -18,7 +18,7 @@
 
 /*! there is no function currently
 */
-gui::gui() {
+gui::gui(engine* e) {
 	p = new core::pnt();
 	r = new gfx::rect();
 	input_text = new char[512];
@@ -32,12 +32,19 @@ gui::gui() {
 
 	// set current active window id to zero
 	gui::awid = 0;
+
+	// get classes
+	gui::e = e;
+	gui::c = e->get_core();
+	gui::m = e->get_msg();
+	gui::evt = e->get_event();
+	gui::g = e->get_gfx();
 }
 
 /*! there is no function currently
 */
 gui::~gui() {
-	m.print(msg::MDEBUG, "gui.cpp", "freeing gui stuff");
+	m->print(msg::MDEBUG, "gui.cpp", "freeing gui stuff");
 
 	delete p;
 	delete r;
@@ -71,17 +78,14 @@ gui::~gui() {
 		delete gui_windows[i];
 	}
 
-	m.print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
+	m->print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
 }
 
 /*! initializes the gui class and sets an engine and event handler
  *  @param iengine the engine we want to handle
  *  @param ievent the event we want to handle
  */
-void gui::init(engine &iengine, event &ievent) {
-	gui::event_handler = &ievent;
-	gui::engine_handler = &iengine;
-
+void gui::init() {
 	celements = 0;
 	cbuttons = 0;
 	ctexts = 0;
@@ -89,9 +93,10 @@ void gui::init(engine &iengine, event &ievent) {
 	clist_boxes = 0;
 	cvbars = 0;
 	ccboxes = 0;
+	cwindows = 0;
 
-	if(gui::engine_handler->get_screen() == NULL) { m.print(msg::MERROR, "gui.cpp", "SDL_Surface does not exist!"); }
-	else { gui::gui_surface = gui::engine_handler->get_screen(); }
+	if(gui::e->get_screen() == NULL) { m->print(msg::MERROR, "gui.cpp", "SDL_Surface does not exist!"); }
+	else { gui::gui_surface = gui::e->get_screen(); }
 
 	// reserve memory for 512 gui elements
 	gui::gui_elements = new gui::gui_element[512];
@@ -99,8 +104,8 @@ void gui::init(engine &iengine, event &ievent) {
 	gui::active_element = new gui::gui_element();
 
 	// init the main window
-	main_window = gui::add_window(g.pnt_to_rect(0, 0, engine_handler->get_screen()->w,
-		engine_handler->get_screen()->h), 0, "main window", false);
+	main_window = gui::add_window(g->pnt_to_rect(0, 0, e->get_screen()->w,
+		e->get_screen()->h), 0, "main window", false);
 
 	// empty element
 	gui::gui_elements[celements].id = 1;
@@ -115,10 +120,10 @@ void gui::init(engine &iengine, event &ievent) {
 void gui::draw() {
 	// reset event stuff to camera - if there is a gui event,
 	// the active class type will be overwritten
-	event_handler->set_active(event::CAMERA);
+	evt->set_active(event::CAMERA);
 
 	// start 2d drawing
-	engine_handler->start_2d_draw();
+	e->start_2d_draw();
 
 	// reset active gui element
 	set_active_element(&gui::gui_elements[0]);
@@ -174,14 +179,14 @@ void gui::draw() {
 	// check if left mouse button is currently pressed (then use
 	// that point otherwise use the last pressed point)
 	unsigned int event_type = 0;
-	if(event_handler->get_lm_pressed_x() == 0 && event_handler->get_lm_pressed_y() == 0) {
-		p->x = event_handler->get_lm_last_pressed_x();
-		p->y = event_handler->get_lm_last_pressed_y();
+	if(evt->get_lm_pressed_x() == 0 && evt->get_lm_pressed_y() == 0) {
+		p->x = evt->get_lm_last_pressed_x();
+		p->y = evt->get_lm_last_pressed_y();
 		event_type = 1;
 	}
 	else {
-		p->x = event_handler->get_lm_pressed_x();
-		p->y = event_handler->get_lm_pressed_y();
+		p->x = evt->get_lm_pressed_x();
+		p->y = evt->get_lm_pressed_y();
 		event_type = 2;
 	}
 
@@ -189,7 +194,7 @@ void gui::draw() {
 	unsigned int start_num = 0;
 	for(unsigned int i = 0; i < cwindows; i++) {
 		gfx::rect* rect = gui::gui_windows[wnds_num[(cwindows-1)-i]]->get_rectangle();
-		if(g.is_pnt_in_rectangle(rect, p)) {
+		if(g->is_pnt_in_rectangle(rect, p)) {
 			gui::awid = gui::gui_windows[wnds_num[(cwindows-1)-i]]->get_id();
 			awlid = gui::gui_windows[wnds_num[(cwindows-1)-i]]->get_lid();
 			start_num = (cwindows-1)-i;
@@ -217,7 +222,6 @@ void gui::draw() {
 		// check if we got a window with a title bar and border
 		if(gui::gui_windows[wnds_num[j]]->get_border()) {
 			// reposition the window if it has been moved or is moving
-			gfx::rect* r = new gfx::rect();
 			memcpy(r, gui::gui_windows[wnds_num[j]]->get_rectangle(), sizeof(gfx::rect));
 			r->x1 += 1;
 			r->x2 -= 1;
@@ -228,23 +232,21 @@ void gui::draw() {
 				gui::gui_windows[wnds_num[j]]->set_moving(false);
 			}
 
-			if((g.is_pnt_in_rectangle(r, p) || gui::gui_windows[wnds_num[j]]->is_moving())
+			if((g->is_pnt_in_rectangle(r, p) || gui::gui_windows[wnds_num[j]]->is_moving())
 				&& event_type == 2) {
 				core::pnt* tmp_point = new core::pnt();
-				event_handler->get_mouse_pos(tmp_point);
+				evt->get_mouse_pos(tmp_point);
 				// well, for more performance we could uncomment this, but the
 				// windows moves smoother w/o it ;)
-				//if(event_handler->get_lm_pressed_x() != tmp_point->x ||
-				//	event_handler->get_lm_pressed_y() != tmp_point->y) {
+				//if(evt->get_lm_pressed_x() != tmp_point->x ||
+				//	evt->get_lm_pressed_y() != tmp_point->y) {
 					gui::gui_windows[wnds_num[j]]->set_moving(true);
-					gui::gui_windows[wnds_num[j]]->change_position((int)tmp_point->x - (int)event_handler->get_lm_pressed_x(),
-						(int)tmp_point->y - (int)event_handler->get_lm_pressed_y());
-					event_handler->set_pressed(tmp_point->x, tmp_point->y);
+					gui::gui_windows[wnds_num[j]]->change_position((int)tmp_point->x - (int)evt->get_lm_pressed_x(),
+						(int)tmp_point->y - (int)evt->get_lm_pressed_y());
+					evt->set_pressed(tmp_point->x, tmp_point->y);
 				//}
 				delete tmp_point;
 			}
-
-			delete r;
 		}
 
 		// draw the window
@@ -265,7 +267,7 @@ void gui::draw() {
 		// we need a rectangle object to add the windows
 		// x and y coordinate to the gui elements rectangle,
 		// so we can check for a button press correctly
-		gfx::rect* r = new gfx::rect();
+		// --- global r object ---
 
 		// draw the gui elements
 		for(unsigned int i = 0; i < celements; i++) {
@@ -273,8 +275,8 @@ void gui::draw() {
 				gui::gui_elements[i].wid == current_id) {
 				switch(gui::gui_elements[i].type) {
 					case gui::BUTTON: {
-						p->x = event_handler->get_lm_pressed_x();
-						p->y = event_handler->get_lm_pressed_y();
+						p->x = evt->get_lm_pressed_x();
+						p->y = evt->get_lm_pressed_y();
 
 						// the window button flag - defines if the button is a window button ...
 						bool wnd_button = false;
@@ -303,7 +305,7 @@ void gui::draw() {
 						}
 
 						if(current_id == gui::awid &&
-							g.is_pnt_in_rectangle(r, p)) {
+							g->is_pnt_in_rectangle(r, p)) {
 							if(!wnd_button) {
 								gui::gui_buttons[gui::gui_elements[i].num]->draw(true, wp->x, wp->y);
 							}
@@ -316,7 +318,7 @@ void gui::draw() {
 						else {
 							if(gui::gui_buttons[gui::gui_elements[i].num]->get_pressed() == true) {
 								gui::gui_buttons[gui::gui_elements[i].num]->set_pressed(false);
-								event_handler->add_gui_event(event_handler->BUTTON_PRESSED,
+								evt->add_gui_event(evt->BUTTON_PRESSED,
 									gui::gui_buttons[gui::gui_elements[i].num]->get_id());
 							}
 
@@ -333,8 +335,8 @@ void gui::draw() {
 						gui::gui_texts[gui::gui_elements[i].num]->draw(wp->x, wp->y);
 						break;
 					case gui::INPUT: {
-						p->x = event_handler->get_lm_last_pressed_x();
-						p->y = event_handler->get_lm_last_pressed_y();
+						p->x = evt->get_lm_last_pressed_x();
+						p->y = evt->get_lm_last_pressed_y();
 
 						// get the rectangle and add the windows x and y coordinate
 						memcpy(r, gui::gui_input_boxes[gui::gui_elements[i].num]->get_rectangle(), sizeof(gfx::rect));
@@ -344,12 +346,12 @@ void gui::draw() {
 						r->y2 += wp->y;
 
 						if(current_id == gui::awid &&
-							g.is_pnt_in_rectangle(r, p)) {
+							g->is_pnt_in_rectangle(r, p)) {
 							gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(true);
 							set_active_element(&gui::gui_elements[i]);
-							event_handler->set_active(event::GUI);
+							evt->set_active(event::GUI);
 
-							event_handler->get_input_text(input_text);
+							evt->get_input_text(input_text);
 							gui::switch_input_text(input_text,
 								gui::gui_input_boxes[gui::gui_elements[i].num]);
 						}
@@ -361,8 +363,8 @@ void gui::draw() {
 					}
 					break;
 					case gui::LIST: {
-						p->x = event_handler->get_lm_last_pressed_x();
-						p->y = event_handler->get_lm_last_pressed_y();
+						p->x = evt->get_lm_last_pressed_x();
+						p->y = evt->get_lm_last_pressed_y();
 
 						// get the rectangle and add the windows x and y coordinate
 						memcpy(r, gui::gui_list_boxes[gui::gui_elements[i].num]->get_rectangle(), sizeof(gfx::rect));
@@ -372,10 +374,10 @@ void gui::draw() {
 						r->y1 += wp->y;
 						r->y2 += wp->y;
 
-						if(current_id == gui::awid && g.is_pnt_in_rectangle(r, p)) {
+						if(current_id == gui::awid && g->is_pnt_in_rectangle(r, p)) {
 							gui::gui_list_boxes[gui::gui_elements[i].num]->set_active(true);
 							gui::gui_list_boxes[gui::gui_elements[i].num]->select_pos(p->x - wp->x, p->y - wp->y);
-							event_handler->set_last_pressed(0, 0);
+							evt->set_last_pressed(0, 0);
 						}
 						else {
 							gui::gui_list_boxes[gui::gui_elements[i].num]->set_active(false);
@@ -385,8 +387,8 @@ void gui::draw() {
 					}
 					break;
 					case gui::VBAR: {
-						p->x = event_handler->get_lm_pressed_x();
-						p->y = event_handler->get_lm_pressed_y();
+						p->x = evt->get_lm_pressed_x();
+						p->y = evt->get_lm_pressed_y();
 
 						// get the rectangle and add the windows x and y coordinate
 						memcpy(r, gui::gui_vbars[gui::gui_elements[i].num]->get_rectangle(), sizeof(gfx::rect));
@@ -397,7 +399,7 @@ void gui::draw() {
 
 						if(current_id == gui::awid &&
 							gui::gui_vbars[gui::gui_elements[i].num]->get_slider_active()) {
-							if(g.is_pnt_in_rectangle(r, p)) {
+							if(g->is_pnt_in_rectangle(r, p)) {
 								int cx;
 								int cy;
 								core::pnt* np = new core::pnt();
@@ -417,8 +419,8 @@ void gui::draw() {
 					}
 					break;
 					case gui::CHECK: {
-						p->x = event_handler->get_lm_last_pressed_x();
-						p->y = event_handler->get_lm_last_pressed_y();
+						p->x = evt->get_lm_last_pressed_x();
+						p->y = evt->get_lm_last_pressed_y();
 
 						// get the rectangle and add the windows x and y coordinate
 						// and reduce the "clickable" area
@@ -428,9 +430,9 @@ void gui::draw() {
 						r->y1 += wp->y;
 						r->y2 = r->y1 + 14;
 
-						if(current_id == gui::awid && g.is_pnt_in_rectangle(r, p)) {
+						if(current_id == gui::awid && g->is_pnt_in_rectangle(r, p)) {
 							gui::gui_check_boxes[gui::gui_elements[i].num]->set_checked(gui::gui_check_boxes[gui::gui_elements[i].num]->get_checked() ^ true);
-							event_handler->set_last_pressed(0, 0);
+							evt->set_last_pressed(0, 0);
 						}
 
 						gui::gui_check_boxes[gui::gui_elements[i].num]->draw(wp->x, wp->y);
@@ -443,7 +445,6 @@ void gui::draw() {
 		}
 
 		delete wp;
-		delete r;
 	}
 
 	// window deleting routine
@@ -455,11 +456,11 @@ void gui::draw() {
 		}
 	}
 
-	delete wnds_lid;
-	delete wnds_num;
+	delete [] wnds_lid;
+	delete [] wnds_num;
 
 	// stop 2d drawing
-	engine_handler->stop_2d_draw();
+	e->stop_2d_draw();
 }
 
 /*! adds a gui button element and returns it
@@ -481,15 +482,14 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned in
 	celements++;
 
 	// create class
-	gui::gui_buttons[cbuttons] = new gui_button();
+	gui::gui_buttons[cbuttons] = new gui_button(e);
 
 	gui::gui_buttons[cbuttons]->set_text_handler(add_text("vera.ttf", 12, text,
-		engine_handler->get_gstyle().STYLE_FONT2, g.cord_to_pnt(0,0), id+0xFFFF));
+		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
-	gui::gui_buttons[cbuttons]->set_engine_handler(gui::engine_handler);
 	gui::gui_buttons[cbuttons]->set_id(id);
 	gui::gui_buttons[cbuttons]->set_rectangle(rectangle);
 	gui::gui_buttons[cbuttons]->set_text(text);
@@ -533,10 +533,9 @@ gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_elements[celements].is_drawn = true;
 
 	// create class
-	gui::gui_texts[ctexts] = new gui_text();
+	gui::gui_texts[ctexts] = new gui_text(e);
 
 	gui::gui_texts[ctexts]->set_init(false);
-	gui::gui_texts[ctexts]->set_engine_handler(gui::engine_handler);
 	gui::gui_texts[ctexts]->set_id(id);
 	gui::gui_texts[ctexts]->new_text(font_name, font_size);
 	gui::gui_texts[ctexts]->set_point(point);
@@ -568,21 +567,20 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text,
 	celements++;
 
 	// create class
-	gui::gui_input_boxes[cinput_boxes] = new gui_input();
+	gui::gui_input_boxes[cinput_boxes] = new gui_input(e);
 
 	gui::gui_input_boxes[cinput_boxes]->set_text_handler(add_text("vera.ttf", 12, text,
-		engine_handler->get_gstyle().STYLE_FONT, g.cord_to_pnt(0,0), id+0xFFFF));
+		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
 	gui::gui_input_boxes[cinput_boxes]->set_blink_text_handler(add_text("vera.ttf", 12, " ",
-		engine_handler->get_gstyle().STYLE_FONT, g.cord_to_pnt(0,0), id+0xFFFFFF));
+		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
-	gui::gui_input_boxes[cinput_boxes]->set_engine_handler(gui::engine_handler);
 	gui::gui_input_boxes[cinput_boxes]->set_id(id);
 	gui::gui_input_boxes[cinput_boxes]->set_rectangle(rectangle);
 	gui::gui_input_boxes[cinput_boxes]->set_text(text);
@@ -609,13 +607,12 @@ gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, char* text, u
 	celements++;
 
 	// create class
-	gui::gui_list_boxes[clist_boxes] = new gui_list();
+	gui::gui_list_boxes[clist_boxes] = new gui_list(e);
 
 	// add vertical bar
-	gui::gui_list_boxes[clist_boxes]->set_vbar_handler(add_vbar(g.pnt_to_rect(rectangle->x2-14,
+	gui::gui_list_boxes[clist_boxes]->set_vbar_handler(add_vbar(g->pnt_to_rect(rectangle->x2-14,
 		rectangle->y1+2, rectangle->x2-2, rectangle->y2-2), id+0xFFFFFF, wid));
 
-	gui::gui_list_boxes[clist_boxes]->set_engine_handler(gui::engine_handler);
 	gui::gui_list_boxes[clist_boxes]->set_id(id);
 	gui::gui_list_boxes[clist_boxes]->set_rectangle(rectangle);
 	gui::gui_list_boxes[clist_boxes]->set_position(0);
@@ -637,17 +634,16 @@ gui_vbar* gui::add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid)
 	celements++;
 
 	// create class
-	gui::gui_vbars[cvbars] = new gui_vbar();
+	gui::gui_vbars[cvbars] = new gui_vbar(e);
 
 	// add up button
-	gui::gui_vbars[cvbars]->set_up_button_handler(add_button(g.pnt_to_rect(0,0,1,1), 1,
+	gui::gui_vbars[cvbars]->set_up_button_handler(add_button(g->pnt_to_rect(0,0,1,1), 1,
 		id+0xFFFFFF, " ", wid));
 
 	// add down button
-	gui::gui_vbars[cvbars]->set_down_button_handler(add_button(g.pnt_to_rect(0,0,1,1), 2,
+	gui::gui_vbars[cvbars]->set_down_button_handler(add_button(g->pnt_to_rect(0,0,1,1), 2,
 		id+0xFFFFFE, " ", wid));
 
-	gui::gui_vbars[cvbars]->set_engine_handler(gui::engine_handler);
 	gui::gui_vbars[cvbars]->set_id(id);
 	gui::gui_vbars[cvbars]->set_rectangle(rectangle);
 
@@ -674,15 +670,14 @@ gui_check* gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text,
 	celements++;
 
 	// create class
-	gui::gui_check_boxes[ccboxes] = new gui_check();
+	gui::gui_check_boxes[ccboxes] = new gui_check(e);
 
 	gui::gui_check_boxes[ccboxes]->set_text_handler(add_text("vera.ttf", 12, text,
-		engine_handler->get_gstyle().STYLE_FONT2, g.cord_to_pnt(0,0), id+0xFFFF, wid));
+		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF, wid));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
-	gui::gui_check_boxes[ccboxes]->set_engine_handler(gui::engine_handler);
 	gui::gui_check_boxes[ccboxes]->set_id(id);
 	gui::gui_check_boxes[ccboxes]->set_rectangle(rectangle);
 	gui::gui_check_boxes[ccboxes]->set_text(text);
@@ -710,21 +705,20 @@ gui_window* gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption
 	celements++;
 
 	// create class
-	gui::gui_windows[cwindows] = new gui_window();
+	gui::gui_windows[cwindows] = new gui_window(e);
 
 	// add exit button if we got a border
 	if(border) {
-		gui::gui_windows[cwindows]->set_exit_button_handler(add_button(g.pnt_to_rect(0,0,12,12), 3,
+		gui::gui_windows[cwindows]->set_exit_button_handler(add_button(g->pnt_to_rect(0,0,12,12), 3,
 			id+0xFFFFFF, "x", id));
 	}
 
 	gui::gui_windows[cwindows]->set_text_handler(add_text("vera.ttf", 12, caption,
-		engine_handler->get_gstyle().STYLE_FONT2, g.cord_to_pnt(0,0), id+0xFFFF));
+		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements[celements-1].is_drawn = false;
 
-	gui::gui_windows[cwindows]->set_engine_handler(gui::engine_handler);
 	gui::gui_windows[cwindows]->set_id(id);
 	gui::gui_windows[cwindows]->set_rectangle(rectangle);
 	gui::gui_windows[cwindows]->set_caption(caption);
@@ -752,7 +746,7 @@ gui::gui_element* gui::get_active_element() {
  */
 void gui::set_active_element(gui_element* active_element) {
 	gui::active_element = active_element;
-	event_handler->set_active_element((event::gui_element*)active_element);
+	evt->set_active_element((event::gui_element*)active_element);
 }
 
 /*! sets the currently active gui element via the gui element's id

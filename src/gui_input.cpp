@@ -22,22 +22,28 @@
 
 /*! there is no function currently
  */
-gui_input::gui_input() {
+gui_input::gui_input(engine* e) {
 	blink_time = SDL_GetTicks();
 	is_active = false;
 
 	// 1024 chars
 	gui_input::text = new char[1024];
+
+	// get classes
+	gui_input::e = e;
+	gui_input::c = e->get_core();
+	gui_input::m = e->get_msg();
+	gui_input::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_input::~gui_input() {
-	m.print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
+	m->print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
 
 	delete gui_input::text;
 
-	m.print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
+	m->print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
 }
 
 /*! draws the input boxs
@@ -47,24 +53,24 @@ gui_input::~gui_input() {
 void gui_input::draw(unsigned int x, unsigned int y) {
 	gfx::rect* r1 = new gfx::rect();
 
-	g.pnt_to_rect(r1, gui_input::rectangle->x1 + x, gui_input::rectangle->y1 + y,
+	g->pnt_to_rect(r1, gui_input::rectangle->x1 + x, gui_input::rectangle->y1 + y,
 		gui_input::rectangle->x2 + x, gui_input::rectangle->y2 + y);
 
 	// draw bg
-	g.draw_filled_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_BG2);
+	g->draw_filled_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_INDARK,
-		engine_handler->get_gstyle().STYLE_LIGHT);
+	g->draw_2colored_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_INDARK,
+		e->get_gui_style()->STYLE_LIGHT);
 
 	// draw 2 colored border
-	g.pnt_to_rect(r1, gui_input::rectangle->x1 + x + 1, gui_input::rectangle->y1 + y + 1,
+	g->pnt_to_rect(r1, gui_input::rectangle->x1 + x + 1, gui_input::rectangle->y1 + y + 1,
 		gui_input::rectangle->x2 + x - 1, gui_input::rectangle->y2 + y - 1);
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, engine_handler->get_gstyle().STYLE_DARK,
-		engine_handler->get_gstyle().STYLE_DARK2);
+	g->draw_2colored_rectangle(e->get_screen(),
+		r1, e->get_gui_style()->STYLE_DARK,
+		e->get_gui_style()->STYLE_DARK2);
 
 	// width chart:
 	// text_width specifies the texts width -before- the marker
@@ -142,9 +148,9 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			}
 
 			// and now render the text
-			g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+			g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-			/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
+			/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 			text_handler->set_point(p1);
 			text_handler->draw(new_text, x, y);
@@ -193,9 +199,9 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				}
 
 				// and now render the text
-				g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-				/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
+				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
@@ -231,9 +237,9 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				new_text[pos] = 0;
 
 				// and now render the text
-				g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-				/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
+				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
@@ -252,10 +258,10 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		// +4, because we want the text be drawn a bit more right
 
 		// just draw the text surface
-		/*g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
+		/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (height_input_box/2 - height/2));*/
 		//text_handler->set_blit(false);
-		g.cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
+		g->cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 		text_handler->set_point(p1);
 		text_handler->draw(x, y);
@@ -292,28 +298,21 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	// -1, because we want the text be drawn a bit more on top
 	core::pnt* p2 = new core::pnt();
 	if(is_in_rectangle) {
-		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
+		/*g->cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
 			gui_input::rectangle->y1 + (height_input_box/2 - height/2) - 2);*/
-		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width,
+		g->cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2));
 	}
 	else {
-		/*g.cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width - width_diff,
+		/*g->cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width - width_diff,
 			gui_input::rectangle->y1 + (height_input_box/2 - height/2) - 2);*/
-		g.cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width - width_diff,
+		g->cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width - width_diff,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2));
 	}
 	blink_text_handler->set_point(p2);
 	blink_text_handler->draw(x, y);
 	delete p2;
 	is_in_rectangle = true;
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_input::set_engine_handler(engine* iengine) {
-	gui_input::engine_handler = iengine;
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class

@@ -22,7 +22,6 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 #include "gui_button.h"
 using namespace std;
@@ -33,7 +32,6 @@ using namespace std;
  *  @brief gui vertical bar element functions
  *  @author flo
  *  @version 0.1.3
- *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_vbar class
@@ -42,12 +40,11 @@ using namespace std;
 class A2E_API gui_vbar
 {
 public:
-	gui_vbar();
+	gui_vbar(engine* e);
 	~gui_vbar();
 	
 	void draw();
 	void draw(unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 
 
 	// gui vertical bar element variables functions
@@ -76,11 +73,10 @@ public:
 	void set_down_button_handler(gui_button* ibutton);
 
 protected:
-	msg m;
-	core c;
-	gfx g;
-
-	engine* engine_handler;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
 	gui_button* up_button_handler;
 	gui_button* down_button_handler;

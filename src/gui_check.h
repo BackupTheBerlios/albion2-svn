@@ -33,7 +33,6 @@ using namespace std;
  *  @brief gui check box element functions
  *  @author flo
  *  @version 0.1.1
- *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_check class
@@ -42,12 +41,11 @@ using namespace std;
 class A2E_API gui_check
 {
 public:
-	gui_check();
+	gui_check(engine* e);
 	~gui_check();
 	
 	void draw();
 	void draw(unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 
 
@@ -64,11 +62,11 @@ public:
 	void set_checked(bool state);
 
 protected:
-	msg m;
-	core c;
-	gfx g;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
-	engine* engine_handler;
 
 	gui_text* text_handler;
 

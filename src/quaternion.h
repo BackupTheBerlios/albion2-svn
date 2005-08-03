@@ -18,7 +18,6 @@
 #define __QUATERNION_H__
 
 #include <iostream>
-#include "msg.h"
 #include "core.h"
 #include "vertex3.h"
 #include <cmath>
@@ -30,10 +29,9 @@ using namespace std;
  *  @brief quaternion routines
  *  @author flo
  *  @version 0.1
- *  @date 2005/05/06
  *  @todo nothing atm
  *  
- *  the shadowing class
+ *  the quaternion class
  *  thx to julien rebetez for that quaternion stuff ;)
  */
 
@@ -47,21 +45,21 @@ public:
 
  	quaternion();
 	quaternion(float r, float x, float y, float z);
-	quaternion(quaternion* q);
+	quaternion(quaternion& q);
 	quaternion(float f, vertex3 v);
  	~quaternion();
 
-	quaternion operator=(quaternion q);
+	quaternion operator=(quaternion& q);
 	quaternion operator+(quaternion& q);
 	quaternion operator-(quaternion& q);
-	quaternion operator*(quaternion q);
+	quaternion operator*(quaternion& q);
 	quaternion operator*(float f);
-	quaternion operator/(quaternion q);
+	quaternion operator/(quaternion& q);
 	quaternion operator+=(quaternion& q);
 	quaternion operator-=(quaternion& q);
-	quaternion operator*=(quaternion q);
+	quaternion operator*=(quaternion& q);
 	quaternion operator*=(float f);
-	quaternion operator/=(quaternion q);
+	quaternion operator/=(quaternion& q);
 	quaternion operator/=(float f);
 
 	void reset();
@@ -76,11 +74,6 @@ public:
 	vertex3 rotate(vertex3& v);
 	void set_rotation(float a, vertex3 tv);
 	void set_rotation(float a, float i, float j, float k);
-
-protected:
-	msg m;
-	core c;
-
 };
 
 #endif

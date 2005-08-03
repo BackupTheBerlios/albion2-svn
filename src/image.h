@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include "msg.h"
-#include "gfx.h"
 #include "engine.h"
 #include <SDL/SDL_image.h>
 #include <GL/gl.h>
@@ -32,7 +31,6 @@ using namespace std;
  *  @brief functions to display an image
  *  @author flo
  *  @version 0.1
- *  @date 2005/02/06
  *  @todo more functions
  *  
  *  the image class
@@ -41,13 +39,13 @@ using namespace std;
 class A2E_API image
 {
 public:
-	image(engine* iengine);
+	image(engine* e);
 	~image();
 
 	void draw();
 	void draw(unsigned int scale_x, unsigned int scale_y);
 	void open_image(char* filename);
-	void set_engine_handler(engine* iengine);
+	void set_e(engine* iengine);
 
 	void set_position(unsigned int x, unsigned int y);
 	void set_position(core::pnt* position);
@@ -55,10 +53,8 @@ public:
 	core::pnt* get_position();
 
 protected:
-	msg m;
-	gfx g;
-
-	engine* engine_handler;
+	msg* m;
+	engine* e;
 
 	GLuint texture;
 

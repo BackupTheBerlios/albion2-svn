@@ -35,11 +35,11 @@
 #include <image.h>
 using namespace std;
 
-msg m;
-engine e;
-gfx agfx;
-gui agui;
-event aevent;
+engine* e;
+msg* m;
+gfx* agfx;
+gui* agui;
+event* aevent;
 
 SDL_Surface* sf;
 

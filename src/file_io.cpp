@@ -15,7 +15,6 @@
  */
 
 #include "file_io.h"
-#include "msg.h"
 
 /*! there is no function currently
  */
@@ -32,10 +31,15 @@ file_io::~file_io() {
  *  @param binary flag if we read the file content binary of ascii wise
  */
 void file_io::open_file(char* filename, bool binary) {
-	if(binary) { file_io::filestream.open(filename, fstream::in | fstream::out | fstream::binary); }
-	else { file_io::filestream.open(filename, fstream::in); }
+	if(binary) {
+		file_io::filestream.open(filename, fstream::in | fstream::out | fstream::binary);
+	}
+	else {
+		file_io::filestream.open(filename, fstream::in);
+	}
+
 	if(!file_io::filestream.is_open()) {
-		m.print(msg::MDEBUG, "file_io.cpp", "error while loading file \"%s\"!", filename);
+		cout << "DEBUG: " << "file_io.cpp" << "error while loading file \"" << filename << "\"!" << endl;
 	}
 }
 

@@ -33,7 +33,6 @@ using namespace std;
  *  @brief gui button element functions
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/19
  *  @todo more functions
  *  
  *  the gui_button class
@@ -42,11 +41,10 @@ using namespace std;
 class A2E_API gui_button
 {
 public:
-	gui_button();
+	gui_button(engine* e);
 	~gui_button();
 	
 	void draw(bool is_pressed, unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 
 
@@ -66,11 +64,10 @@ public:
 	bool get_pressed();
 
 protected:
-	msg m;
-	core c;
-	gfx g;
-
-	engine* engine_handler;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
 	gui_text* text_handler;
 

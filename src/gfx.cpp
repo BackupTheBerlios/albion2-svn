@@ -15,8 +15,6 @@
  */
 
 #include "gfx.h"
-#include "msg.h"
-#include "core.h"
 
 /*! there is no function currently
  */
@@ -35,7 +33,7 @@ gfx::~gfx() {
  */
 void gfx::draw_point(SDL_Surface* surface, core::pnt* point, unsigned int color) {
 	// outdated - should be taken out soon or be reimplemented,
-	// but remember that you need to much cpu power if you just
+	// but remember that you need too much cpu power if you just
 	// draw a single point in opengl
 }
 

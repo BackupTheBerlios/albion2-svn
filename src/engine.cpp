@@ -22,18 +22,13 @@
 
 // dll main for windows dll export
 #ifdef WIN32
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-					 )
-{
-	switch (ul_reason_for_call)
-	{
-	case DLL_PROCESS_ATTACH:
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+	switch (ul_reason_for_call) {
+		case DLL_PROCESS_ATTACH:
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
+		case DLL_PROCESS_DETACH:
+			break;
 	}
     return TRUE;
 }
@@ -44,51 +39,68 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 engine::engine() {
 	cursor_visible = true;
 	fps_limit = 10;
+	flags = 0;
+
+	c = new core();
+	m = new msg();
+	gstyle = new gui_style();
+	f = new file_io();
+	e = new event();
+	g = new gfx();
 }
 
 /*! there is no function currently
  */
 engine::~engine() {
-	m.print(msg::MDEBUG, "engine.cpp", "freeing engine stuff");
+	m->print(msg::MDEBUG, "engine.cpp", "freeing engine stuff");
 
-	/*if(screen) {
-        SDL_FreeSurface(screen);
-	}*/
+	delete c;
+	delete gstyle;
+	delete f;
+	delete e;
 
-	m.print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
+	m->print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
+
+	delete m;
 }
 
-/*! initializes the engine
+/*! initializes the engine in console only mode
+ */
+void engine::init(bool console) {
+	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console only mode");
+}
+
+/*! initializes the engine in console + graphical mode
  *  @param width the window width
  *  @param height the window height
- *  @param depth the depth of the window (8(?), 16, 24 or 32)
+ *  @param depth the depth of the window (16, 24 or 32)
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
 void engine::init(unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
-	m.print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine");
+	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console + graphical mode");
 
 	// initialize sdl
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
-		m.print(m.MERROR, "engine.cpp", "Can't init SDL:  %s", SDL_GetError());
+		m->print(msg::MERROR, "engine.cpp", "can't init SDL: %s", SDL_GetError());
 		exit(1);
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "sdl initialized");
+		m->print(msg::MDEBUG, "engine.cpp", "sdl initialized");
 	}
 	atexit(SDL_Quit);
 
 	// get video info
 	video_info = SDL_GetVideoInfo();
 	if(!video_info) {
-		m.print(msg::MDEBUG, "engine.cpp", "video query failed: %s",
+		m->print(msg::MDEBUG, "engine.cpp", "video query failed: %s",
 			SDL_GetError());
 		exit(1);
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "successfully received video info");
+		m->print(msg::MDEBUG, "engine.cpp", "successfully received video info");
 	}
 
-	m.print(msg::MDEBUG, "engine.cpp",
+	m->print(msg::MDEBUG, "engine.cpp",
 		"amount of available video memory: %u kb", video_info->video_mem);
 
 	// gl attributes
@@ -114,9 +126,9 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
-	m.print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
+	m->print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	m.print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
+	m->print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
 
 	// create screen
 	engine::flags |= SDL_HWPALETTE;
@@ -124,25 +136,25 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::flags |= SDL_GL_DOUBLEBUFFER;
 	if(video_info->hw_available) {
 		engine::flags |= SDL_HWSURFACE;
-		m.print(msg::MDEBUG, "engine.cpp", "using hardware surface");
+		m->print(msg::MDEBUG, "engine.cpp", "using hardware surface");
 	}
 	else {
 		engine::flags |= SDL_SWSURFACE;
-		m.print(msg::MDEBUG, "engine.cpp", "using software surface");
+		m->print(msg::MDEBUG, "engine.cpp", "using software surface");
 	}
 	if(video_info->blit_hw) {
 		engine::flags |= SDL_HWACCEL;
-		m.print(msg::MDEBUG, "engine.cpp", "hardware acceleration enabled");
+		m->print(msg::MDEBUG, "engine.cpp", "hardware acceleration enabled");
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "hardware acceleration disabled");
+		m->print(msg::MDEBUG, "engine.cpp", "hardware acceleration disabled");
 	}
 	if(fullscreen) {
 		engine::flags |= SDL_FULLSCREEN;
-		m.print(msg::MDEBUG, "engine.cpp", "fullscreen enabled");
+		m->print(msg::MDEBUG, "engine.cpp", "fullscreen enabled");
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "fullscreen disabled");
+		m->print(msg::MDEBUG, "engine.cpp", "fullscreen disabled");
 	}
 
 	engine::height = height;
@@ -150,41 +162,41 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::depth = depth;
 	screen = SDL_SetVideoMode(width, height, depth, flags);
 	if(screen == NULL) {
-		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
+		m->print(msg::MERROR, "engine.cpp", "can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "video mode set: w%u h%u d%u", width,
+		m->print(msg::MDEBUG, "engine.cpp", "video mode set: w%u h%u d%u", width,
 			height, depth);
 	}
 
 	// print out some opengl informations
-	m.print(msg::MDEBUG, "engine.cpp", "vendor: %s", glGetString(GL_VENDOR));
-	m.print(msg::MDEBUG, "engine.cpp", "renderer: %s", glGetString(GL_RENDERER));
-	m.print(msg::MDEBUG, "engine.cpp", "version: %s", glGetString(GL_VERSION));
+	m->print(msg::MDEBUG, "engine.cpp", "vendor: %s", glGetString(GL_VENDOR));
+	m->print(msg::MDEBUG, "engine.cpp", "renderer: %s", glGetString(GL_RENDERER));
+	m->print(msg::MDEBUG, "engine.cpp", "version: %s", glGetString(GL_VERSION));
 
 	// enable key repeat
 	if((SDL_EnableKeyRepeat(200, SDL_DEFAULT_REPEAT_INTERVAL))) {
-		m.print(msg::MDEBUG, "engine.cpp", "setting keyboard repeat failed: %s",
+		m->print(msg::MDEBUG, "engine.cpp", "setting keyboard repeat failed: %s",
 				SDL_GetError());
 		exit(1);
 	}
 	else {
-		m.print(msg::MDEBUG, "engine.cpp", "keyboard repeat set");
+		m->print(msg::MDEBUG, "engine.cpp", "keyboard repeat set");
 	}
 
-	gstyle.init(screen);
-	m.print(msg::MDEBUG, "engine.cpp", "gui style initialized");
-	gstyle.set_color_scheme(gui_style::WINDOWS);
-	m.print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
+	gstyle->init(screen);
+	m->print(msg::MDEBUG, "engine.cpp", "gui style initialized");
+	gstyle->set_color_scheme(gui_style::WINDOWS);
+	m->print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
 
 	// initialize ogl
 	init_gl();
-	m.print(msg::MDEBUG, "engine.cpp", "opengl initialized");
+	m->print(msg::MDEBUG, "engine.cpp", "opengl initialized");
 
 	// resize stuff
 	resize_window();
-	m.print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
+	m->print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
 
 	// reserve memory for position ...
 	engine::position = new vertex3();
@@ -198,7 +210,7 @@ void engine::set_width(unsigned int width) {
 	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
 		engine::depth, engine::flags);
 	if(engine::screen == NULL) {
-		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
+		m->print(msg::MERROR, "engine.cpp", "can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
 }
@@ -211,7 +223,7 @@ void engine::set_height(unsigned int height) {
 	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
 		engine::depth, engine::flags);
 	if(engine::screen == NULL) {
-		m.print(m.MERROR, "engine.cpp", "Can't set video mode: %s", SDL_GetError());
+		m->print(msg::MERROR, "engine.cpp", "can't set video mode: %s", SDL_GetError());
 		exit(1);
 	}
 }
@@ -229,7 +241,7 @@ void engine::stop_draw() {
 	SDL_GL_SwapBuffers();
 
 	// fps limiter
-	Sleep(fps_limit);
+	SDL_Delay(engine::fps_limit);
 }
 
 /*! returns the surface used by the engine
@@ -253,17 +265,11 @@ char* engine::get_caption() {
 	return caption;
 }
 
-/*! returns the gstyle
- */
-gui_style engine::get_gstyle() {
-	return gstyle;
-}
-
 /*! sets the window color scheme
  *  @param scheme the window color scheme we want to set
  */
 void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
-	gstyle.set_color_scheme(scheme);
+	gstyle->set_color_scheme(scheme);
 }
 
 /*! opengl initialization function
@@ -294,7 +300,7 @@ bool engine::init_gl() {
 /*! opengl drawing code
  */
 bool engine::draw_gl_scene() {
-	unsigned int bgcolor = gstyle.STYLE_WINDOW_BG;
+	unsigned int bgcolor = gstyle->STYLE_WINDOW_BG;
 	glClearColor((GLclampf)((float)((bgcolor & 0xFF0000) >> 16) / 255),
 		(GLclampf)((float)((bgcolor & 0xFF00) >> 8) / 255),
 		(GLclampf)((float)(bgcolor & 0xFF) / 255), 0.0f);
@@ -317,9 +323,6 @@ bool engine::draw_gl_scene() {
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-	// draw the shadows
-	engine::shd.draw();
-
 	return true;
 }
 
@@ -328,21 +331,21 @@ bool engine::draw_gl_scene() {
 bool engine::resize_window() {
 	// set the viewport
 	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
-	m.print(msg::MDEBUG, "engine.cpp", "viewport set");
+	m->print(msg::MDEBUG, "engine.cpp", "viewport set");
 
 	// projection matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	m.print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
+	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
 
 	// set perspective with fov = 60° and far value = 1500.0f
 	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
-	m.print(msg::MDEBUG, "engine.cpp", "glu perspective set");
+	m->print(msg::MDEBUG, "engine.cpp", "glu perspective set");
 
 	// model view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	m.print(msg::MDEBUG, "engine.cpp", "matrix mode (modelview) set");
+	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (modelview) set");
 
 	return true;
 }
@@ -422,4 +425,40 @@ void engine::set_fps_limit(unsigned int ms) {
  */
 unsigned int engine::get_fps_limit() {
 	return engine::fps_limit;
+}
+
+/*! returns a pointer to the core class
+ */
+core* engine::get_core() {
+	return engine::c;
+}
+
+/*! returns a pointer to the msg class
+ */
+msg* engine::get_msg() {
+	return engine::m;
+}
+
+/*! returns a pointer to the file_io class
+ */
+file_io* engine::get_file_io() {
+	return engine::f;
+}
+
+/*! returns a pointer to the file_io class
+ */
+event* engine::get_event() {
+	return engine::e;
+}
+
+/*! returns the gstyle class
+ */
+gui_style* engine::get_gui_style() {
+	return engine::gstyle;
+}
+
+/*! returns the gfx class
+ */
+gfx* engine::get_gfx() {
+	return engine::g;
 }

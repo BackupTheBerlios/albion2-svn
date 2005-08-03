@@ -23,7 +23,6 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 using namespace std;
 
@@ -33,7 +32,6 @@ using namespace std;
  *  @brief gui text element functions
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_text class
@@ -42,12 +40,11 @@ using namespace std;
 class A2E_API gui_text
 {
 public:
-	gui_text();
+	gui_text(engine* e);
 	~gui_text();
 
 	void draw(unsigned int x, unsigned int y);
 	void draw(char* text, unsigned int x, unsigned int y);
-	void set_engine_handler(engine* iengine);
 	void new_text(char* font_name, unsigned int font_size);
 
 
@@ -78,11 +75,10 @@ public:
 	unsigned int get_text_height();
 
 protected:
-	msg m;
-	core c;
-	gfx g;
-
-	engine* engine_handler;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
 	// gui text element variables
 

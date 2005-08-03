@@ -40,7 +40,6 @@
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
-#include <shadow.h>
 #include <light.h>
 using namespace std;
 
@@ -74,11 +73,11 @@ a2emodel* add_player(vertex3* pos);
 void delete_player(unsigned int num);
 void update_players();
 
-msg m;
-net n;
-core c;
-engine e;
-ode o;
+msg* m;
+net* n;
+core* c;
+engine* e;
+ode* o;
 
 SDL_Surface* sf;
 

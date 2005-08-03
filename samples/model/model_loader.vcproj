@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="model_loader"
-	ProjectGUID="{9FFE9328-96AE-F04C-BB85-AC8379BBC5C6}"
+	ProjectGUID="{11D110F8-3DE2-1B4C-89BA-15509CE282AE}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

@@ -19,9 +19,6 @@
 
 #include <iostream>
 #include <SDL/SDL.h>
-#include "msg.h"
-#include "core.h"
-#include "net.h"
 using namespace std;
 
 #endif

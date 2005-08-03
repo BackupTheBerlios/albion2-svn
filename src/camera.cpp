@@ -20,7 +20,7 @@
 
 /*! there is no function currently
  */
-camera::camera() {
+camera::camera(engine* e) {
 	camera::position = new vertex3();
 	camera::rotation = new vertex3();
 
@@ -33,26 +33,6 @@ camera::camera() {
 	camera::mouse_input = true;
 
 	rotation_speed = 100.0f;
-}
-
-/*! there is no function currently
- */
-camera::~camera() {
-	m.print(msg::MDEBUG, "camera.cpp", "freeing camera stuff");
-
-	delete camera::position;
-	delete camera::rotation;
-
-	m.print(msg::MDEBUG, "camera.cpp", "camera stuff freed");
-}
-
-/*! initializes the camera
- *  @param iengine pointer to the engine class for creating an engine handler
- *  @param ievent pointer to the event class for creating an event handler
- */
-void camera::init(engine &iengine, event &ievent) {
-	camera::event_handler = &ievent;
-	camera::engine_handler = &iengine;
 
 	camera::position->x = 0.0f;
 	camera::position->y = 0.0f;
@@ -61,6 +41,23 @@ void camera::init(engine &iengine, event &ievent) {
 	camera::rotation->x = 0.0f;
 	camera::rotation->y = 0.0f;
 	camera::rotation->z = 0.0f;
+
+	// get classes
+	camera::e = e;
+	camera::c = e->get_core();
+	camera::m = e->get_msg();
+	camera::evt = e->get_event();
+}
+
+/*! there is no function currently
+ */
+camera::~camera() {
+	m->print(msg::MDEBUG, "camera.cpp", "freeing camera stuff");
+
+	delete camera::position;
+	delete camera::rotation;
+
+	m->print(msg::MDEBUG, "camera.cpp", "camera stuff freed");
 }
 
 /*! runs the camera (expected to be called every draw)
@@ -69,23 +66,23 @@ void camera::run() {
 	// if camera class input flag is set, then ...
 	if(camera::cam_input) {
 		// ... recalculate the cameras position
-		if(event_handler->is_key_right()) {
+		if(evt->is_key_right()) {
 			position->x += (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
 			position->z += (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
 		}
 
-		if(event_handler->is_key_left()) {
+		if(evt->is_key_left()) {
 			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
 			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
 		}
 		
-		if(event_handler->is_key_up()) {
+		if(evt->is_key_up()) {
 			position->x += (float)sin(rotation->y * piover180) * 0.75f;
 			position->y += (float)sin(rotation->x * piover180) * 0.75f;
 			position->z += (float)cos(rotation->y * piover180) * 0.75f;
 		}
 		
-		if(event_handler->is_key_down()) {
+		if(evt->is_key_down()) {
 			position->x -= (float)sin(rotation->y * piover180) * 0.75f;
 			position->y -= (float)sin(rotation->x * piover180) * 0.75f;
 			position->z -= (float)cos(rotation->y * piover180) * 0.75f;
@@ -98,13 +95,13 @@ void camera::run() {
 		int cursor_pos_y = 0;
 		SDL_GetMouseState((int*)&cursor_pos_x, (int*)&cursor_pos_y);
 
-		float xpos = (1.0f / (float)engine_handler->get_screen()->w) * (float)cursor_pos_x;
-		float ypos = (1.0f / (float)engine_handler->get_screen()->h) * (float)cursor_pos_y;
+		float xpos = (1.0f / (float)e->get_screen()->w) * (float)cursor_pos_x;
+		float ypos = (1.0f / (float)e->get_screen()->h) * (float)cursor_pos_y;
 
 		if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
 			rotation->x += (0.5f - ypos) * rotation_speed;
 			rotation->y += (0.5f - xpos) * rotation_speed;
-			SDL_WarpMouse(engine_handler->get_screen()->w/2, engine_handler->get_screen()->h/2);
+			SDL_WarpMouse(e->get_screen()->w/2, e->get_screen()->h/2);
 		}
 	}
 
@@ -127,7 +124,7 @@ void camera::run() {
 	glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
 
 	// reposition
-	engine_handler->set_position(camera::position->x, -camera::position->y, camera::position->z);
+	e->set_position(camera::position->x, -camera::position->y, camera::position->z);
 }
 
 /*! sets the position of the camera

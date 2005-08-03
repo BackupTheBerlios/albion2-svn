@@ -25,7 +25,6 @@
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "msg.h"
 #include "vertex3.h"
 using namespace std;
 
@@ -37,7 +36,6 @@ using namespace std;
  *  @brief core stuff
  *  @author flo
  *  @version 0.1.7
- *  @date 2005/04/22
  *  @todo more functions, write extra classes for each of these crappy structs ...
  *  
  *  the core stuff

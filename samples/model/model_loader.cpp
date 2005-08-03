@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date August 2004 - April 2005
+ * \date August 2004 - July 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
@@ -29,40 +29,52 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e.init(800, 600, 24, false);
-	e.set_caption("A2E Sample - Model Loader");
+	e = new engine();
+	e->init(800, 600, 24, false);
+	e->set_caption("A2E Sample - Model Loader");
+
+	// init class pointers
+	c = e->get_core();
+	m = e->get_msg();
+	aevent = e->get_event();
+	sce = new scene(e);
+	agfx = new gfx();
+	cam = new camera(e);
+	o = new ode(e);
 
 	// set a color scheme (blue)
-	e.set_color_scheme(gui_style::BLUE);
-	sf = e.get_screen();
+	e->set_color_scheme(gui_style::BLUE);
+	sf = e->get_screen();
 
 	// initialize the a2e events
-	aevent.init(ievent);
-	aevent.set_keyboard_layout(event::DE);
+	aevent->init(ievent);
+	aevent->set_keyboard_layout(event::DE);
 
 	// initialize the camera
-	cam.init(e, aevent);
-	cam.set_position(-5.0f, 30.0f, -55.0f);
+	cam->set_position(-5.0f, 30.0f, -55.0f);
 
 	// load the model and set a new position
-	plane.load_model("../data/ground.a2m");
-	plane.set_position(0.0f, -13.0f, 0.0f);
-	plane.set_draw_wireframe(wireframe);
+	plane = sce->create_a2emodel();
+	plane->load_model("../data/ground.a2m");
+	plane->set_position(0.0f, -13.0f, 0.0f);
+	plane->set_draw_wireframe(wireframe);
 
-	cottage.load_model("../data/celtic_cottage.a2m");
-	cottage.set_position(0.0f, 0.0f, 0.0f);
-	cottage.set_draw_wireframe(wireframe);
+	cottage = sce->create_a2emodel();
+	cottage->load_model("../data/celtic_cottage.a2m");
+	cottage->set_position(0.0f, 0.0f, 0.0f);
+	cottage->set_draw_wireframe(wireframe);
 
-	sphere.load_model("../data/player_sphere.a2m");
-	sphere.set_position(45.0f, 20.0f, 20.0f);
-	sphere.set_radius(1.0f);
+	sphere = sce->create_a2emodel();
+	sphere->load_model("../data/player_sphere.a2m");
+	sphere->set_position(45.0f, 20.0f, 20.0f);
+	sphere->set_radius(1.0f);
 
-	sce.add_model(&plane);
-	sce.add_model(&cottage);
-	sce.add_model(&sphere);
+	sce->add_model(plane);
+	sce->add_model(cottage);
+	sce->add_model(sphere);
 
-	light l1(-50.0f, 100.0f, -50.0f);
-	light l2(0.0f, 50.0f, 0.0f);
+	light l1(e, -50.0f, 100.0f, -50.0f);
+	light l2(e, 0.0f, 50.0f, 0.0f);
 	float lamb1[] = { 0.3f, 0.3f, 0.3f, 1.0f};
 	float ldif1[] = { 0.7f, 0.7f, 0.7f, 1.0f};
 	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};
@@ -75,17 +87,17 @@ int main(int argc, char *argv[])
 	l2.set_lambient(lamb2);
 	l2.set_ldiffuse(ldif2);
 	l2.set_lspecular(lspc2);
-	sce.add_light(&l1);
-	sce.add_light(&l2);
+	sce->add_light(&l1);
+	sce->add_light(&l2);
 
 	// initialize ode
-	o.init();
+	o->init();
 
 	// pass the models to ode
-	o.add_object(&plane, true, ode_object::TRIMESH);
-	o.add_object(&sphere, false, ode_object::SPHERE);
+	o->add_object(plane, true, ode_object::TRIMESH);
+	o->add_object(sphere, false, ode_object::SPHERE);
 
-	ode_object* osphere = o.get_ode_object(1);
+	ode_object* osphere = o->get_ode_object(1);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -98,15 +110,15 @@ int main(int argc, char *argv[])
 	refresh_time = SDL_GetTicks();
 	while(!done)
 	{
-		while(aevent.is_event())
+		while(aevent->is_event())
 		{
-			aevent.handle_events(aevent.get_event().type);
-			switch(aevent.get_event().type) {
+			aevent->handle_events(aevent->get_event().type);
+			switch(aevent->get_event().type) {
 				case SDL_QUIT:
 					done = true;
 					break;
 				case SDL_KEYDOWN:
-					switch(aevent.get_event().key.keysym.sym) {
+					switch(aevent->get_event().key.keysym.sym) {
 						case SDLK_ESCAPE:
 							done = true;
 							break;
@@ -119,8 +131,8 @@ int main(int argc, char *argv[])
 						break;
 						case SDLK_e: {
 							wireframe = wireframe ^ true;
-							plane.set_draw_wireframe(wireframe);
-							cottage.set_draw_wireframe(wireframe);
+							plane->set_draw_wireframe(wireframe);
+							cottage->set_draw_wireframe(wireframe);
 						}
 						break;
 						case SDLK_w: {
@@ -150,24 +162,24 @@ int main(int argc, char *argv[])
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
 			sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
-				-cam.get_position()->x, cam.get_position()->y, -cam.get_position()->z);
+				-cam->get_position()->x, cam->get_position()->y, -cam->get_position()->z);
 			//sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
 			fps = 0;
 			fps_time = SDL_GetTicks();
 		}
-		e.set_caption(tmp);
+		e->set_caption(tmp);
 
-		e.start_draw();
+		e->start_draw();
 
-		cam.run();
-		sce.draw();
-		o.run(SDL_GetTicks() - refresh_time);
-
-		e.stop_draw();
+		cam->run();
+		sce->draw();
+		o->run(SDL_GetTicks() - refresh_time);
 		refresh_time = SDL_GetTicks();
+
+		e->stop_draw();
 	}
 
-	o.close();
+	o->close();
 
 	return 0;
 }

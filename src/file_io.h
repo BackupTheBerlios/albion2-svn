@@ -20,7 +20,6 @@
 #include <iostream>
 #include <fstream>
 #include <SDL/SDL.h>
-#include "msg.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -29,7 +28,6 @@ using namespace std;
  *  @brief file input/output
  *  @author flo
  *  @version 0.1.1
- *  @date 2004/09/08
  *  @todo more functions
  *  
  *  the file input/output class
@@ -55,8 +53,8 @@ public:
 	void write_block(char* data, unsigned int size);
 
 protected:
-	msg m;
 	fstream filestream;
+
 };
 
 #endif

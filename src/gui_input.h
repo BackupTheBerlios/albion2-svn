@@ -33,7 +33,6 @@ using namespace std;
  *  @brief gui input box element functions
  *  @author flo
  *  @version 0.3.2
- *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the gui_input class
@@ -42,11 +41,10 @@ using namespace std;
 class A2E_API gui_input
 {
 public:
-	gui_input();
+	gui_input(engine* e);
 	~gui_input();
 	
 	void draw(unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 	void set_blink_text_handler(gui_text* itext);
 
@@ -73,11 +71,11 @@ public:
 	gui_text* get_text_handler();
 
 protected:
-	msg m;
-	core c;
-	gfx g;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
-	engine* engine_handler;
 	gui_text* text_handler;
 
 	gui_text* blink_text_handler;

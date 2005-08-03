@@ -22,7 +22,7 @@
 
 /*! there is no function currently
  */
-gui_window::gui_window() {
+gui_window::gui_window(engine* e) {
 	gui_window::lid = 0;
 
 	gui_window::border = true;
@@ -31,16 +31,22 @@ gui_window::gui_window() {
 
 	// 1024 chars
 	gui_window::caption = new char[64];
+
+	// get classes
+	gui_window::e = e;
+	gui_window::c = e->get_core();
+	gui_window::m = e->get_msg();
+	gui_window::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_window::~gui_window() {
-	m.print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
+	m->print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
 
 	delete gui_window::caption;
 
-	m.print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
+	m->print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
 }
 
 /*! draws the window
@@ -48,15 +54,15 @@ gui_window::~gui_window() {
 void gui_window::draw() {
 	if(gui_window::border) {
 		// draw bg
-		g.draw_filled_rectangle(engine_handler->get_screen(),
+		g->draw_filled_rectangle(e->get_screen(),
 			gui_window::rectangle,
-			engine_handler->get_gstyle().STYLE_BG);
+			e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g.draw_2colored_rectangle(engine_handler->get_screen(),
+		g->draw_2colored_rectangle(e->get_screen(),
 			gui_window::rectangle,
-			engine_handler->get_gstyle().STYLE_LIGHT,
-			engine_handler->get_gstyle().STYLE_DARK);
+			e->get_gui_style()->STYLE_LIGHT,
+			e->get_gui_style()->STYLE_DARK);
 
 		gfx::rect* r = new gfx::rect();
 		memcpy(r, gui_window::rectangle, sizeof(gfx::rect));
@@ -65,14 +71,14 @@ void gui_window::draw() {
 		r->x2 -= 1;
 		r->y2 = r->y1 + 17;
 		r->y1 += 1;
-		g.draw_filled_rectangle(engine_handler->get_screen(), r,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_filled_rectangle(e->get_screen(), r,
+			e->get_gui_style()->STYLE_DARK);
 
 		r->y1 = r->y2 + 1;
 		r->y2 = gui_window::rectangle->y2 - 1;
-		g.draw_2colored_rectangle(engine_handler->get_screen(), r,
-			engine_handler->get_gstyle().STYLE_LIGHT,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_2colored_rectangle(e->get_screen(), r,
+			e->get_gui_style()->STYLE_LIGHT,
+			e->get_gui_style()->STYLE_DARK);
 
 		delete r;
 
@@ -88,13 +94,6 @@ void gui_window::draw() {
 			gui_window::deleted = true;
 		}
 	}
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_window::set_engine_handler(engine* iengine) {
-	gui_window::engine_handler = iengine;
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class

@@ -42,7 +42,6 @@ using namespace std;
  *  @brief graphical user interface functions
  *  @author flo
  *  @version 0.5
- *  @date 2005/02/23
  *  @todo more functions
  *  
  *  the gui class
@@ -51,7 +50,7 @@ using namespace std;
 class A2E_API gui
 {
 public:
-	gui();
+	gui(engine* e);
 	~gui();
 
 	struct gui_element {
@@ -62,7 +61,7 @@ public:
 		bool is_drawn;
 	};
 
-	void init(engine &iengine, event &ievent);
+	void init();
 	void draw();
 
 	bool delete_element(unsigned int id);
@@ -86,13 +85,12 @@ public:
 	void set_active_element(unsigned int id);
 
 protected:
-	msg m;
-	core c;
-	gfx g;
+	msg* m;
+	core* c;
+	event* evt;
+	engine* e;
+	gfx* g;
 
-	event* event_handler;
-	engine* engine_handler;
-	
 	SDL_Surface* gui_surface;
 
 	//! gui element types

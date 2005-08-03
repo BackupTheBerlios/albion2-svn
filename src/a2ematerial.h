@@ -22,6 +22,7 @@
 #include "msg.h"
 #include "core.h"
 #include "file_io.h"
+#include "engine.h"
 #include <cmath>
 using namespace std;
 
@@ -31,7 +32,6 @@ using namespace std;
  *  @brief material routines
  *  @author flo
  *  @version 0.1
- *  @date 2005/05/08
  *  @todo nothing atm
  *  
  *  the a2ematerial class
@@ -40,7 +40,7 @@ using namespace std;
 class A2E_API a2ematerial
 {
 public:
-	a2ematerial();
+	a2ematerial(engine* e);
 	~a2ematerial();
 
 	void load_material(char* filename);
@@ -49,9 +49,10 @@ public:
 	GLuint* get_texture(unsigned int num);
 
 protected:
-	msg m;
-	core c;
-	file_io file;
+	msg* m;
+	core* c;
+	file_io* file;
+	engine* e;
 
 	unsigned int texture_count;
 	char** tex_names;

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="a2e"
-	ProjectGUID="{EF7EC247-A5D3-5940-9277-A0FD34AE741A}"
+	ProjectGUID="{08A53244-63D6-C441-99FE-3D3F2A441621}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -202,9 +202,6 @@
 			RelativePath="scene.h">
 		</File>
 		<File
-			RelativePath="shadow.h">
-		</File>
-		<File
 			RelativePath="vertex3.h">
 		</File>
 		<File
@@ -293,9 +290,6 @@
 		</File>
 		<File
 			RelativePath="scene.cpp">
-		</File>
-		<File
-			RelativePath="shadow.cpp">
 		</File>
 		<File
 			RelativePath="vertex3.cpp">

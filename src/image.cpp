@@ -20,32 +20,34 @@
 
 /*! there is no function currently
  */
-image::image(engine* iengine) {
-	image::engine_handler = iengine;
-
+image::image(engine* e) {
 	image::position = new core::pnt();
 	image::position->x = 0;
 	image::position->y = 0;
 
 	image::width = 0;
 	image::heigth = 0;
+
+	// get classes
+	image::e = e;
+	image::m = e->get_msg();
 }
 
 /*! there is no function currently
  */
 image::~image() {
-	m.print(msg::MDEBUG, "image.cpp", "freeing image stuff");
+	m->print(msg::MDEBUG, "image.cpp", "freeing image stuff");
 
 	delete image::position;
 
-	m.print(msg::MDEBUG, "image.cpp", "image stuff freed");
+	m->print(msg::MDEBUG, "image.cpp", "image stuff freed");
 }
 
 /*! draws the image
  */
 void image::draw(unsigned int scale_x, unsigned int scale_y) {
-	image::engine_handler->start_2d_draw();
-	unsigned int screen_heigth = image::engine_handler->get_screen()->h;
+	image::e->start_2d_draw();
+	unsigned int screen_heigth = image::e->get_screen()->h;
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, image::texture);
@@ -67,7 +69,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	// the depth buffer, otherwise nothing will be seen
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	image::engine_handler->stop_2d_draw();
+	image::e->stop_2d_draw();
 }
 
 /*! draws the image
@@ -84,7 +86,7 @@ void image::open_image(char* filename) {
 
 	SDL_Surface* img_srf = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
 	if(!img_srf) {
-		m.print(msg::MERROR, "image.cpp", "error loading image file \"%s\"!", filename);
+		m->print(msg::MERROR, "image.cpp", "error loading image file \"%s\"!", filename);
 		return;
 	}
 
@@ -125,9 +127,9 @@ core::pnt* image::get_position() {
 	return image::position;
 }
 
-/*! creates a engine_handler -> a pointer to the engine class
+/*! creates a e -> a pointer to the engine class
  *  @param iengine the engine we want to handle
  */
-void image::set_engine_handler(engine* iengine) {
-	image::engine_handler = iengine;
+void image::set_e(engine* iengine) {
+	image::e = iengine;
 }

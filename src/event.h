@@ -22,7 +22,6 @@
 #include <cstring>
 #include "msg.h"
 #include "core.h"
-#include "engine.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -31,7 +30,6 @@ using namespace std;
  *  @brief (sdl) event handler
  *  @author flo
  *  @version 0.3.1
- *  @date 2005/02/03
  *  @todo more functions
  *  
  *  the event handling class
@@ -121,7 +119,6 @@ public:
 	void get_mouse_pos(core::pnt* pos);
 
 protected:
-	msg m;
 	SDL_Event event_handle;
 
 	//! left mouse button pressed (x coordinate)

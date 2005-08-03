@@ -38,7 +38,6 @@ using namespace std;
  *  @brief open dynamic engine bindings/functions
  *  @author flo
  *  @version 0.1
- *  @date 2005/01/10
  *  @todo more functions
  *  
  *  bindings and functions for using the open dynamic engine
@@ -47,7 +46,7 @@ using namespace std;
 class A2E_API ode
 {
 public:
-	ode();
+	ode(engine* e);
 	~ode();
 
 	void init();
@@ -65,8 +64,9 @@ public:
 	unsigned int get_object_count();
 
 protected:
-	msg m;
-	core c;
+	msg* m;
+	core* c;
+	engine* e;
 
 	unsigned int object_count;
 	ode_object* ode_objects[MAX_OBJECTS];

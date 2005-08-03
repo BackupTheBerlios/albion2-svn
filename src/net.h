@@ -22,6 +22,7 @@
 #include <SDL/SDL_net.h>
 #include <math.h>
 #include "msg.h"
+#include "engine.h"
 using namespace std;
 
 #define MAX_CLIENTS 32
@@ -33,7 +34,6 @@ using namespace std;
  *  @author flo
  *  @author laxity
  *  @version 0.2.3
- *  @date 2004/12/08
  *  @todo more functions
  *
  *  This is the network class
@@ -42,7 +42,7 @@ using namespace std;
 class A2E_API net
 {
 public:
-	net();
+	net(engine* e);
 	~net();
 
 	bool init();
@@ -100,7 +100,8 @@ protected:
 	unsigned int max_clients;
 	unsigned short int port;
 
-	msg m;
+	msg* m;
+	engine* e;
 };
 
 #endif

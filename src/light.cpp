@@ -23,7 +23,7 @@
  *  @param y the lights y position
  *  @param z the lights z position
  */
-light::light(float x, float y, float z) {
+light::light(engine* e, float x, float y, float z) {
 	light::position = new vertex3();
 	light::position->x = x;
 	light::position->y = y;
@@ -44,18 +44,28 @@ light::light(float x, float y, float z) {
 	constant_attenuation = 1.0f;
 	linear_attenuation = 0.0f;
 	quadratic_attenuation = 0.0f;
+
+	// get classes
+	light::e = e;
+	light::c = e->get_core();
+	light::m = e->get_msg();
 }
 
 /*! creates a new light object
  */
-light::light(vertex3* pos) {
-	light::light(pos->x, pos->y, pos->z);
+light::light(engine* e, vertex3* pos) {
+	light::light(e, pos->x, pos->y, pos->z);
+
+	// get classes
+	light::e = e;
+	light::c = e->get_core();
+	light::m = e->get_msg();
 }
 
 /*! destroys the light object
  */
 light::~light() {
-	m.print(msg::MDEBUG, "light.cpp", "freeing light stuff");
+	m->print(msg::MDEBUG, "light.cpp", "freeing light stuff");
 
 	delete light::position;
 	/*delete light::lambient;
@@ -63,7 +73,7 @@ light::~light() {
 	delete light::lspecular;
 	delete light::spot_dir;*/
 
-	m.print(msg::MDEBUG, "light.cpp", "light stuff freed");
+	m->print(msg::MDEBUG, "light.cpp", "light stuff freed");
 }
 
 /*! sets the lights position

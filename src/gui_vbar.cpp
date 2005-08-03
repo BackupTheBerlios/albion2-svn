@@ -22,7 +22,7 @@
 
 /*! there is no function currently
  */
-gui_vbar::gui_vbar() {
+gui_vbar::gui_vbar(engine* e) {
 	gui_vbar::last_point = new core::pnt();
 	gui_vbar::last_point->x = 0;
 	gui_vbar::last_point->y = 0;
@@ -30,15 +30,21 @@ gui_vbar::gui_vbar() {
 	gui_vbar::position = 0;
 
 	gui_vbar::px_per_item = 0;
+
+	// get classes
+	gui_vbar::e = e;
+	gui_vbar::c = e->get_core();
+	gui_vbar::m = e->get_msg();
+	gui_vbar::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_vbar::~gui_vbar() {
-	m.print(msg::MDEBUG, "gui_vbar.cpp", "freeing gui_vbar stuff");
+	m->print(msg::MDEBUG, "gui_vbar.cpp", "freeing gui_vbar stuff");
 
 
-	m.print(msg::MDEBUG, "gui_vbar.cpp", "gui_vbar stuff freed");
+	m->print(msg::MDEBUG, "gui_vbar.cpp", "gui_vbar stuff freed");
 }
 
 /*! draws the vertical bar
@@ -56,22 +62,22 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 
 	gfx::rect* r1 = new gfx::rect();
 
-	g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + x, gui_vbar::rectangle->y1 + y,
+	g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + x, gui_vbar::rectangle->y1 + y,
 		gui_vbar::rectangle->x2 + x, gui_vbar::rectangle->y2 + y);
 
 	// draw bar bg
-	g.draw_filled_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_BARBG);
+	g->draw_filled_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_BARBG);
 
 	// draw up button
 	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
-	g.pnt_to_rect(ubrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y1,
+	g->pnt_to_rect(ubrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y1,
 		gui_vbar::rectangle->x1 + 12, gui_vbar::rectangle->y1 + 12);
 	gui_vbar::up_button_handler->set_rectangle(ubrect);
 
 	// draw down button
 	gfx::rect* dbrect = gui_vbar::down_button_handler->get_rectangle();
-	g.pnt_to_rect(dbrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y2 - 12,
+	g->pnt_to_rect(dbrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y2 - 12,
 		gui_vbar::rectangle->x1 + 12, gui_vbar::rectangle->y2);
 	gui_vbar::down_button_handler->set_rectangle(dbrect);
 
@@ -88,25 +94,25 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 		unsigned int heigth_position = position * px_per_item;
 
 		// draw bg
-		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + x,
+		g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + y, gui_vbar::rectangle->x2 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth + y);
-		g.draw_filled_rectangle(engine_handler->get_screen(),
-			r1, engine_handler->get_gstyle().STYLE_BG);
+		g->draw_filled_rectangle(e->get_screen(),
+			r1, e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g.draw_2colored_rectangle(engine_handler->get_screen(),
-			r1, engine_handler->get_gstyle().STYLE_LIGHT,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_2colored_rectangle(e->get_screen(),
+			r1, e->get_gui_style()->STYLE_LIGHT,
+			e->get_gui_style()->STYLE_DARK);
 
 		// draw 2 colored border
-		g.pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1 + x,
+		g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + 1 + y,
 			gui_vbar::rectangle->x2 - 1 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1 + y);
-		g.draw_2colored_rectangle(engine_handler->get_screen(),
-			r1, engine_handler->get_gstyle().STYLE_BG,
-			engine_handler->get_gstyle().STYLE_INDARK);
+		g->draw_2colored_rectangle(e->get_screen(),
+			r1, e->get_gui_style()->STYLE_BG,
+			e->get_gui_style()->STYLE_INDARK);
 
 
 		// button event handling
@@ -126,13 +132,6 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
  */
 void gui_vbar::draw() {
 	gui_vbar::draw(0, 0);
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_vbar::set_engine_handler(engine* iengine) {
-	gui_vbar::engine_handler = iengine;
 }
 
 //! returns the vertical bars id

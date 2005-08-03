@@ -21,6 +21,7 @@
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
+#include "engine.h"
 #include <math.h>
 using namespace std;
 
@@ -30,7 +31,6 @@ using namespace std;
  *  @brief lighting routines
  *  @author flo
  *  @version 0.1
- *  @date 2005/01/29
  *  @todo nothing atm
  *  
  *  the lighting class
@@ -39,8 +39,8 @@ using namespace std;
 class A2E_API light
 {
 public:
-	light(float x, float y, float z);
-	light(vertex3* pos);
+	light(engine* e, float x, float y, float z);
+	light(engine* e, vertex3* pos);
 	~light();
 
 	void set_position(float x, float y, float z);
@@ -66,8 +66,9 @@ public:
 	float get_quadratic_attenuation();
 
 protected:
-	msg m;
-	core c;
+	msg* m;
+	core* c;
+	engine* e;
 
 	vertex3* position;
 

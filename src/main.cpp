@@ -15,8 +15,6 @@
  */
  
 #include "main.h"
-#include "core.h"
-#include "net.h"
 /*!
  * \mainpage
  *

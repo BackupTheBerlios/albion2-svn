@@ -22,7 +22,6 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 #include "gui_text.h"
 #include "gui_button.h"
@@ -34,7 +33,6 @@ using namespace std;
  *  @brief gui window element functions
  *  @author flo
  *  @version 0.1
- *  @date 2005/02/16
  *  @todo more functions
  *  
  *  the gui_window class
@@ -43,11 +41,10 @@ using namespace std;
 class A2E_API gui_window
 {
 public:
-	gui_window();
+	gui_window(engine* e);
 	~gui_window();
 	
 	void draw();
-    void set_engine_handler(engine* iengine);
 	void set_text_handler(gui_text* itext);
 
 	unsigned int get_id();
@@ -73,11 +70,11 @@ public:
 	void set_deleted(bool state);
 
 protected:
-	msg m;
-	core c;
-	gfx g;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
-	engine* engine_handler;
 	gui_text* text_handler;
 	
 	gui_button* exit_button_handler;

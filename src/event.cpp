@@ -24,13 +24,13 @@ event::event() {
 /*! there is no function currently
  */
 event::~event() {
-	m.print(msg::MDEBUG, "event.cpp", "freeing event stuff");
+	cout << "DEBUG: " << "event.cpp" << "freeing event stuff" << endl;
 
 	if(event::gui_event_stack) {
 		delete event::gui_event_stack;
 	}
 
-	m.print(msg::MDEBUG, "event.cpp", "event stuff freed");
+	cout << "DEBUG: " << "event.cpp" << "event stuff freed" << endl;
 }
 
 /*! initializes the event class and sets an sdl_event handler
@@ -45,13 +45,18 @@ void event::init(SDL_Event ievent) {
 	for(int i = 0; i < 512; i++) {
 		event::input_text[i] = 0;
 	}
-	
+
 	shift = false;
 	alt = false;
 
 	event::keyboard_layout = event::US;
 
 	event::set_active(event::CAMERA);
+
+	key_up = false;
+	key_down = false;
+	key_right = false;
+	key_left = false;
 }
 
 /*! returns 1 if the are any sdl events, otherwise it will return 0
@@ -315,7 +320,6 @@ void event::handle_events(unsigned int event_type) {
 										}
 									}
 
-
 									switch(event::get_event().key.keysym.sym) {
 										case SDLK_KP0:
 											sprintf(tmp_text, "%s", "0");
@@ -513,9 +517,14 @@ void event::handle_events(unsigned int event_type) {
  */
 bool event::is_gui_event() {
 	// if stack counter is equal to 0, then there are no gui events
-	if(cgui_event == 0) { return false; }
+	if(cgui_event == 0) {
+		return false;
+	}
 	// else there is a gui event - decrement stack pointer
-	else { cgui_event--; return true; }
+	else {
+		cgui_event--;
+		return true;
+	}
 }
 
 /*! returns the current gui event

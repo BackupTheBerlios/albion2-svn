@@ -41,7 +41,6 @@
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
-#include <shadow.h>
 #include <light.h>
 using namespace std;
 
@@ -84,20 +83,20 @@ void update_names();
 void draw_names();
 void delete_player(unsigned int num);
 
-msg m;
-net n;
-core c;
-engine e;
-gfx agfx;
-event aevent;
-camera cam;
-file_io fio;
-gui agui;
+msg* m;
+net* n;
+core* c;
+engine* e;
+gfx* agfx;
+event* aevent;
+camera* cam;
+file_io* fio;
+gui* agui;
 
-scene sce;
+scene* sce;
 
-a2emodel level;
-a2emodel sphere;
+a2emodel* level;
+a2emodel* sphere;
 
 SDL_Surface* sf;
 

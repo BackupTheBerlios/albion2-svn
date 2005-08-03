@@ -36,7 +36,6 @@ using namespace std;
  *  @brief gui list box element functions
  *  @author flo
  *  @version 0.2.1
- *  @date 2005/02/20
  *  @todo more functions
  *  
  *  the gui_list class
@@ -45,11 +44,10 @@ using namespace std;
 class A2E_API gui_list
 {
 public:
-	gui_list();
+	gui_list(engine* e);
 	~gui_list();
 	
 	void draw(unsigned int x, unsigned int y);
-    void set_engine_handler(engine* iengine);
 
     void set_vbar_handler(gui_vbar* ivbar);
 
@@ -75,11 +73,11 @@ public:
 	void select_pos(unsigned int x, unsigned int y);
 
 protected:
-	msg m;
-	core c;
-	gfx g;
+	msg* m;
+	core* c;
+	engine* e;
+	gfx* g;
 
-	engine* engine_handler;
 
 	gui_vbar* vbar_handler;
 

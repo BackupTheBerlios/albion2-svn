@@ -18,16 +18,22 @@
 
 /*! there is no function currently
  */
-a2ematerial::a2ematerial() {
+a2ematerial::a2ematerial(engine* e) {
 	texture_count = 0;
 	tex_names = NULL;
 	textures = NULL;
+
+	// get classes
+	a2ematerial::e = e;
+	a2ematerial::c = e->get_core();
+	a2ematerial::m = e->get_msg();
+	a2ematerial::file = e->get_file_io();
 }
 
 /*! there is no function currently
  */
 a2ematerial::~a2ematerial() {
-	m.print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
+	m->print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
 
 	if(tex_names != NULL) {
 		delete [] tex_names;
@@ -37,28 +43,28 @@ a2ematerial::~a2ematerial() {
 		delete textures;
 	}
 
-	m.print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
+	m->print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
 }
 
 /*! loads an .a2mtl material file
  *  @param filename the materials filename
  */
 void a2ematerial::load_material(char* filename) {
-	file.open_file(filename, true);
+	file->open_file(filename, true);
 
 	// get file type
 	char* file_type = new char[12];
-	file.get_block(file_type, 11);
+	file->get_block(file_type, 11);
 	file_type[11] = 0;
 	if(strcmp(file_type, "A2EMATERIAL") != 0) {
-		m.print(msg::MERROR, "a2ematerial.cpp", "%s is no a2e material file!", filename);
+		m->print(msg::MERROR, "a2ematerial.cpp", "%s is no a2e material file!", filename);
 		delete file_type;
 		return;
 	}
 	delete file_type;
 
 	// get texture count
-	a2ematerial::texture_count = file.get_uint();
+	a2ematerial::texture_count = file->get_uint();
 
 	// create tex name pointers
 	a2ematerial::tex_names = new char*[a2ematerial::texture_count];
@@ -67,11 +73,11 @@ void a2ematerial::load_material(char* filename) {
 	a2ematerial::textures = new GLuint[a2ematerial::texture_count];
 
 	// get filesize
-	unsigned int size = file.get_filesize();
+	unsigned int size = file->get_filesize();
 
 	// the remaining data ...
 	char* data = new char[size - 14];
-	file.get_block(data, size - 16);
+	file->get_block(data, size - 16);
 	data[size - 15] = 0;
 
 	// load the texture names
@@ -104,7 +110,7 @@ void a2ematerial::load_textures() {
 	for(unsigned int i = 0; i < a2ematerial::texture_count; i++) {
 		tex_surface[i] = IMG_LoadPNG_RW(SDL_RWFromFile(a2ematerial::tex_names[i], "rb"));
 		if(!tex_surface) {
-			m.print(msg::MERROR, "a2ematerial.cpp", "error loading texture file \"%s\"!", a2ematerial::tex_names[i]);
+			m->print(msg::MERROR, "a2ematerial.cpp", "error loading texture file \"%s\"!", a2ematerial::tex_names[i]);
 			return;
 		}
 	}

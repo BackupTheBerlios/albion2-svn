@@ -24,18 +24,25 @@
 
 /*! there is no function currently
  */
-gui_list_item::gui_list_item() {
+gui_list_item::gui_list_item(engine* e) {
 	text = new char[256];
 
 	point = new core::pnt();
 
 	text_handler = NULL;
+
+	// get classes
+	gui_list_item::e = e;
+	gui_list_item::c = e->get_core();
+	gui_list_item::m = e->get_msg();
+	gui_list_item::gstyle = e->get_gui_style();
+	gui_list_item::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_list_item::~gui_list_item() {
-	m.print(msg::MDEBUG, "gui_list_item.cpp", "freeing gui_list_item stuff");
+	m->print(msg::MDEBUG, "gui_list_item.cpp", "freeing gui_list_item stuff");
 
 	delete text;
 	delete point;
@@ -44,7 +51,7 @@ gui_list_item::~gui_list_item() {
 		delete text_handler;
 	}
 
-	m.print(msg::MDEBUG, "gui_list_item.cpp", "gui_list_item stuff freed");
+	m->print(msg::MDEBUG, "gui_list_item.cpp", "gui_list_item stuff freed");
 }
 
 /*! draws the list box item

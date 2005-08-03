@@ -130,9 +130,7 @@ struct MD5Joint
 };
 
 MD5Joint* pJoints;
-MD5Joint** pBaseJoints;
 MD5Mesh* pMeshes;
-Vertice**  pVerticesListTab;
 
 int iNumJoints;
 int iNumBaseJoints;

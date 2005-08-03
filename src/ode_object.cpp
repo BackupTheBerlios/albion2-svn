@@ -21,7 +21,7 @@ float ode_object::density = 5.0f;
 
 /*! there is no function currently
  */
-ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
+ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	ode_object::world = world;
 	ode_object::space = space;
 	ode_object::set_model(model);
@@ -42,12 +42,17 @@ ode_object::ode_object(dWorldID* world, dSpaceID* space, a2emodel* model, bool f
 	}
 
 	max_force = 10.0f;
+
+	// get classes
+	ode_object::e = e;
+	ode_object::c = e->get_core();
+	ode_object::m = e->get_msg();
 }
 
 /*! there is no function currently
  */
 ode_object::~ode_object() {
-	m.print(msg::MDEBUG, "ode_object.cpp", "freeing ode_object stuff");
+	m->print(msg::MDEBUG, "ode_object.cpp", "freeing ode_object stuff");
 
 	// destroy the geom
 	if(ode_object::geom) { dGeomDestroy(ode_object::geom); }
@@ -61,7 +66,7 @@ ode_object::~ode_object() {
 	// destroy the trimesh
 	if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
 
-	m.print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
+	m->print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }
 
 /*! sets the geometry of the object
@@ -155,7 +160,7 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 		}
 		break;
 		default:
-			m.print(msg::MERROR, "ode_object.cpp", "set_geom(): No object type specified!");
+			m->print(msg::MERROR, "ode_object.cpp", "set_geom(): No object type specified!");
 			break;
 	}
 }
@@ -223,7 +228,7 @@ void ode_object::set_body(ode_object::OTYPE type) {
 		}
 		break;
 		default:
-			m.print(msg::MERROR, "ode_object.cpp", "set_body(): No object type specified!");
+			m->print(msg::MERROR, "ode_object.cpp", "set_body(): No object type specified!");
 			break;
 	}
 

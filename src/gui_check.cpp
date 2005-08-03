@@ -22,20 +22,26 @@
 
 /*! there is no function currently
  */
-gui_check::gui_check() {
+gui_check::gui_check(engine* e) {
 	gui_check::text = new char[1024];
 
 	gui_check::checked = false;
+
+	// get classes
+	gui_check::e = e;
+	gui_check::c = e->get_core();
+	gui_check::m = e->get_msg();
+	gui_check::g = e->get_gfx();
 }
 
 /*! there is no function currently
  */
 gui_check::~gui_check() {
-	m.print(msg::MDEBUG, "gui_check.cpp", "freeing gui_check stuff");
+	m->print(msg::MDEBUG, "gui_check.cpp", "freeing gui_check stuff");
 
 	delete gui_check::text;
 
-	m.print(msg::MDEBUG, "gui_check.cpp", "gui_check stuff freed");
+	m->print(msg::MDEBUG, "gui_check.cpp", "gui_check stuff freed");
 }
 
 /*! draws the check box
@@ -46,77 +52,77 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 	gfx::rect* r1 = new gfx::rect();
 	core::pnt* p1 = new core::pnt();
 	
-	g.pnt_to_rect(r1, gui_check::rectangle->x1 + x,
+	g->pnt_to_rect(r1, gui_check::rectangle->x1 + x,
 		gui_check::rectangle->y1 + y,
 		gui_check::rectangle->x1 + 14 + x,
 		gui_check::rectangle->y1 + 14 + y);
 
 	// draw bg
-	g.draw_filled_rectangle(engine_handler->get_screen(),
-		r1, engine_handler->get_gstyle().STYLE_BG2);
+	g->draw_filled_rectangle(e->get_screen(),
+		r1, e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g.draw_2colored_rectangle(engine_handler->get_screen(), r1,
-		engine_handler->get_gstyle().STYLE_INDARK,
-		engine_handler->get_gstyle().STYLE_LIGHT);
+	g->draw_2colored_rectangle(e->get_screen(), r1,
+		e->get_gui_style()->STYLE_INDARK,
+		e->get_gui_style()->STYLE_LIGHT);
 
 	// draw 2 colored border
-	g.pnt_to_rect(r1, gui_check::rectangle->x1 + 1 + x,
+	g->pnt_to_rect(r1, gui_check::rectangle->x1 + 1 + x,
 		gui_check::rectangle->y1 + 1 + y,
 		gui_check::rectangle->x1 + 13 + x,
 		gui_check::rectangle->y1 + 13 + y);
-	g.draw_2colored_rectangle(engine_handler->get_screen(),
-		r1, engine_handler->get_gstyle().STYLE_DARK,
-		engine_handler->get_gstyle().STYLE_DARK2);
+	g->draw_2colored_rectangle(e->get_screen(),
+		r1, e->get_gui_style()->STYLE_DARK,
+		e->get_gui_style()->STYLE_DARK2);
 
 	if(gui_check::checked) {
 		// draw the check mark
 		core::pnt* p2 = new core::pnt();
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 11 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 4 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 11 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 4 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 12 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 5 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 12 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 5 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
 
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 6 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 8 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 6 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 8 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 7 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 9 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 7 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 9 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
-		g.cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 8 + y);
-		g.cord_to_pnt(p2, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 10 + y);
+		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 8 + y);
+		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 10 + y);
 
-		g.draw_line(engine_handler->get_screen(), p1, p2,
-			engine_handler->get_gstyle().STYLE_DARK);
+		g->draw_line(e->get_screen(), p1, p2,
+			e->get_gui_style()->STYLE_DARK);
 
 		delete p2;
 	}
 
 
 	// draw the text
-	g.cord_to_pnt(p1, gui_check::rectangle->x1 + 20, gui_check::rectangle->y1 + 2);
+	g->cord_to_pnt(p1, gui_check::rectangle->x1 + 20, gui_check::rectangle->y1 + 2);
 	gui_check::text_handler->set_point(p1);
 	gui_check::text_handler->draw(x, y);
 
@@ -129,13 +135,6 @@ void gui_check::draw(unsigned int x, unsigned int y) {
  */
 void gui_check::draw() {
 	gui_check::draw(0, 0);
-}
-
-/*! creates a engine_handler -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void gui_check::set_engine_handler(engine* iengine) {
-	gui_check::engine_handler = iengine;
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class
