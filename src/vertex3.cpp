@@ -51,13 +51,13 @@ vertex3::~vertex3() {
 
 /*! + operator overload
  */
-vertex3 vertex3::operator+(vertex3& v) {
+vertex3 vertex3::operator+(const vertex3& v) {
 	return vertex3(vertex3::x + v.x, vertex3::y + v.y, vertex3::z + v.z);
 }
 
 /*! - operator overload
  */
-vertex3 vertex3::operator-(vertex3& v) {
+vertex3 vertex3::operator-(const vertex3& v) {
 	return vertex3(vertex3::x - v.x, vertex3::y - v.y, vertex3::z - v.z);
 }
 
@@ -75,7 +75,7 @@ vertex3 vertex3::operator*(float f) {
 
 /*! += operator overload
  */
-vertex3& vertex3::operator+=(vertex3& v) {
+vertex3& vertex3::operator+=(const vertex3& v) {
 	vertex3::x += v.x;
 	vertex3::y += v.y;
 	vertex3::z += v.z;
@@ -84,15 +84,60 @@ vertex3& vertex3::operator+=(vertex3& v) {
 
 /*! -= operator overload
  */
-vertex3& vertex3::operator-=(vertex3& v) {
+vertex3& vertex3::operator-=(const vertex3& v) {
 	vertex3::x -= v.x;
 	vertex3::y -= v.y;
 	vertex3::z -= v.z;
 	return *this;
 }
 
+/*! *= operator overload
+ */
+vertex3& vertex3::operator*=(float f) {
+	vertex3::x *= f;
+	vertex3::y *= f;
+	vertex3::z *= f;
+	return *this;
+}
+
+/*! /= operator overload
+ */
+vertex3& vertex3::operator/=(float f) {
+	vertex3::x /= f;
+	vertex3::y /= f;
+	vertex3::z /= f;
+	return *this;
+}
+
+/*! << operator overload
+ */
+std::ostream& operator<<(std::ostream& o, vertex3& v) {
+	o << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+	return o;
+}
+
 /*! returns the normalized vertex3 object
  */
 vertex3 vertex3::normalize() {
 	return *this / (float)sqrt(vertex3::x * vertex3::x + vertex3::y * vertex3::y + vertex3::z * vertex3::z);
+}
+
+/*! normalizes the vertex3 object
+ */
+void vertex3::norm() {
+	*this = *this / (float)sqrt(vertex3::x * vertex3::x + vertex3::y * vertex3::y + vertex3::z * vertex3::z);
+}
+
+/*! * operator overload / cross product
+ */
+vertex3 vertex3::operator^(const vertex3& v) {
+	return vertex3(vertex3::y * v.z - vertex3::z * v.y,
+		vertex3::z * v.x - vertex3::x * v.z,
+		vertex3::x * v.y - vertex3::y * v.x);
+}
+
+/*! * operator overload / dot product
+ */
+float vertex3::operator*(vertex3& v) {
+	return (vertex3::x * v.x + vertex3::y * v.y + vertex3::z * v.z);
 }

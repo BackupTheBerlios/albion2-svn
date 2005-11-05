@@ -256,3 +256,102 @@ void core::get_2d_from_3d(vertex3* v, pnt* p) {
 	delete projection;
 	delete viewport;
 }
+
+/*! computes the normal of a triangle specified by v1, v2 and v3
+ *  @param v1 the first vertex
+ *  @param v2 the second vertex
+ *  @param v3 the third vertex
+ *  @param normal the "output" normal
+ */
+void core::compute_normal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3& normal) {
+	normal = ((*v1) - (*v2)) ^ ((*v3) - (*v1));
+	normal.norm();
+}
+
+/*! computes the binormal and tangent of a triangle specified by
+ *! v1, v2 and v3, their normal and their texture coordinates
+ *  @param v1 the first vertex
+ *  @param v2 the second vertex
+ *  @param v3 the third vertex
+ *  @param normal the triangles normal
+ *  @param binormal the "output" binormal
+ *  @param tangent the "output" tangent
+ *  @param t1 the first texture coordinate
+ *  @param t2 the second texture coordinate
+ *  @param t3 the third texture coordinate
+ */
+void core::compute_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3* normal,
+	vertex3& binormal, vertex3& tangent,
+	coord* t1, coord* t2, coord* t3) {
+	vertex3 edge1 = (*v1) - (*v2);
+	vertex3 edge2 = (*v3) - (*v1);
+
+	// binormal 
+	float deltaX1 = t1->u - t2->u;
+	float deltaX2 = t3->u - t1->u;
+	binormal = (edge1 * deltaX2) - (edge2 * deltaX1);
+	binormal.norm();
+
+	// tangent
+	float deltaY1 = t1->v - t2->v;
+	float deltaY2 = t3->v - t1->v;
+	tangent = (edge1 * deltaY2) - (edge2 * deltaY1);
+	tangent.norm();
+
+	// adjust
+	vertex3 txb = tangent ^ binormal;
+	if(*normal * txb < 0.0f) {
+		tangent *= -1.0f;
+
+		// our cam doesn't have an "upvector" of -1.0f, so it isn't needed (?)
+		//binormal *= -1.0f;
+	}
+	else {
+		binormal *= -1.0f;
+	}
+}
+
+/*! computes the normal, binormal and tangent of a triangle
+ *! specified by v1, v2 and v3 and their texture coordinates
+ *  @param v1 the first vertex
+ *  @param v2 the second vertex
+ *  @param v3 the third vertex
+ *  @param normal the "output" normal
+ *  @param binormal the "output" binormal
+ *  @param tangent the "output" tangent
+ *  @param t1 the first texture coordinate
+ *  @param t2 the second texture coordinate
+ *  @param t3 the third texture coordinate
+ */
+void core::compute_normal_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3,
+		vertex3& normal, vertex3& binormal, vertex3& tangent,
+		coord* t1, coord* t2, coord* t3) {
+	vertex3 edge1 = (*v1) - (*v2);
+	vertex3 edge2 = (*v3) - (*v1);
+	normal = edge2 ^ edge1;
+	normal.norm();
+
+	// binormal 
+	float deltaX1 = t1->u - t2->u;
+	float deltaX2 = t3->u - t1->u;
+	binormal = (edge1 * deltaX2) - (edge2 * deltaX1);
+	binormal.norm();
+
+	// tangent
+	float deltaY1 = t1->v - t2->v;
+	float deltaY2 = t3->v - t1->v;
+	tangent = (edge1 * deltaY2) - (edge2 * deltaY1);
+	tangent.norm();
+
+	// adjust
+	vertex3 txb = tangent ^ binormal;
+	if(normal * txb < 0.0f) {
+		tangent *= -1.0f;
+
+		// our cam doesn't have an "upvector" of -1.0f, so it isn't needed (?)
+		//binormal *= -1.0f;
+	}
+	else {
+		binormal *= -1.0f;
+	}
+}

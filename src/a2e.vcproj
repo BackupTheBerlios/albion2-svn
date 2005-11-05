@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="a2e"
-	ProjectGUID="{08A53244-63D6-C441-99FE-3D3F2A441621}"
+	ProjectGUID="{97C784F0-710D-074D-AE51-155133543507}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -139,6 +139,9 @@
 			RelativePath="event.h">
 		</File>
 		<File
+			RelativePath="extensions.h">
+		</File>
+		<File
 			RelativePath="file_io.h">
 		</File>
 		<File
@@ -181,9 +184,6 @@
 			RelativePath="light.h">
 		</File>
 		<File
-			RelativePath="main.h">
-		</File>
-		<File
 			RelativePath="msg.h">
 		</File>
 		<File
@@ -200,6 +200,12 @@
 		</File>
 		<File
 			RelativePath="scene.h">
+		</File>
+		<File
+			RelativePath="shader.h">
+		</File>
+		<File
+			RelativePath="texman.h">
 		</File>
 		<File
 			RelativePath="vertex3.h">
@@ -227,6 +233,9 @@
 		</File>
 		<File
 			RelativePath="event.cpp">
+		</File>
+		<File
+			RelativePath="extensions.cpp">
 		</File>
 		<File
 			RelativePath="file_io.cpp">
@@ -271,9 +280,6 @@
 			RelativePath="light.cpp">
 		</File>
 		<File
-			RelativePath="main.cpp">
-		</File>
-		<File
 			RelativePath="msg.cpp">
 		</File>
 		<File
@@ -290,6 +296,12 @@
 		</File>
 		<File
 			RelativePath="scene.cpp">
+		</File>
+		<File
+			RelativePath="shader.cpp">
+		</File>
+		<File
+			RelativePath="texman.cpp">
 		</File>
 		<File
 			RelativePath="vertex3.cpp">

@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	gui_text* t1 = agui->add_text("../data/vera.ttf", 14, "test text", 0xFFFFFF, agfx->cord_to_pnt(100, 5), 102, 0);
 	gui_text* output_text = agui->add_text("../data/vera.ttf", 12, "-", 0xFFFFFF, agfx->cord_to_pnt(10, 580), 103, 0);
 	gui_input* i1 = agui->add_input_box(agfx->pnt_to_rect(10, 300, 100, 320), 105, "input text", 0);
-	gui_list* l1 = agui->add_list_box(agfx->pnt_to_rect(400, 200, 750, 440), 106, "blah", 0);
+	gui_list* l1 = agui->add_list_box(agfx->pnt_to_rect(400, 200, 750, 440), 106, 0);
 
 	gui_window* wnd = agui->add_window(agfx->pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
 	gui_text* xpos_text = agui->add_text("../data/vera.ttf", 12, "0", 0x000000, agfx->cord_to_pnt(20, 20), 107, 110);
@@ -77,9 +77,9 @@ int main(int argc, char *argv[])
 	img->open_image("../../data/engine_logo.png");
 	img->set_position(800 - 446, 600 - 130);
 
-	core::pnt* mpos = (core::pnt*)malloc(sizeof(core::pnt));
-	char* xpos = (char*)malloc(8);
-	char* ypos = (char*)malloc(8);
+	core::pnt* mpos = new core::pnt();
+	char* xpos = new char[8];
+	char* ypos = new char[8];
 	refresh_time = SDL_GetTicks();
 	while(!done)
 	{
@@ -140,11 +140,13 @@ int main(int argc, char *argv[])
 		refresh_time = SDL_GetTicks();
 	}
 
-	free(mpos);
-	free(xpos);
-	free(ypos);
+	delete mpos;
+	delete [] xpos;
+	delete [] ypos;
 
-	SDL_FreeSurface(sf);
+	delete img;
+	delete agui;
+	delete e;
 
 	return 0;
 }

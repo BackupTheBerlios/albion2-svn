@@ -27,12 +27,12 @@ using namespace std;
  *
  * \author flo
  *
- * \date August - January 2005
+ * \date August - November 2005
  *
  * Albion 2 Engine Tool - Alias Wavefront .obj -> A2E .a2m Converter
  *
  *
- * little specification of the A2E model format:
+ * little specification of the A2E static model format:
  *
  * [A2EMODEL - 8 bytes]
  * [NAME - 8 bytes]
@@ -50,7 +50,46 @@ using namespace std;
  * 	[TEXTURE COORDINATES - 4 bytes * INDEX COUNT * 3]
  * 	[NORMAL VERTICES - 4 bytes * INDEX COUNT * 3]
  * [END FOR]
+ *
+ *
+ * [A2EMODEL - 8 bytes]
+ * [NAME - 8 bytes]
+ * [VERTEX COUNT - 4 bytes]
+ * [VERTICES - 4 bytes * VERTEX COUNT]
+ * [TEXTURE COUNT - 4 bytes]
+ * [TEXTURE NAMES - 32 bytes * TEXTURE COUNT]
+ * [TEXTURE COORDINATE COUNT - 4 bytes]
+ * [TEXTURE COORDINATES - 4 bytes * TEXTURE COORDINATE COUNT * 2]
+ * [OBJECT COUNT - 4 bytes]
+ * [FOR EACH OBJECT COUNT]
+ * 	[OBJECT NAME - 8 bytes]
+ * 	[INDEX COUNT - 4 bytes]
+ * 	[TEXTURE VALUE - 4 bytes]
+ * 	[INDICES - 4 bytes * INDEX COUNT * 3]
+ * 	[TEXTURE INDICES - 4 bytes * INDEX COUNT * 3]
+ * [END FOR]
  */
+
+void put_uint(fstream* file, unsigned int uint) {
+	file->put((uint >> 24) & 0xFF);
+	file->put((uint >> 16) & 0xFF);
+	file->put((uint >> 8) & 0xFF);
+	file->put(uint & 0xFF);
+}
+
+void put_swap_uint(fstream* file, unsigned int uint) {
+	file->put(uint & 0xFF);
+	file->put((uint >> 8) & 0xFF);
+	file->put((uint >> 16) & 0xFF);
+	file->put((uint >> 24) & 0xFF);
+}
+
+void put_float(fstream* file, float flt) {
+	char* tmp = new char[4];
+	memcpy(tmp, &flt, 4);
+	file->write(tmp, 4);
+	delete [] tmp;
+}
 
 void load_materials(char* filename) {
 	fstream mtlfile;
@@ -211,9 +250,6 @@ int main(int argc, char *argv[])
 				else if(line[1] == 't') {
 					tex_vertex_count++;
 				}
-				else if(line[1] == 'n') {
-					normal_vertex_count++;
-				}
 				break;
 			case 'f':
 				index_count[object_count-1]++;
@@ -234,11 +270,6 @@ int main(int argc, char *argv[])
 
 	texcords1 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
 	texcords2 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
-	texcords3 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
-
-	normcords1 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
-	normcords2 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
-	normcords3 = (unsigned int*)malloc(sizeof(unsigned int)*normal_vertex_count);
 
 	for(unsigned int i = 0; i < object_count; i++) {
 		indices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
@@ -247,9 +278,6 @@ int main(int argc, char *argv[])
 		texindices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 		texindices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 		texindices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		normindices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		normindices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		normindices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
 	}
 
 	tex_number = (unsigned int*)malloc(sizeof(unsigned int)*object_count);
@@ -257,7 +285,6 @@ int main(int argc, char *argv[])
 	unsigned int vc = 0;
 	unsigned int ic = 0;
 	unsigned int tc = 0;
-	unsigned int nc = 0;
 	unsigned int oc = 0;
 	bool is_first_obj = false;
 
@@ -316,32 +343,8 @@ int main(int argc, char *argv[])
 						memcpy(&texcords1[tc], &flt, 4);
 						flt = (float)atof(line_tok[2]);
 						memcpy(&texcords2[tc], &flt, 4);
-						flt = (float)atof(line_tok[3]);
-						memcpy(&texcords3[tc], &flt, 4);
 
 						tc++;
-					}
-					break;
-					case 'n': {
-						// tokenize(tm) the line
-						unsigned int x = 0;
-						//char* line_tok[8];
-						line_tok[x] = strtok(line, " ");
-						while(line_tok[x] != NULL) {
-							x++;
-							line_tok[x] = strtok(NULL, " ");
-						}
-
-						float flt;
-
-						flt = (float)atof(line_tok[1]);
-						memcpy(&normcords1[nc], &flt, 4);
-						flt = (float)atof(line_tok[2]);
-						memcpy(&normcords2[nc], &flt, 4);
-						flt = (float)atof(line_tok[3]);
-						memcpy(&normcords3[nc], &flt, 4);
-
-						nc++;
 					}
 					break;
 					default:
@@ -369,7 +372,6 @@ int main(int argc, char *argv[])
 				}
 				indices1[oc][ic] = atoi(itok[0]) - 1;
 				texindices1[oc][ic] = atoi(itok[1]) - 1;
-				normindices1[oc][ic] = atoi(itok[2]) - 1;
 
 				// and the same again ...
 				y = 0;
@@ -380,7 +382,6 @@ int main(int argc, char *argv[])
 				}
 				indices2[oc][ic] = atoi(itok[0]) - 1;
 				texindices2[oc][ic] = atoi(itok[1]) - 1;
-				normindices2[oc][ic] = atoi(itok[2]) - 1;
 
 				// ... and again ...
 				y = 0;
@@ -391,7 +392,6 @@ int main(int argc, char *argv[])
 				}
 				indices3[oc][ic] = atoi(itok[0]) - 1;
 				texindices3[oc][ic] = atoi(itok[1]) - 1;
-				normindices3[oc][ic] = atoi(itok[2]) - 1;
 
 				ic++;
 			}
@@ -438,213 +438,56 @@ int main(int argc, char *argv[])
 
 	ofile.close();
 
-	char tmp[4];
 	fstream afile;
 	afile.open(a2m_filename, fstream::out | fstream::binary);
 
 	char* a2m_type = "A2EMODEL";
 	afile.write(a2m_type, 8);
+	afile.put(0x00);
 	afile.write(model_name, 8);
 
-	tmp[0] = (char)(vertex_count >> 24) & 0xFF;
-	tmp[1] = (char)(vertex_count >> 16) & 0xFF;
-	tmp[2] = (char)(vertex_count >> 8) & 0xFF;
-	tmp[3] = (char)(vertex_count & 0xFF);
-	afile.write(tmp, 4);
-
+	put_uint(&afile, vertex_count);
 	for(unsigned int i = 0; i < vertex_count; i++) {
-		tmp[3] = (char)(vertices1[i] >> 24) & 0xFF;
-		tmp[2] = (char)(vertices1[i] >> 16) & 0xFF;
-		tmp[1] = (char)(vertices1[i] >> 8) & 0xFF;
-		tmp[0] = (char)(vertices1[i] & 0xFF);
-		afile.write(tmp, 4);
-
-		tmp[3] = (char)(vertices2[i] >> 24) & 0xFF;
-		tmp[2] = (char)(vertices2[i] >> 16) & 0xFF;
-		tmp[1] = (char)(vertices2[i] >> 8) & 0xFF;
-		tmp[0] = (char)(vertices2[i] & 0xFF);
-		afile.write(tmp, 4);
-
-		tmp[3] = (char)(vertices3[i] >> 24) & 0xFF;
-		tmp[2] = (char)(vertices3[i] >> 16) & 0xFF;
-		tmp[1] = (char)(vertices3[i] >> 8) & 0xFF;
-		tmp[0] = (char)(vertices3[i] & 0xFF);
-		afile.write(tmp, 4);
+		put_swap_uint(&afile, vertices1[i]);
+		put_swap_uint(&afile, vertices2[i]);
+		put_swap_uint(&afile, vertices3[i]);
 	}
 
-	tmp[0] = (char)(texture_count >> 24) & 0xFF;
-	tmp[1] = (char)(texture_count >> 16) & 0xFF;
-	tmp[2] = (char)(texture_count >> 8) & 0xFF;
-	tmp[3] = (char)(texture_count & 0xFF);
-	afile.write(tmp, 4);
-
+	put_uint(&afile, texture_count);
 	for(unsigned int i = 0; i < texture_count; i++) {
 		afile.write(tex_names[i], 32);
 	}
 
-	tmp[0] = (char)(normal_vertex_count >> 24) & 0xFF;
-	tmp[1] = (char)(normal_vertex_count >> 16) & 0xFF;
-	tmp[2] = (char)(normal_vertex_count >> 8) & 0xFF;
-	tmp[3] = (char)(normal_vertex_count & 0xFF);
-	afile.write(tmp, 4);
+	put_uint(&afile, tex_vertex_count);
+	for(unsigned int i = 0; i < tex_vertex_count; i++) {
+		put_swap_uint(&afile, texcords1[i]);
+		put_swap_uint(&afile, texcords2[i]);
+	}
 
-	tmp[0] = (object_count >> 24) & 0xFF;
-	tmp[1] = (object_count >> 16) & 0xFF;
-	tmp[2] = (object_count >> 8) & 0xFF;
-	tmp[3] = object_count & 0xFF;
-	afile.write(tmp, 4);
-
+	put_uint(&afile, object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
 		afile.write(obj_names[i], 8);
 
-		tmp[0] = (index_count[i] >> 24) & 0xFF;
-		tmp[1] = (index_count[i] >> 16) & 0xFF;
-		tmp[2] = (index_count[i] >> 8) & 0xFF;
-		tmp[3] = index_count[i] & 0xFF;
-		afile.write(tmp, 4);
+		put_uint(&afile, index_count[i]);
 
-		tmp[0] = (tex_number[i] >> 24) & 0xFF;
-		tmp[1] = (tex_number[i] >> 16) & 0xFF;
-		tmp[2] = (tex_number[i] >> 8) & 0xFF;
-		tmp[3] = tex_number[i] & 0xFF;
-		afile.write(tmp, 4);
+		put_uint(&afile, tex_number[i]);
 
 		for(unsigned int j = 0; j < index_count[i]; j++) {
-			tmp[0] = (char)(indices1[i][j] >> 24) & 0xFF;
-			tmp[1] = (char)(indices1[i][j] >> 16) & 0xFF;
-			tmp[2] = (char)(indices1[i][j] >> 8) & 0xFF;
-			tmp[3] = (char)(indices1[i][j] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[0] = (char)(indices2[i][j] >> 24) & 0xFF;
-			tmp[1] = (char)(indices2[i][j] >> 16) & 0xFF;
-			tmp[2] = (char)(indices2[i][j] >> 8) & 0xFF;
-			tmp[3] = (char)(indices2[i][j] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[0] = (char)(indices3[i][j] >> 24) & 0xFF;
-			tmp[1] = (char)(indices3[i][j] >> 16) & 0xFF;
-			tmp[2] = (char)(indices3[i][j] >> 8) & 0xFF;
-			tmp[3] = (char)(indices3[i][j] & 0xFF);
-			afile.write(tmp, 4);
+			put_uint(&afile, indices1[i][j]);
+			put_uint(&afile, indices2[i][j]);
+			put_uint(&afile, indices3[i][j]);
 		}
 
 		for(unsigned int j = 0; j < index_count[i]; j++) {
-			tmp[3] = (char)(texcords1[texindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords1[texindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords1[texindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords1[texindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords2[texindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords2[texindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords2[texindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords2[texindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords3[texindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords3[texindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords3[texindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords3[texindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords1[texindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords1[texindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords1[texindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords1[texindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords2[texindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords2[texindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords2[texindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords2[texindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords3[texindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords3[texindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords3[texindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords3[texindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords1[texindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords1[texindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords1[texindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords1[texindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords2[texindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords2[texindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords2[texindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords2[texindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(texcords3[texindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(texcords3[texindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(texcords3[texindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(texcords3[texindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-		}
-
-		for(unsigned int j = 0; j < index_count[i]; j++) {
-			tmp[3] = (char)(normcords1[normindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords1[normindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords1[normindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords1[normindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords2[normindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords2[normindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords2[normindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords2[normindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords3[normindices1[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords3[normindices1[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords3[normindices1[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords3[normindices1[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords1[normindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords1[normindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords1[normindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords1[normindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords2[normindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords2[normindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords2[normindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords2[normindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords3[normindices2[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords3[normindices2[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords3[normindices2[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords3[normindices2[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords1[normindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords1[normindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords1[normindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords1[normindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords2[normindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords2[normindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords2[normindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords2[normindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
-
-			tmp[3] = (char)(normcords3[normindices3[i][j]] >> 24) & 0xFF;
-			tmp[2] = (char)(normcords3[normindices3[i][j]] >> 16) & 0xFF;
-			tmp[1] = (char)(normcords3[normindices3[i][j]] >> 8) & 0xFF;
-			tmp[0] = (char)(normcords3[normindices3[i][j]] & 0xFF);
-			afile.write(tmp, 4);
+			put_uint(&afile, texindices1[i][j]);
+			put_uint(&afile, texindices2[i][j]);
+			put_uint(&afile, texindices3[i][j]);
 		}
 	}
 	
 	afile.close();
 
-	cout << vertex_count << " vertices, " << total_index_count << " indices, " << total_index_count*3 << " texture vertices and " << normal_vertex_count << " normal vertices successfully converted!" << endl;
+	cout << vertex_count << " vertices, " << total_index_count << " indices and " << total_index_count*3 << " texture vertices successfully converted!" << endl;
 
 	return 0;
 }

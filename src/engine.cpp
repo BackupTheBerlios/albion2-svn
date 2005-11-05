@@ -15,14 +15,10 @@
  */
 
 #include "engine.h"
-#include "msg.h"
-#include "core.h"
-#include "net.h"
-#include "gui_style.h"
 
 // dll main for windows dll export
 #ifdef WIN32
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
 	switch (ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH:
 		case DLL_THREAD_ATTACH:
@@ -40,13 +36,15 @@ engine::engine() {
 	cursor_visible = true;
 	fps_limit = 10;
 	flags = 0;
+	position = NULL;
 
 	c = new core();
 	m = new msg();
 	gstyle = new gui_style();
-	f = new file_io();
+	f = new file_io(m);
 	e = new event();
 	g = new gfx();
+	t = new texman(m);
 }
 
 /*! there is no function currently
@@ -54,20 +52,38 @@ engine::engine() {
 engine::~engine() {
 	m->print(msg::MDEBUG, "engine.cpp", "freeing engine stuff");
 
+	if(position != NULL) {
+		delete position;
+	}
+
 	delete c;
 	delete gstyle;
 	delete f;
 	delete e;
+	delete g;
+	delete t;
+	delete exts;
 
 	m->print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
 
 	delete m;
+
+    SDL_Quit();
+	exit(0);
 }
 
 /*! initializes the engine in console only mode
  */
 void engine::init(bool console) {
-	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console only mode");
+	if(console == true) {
+	    engine::mode = engine::CONSOLE;
+		// create extension class object
+		exts = new ext(engine::mode);
+		m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console only mode");
+	}
+	else {
+		engine::init(640, 400, 16, false);
+	}
 }
 
 /*! initializes the engine in console + graphical mode
@@ -77,6 +93,7 @@ void engine::init(bool console) {
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
 void engine::init(unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
+    engine::mode = engine::GRAPHICAL;
 	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console + graphical mode");
 
 	// initialize sdl
@@ -103,34 +120,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	m->print(msg::MDEBUG, "engine.cpp",
 		"amount of available video memory: %u kb", video_info->video_mem);
 
-	// gl attributes
-	switch(depth) {
-		case 16:
-			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
-			break;
-		case 24:
-			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 6);
-			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 6);
-			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 6);
-			break;
-		case 32:
-			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-			break;
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
-	m->print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	m->print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
-
-	// create screen
+	// set some flags
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
 	engine::flags |= SDL_GL_DOUBLEBUFFER;
@@ -157,6 +147,31 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m->print(msg::MDEBUG, "engine.cpp", "fullscreen disabled");
 	}
 
+	// gl attributes
+	switch(depth) {
+		case 16:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+			break;
+		case 24:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			break;
+		case 32:
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			break;
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
+	m->print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	m->print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
+
+	// create screen
 	engine::height = height;
 	engine::width = width;
 	engine::depth = depth;
@@ -200,6 +215,9 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 
 	// reserve memory for position ...
 	engine::position = new vertex3();
+
+	// create extension class object
+	exts = new ext(engine::mode);
 }
 
 /*! sets the window width
@@ -308,7 +326,7 @@ bool engine::draw_gl_scene() {
     // clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	float pinf[4][4];
+	/*float pinf[4][4];
 	pinf[1][0] = pinf[2][0] = pinf[3][0] = pinf[0][1] = pinf[2][1] = pinf[3][1] =
 		pinf[0][2] = pinf[1][2] = pinf[0][3] = pinf[1][3] = pinf[3][3] = 0.0f;
 	pinf[0][0] = atanf(60.0f) / (engine::width / engine::height);
@@ -317,7 +335,7 @@ bool engine::draw_gl_scene() {
 	pinf[2][2] = pinf[2][3] = -1.0f;
 
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(&pinf[0][0]);
+	glLoadMatrixf(&pinf[0][0]);*/
 
     // we don't want to modify the projection matrix.
 	glMatrixMode(GL_MODELVIEW);
@@ -338,8 +356,8 @@ bool engine::resize_window() {
 	glLoadIdentity();
 	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
 
-	// set perspective with fov = 60° and far value = 1500.0f
-	gluPerspective(60.0f, engine::width/engine::height, 0.1f, 1500.0f);
+	// set perspective with fov = 60 and far value = 1500.0f
+	gluPerspective(60.0f, (float)engine::width / (float)engine::height, 0.01f, 1500.0f);
 	m->print(msg::MDEBUG, "engine.cpp", "glu perspective set");
 
 	// model view matrix
@@ -381,7 +399,7 @@ void engine::start_2d_draw() {
 
 	// we need an orthogonal view (2d) for drawing 2d elements
 	glOrtho(0.0, screen->w, 0.0, screen->h, -1.0, 1.0);
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
@@ -427,6 +445,12 @@ unsigned int engine::get_fps_limit() {
 	return engine::fps_limit;
 }
 
+/*! returns the type of the initialization (0 = GRAPHICAL, 1 = CONSOLE)
+ */
+unsigned int engine::get_init_mode() {
+	return engine::mode;
+}
+
 /*! returns a pointer to the core class
  */
 core* engine::get_core() {
@@ -461,4 +485,16 @@ gui_style* engine::get_gui_style() {
  */
 gfx* engine::get_gfx() {
 	return engine::g;
+}
+
+/*! returns the texman class
+ */
+texman* engine::get_texman() {
+	return engine::t;
+}
+
+/*! returns the texman class
+ */
+ext* engine::get_ext() {
+	return engine::exts;
 }

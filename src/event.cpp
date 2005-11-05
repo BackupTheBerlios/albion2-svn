@@ -19,6 +19,12 @@
 /*! there is no function currently
  */
 event::event() {
+	event::gui_event_stack = NULL;
+
+	event::lm_pressed_x = 0;
+	event::lm_pressed_y = 0;
+	event::lm_last_pressed_x = 0;
+	event::lm_last_pressed_y = 0;
 }
 
 /*! there is no function currently
@@ -26,8 +32,8 @@ event::event() {
 event::~event() {
 	cout << "DEBUG: " << "event.cpp" << "freeing event stuff" << endl;
 
-	if(event::gui_event_stack) {
-		delete event::gui_event_stack;
+	if(event::gui_event_stack != NULL) {
+		delete [] event::gui_event_stack;
 	}
 
 	cout << "DEBUG: " << "event.cpp" << "event stuff freed" << endl;
@@ -381,7 +387,7 @@ void event::handle_events(unsigned int event_type) {
 									}
 
 									if(shift) {
-										key = toupper(tmp_text[0]);
+										key = (char)toupper(tmp_text[0]);
 										if(keyboard_layout == event::DE) {
 											switch(key) {
 												case 'ä':

@@ -25,7 +25,6 @@ using namespace std;
  *  @brief msg handling
  *  @author laxity
  *  @author flo
- *  @version 0.3.6
  *  @todo logfile support
  *
  *  This is the msg handling class
@@ -37,7 +36,7 @@ public:
 	msg();
 	~msg();
 
-	void print(unsigned int type, const char *file, const char *str = NULL, ...);
+	void print(unsigned int type, const char* file, const char* str = NULL, ...);
 	void scan(unsigned int length, char* str);
 	void set_log_mode(bool mode);
 	bool get_log_mode();
@@ -46,7 +45,7 @@ public:
 	{
 		MMSG,	//!< enum simple message
 		MERROR,	//!< enum error message
-		MDEBUG,	//!< enum debug message
+		MDEBUG	//!< enum debug message
 	};
 
 protected:

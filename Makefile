@@ -8,11 +8,11 @@ endif
 
 export CONFIG
 
-.PHONY: all clean a2e obj2a2m chat_server gui model_loader move world_client world_server
+.PHONY: all clean a2e obj2a2m md5mesh2a2m md5anim2a2a gui model_loader move skeletal world_client world_server parallax hans
 
-all: a2e obj2a2m chat_server gui model_loader move world_client world_server
+all: a2e obj2a2m md5mesh2a2m md5anim2a2a gui model_loader move skeletal world_client world_server parallax hans
 
-Makefile: ./premake.lua ./src/premake.lua ./tools/premake.lua ./samples/chat/premake.lua ./samples/gui/premake.lua ./samples/model/premake.lua ./samples/move/premake.lua ./samples/world_client/premake.lua ./samples/world_server/premake.lua
+Makefile: ./premake.lua ./src/premake.lua ./tools/premake.lua ./tools/premake.lua ./tools/premake.lua ./samples/gui/premake.lua ./samples/model/premake.lua ./samples/move/premake.lua ./samples/skeletal/premake.lua ./samples/world_client/premake.lua ./samples/world_server/premake.lua ./samples/glsl/premake.lua ./samples/hans/premake.lua
 	@echo ==== Regenerating Makefiles ====
 	@premake --cc gcc --target gnu
 
@@ -21,10 +21,16 @@ a2e:
 	@$(MAKE) --no-print-directory -C ./src/
 obj2a2m:
 	@echo ==== Building obj2a2m ====
-	@$(MAKE) --no-print-directory -C ./tools/
-chat_server: a2e
-	@echo ==== Building chat_server ====
-	@$(MAKE) --no-print-directory -C ./samples/chat/
+	@$(MAKE) --no-print-directory -C ./tools/ -f obj2a2m.make
+
+md5mesh2a2m: a2e
+	@echo ==== Building md5mesh2a2m ====
+	@$(MAKE) --no-print-directory -C ./tools/ -f md5mesh2a2m.make
+
+md5anim2a2a: a2e
+	@echo ==== Building md5anim2a2a ====
+	@$(MAKE) --no-print-directory -C ./tools/ -f md5anim2a2a.make
+
 gui: a2e
 	@echo ==== Building gui ====
 	@$(MAKE) --no-print-directory -C ./samples/gui/
@@ -34,18 +40,31 @@ model_loader: a2e
 move: a2e
 	@echo ==== Building move ====
 	@$(MAKE) --no-print-directory -C ./samples/move/
+skeletal: a2e
+	@echo ==== Building skeletal ====
+	@$(MAKE) --no-print-directory -C ./samples/skeletal/
 world_client: a2e
 	@echo ==== Building world_client ====
 	@$(MAKE) --no-print-directory -C ./samples/world_client/
 world_server: a2e
 	@echo ==== Building world_server ====
 	@$(MAKE) --no-print-directory -C ./samples/world_server/
+parallax: a2e
+	@echo ==== Building parallax ====
+	@$(MAKE) --no-print-directory -C ./samples/glsl/
+hans: a2e
+	@echo ==== Building hans ====
+	@$(MAKE) --no-print-directory -C ./samples/hans/
 clean:
 	@$(MAKE) --no-print-directory -C ./src/ clean
-	@$(MAKE) --no-print-directory -C ./tools/ clean
-	@$(MAKE) --no-print-directory -C ./samples/chat/ clean
+	@$(MAKE) --no-print-directory -C ./tools/ -f obj2a2m.make clean
+	@$(MAKE) --no-print-directory -C ./tools/ -f md5mesh2a2m.make clean
+	@$(MAKE) --no-print-directory -C ./tools/ -f md5anim2a2a.make clean
 	@$(MAKE) --no-print-directory -C ./samples/gui/ clean
 	@$(MAKE) --no-print-directory -C ./samples/model/ clean
 	@$(MAKE) --no-print-directory -C ./samples/move/ clean
+	@$(MAKE) --no-print-directory -C ./samples/skeletal/ clean
 	@$(MAKE) --no-print-directory -C ./samples/world_client/ clean
 	@$(MAKE) --no-print-directory -C ./samples/world_server/ clean
+	@$(MAKE) --no-print-directory -C ./samples/glsl/ clean
+	@$(MAKE) --no-print-directory -C ./samples/hans/ clean

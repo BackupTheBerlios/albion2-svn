@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="md5mesh2a2m"
-	ProjectGUID="{B1B63469-2A7D-CE4C-9266-16A9E8C659F3}"
+	ProjectGUID="{D5F03AC7-F0FA-EA44-899A-693FDE29B031}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

@@ -18,8 +18,10 @@
 #define __NET_H__
 
 #include <iostream>
+#include <fstream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_net.h>
+#include <time.h>
 #include <math.h>
 #include "msg.h"
 #include "engine.h"
@@ -61,6 +63,13 @@ public:
 
 	void delete_client(unsigned int num);
 
+	void send_packet(TCPsocket* sock, char* data, int len, unsigned int client_num);
+	int recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int client_num);
+
+	// for debug purposes
+	void set_netlog(bool state);
+	bool get_netlog();
+
 	//! protocol type
 	enum PTYPE
 	{
@@ -97,11 +106,17 @@ public:
 	client* clients;
 	
 protected:
+	msg* m;
+	engine* e;
+
+	fstream* logfile;
+
 	unsigned int max_clients;
 	unsigned short int port;
 
-	msg* m;
-	engine* e;
+	unsigned int header;
+
+	bool netlog;
 };
 
 #endif

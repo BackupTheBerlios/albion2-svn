@@ -21,8 +21,6 @@
 #include <windows.h>
 #endif
 
-#define MAX_OBJS 32
-
 #include <iostream>
 #include <fstream>
 #include <SDL/SDL.h>
@@ -37,6 +35,8 @@
 #include "file_io.h"
 #include "a2ematerial.h"
 #include "engine.h"
+#include "shader.h"
+#include "extensions.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -44,12 +44,11 @@ using namespace std;
 /*! @class a2eanim
  *  @brief class for loading and displaying an a2e skeletal animated model
  *  @author flo
- *  @version 0.1
  *  @todo more functions
  *  
  *  the a2e skeletal animation class
  *  
- *  thx to bozo for .md5 format specification and julien rebetez
+ *  thx to bozo for the .md5 format specification and julien rebetez
  *  for that very useful .md5 tutorial (and code)
  */
 
@@ -57,9 +56,10 @@ class A2E_API a2eanim
 {
 protected:
 	struct joint;
+	struct animation;
 
 public:
-	a2eanim(engine* e);
+	a2eanim(engine* e, shader* s);
 	~a2eanim();
 
 	void draw();
@@ -76,12 +76,41 @@ public:
 	void set_draw_joints(bool state);
 	bool get_draw_joints();
 
+	unsigned int get_animation_count();
+	animation* get_animation(unsigned int num);
+	unsigned int get_current_animation_number();
+	animation* get_current_animation();
+
+	unsigned int get_current_frame();
+	void set_current_frame(unsigned int num);
+
+	void set_current_animation(unsigned int num);
+	void play_frames(unsigned start, unsigned int end);
+
+	void set_position(float x, float y, float z);
+	vertex3* get_position();
+	void set_scale(float x, float y, float z);
+	vertex3* get_scale();
+	void set_rotation(float x, float y, float z);
+	vertex3* get_rotation();
+
+	void set_visible(bool state);
+	bool get_visible();
+
+	// used for parallax mapping
+	void generate_normal_list();
+	void generate_normals();
+
+	void set_light_color(float* lcol);
+	void set_light_position(vertex3* lpos);
 
 protected:
 	msg* m;
 	file_io* file;
 	core* c;
 	engine* e;
+	shader* s;
+	ext* exts;
 
 	struct joint {
 		int num;
@@ -100,6 +129,13 @@ protected:
 		unsigned int* weight_indices;
 		core::coord* tex_coords;
 		vertex3* vertices;
+
+		// boolean that determines if we already computed
+		// the normal, binormal and tangent vector
+		bool nbt_computed;
+		vertex3** normal;
+		vertex3** binormal;
+		vertex3** tangent;
 
 		unsigned int triangle_count;
 		core::index* indices;
@@ -125,6 +161,11 @@ protected:
 		float** frames;
 	};
 
+	struct nlist {
+		unsigned int* num;
+		unsigned int count;
+	};
+
 	char file_type[9];
 
 	unsigned int joint_count;
@@ -147,6 +188,20 @@ protected:
 
 	bool is_draw_joints;
 
+	unsigned int start_frame;
+	unsigned int end_frame;
+
+	vertex3* position;
+	vertex3* scale;
+	vertex3* rotation;
+
+	bool is_visible;
+
+	float angle0;
+
+    nlist** normal_list;
+	float* light_color;
+	vertex3* light_position;
 };
 
 #endif

@@ -19,7 +19,7 @@
 using namespace std;
 #include "msg.h"
 
-/*! Sets the counter to 0
+/*! create and initialize the msg object
  */
 msg::msg() {
 	msg::err_counter = 0;
@@ -28,22 +28,23 @@ msg::msg() {
 	msg::file->open("log.txt", fstream::out);
 }
 
-/*! Does nothing
+/*! close/delete everything
  */
 msg::~msg() {
 	file->close();
 	delete file;
 }
 
-/*! Prints the error number and an error string
+/*! prints a message to the console
  *  @param type the type of msg that is printed (0 = normal msg; 1 = error msg; 2 = debug msg)
  *  @param file the file where the error has occurred respectively from where the msg is printed out
  *  @param str the error string
  */
-void msg::print(unsigned int type, const char *file, const char *str, ...)
+void msg::print(unsigned int type, const char* file, const char* str, ...)
 {
 	va_list	argc;
-	char* ostr = new char[256];
+	unsigned int msg_size = 256;
+	char* ostr = new char[msg_size];
 
 	switch(type) {
 		// normal msg output
@@ -58,7 +59,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				cout << "MSG: ";
 
 				va_start(argc, str);
-					vsprintf(ostr, str, argc);
+					vsnprintf(ostr, msg_size, str, argc);
 				va_end(argc);
 
 				cout << ostr << endl;
@@ -71,7 +72,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				cout << "MSG: " << file << ": ";
 
 				va_start(argc, str);
-					vsprintf(ostr, str, argc);
+					vsnprintf(ostr, msg_size, str, argc);
 				va_end(argc);
 
 				cout << ostr << endl;
@@ -95,7 +96,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				cerr << "ERROR #" << err_counter << ": " << file << ": ";
 
 				va_start(argc, str);
-					vsprintf(ostr, str, argc);
+					vsnprintf(ostr, msg_size, str, argc);
 				va_end(argc);
 
 				cout << ostr << endl;
@@ -118,7 +119,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				cout << "DEBUG: ";
 
 				va_start(argc, str);
-					vsprintf(ostr, str, argc);
+					vsnprintf(ostr, msg_size, str, argc);
 				va_end(argc);
 
 				cout << ostr << endl;
@@ -131,7 +132,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 				cout << "DEBUG: " << file << ": ";
 
 				va_start(argc, str);
-					vsprintf(ostr, str, argc);
+					vsnprintf(ostr, msg_size, str, argc);
 				va_end(argc);
 
 				cout << ostr << endl;
@@ -143,7 +144,7 @@ void msg::print(unsigned int type, const char *file, const char *str, ...)
 			break;
 	}
 
-	delete ostr;
+	delete [] ostr;
 }
 
 /*! gets user console input and returns it as a char*

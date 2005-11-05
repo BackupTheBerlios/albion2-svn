@@ -4,34 +4,36 @@ ifndef CONFIG
   CONFIG=Debug
 endif
 
+# Forward declare all of my variables
 OUTDIR =
+OBJDIR =
 BINDIR =
 LIBDIR =
 CFLAGS =
 CPPFLAGS =
-LDFLAGS = -L$(BINDIR) -L$(LIBDIR)
+LDFLAGS =
 ifeq ($(CONFIG),Debug)
-BINDIR = ../../bin
-LIBDIR = ../../lib
-OUTDIR = $(BINDIR)
-OBJDIR = obj
+  BINDIR = ../../bin
+  LIBDIR = ../../lib
+  OUTDIR = $(BINDIR)
+  OBJDIR = obj
 
-  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "_DEBUG"
-  CFLAGS += $(CPPFLAGS)
+  CPPFLAGS = -MD -I ../../src -I /usr/include -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include/ode -I /usr/include/opcode -I /usr/include/opcode/ICE
+  CFLAGS += $(CPPFLAGS) -Os -c `sdl-config --cflags`
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
+  LDFLAGS +=  -fPic `sdl-config --libs` -L jpeglib -L zlib -L ../../lib -L /usr/lib -L /usr/lib -L /usr/lib -lGL -lGLU -lz -ljpeg -la2e -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
   TARGET = ../samples/bin/move
 endif
 ifeq ($(CONFIG),Release)
-BINDIR = ../../bin
-LIBDIR = ../../lib
-OUTDIR = $(BINDIR)
-OBJDIR = obj
+  BINDIR = ../../bin
+  LIBDIR = ../../lib
+  OUTDIR = $(BINDIR)
+  OBJDIR = obj
 
-  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "NDEBUG"
-  CFLAGS += $(CPPFLAGS) -O2
+  CPPFLAGS = -MD -I ../../src -I /usr/include -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include/ode -I /usr/include/opcode -I /usr/include/opcode/ICE
+  CFLAGS += $(CPPFLAGS) -Os -c `sdl-config --cflags` -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode -la2e
+  LDFLAGS +=  -fPic `sdl-config --libs` -L jpeglib -L zlib -L ../../lib -L /usr/lib -L /usr/lib -L /usr/lib -lGL -lGLU -lz -ljpeg -la2e -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
   TARGET = ../samples/bin/move
 endif
 

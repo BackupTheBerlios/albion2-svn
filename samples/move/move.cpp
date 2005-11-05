@@ -34,9 +34,9 @@ void update_cam(cam_type ctype) {
 	float xrot = cam->get_rotation()->y * piover180;
 	float zrot = cam->get_rotation()->y * piover180;
 
-	cam->set_position(-xpos - sinf(xrot) * 15.0f, ypos + 10.0f, -zpos - cosf(zrot) * 15.0f);
+	cam->set_position(-xpos - sinf(xrot) * 15.0f, -ypos - 10.0f, -zpos - cosf(zrot) * 15.0f);
 	player->set_position(xpos, ypos - 2.0f, zpos);
-	player->set_rotation(0.0f, cam->get_rotation()->y - 90.0f, 0.0f);
+	player->set_rotation(0.0f, cam->get_rotation()->y, 0.0f);
 
 	if(SDL_GetTicks() - walk_time >= min_walk_time) {
 		const dReal* clvel = dBodyGetLinearVel(sphere_obj->get_body());
@@ -99,11 +99,10 @@ int main(int argc, char *argv[])
 	c = e->get_core();
 	m = e->get_msg();
 	aevent = e->get_event();
-	sce = new scene(e);
-	agfx = new gfx();
+	s = new shader(e);
+	sce = new scene(e, s);
 	cam = new camera(e);
 	o = new ode(e);
-	n = new net(e);
 
 	// set a color scheme (blue)
 	e->set_color_scheme(gui_style::BLUE);
@@ -118,20 +117,33 @@ int main(int argc, char *argv[])
 	cam->set_cam_input(false);
 	cam->set_rotation_speed(50.0f);
 
+	// load materials
+	a2ematerial* level_mat = new a2ematerial(e);
+	level_mat->load_material("../data/level.a2mtl");
+
+	a2ematerial* logo_mat = new a2ematerial(e);
+	logo_mat->load_material("../data/logo.a2mtl");
+	
+	a2ematerial* scale_mat = new a2ematerial(e);
+	scale_mat->load_material("../data/scale.a2mtl");
+
 	// load the models and set new positions
 	level = sce->create_a2emodel();
 	level->load_model("../data/move_level.a2m");
 	level->set_position(0.0f, 0.0f, 0.0f);
+	level->set_material(level_mat);
 
 	sphere = sce->create_a2emodel();
 	sphere->load_model("../data/player_sphere.a2m");
 	sphere->set_position(-2.0f, 15.0f, -2.0f);
 	sphere->set_visible(false);
 	sphere->set_radius(2.0f);
+	sphere->set_material(scale_mat);
 
 	player = sce->create_a2emodel();
 	player->load_model("../data/player.a2m");
 	player->set_position(sphere->get_position()->x, sphere->get_position()->y - 2.0f, sphere->get_position()->z);
+	player->set_material(scale_mat);
 
 	sce->add_model(level);
 	sce->add_model(sphere);
@@ -140,6 +152,7 @@ int main(int argc, char *argv[])
 	a2emodel* test = sce->create_a2emodel();
 	test->load_model("../data/a2logo.a2m");
 	test->set_position(0.0f, 50.0f, 0.0f);
+	test->set_material(logo_mat);
 	sce->add_model(test);
 
 	spheres = new a2emodel*[cspheres];
@@ -150,6 +163,7 @@ int main(int argc, char *argv[])
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_position((float)i*5, 20.0f, (float)j*5);
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_scale(0.5f, 0.5f, 0.5f);
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_radius(1.0f);
+			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_material(scale_mat);
 			sce->add_model(spheres[i*(unsigned int)sqrt((float)cspheres) + j]);
 		}
 	}
@@ -228,14 +242,6 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		/*if(SDL_GetTicks() > 2500 && !player_init) {
-            dBodySetLinearVel(sphere_obj->get_body(), 0.0f, 0.0f, 0.0f);
-		}
-		if(SDL_GetTicks() > 5000 && !player_init) {
-            dBodySetLinearVel(sphere_obj->get_body(), 0.0f, 0.0f, 0.0f);
-			player_init = true;
-		}*/
-
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
@@ -262,9 +268,20 @@ int main(int argc, char *argv[])
 		yrot += 0.5f;
 	}
 
-	delete tmp;
+	delete [] tmp;
 
 	o->close();
+
+	// delete everything
+	delete o;
+	delete sce;
+	delete scale_mat;
+	delete logo_mat;
+	delete level_mat;
+	delete l1;
+	delete s;
+	delete cam;
+	delete e;
 
 	return 0;
 }

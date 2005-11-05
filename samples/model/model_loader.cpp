@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date August 2004 - July 2005
+ * \date August 2004 - November 2005
  *
  * Albion 2 Engine Sample - Model Loader Sample
  */
@@ -37,8 +37,9 @@ int main(int argc, char *argv[])
 	c = e->get_core();
 	m = e->get_msg();
 	aevent = e->get_event();
-	sce = new scene(e);
-	agfx = new gfx();
+	agfx = e->get_gfx();
+	s = new shader(e);
+	sce = new scene(e, s);
 	cam = new camera(e);
 	o = new ode(e);
 
@@ -51,44 +52,58 @@ int main(int argc, char *argv[])
 	aevent->set_keyboard_layout(event::DE);
 
 	// initialize the camera
-	cam->set_position(-5.0f, 30.0f, -55.0f);
+	cam->set_position(-5.0f, -30.0f, -55.0f);
+	cam->set_rotation_speed(100.0f);
+
+	// load materials
+	a2ematerial* ground_mat = new a2ematerial(e);
+	ground_mat->load_material("../data/ground.a2mtl");
+
+	a2ematerial* cc_mat = new a2ematerial(e);
+	cc_mat->load_material("../data/celtic_cottage.a2mtl");
+	
+	a2ematerial* scale_mat = new a2ematerial(e);
+	scale_mat->load_material("../data/scale.a2mtl");
 
 	// load the model and set a new position
 	plane = sce->create_a2emodel();
 	plane->load_model("../data/ground.a2m");
 	plane->set_position(0.0f, -13.0f, 0.0f);
 	plane->set_draw_wireframe(wireframe);
+	plane->set_material(ground_mat);
 
 	cottage = sce->create_a2emodel();
 	cottage->load_model("../data/celtic_cottage.a2m");
 	cottage->set_position(0.0f, 0.0f, 0.0f);
 	cottage->set_draw_wireframe(wireframe);
+	cottage->set_material(cc_mat);
 
 	sphere = sce->create_a2emodel();
 	sphere->load_model("../data/player_sphere.a2m");
 	sphere->set_position(45.0f, 20.0f, 20.0f);
 	sphere->set_radius(1.0f);
+	sphere->set_material(scale_mat);
 
 	sce->add_model(plane);
 	sce->add_model(cottage);
 	sce->add_model(sphere);
 
-	light l1(e, -50.0f, 100.0f, -50.0f);
-	light l2(e, 0.0f, 50.0f, 0.0f);
-	float lamb1[] = { 0.3f, 0.3f, 0.3f, 1.0f};
-	float ldif1[] = { 0.7f, 0.7f, 0.7f, 1.0f};
+	light* l1 = new light(e, -50.0f, 100.0f, -50.0f);
+	light* l2 = new light(e, 0.0f, 50.0f, 0.0f);
+	float lamb1[] = { 0.12f, 0.12f, 0.12f, 1.0f};
+	float ldif1[] = { 0.9f, 0.9f, 0.9f, 1.0f};
 	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 	float lamb2[] = { 0.0f, 0.1f, 0.3f, 0.5f};
 	float ldif2[] = { 0.1f, 0.3f, 0.5f, 0.5f};
 	float lspc2[] = { 0.0f, 0.2f, 0.6f, 0.5f};
-	l1.set_lambient(lamb1);
-	l1.set_ldiffuse(ldif1);
-	l1.set_lspecular(lspc1);
-	l2.set_lambient(lamb2);
-	l2.set_ldiffuse(ldif2);
-	l2.set_lspecular(lspc2);
-	sce->add_light(&l1);
-	sce->add_light(&l2);
+	l1->set_lambient(lamb1);
+	l1->set_ldiffuse(ldif1);
+	l1->set_lspecular(lspc1);
+	l2->set_lambient(lamb2);
+	l2->set_ldiffuse(ldif2);
+	l2->set_lspecular(lspc2);
+	sce->add_light(l1);
+	sce->add_light(l2);
 
 	// initialize ode
 	o->init();
@@ -133,6 +148,7 @@ int main(int argc, char *argv[])
 							wireframe = wireframe ^ true;
 							plane->set_draw_wireframe(wireframe);
 							cottage->set_draw_wireframe(wireframe);
+							sphere->set_draw_wireframe(wireframe);
 						}
 						break;
 						case SDLK_w: {
@@ -163,7 +179,6 @@ int main(int argc, char *argv[])
 		if(SDL_GetTicks() - fps_time > 1000) {
 			sprintf(tmp, "A2E Sample - Model Loader | FPS: %u | Pos: %f %f %f", fps,
 				-cam->get_position()->x, cam->get_position()->y, -cam->get_position()->z);
-			//sprintf(tmp, "A2E Sample - Model Loader | FPS: %u", fps);
 			fps = 0;
 			fps_time = SDL_GetTicks();
 		}
@@ -176,10 +191,22 @@ int main(int argc, char *argv[])
 		o->run(SDL_GetTicks() - refresh_time);
 		refresh_time = SDL_GetTicks();
 
-		e->stop_draw();
+		e->stop_draw(); 
 	}
 
 	o->close();
+
+	// delete everything
+	delete o;
+	delete sce;
+	delete scale_mat;
+	delete ground_mat;
+	delete cc_mat;
+	delete l1;
+	delete l2;
+	delete s;
+	delete cam;
+	delete e;
 
 	return 0;
 }

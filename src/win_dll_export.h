@@ -17,7 +17,6 @@
 /*! @brief header for win32 dll export
  *  @author flo
  *  @version 0.1
- *  @date 2004/07/30
  *  @todo -
  *
  *  This is the Win32 DLL export Header
@@ -25,6 +24,7 @@
 
 #ifdef WIN32
 #define snprintf _snprintf
+#define vsnprintf _vsnprintf
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #ifdef A2E_EXPORTS

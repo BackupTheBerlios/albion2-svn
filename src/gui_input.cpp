@@ -29,6 +29,8 @@ gui_input::gui_input(engine* e) {
 	// 1024 chars
 	gui_input::text = new char[1024];
 
+	gui_input::is_in_rectangle = false;
+
 	// get classes
 	gui_input::e = e;
 	gui_input::c = e->get_core();
@@ -41,7 +43,7 @@ gui_input::gui_input(engine* e) {
 gui_input::~gui_input() {
 	m->print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
 
-	delete gui_input::text;
+	delete [] gui_input::text;
 
 	m->print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
 }
@@ -97,7 +99,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			after_text_width += glyph_width;
 		}
 	}
-	delete tmp_char;
+	delete [] tmp_char;
 
 	// draw text
 	core::pnt* p1 = new core::pnt();
@@ -400,7 +402,7 @@ void gui_input::set_text_position(unsigned int position) {
 	}
 }
 
-/*! sets "no" text - text length equals zero 
+/*! sets "no" text - text length equals zero
  */
 void gui_input::set_notext() {
 	gui_input::text_handler->set_notext();

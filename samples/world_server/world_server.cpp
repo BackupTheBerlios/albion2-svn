@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date April - August 2005
+ * \date April - September 2005
  *
  * Albion 2 Engine Sample - World Server Sample
  */
@@ -38,7 +38,7 @@ void send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	data[9+nm] = 0;
 	memcpy(&data[9], n->clients[snd_client].name, nm);
 	cout << "add size: " << 9+nm << endl;
-	SDLNet_TCP_Send(n->clients[rcv_client].sock, data, 9+nm);
+	n->send_packet(&n->clients[rcv_client].sock, data, 9+nm, rcv_client);
 
 	delete data;
 }
@@ -49,7 +49,7 @@ void handle_client(unsigned int cur_client) {
 	char cdata[32];
 
 	// checks if connection has been closed
-	if(SDLNet_TCP_Recv(n->clients[cur_client].sock, data, 512) <= 0) {
+	if(n->recv_packet(&n->clients[cur_client].sock, data, 512, cur_client) <= 0) {
         m->print(msg::MDEBUG, "world_server.cpp", "closing %s socket (%d)",
 			n->clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
@@ -60,12 +60,12 @@ void handle_client(unsigned int cur_client) {
 			for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 				if(n->clients[i].is_active) {
 					cout << "delete size: " << 2 << endl;
-					SDLNet_TCP_Send(n->clients[i].sock, data, 2);
+					n->send_packet(&n->clients[i].sock, data, 2, i);
 				}
 			}
-		}
 
-		delete_player(cur_client);
+			delete_player(cur_client);
+		}
 
 		// close socket
 		n->close_socket(n->clients[cur_client].sock);
@@ -81,7 +81,7 @@ void handle_client(unsigned int cur_client) {
 				cdata[1] = MAX_CLIENTS;
 				cdata[2] = (cplayers & 0xFF); // the clients number/id
 				cout << "cdat size: " << 3 << endl;
-				SDLNet_TCP_Send(n->clients[cur_client].sock, cdata, 3);
+				n->send_packet(&n->clients[cur_client].sock, cdata, 3, cur_client);
 
 				// get client data
 				memcpy(&n->clients[cur_client].ip.port, &data[1], 2);
@@ -112,13 +112,12 @@ void handle_client(unsigned int cur_client) {
 				clients[cplayers].position->y = start_pos->y + 2.0f;
 				clients[cplayers].position->z = start_pos->z;
 				clients[cplayers].rotation = 0.0f;
-				clients[cplayers].status = 1;
+				clients[cplayers].status = ST_ONLINE;
 
 				// add player to physics engine object/player stack
 				add_player(clients[cplayers].position);
 
-				// -- not needed -- TODO: send new client data to other clients and send clients data to the new client
-                break;
+				break;
 			}
 			case net::DAT: {
 				switch(data[1]) {
@@ -147,7 +146,7 @@ void handle_client(unsigned int cur_client) {
 						cout << "dt_msg size: " << len+1 + 7 << endl;
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 							if(n->clients[i].is_active && i != cur_client) {
-								SDLNet_TCP_Send(n->clients[i].sock, ndata, len+1 + 7);
+								n->send_packet(&n->clients[i].sock, ndata, len+1 + 7, i);
 							}
 						}
 
@@ -186,6 +185,10 @@ void handle_client(unsigned int cur_client) {
 						}
 						break;
 					}
+					case DT_MOTION: {
+						clients[cur_client].motion = (unsigned int)(data[2] & 0xFF);
+						break;
+					}
 					case DT_UPDATE: {
 						// handle update data
 						float rot = 0.0f;
@@ -200,11 +203,12 @@ void handle_client(unsigned int cur_client) {
 						memcpy(&ndata[3+4], &clients[cur_client].position->y, 4);
 						memcpy(&ndata[3+8], &clients[cur_client].position->z, 4);
 						memcpy(&ndata[3+12], &clients[cur_client].rotation, 4);
+						memcpy(&ndata[3+16], &clients[cur_client].motion, 4);
 
 						// send data to all clients
 						for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 							if(n->clients[i].is_active) {
-								SDLNet_TCP_Send(n->clients[i].sock, ndata, 3 + 16);
+								n->send_packet(&n->clients[i].sock, ndata, 3 + 20, i);
 							}
 						}
 						break;
@@ -217,7 +221,7 @@ void handle_client(unsigned int cur_client) {
 
 			default: {
 				// unknown packet type
-				m->print(msg::MDEBUG, "world_server.cpp", "a package with an unknown package type was send! type: %u", data[0]);
+				m->print(msg::MDEBUG, "world_server.cpp", "received a package with an unknown package type! type: %u", (unsigned int)(data[0] & 0xFF));
 			}
 			break;
 		}
@@ -228,7 +232,7 @@ void update_players() {
 	// set velocity to 0 if the last time the player was walking
 	// is at least _min_walk_time_ (100 ms) ago
 	for(unsigned int i = 0; i < cplayers; i++) {
-		if(clients[i].walk_time >= min_walk_time && clients[i].status != 0) {
+		if(clients[i].walk_time >= min_walk_time && clients[i].status != ST_OFFLINE) {
 			const dReal* clvel = dBodyGetLinearVel(ode_players[i]->get_body());
 			dBodySetLinearVel(ode_players[i]->get_body(), 0.0f, clvel[1], 0.0f);
 		}
@@ -236,7 +240,7 @@ void update_players() {
 
 	// update player positions
 	for(unsigned int i = 0; i < cplayers; ++i) {
-		if(clients[i].status != 0) {
+		if(clients[i].status != ST_OFFLINE) {
 			const dReal* clpos = dBodyGetPosition(ode_players[i]->get_body());
 			clients[i].position->x = clpos[0];
 			clients[i].position->y = clpos[1];
@@ -248,24 +252,16 @@ void update_players() {
 void check_events() {
 	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
 		if(SDLNet_SocketReady(n->clients[i].sock)) {
-			/*unsigned int cnum = 0;
-			for(unsigned int j = 0; j < MAX_CLIENTS; j++) {
-				if(strcmp(n->clients[i].name, clients[j].name) == 0) {
-					cnum = j;
-					j = MAX_CLIENTS;
-				}
-			}
-			cout << cnum << "-" << n->clients[i].name << "-" << clients[cnum].name << endl;*/
 			handle_client(i);
 		}
 	}
 }
 
 a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_object::OTYPE type, float radius) {
-	objects[cobjects] = new a2emodel(e);
+	objects[cobjects] = new a2emodel(e, s);
 	objects[cobjects]->load_model(name);
 	objects[cobjects]->set_position(pos->x, pos->y, pos->z);
-	objects[cobjects]->set_scale(scale->x, scale->y, scale->z);
+	objects[cobjects]->set_hard_scale(scale->x, scale->y, scale->z);
 	if(type == ode_object::SPHERE) {
 		objects[cobjects]->set_radius(radius);
 	}
@@ -278,7 +274,7 @@ a2emodel* add_model(char* name, vertex3* pos, vertex3* scale, bool fixed, ode_ob
 }
 
 a2emodel* add_player(vertex3* pos) {
-	players[cplayers] = new a2emodel(e);
+	players[cplayers] = new a2emodel(e, s);
 	players[cplayers]->load_model("../data/player_sphere.a2m");
 	players[cplayers]->set_position(pos->x, pos->y, pos->z);
 	players[cplayers]->set_radius(2.0f);
@@ -315,7 +311,7 @@ void delete_player(unsigned int num) {
 	// reset client stuff
 	clients[num].id = 0;
 	sprintf(clients[num].name, "unknown");
-	clients[num].status = 0;
+	clients[num].status = ST_OFFLINE;
 	clients[num].position->x = start_pos->x;
 	clients[num].position->y = start_pos->y + 2.0f;
 	clients[num].position->z = start_pos->z;
@@ -331,6 +327,104 @@ void delete_player(unsigned int num) {
 	cplayers--;
 }
 
+void handle_server() {
+	TCPsocket tmpsock;
+	unsigned int cur_client = 0;
+	char* data = new char[1];
+
+	tmpsock = SDLNet_TCP_Accept(n->tcp_ssock);
+	if(tmpsock == NULL) {
+		return;
+	}
+
+	// checks if there are any unconnected clients
+	for(cur_client = 0; cur_client < MAX_CLIENTS; ++cur_client) {
+		if(n->clients[cur_client].sock == NULL) {
+			break;
+		}
+	}
+
+	if(cur_client == MAX_CLIENTS) {
+		// checks if there is any inactive client
+		for(cur_client = 0; cur_client < MAX_CLIENTS; ++cur_client) {
+			if(n->clients[cur_client].sock && !n->clients[cur_client].is_active) {
+				// kick this client
+				data[0] = net::KICK;
+				n->send_packet(&n->clients[cur_client].sock, data, 1, cur_client);
+				SDLNet_TCP_DelSocket(n->socketset, n->clients[cur_client].sock);
+				SDLNet_TCP_Close(n->clients[cur_client].sock);
+				m->print(msg::MDEBUG, "world_server.cpp", "inactive client (%d) was kicked", cur_client);
+				break;
+			}
+		}
+	}
+
+	if(cur_client == MAX_CLIENTS) {
+		// the server doesn't permit any further connections
+		data[0] = net::KICK;
+		n->send_packet(&tmpsock, data, 1, 0xFFFFFFFF);
+		SDLNet_TCP_Close(tmpsock);
+		m->print(msg::MDEBUG, "world_server.cpp", "connection refused: server doesn't permit any further connections");
+	}
+	else {
+		// add socket to socketset and make it inactive
+		n->clients[cur_client].sock = tmpsock;
+		n->clients[cur_client].ip = *SDLNet_TCP_GetPeerAddress(tmpsock);
+		SDLNet_TCP_AddSocket(n->socketset, n->clients[cur_client].sock);
+		m->print(msg::MDEBUG, "world_server.cpp", "a new inactive socket (%d) was added", cur_client);
+	}
+}
+
+void init() {
+	f->open_file("server.dat", false);
+	char fline[256];
+	bool end = false;
+
+	while(!end) {
+		f->get_line(fline);
+
+		// file end reached?
+		if(strcmp(fline, "[EOF]") == 0) {
+			end = true;
+		}
+		else {
+			// otherwise we load data
+			unsigned int x = 0;
+			char* fline_tok[8];
+			fline_tok[x] = strtok(fline, "=");
+			while(fline_tok[x] != NULL) {
+				x++;
+				fline_tok[x] = strtok(NULL, "=");
+			}
+
+			if(fline_tok[0]) {
+				// get server port
+				if(strcmp(fline_tok[0], "port") == 0) {
+					port = atoi(fline_tok[1]);
+				}
+				// get max players
+				else if(strcmp(fline_tok[0], "max_players") == 0) {
+					max_players = atoi(fline_tok[1]);
+				}
+				// get max objects
+				else if(strcmp(fline_tok[0], "max_objects") == 0) {
+					max_objects = atoi(fline_tok[1]);
+				}
+				// get netlog
+				else if(strcmp(fline_tok[0], "netlog") == 0) {
+					if(strcmp(fline_tok[1], "0") == 0) {
+						netlog = false;
+					}
+					else {
+						netlog = true;
+					}
+				}
+			}
+		}
+	}
+	f->close_file();
+}
+
 int main(int argc, char *argv[])
 {
 	// initialize the engine
@@ -340,16 +434,31 @@ int main(int argc, char *argv[])
 	// init class pointers
 	c = e->get_core();
 	m = e->get_msg();
+	f = e->get_file_io();
+	s = new shader(e);
 	o = new ode(e);
 	n = new net(e);
 
+	// initialize everything (and load the settings)
+	init();
+
+	// allocate memory for objects and players
+	players = new a2emodel*[max_players];
+	objects = new a2emodel*[max_objects];
+	ode_players = new ode_object*[max_players];
+	ode_objects = new ode_object*[max_objects];
+
+	// set net logging
+	n->set_netlog(netlog);
+
 	// init clients
-	clients = new client[MAX_CLIENTS];
-	for(unsigned int i = 0; i < MAX_CLIENTS; i++) {
+	clients = new client[max_players];
+	for(unsigned int i = 0; i < max_players; i++) {
 		clients[i].id = 0;
 		clients[i].name = new char[32];
 		sprintf(clients[i].name, "unknown");
-		clients[i].status = 0;
+		clients[i].status = ST_OFFLINE;
+		clients[i].motion = MT_STANDING;
 		clients[i].position = new vertex3();
 		clients[i].rotation = 0.0f;
 		clients[i].walk_time = 0;
@@ -381,10 +490,16 @@ int main(int argc, char *argv[])
 	bool is_networking = false;
 	if(n->init()) {
 		cout << "net class initialized" << endl;
-		if(n->create_server(net::TCP, PORT, MAX_CLIENTS)) {
+		if(n->create_server(net::TCP, port, max_players)) {
 			cout << "server created" << endl;
 			is_networking = true;
 		}
+		else {
+			cout << "couldn't create server" << endl;
+		}
+	}
+	else {
+		cout << "couldn't initialize net class" << endl;
 	}
 
 	refresh_time = SDL_GetTicks();
@@ -412,29 +527,21 @@ int main(int argc, char *argv[])
 
 			update_players();
 		}
-
-		// debug print out
-		/*cout << "----------------------" << endl;
-		cout << "status: " << clients[0].status << " | name: " << clients[0].name << " | id: " << clients[0].id << endl;
-		cout << "status: " << clients[1].status << " | name: " << clients[1].name << " | id: " << clients[1].id << endl;
-		cout << "status: " << clients[30].status << " | name: " << clients[30].name << " | id: " << clients[30].id << endl;
-		cout << "status: " << clients[31].status << " | name: " << clients[31].name << " | id: " << clients[31].id << endl;
-		cout << "----------------------" << endl;
-		cout << "status: " << (n->clients[0].is_active ? "1" : "0") << " | name: " << n->clients[0].name << " | ip host: " << n->clients[0].ip.host <<
-			" | ip port: " << n->clients[0].ip.port << " | port: " << n->clients[0].port << " | sock: " << n->clients[0].sock << endl;
-		cout << "status: " << (n->clients[1].is_active ? "1" : "0") << " | name: " << n->clients[1].name << " | ip host: " << n->clients[1].ip.host <<
-			" | ip port: " << n->clients[1].ip.port << " | port: " << n->clients[1].port << " | sock: " << n->clients[1].sock << endl;
-		cout << "status: " << (n->clients[30].is_active ? "1" : "0") << " | name: " << n->clients[30].name << " | ip host: " << n->clients[30].ip.host <<
-			" | ip port: " << n->clients[30].ip.port << " | port: " << n->clients[30].port << " | sock: " << n->clients[30].sock << endl;
-		cout << "status: " << (n->clients[31].is_active ? "1" : "0") << " | name: " << n->clients[31].name << " | ip host: " << n->clients[31].ip.host <<
-			" | ip port: " << n->clients[31].ip.port << " | port: " << n->clients[31].port << " | sock: " << n->clients[31].sock << endl;
-		cout << "----------------------" << endl;*/
 	}
 
 	n->exit();
 	o->close();
 
 	delete start_pos;
+	delete n;
+	delete o;
+	delete s;
+	delete [] players;
+	delete [] objects;
+	delete [] ode_players;
+	delete [] ode_objects;
+	delete [] clients;
+	delete e;
 
 	return 0;
 }

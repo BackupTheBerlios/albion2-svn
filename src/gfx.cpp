@@ -32,9 +32,11 @@ gfx::~gfx() {
  *  @param color the color of the point
  */
 void gfx::draw_point(SDL_Surface* surface, core::pnt* point, unsigned int color) {
-	// outdated - should be taken out soon or be reimplemented,
-	// but remember that you need too much cpu power if you just
-	// draw a single point in opengl
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
+	glBegin(GL_POINTS);
+		glVertex2d(point->x, surface->h - point->y);
+	glEnd();
 }
 
 /*! draws a line on a surface
@@ -174,7 +176,7 @@ void gfx::draw_filled_rectangle(SDL_Surface* surface, gfx::rect* rectangle,
  *  @param blue how much blue (0 - 255)
  */
 unsigned int gfx::get_color(SDL_Surface* surface, unsigned int red, unsigned int green, unsigned int blue) {
-	return (unsigned int)SDL_MapRGBA(surface->format, red, green, blue, 255);
+	return (unsigned int)SDL_MapRGBA(surface->format, (Uint8)red, (Uint8)green, (Uint8)blue, 255);
 }
 
 /*! returns the sdl_color, we get from the function arguments and surface

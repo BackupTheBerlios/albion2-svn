@@ -31,6 +31,11 @@ gui_vbar::gui_vbar(engine* e) {
 
 	gui_vbar::px_per_item = 0;
 
+    gui_vbar::shown_lines = 0;
+	gui_vbar::max_lines = 0;
+
+	gui_vbar::slider_active = false;
+
 	// get classes
 	gui_vbar::e = e;
 	gui_vbar::c = e->get_core();

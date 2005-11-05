@@ -23,7 +23,6 @@
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
-#include "net.h"
 #include "engine.h"
 #include "gfx.h"
 #include "event.h"
@@ -41,8 +40,7 @@ using namespace std;
 /*! @class gui
  *  @brief graphical user interface functions
  *  @author flo
- *  @version 0.5
- *  @todo more functions
+ *  @todo a lot of stuff ... needs a extensively restructuring
  *  
  *  the gui class
  */
@@ -71,7 +69,7 @@ public:
 	gui_text* add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid = 0);	
 	gui_input* add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
-	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	gui_list* add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
 	gui_vbar* add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
 	gui_check* add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	gui_window* add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true);

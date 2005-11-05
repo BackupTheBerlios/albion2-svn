@@ -24,43 +24,51 @@ using namespace std;
 
 /*! there is no function currently
  */
-a2emodel::a2emodel(engine* e) {
+a2emodel::a2emodel(engine* e, shader* s) {
 	a2emodel::position = new vertex3();
 	a2emodel::position->x = 0.0f;
 	a2emodel::position->y = 0.0f;
 	a2emodel::position->z = 0.0f;
 
 	a2emodel::scale = new vertex3();
-	a2emodel::scale->x = 0.0f;
-	a2emodel::scale->y = 0.0f;
-	a2emodel::scale->z = 0.0f;
+	a2emodel::scale->x = 1.0f;
+	a2emodel::scale->y = 1.0f;
+	a2emodel::scale->z = 1.0f;
 
 	a2emodel::rotation = new vertex3();
 	a2emodel::rotation->x = 0.0f;
 	a2emodel::rotation->y = 0.0f;
 	a2emodel::rotation->z = 0.0f;
 
-	a2emodel::bbox = NULL;
 	a2emodel::vertices = NULL;
+	a2emodel::bbox = NULL;
 	a2emodel::index_count = NULL;
 	a2emodel::tex_value = NULL;
+	a2emodel::tex_coords = NULL;
+	a2emodel::normals = NULL;
+	a2emodel::binormals = NULL;
+	a2emodel::tangents = NULL;
 	for(unsigned int i = 0; i < MAX_OBJS; i++) {
         a2emodel::tex_names[i] = NULL;
 		a2emodel::indices[i] = NULL;
-		a2emodel::tex_cords[i] = NULL;
-		a2emodel::normals[i] = NULL;
+		a2emodel::tex_indices[i] = NULL;
 		a2emodel::obj_names[i] = NULL;
 	}
 
 	draw_wireframe = false;
 
-	visible = true;
+	is_visible = true;
+
+	normal_list = NULL;
 
 	// get classes
 	a2emodel::e = e;
+	a2emodel::s = s;
 	a2emodel::c = e->get_core();
 	a2emodel::m = e->get_msg();
 	a2emodel::file = e->get_file_io();
+	a2emodel::t = e->get_texman();
+	a2emodel::exts = e->get_ext();
 }
 
 /*! there is no function currently
@@ -76,20 +84,29 @@ a2emodel::~a2emodel() {
 	delete a2emodel::rotation;
 	//cout << "deleting bbox" << endl;
 	if(a2emodel::bbox != NULL) { delete a2emodel::bbox; }
+	//cout << "deleting index count" << endl;
+	if(a2emodel::index_count != NULL) { delete [] a2emodel::index_count; }
+	//cout << "deleting tex value" << endl;
+	if(a2emodel::tex_value != NULL) { delete [] a2emodel::tex_value; }
 	//cout << "deleting vertices" << endl;
 	if(a2emodel::vertices != NULL) { delete [] a2emodel::vertices; }
-	//cout << "deleting index count" << endl;
-	if(a2emodel::index_count != NULL) { delete a2emodel::index_count; }
-	//cout << "deleting tex value" << endl;
-	if(a2emodel::tex_value != NULL) { delete a2emodel::tex_value; }
+	//cout << "deleting texture vertices" << endl;
+	if(a2emodel::tex_coords != NULL) { delete [] a2emodel::tex_coords; }
+
+	if(a2emodel::normals != NULL) { delete [] a2emodel::normals; }
+	if(a2emodel::binormals != NULL) { delete [] a2emodel::binormals; }
+	if(a2emodel::tangents != NULL) { delete [] a2emodel::tangents; }
 
 	//cout << "deleting tex names/cords, object names and indices" << endl;
 	for(unsigned int i = 0; i < MAX_OBJS; i++) {
-		if(a2emodel::tex_names[i] != NULL) { delete a2emodel::tex_names[i]; }
-		if(a2emodel::indices[i] != NULL) { delete a2emodel::indices[i]; }
-		if(a2emodel::tex_cords[i] != NULL) { delete [] a2emodel::tex_cords[i]; }
-		if(a2emodel::normals[i] != NULL) { delete [] a2emodel::normals[i]; }
+		if(a2emodel::tex_names[i] != NULL) { delete [] a2emodel::tex_names[i]; }
+		if(a2emodel::indices[i] != NULL) { delete [] a2emodel::indices[i]; }
+		if(a2emodel::tex_indices[i] != NULL) { delete [] a2emodel::tex_indices[i]; }
 		if(a2emodel::obj_names[i] != NULL) { delete [] a2emodel::obj_names[i]; }
+	}
+
+	if(a2emodel::normal_list != NULL) {
+		delete [] a2emodel::normal_list;
 	}
 
 	m->print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
@@ -98,95 +115,119 @@ a2emodel::~a2emodel() {
 /*! draws the model
  */
 void a2emodel::draw() {
-	if(a2emodel::visible) {
+	if(a2emodel::is_visible && e->get_init_mode() == engine::GRAPHICAL) {
 		glPushMatrix();
 		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
-		glColor3f(1.0f, 1.0f, 1.0f);
 
 		// rotate the model
 		glRotatef(rotation->x, 1.0f, 0.0f , 0.0f);
 		glRotatef(rotation->y, 0.0f, 1.0f , 0.0f);
 		glRotatef(rotation->z, 0.0f, 0.0f , 1.0f);
 
-		glEnable(GL_TEXTURE_2D);
-		for(unsigned int i = 0; i < object_count; i++) {
-			glBindTexture(GL_TEXTURE_2D, textures[tex_value[i]]);
-			if(!a2emodel::draw_wireframe) {
+		// scale the model
+		glScalef(a2emodel::scale->x, a2emodel::scale->y, a2emodel::scale->z);
+
+		if(s->is_shader_support() && a2emodel::material->get_material_type() == a2ematerial::PARALLAX) {
+			glEnable(GL_LIGHTING);
+			s->use_shader(1);
+
+			s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
+			s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
+
+			s->set_uniform1i(2, 0);
+			s->set_uniform1i(3, 1);
+			s->set_uniform1i(4, 2);
+			s->set_uniform4f(5, light_color[0], light_color[1], light_color[2], light_color[3]);
+
+			exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+			glBindTexture(GL_TEXTURE_2D, *(a2emodel::material->get_texture(0)));
+			glEnable(GL_TEXTURE_2D);
+			exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+			glBindTexture(GL_TEXTURE_2D, *(a2emodel::material->get_texture(1)));
+			glEnable(GL_TEXTURE_2D);
+			exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+			glBindTexture(GL_TEXTURE_2D, *(a2emodel::material->get_texture(2)));
+			glEnable(GL_TEXTURE_2D);
+
+			for(unsigned int i = 0; i < object_count; i++) {
+				// if the wireframe flag is set, draw the model in wireframe mode
+				if(a2emodel::draw_wireframe) {
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				}
 				glBegin(GL_TRIANGLES);
 				for(unsigned int j = 0; j < index_count[i]; j++) {
-					glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-					glNormal3f(normals[i][j].v1.x, normals[i][j].v1.y, normals[i][j].v1.z);
+					s->set_attribute3f(0, normals[indices[i][j].i1].x, normals[indices[i][j].i1].y, normals[indices[i][j].i1].z);
+					s->set_attribute3f(1, binormals[indices[i][j].i1].x, binormals[indices[i][j].i1].y, binormals[indices[i][j].i1].z);
+					s->set_attribute3f(2, tangents[indices[i][j].i1].x, tangents[indices[i][j].i1].y, tangents[indices[i][j].i1].z);
+					s->set_attribute2f(3, tex_coords[tex_indices[i][j].i1].u, tex_coords[tex_indices[i][j].i1].v);
 					glVertex3f(vertices[indices[i][j].i1].x,
 						vertices[indices[i][j].i1].y,
 						vertices[indices[i][j].i1].z);
-					glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-					glNormal3f(normals[i][j].v2.x, normals[i][j].v2.y, normals[i][j].v2.z);
+
+					s->set_attribute3f(0, normals[indices[i][j].i2].x, normals[indices[i][j].i2].y, normals[indices[i][j].i2].z);
+					s->set_attribute3f(1, binormals[indices[i][j].i2].x, binormals[indices[i][j].i2].y, binormals[indices[i][j].i2].z);
+					s->set_attribute3f(2, tangents[indices[i][j].i2].x, tangents[indices[i][j].i2].y, tangents[indices[i][j].i2].z);
+					s->set_attribute2f(3, tex_coords[tex_indices[i][j].i2].u, tex_coords[tex_indices[i][j].i2].v);
 					glVertex3f(vertices[indices[i][j].i2].x,
 						vertices[indices[i][j].i2].y,
 						vertices[indices[i][j].i2].z);
-					glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-					glNormal3f(normals[i][j].v3.x, normals[i][j].v3.y, normals[i][j].v3.z);
+
+					s->set_attribute3f(0, normals[indices[i][j].i3].x, normals[indices[i][j].i3].y, normals[indices[i][j].i3].z);
+					s->set_attribute3f(1, binormals[indices[i][j].i3].x, binormals[indices[i][j].i3].y, binormals[indices[i][j].i3].z);
+					s->set_attribute3f(2, tangents[indices[i][j].i3].x, tangents[indices[i][j].i3].y, tangents[indices[i][j].i3].z);
+					s->set_attribute2f(3, tex_coords[tex_indices[i][j].i3].u, tex_coords[tex_indices[i][j].i3].v);
 					glVertex3f(vertices[indices[i][j].i3].x,
 						vertices[indices[i][j].i3].y,
 						vertices[indices[i][j].i3].z);
 				}
 				glEnd();
+				// reset to filled mode
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
-			else {
-				glBegin(GL_LINES);
-				for(unsigned int j = 0; j < index_count[i]; j++) {
-					glTexCoord2f(tex_cords[i][j].v1.x, 1.0f - tex_cords[i][j].v1.y);
-					glVertex3f(vertices[indices[i][j].i1].x,
-						vertices[indices[i][j].i1].y,
-						vertices[indices[i][j].i1].z);
-					glTexCoord2f(tex_cords[i][j].v2.x, 1.0f - tex_cords[i][j].v2.y);
-					glVertex3f(vertices[indices[i][j].i2].x,
-						vertices[indices[i][j].i2].y,
-						vertices[indices[i][j].i2].z);
-					glTexCoord2f(tex_cords[i][j].v3.x, 1.0f - tex_cords[i][j].v3.y);
-					glVertex3f(vertices[indices[i][j].i3].x,
-						vertices[indices[i][j].i3].y,
-						vertices[indices[i][j].i3].z);
-				}
-				glEnd();
-			}
+
+			exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+			glDisable(GL_TEXTURE_2D);
+			exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+			glDisable(GL_TEXTURE_2D);
+			exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_LIGHTING);
+			s->use_shader(0);
 		}
-		glDisable(GL_TEXTURE_2D);
+		else {
+			glEnable(GL_TEXTURE_2D);
+			for(unsigned int i = 0; i < object_count; i++) {
+				glBindTexture(GL_TEXTURE_2D, *(a2emodel::material->get_texture(tex_value[i])));
+				// if the wireframe flag is set, draw the model in wireframe mode
+				if(a2emodel::draw_wireframe) {
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				}
+				glBegin(GL_TRIANGLES);
+				for(unsigned int j = 0; j < index_count[i]; j++) {
+					glNormal3f(normals[indices[i][j].i1].x, normals[indices[i][j].i1].y, normals[indices[i][j].i1].z);
+					glTexCoord2f(tex_coords[tex_indices[i][j].i1].u, tex_coords[tex_indices[i][j].i1].v);
+					glVertex3f(vertices[indices[i][j].i1].x,
+						vertices[indices[i][j].i1].y,
+						vertices[indices[i][j].i1].z);
+					glNormal3f(normals[indices[i][j].i2].x, normals[indices[i][j].i2].y, normals[indices[i][j].i2].z);
+					glTexCoord2f(tex_coords[tex_indices[i][j].i2].u, tex_coords[tex_indices[i][j].i2].v);
+					glVertex3f(vertices[indices[i][j].i2].x,
+						vertices[indices[i][j].i2].y,
+						vertices[indices[i][j].i2].z);
+					glNormal3f(normals[indices[i][j].i3].x, normals[indices[i][j].i3].y, normals[indices[i][j].i3].z);
+					glTexCoord2f(tex_coords[tex_indices[i][j].i3].u, tex_coords[tex_indices[i][j].i3].v);
+					glVertex3f(vertices[indices[i][j].i3].x,
+						vertices[indices[i][j].i3].y,
+						vertices[indices[i][j].i3].z);
+				}
+				glEnd();
+				// reset to filled mode
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			glDisable(GL_TEXTURE_2D);
+		}
 
 		glPopMatrix();
-	}
-}
-
-/*! loads the textures of the model - .png preferred!
- */
-void a2emodel::load_textures() {
-	SDL_Surface* tex_surface[MAX_OBJS];
-
-	for(unsigned int i = 0; i < texture_count; i++) {
-		tex_surface[i] = IMG_LoadPNG_RW(SDL_RWFromFile(tex_names[i], "rb"));
-		if(!tex_surface[i]) {
-			m->print(msg::MERROR, "a2emodel.cpp", "error loading texture file \"%s\"!", tex_names[i]);
-			return;
-		}
-	}
-
-	glGenTextures(texture_count, &textures[0]);
-	for(unsigned int i = 0; i < texture_count; i++) {
-		glBindTexture(GL_TEXTURE_2D, textures[i]);	
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-
-		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tex_surface[i]->w, tex_surface[i]->h,
-			GL_RGB, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);
-		/*glTexImage2D(GL_TEXTURE_2D, 0, 3, tex_surface[i]->w, tex_surface[i]->h, 0,
-			GL_RGB, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);*/
-	}
-
-	for(unsigned int i = 0; i < texture_count; i++) {
-		if(tex_surface[i]) {
-			SDL_FreeSurface(tex_surface[i]);
-		}
 	}
 }
 
@@ -199,11 +240,23 @@ void a2emodel::load_model(char* filename) {
 	// get type and name
 	file->get_block(model_type, 8);
 	model_type[8] = 0;
+
+	// get model type and abort if it's not 0x00
+	char mtype = file->get_char();
+	if(mtype != 0x00) {
+		m->print(msg::MERROR, "a2emodel.cpp", "non supported model type: %u!", (unsigned int)(mtype & 0xFF));
+		return;
+	}
+
 	file->get_block(model_name, 8);
 	model_name[8] = 0;
 
 	// get vertex3 count
 	vertex_count = file->get_uint();
+
+	a2emodel::normals = new vertex3[a2emodel::vertex_count];
+	a2emodel::binormals = new vertex3[a2emodel::vertex_count];
+	a2emodel::tangents = new vertex3[a2emodel::vertex_count];
 
 	// create vertices
 	vertices = new vertex3[vertex_count];
@@ -227,10 +280,17 @@ void a2emodel::load_model(char* filename) {
 		tex_names[33] = 0;
 	}
 
-	a2emodel::load_textures();
+	//a2emodel::load_textures();
 
-	// get normal count
-	normal_count = file->get_uint();
+	// get texture coordinate count
+	tex_vertex_count = file->get_uint();
+
+	// create texture coordinates
+	tex_coords = new core::coord[tex_vertex_count];
+	for(unsigned int i = 0; i < tex_vertex_count; i++) {
+		tex_coords[i].u = file->get_float();
+		tex_coords[i].v = 1.0f - file->get_float();
+	}
 
 	// get object count
 	object_count = file->get_uint();
@@ -264,41 +324,19 @@ void a2emodel::load_model(char* filename) {
 			indices[i][j].i3 = file->get_uint();
 		}
 
-		// create texture coordinates
-		//char vertex3[4];
-		tex_cords[i] = new core::triangle[index_count[i]];
+		// create texture indices
+		tex_indices[i] = new core::index[index_count[i]];
 		for(unsigned int j = 0; j < index_count[i]; j++) {
-			tex_cords[i][j].v1.x = file->get_float();
-			tex_cords[i][j].v1.y = file->get_float();
-			tex_cords[i][j].v1.z = file->get_float();
-
-			tex_cords[i][j].v2.x = file->get_float();
-			tex_cords[i][j].v2.y = file->get_float();
-			tex_cords[i][j].v2.z = file->get_float();
-
-			tex_cords[i][j].v3.x = file->get_float();
-			tex_cords[i][j].v3.y = file->get_float();
-			tex_cords[i][j].v3.z = file->get_float();
-		}
-
-		// create normal vertices
-		normals[i] = new core::triangle[index_count[i]];
-		for(unsigned int j = 0; j < index_count[i]; j++) {
-			normals[i][j].v1.x = file->get_float();
-			normals[i][j].v1.y = file->get_float();
-			normals[i][j].v1.z = file->get_float();
-
-			normals[i][j].v2.x = file->get_float();
-			normals[i][j].v2.y = file->get_float();
-			normals[i][j].v2.z = file->get_float();
-
-			normals[i][j].v3.x = file->get_float();
-			normals[i][j].v3.y = file->get_float();
-			normals[i][j].v3.z = file->get_float();
+			tex_indices[i][j].i1 = file->get_uint();
+			tex_indices[i][j].i2 = file->get_uint();
+			tex_indices[i][j].i3 = file->get_uint();
 		}
 	}
 
 	file->close_file();
+
+	a2emodel::generate_normal_list();
+	a2emodel::generate_normals();
 
 	a2emodel::build_bounding_box();
 }
@@ -320,7 +358,7 @@ vertex3* a2emodel::get_position() {
 	return a2emodel::position;
 }
 
-/*! sets the scale of the model
+/*! sets the render scale of the model (the rendered model is scaled)
  *  @param x the x scale
  *  @param y the y scale
  *  @param z the z scale
@@ -330,10 +368,20 @@ void a2emodel::set_scale(float x, float y, float z) {
 	a2emodel::scale->y = y;
 	a2emodel::scale->z = z;
 
+	// rebuild the bounding box - not needed in here / pointless ...
+	//a2emodel::build_bounding_box();
+}
+
+/*! sets the "vertex scale" of the model (the model itself is scaled)
+ *  @param x the x scale
+ *  @param y the y scale
+ *  @param z the z scale
+ */
+void a2emodel::set_hard_scale(float x, float y, float z) {
 	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
-		a2emodel::vertices[i].x *= a2emodel::scale->x;
-		a2emodel::vertices[i].y *= a2emodel::scale->y;
-		a2emodel::vertices[i].z *= a2emodel::scale->z;
+		a2emodel::vertices[i].x *= x;
+		a2emodel::vertices[i].y *= y;
+		a2emodel::vertices[i].z *= z;
 	}
 
 	// rebuild the bounding box
@@ -361,14 +409,6 @@ void a2emodel::set_rotation(float x, float y, float z) {
  */
 vertex3* a2emodel::get_rotation() {
 	return a2emodel::rotation;
-}
-
-/*! sets a texture of the model to a new one
- *  @param texture the texture data
- *  @param num the number of the texture that you want to replace
- */
-void a2emodel::set_texture(GLuint texture, unsigned int num) {
-	a2emodel::textures[num] = texture;
 }
 
 /*! returns a pointer to the vertices
@@ -409,7 +449,34 @@ unsigned int a2emodel::get_vertex_count() {
 /*! returns the index count
  */
 unsigned int a2emodel::get_index_count() {
-	return *a2emodel::index_count;
+	unsigned int total_index_count = 0;
+	for(unsigned int i = 0; i < a2emodel::object_count; i++) {
+		total_index_count += index_count[i];
+	}
+	return total_index_count;
+}
+
+/*! returns a pointer to the texture indices
+ */
+core::index* a2emodel::get_tex_indices() {
+	unsigned int total_count = 0;
+	for(unsigned int i = 0; i < object_count; i++) {
+		total_count += index_count[i];
+	}
+
+	core::index* total_tex_indices = new core::index[total_count];
+
+	unsigned int cidx = 0;
+	for(unsigned int i = 0; i < object_count; i++) {
+		for(unsigned int j = 0; j < index_count[i]; j++) {
+			total_tex_indices[cidx].i1 = tex_indices[i][j].i1;
+			total_tex_indices[cidx].i2 = tex_indices[i][j].i2;
+			total_tex_indices[cidx].i3 = tex_indices[i][j].i3;
+			cidx++;
+		}
+	}
+
+	return total_tex_indices;
 }
 
 /*! builds the bounding box
@@ -503,11 +570,125 @@ bool a2emodel::get_draw_wireframe() {
  *  @param state the new state
  */
 void a2emodel::set_visible(bool state) {
-	a2emodel::visible = state;
+	a2emodel::is_visible = state;
 }
 
 /*! returns a true if the model is visible
  */
 bool a2emodel::get_visible() {
-	return a2emodel::visible;
+	return a2emodel::is_visible;
+}
+
+/*! sets the models material
+ *  @param material the material object that we want tu use
+ */
+void a2emodel::set_material(a2ematerial* material) {
+	a2emodel::material = material;
+	a2emodel::is_material = true;
+}
+
+/*! generates the "normal list"
+ */
+void a2emodel::generate_normal_list() {
+	// we need temp numbers to store the triangle numbers of each vertex
+	// i assume there is no vertex that is part of more than 32 triangles ...
+	unsigned int* tmp_num = new unsigned int[32];
+	unsigned int x = 0;
+	core::index* all_indices = a2emodel::get_indices();
+
+	// reserve memory for the normal list
+	normal_list = new nlist[a2emodel::vertex_count];
+
+	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
+		normal_list[i].num = NULL;
+		normal_list[i].count = 0;
+		x = 0;
+		for(unsigned int j = 0; j < a2emodel::get_index_count(); j++) {
+			if(i == all_indices[j].i1 ||
+				i == all_indices[j].i2 ||
+				i == all_indices[j].i3) {
+				tmp_num[x] = j;
+				x++;
+			}
+		}
+		normal_list[i].count = x;
+		if(x != 0) {
+			// b/c vc++ sucks, we are not allowed to write "(normal_list[i][j].count - 1)"
+			// in here, otherwise we would get a sdl segmentation fault ;P
+			normal_list[i].num = new unsigned int[normal_list[i].count];
+			for(unsigned int j = 0; j < x; j++) {
+				normal_list[i].num[j] = tmp_num[j];
+			}
+		}
+	}
+
+	delete [] tmp_num;
+	delete [] all_indices;
+}
+
+/*! generates the normals, binormals and tangents of the model
+ */
+void a2emodel::generate_normals() {
+	vertex3* tnormals = new vertex3[32];
+	vertex3* tbinormals = new vertex3[32];
+	vertex3* ttangents = new vertex3[32];
+	core::index* all_indices = a2emodel::get_indices();
+	core::index* all_tex_indices = a2emodel::get_tex_indices();
+
+	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
+		// check if vertex is part of a triangle
+		if(a2emodel::normal_list[i].count != 0) {
+			// first of all: clear all vectors
+			a2emodel::normals[i].x = 0.0f;
+			a2emodel::normals[i].y = 0.0f;
+			a2emodel::normals[i].z = 0.0f;
+			a2emodel::binormals[i].x = 0.0f;
+			a2emodel::binormals[i].y = 0.0f;
+			a2emodel::binormals[i].z = 0.0f;
+			a2emodel::tangents[i].x = 0.0f;
+			a2emodel::tangents[i].y = 0.0f;
+			a2emodel::tangents[i].z = 0.0f;
+			// compute the normals, binormals and tangents for all triangles the vertex is part of
+			for(unsigned int j = 0; j < a2emodel::normal_list[i].count; j++) {
+				c->compute_normal_tangent_binormal(
+					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i1],
+					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i2],
+					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i3],
+					tnormals[j], tbinormals[j], ttangents[j],
+					&a2emodel::tex_coords[all_tex_indices[a2emodel::normal_list[i].num[j]].i1],
+					&a2emodel::tex_coords[all_tex_indices[a2emodel::normal_list[i].num[j]].i2],
+					&a2emodel::tex_coords[all_tex_indices[a2emodel::normal_list[i].num[j]].i3]);
+			}
+			// add all normals, binormals and tangents and divide them by the amount of them
+			for(unsigned int j = 0; j < a2emodel::normal_list[i].count; j++) {
+				a2emodel::normals[i] += tnormals[j];
+				a2emodel::binormals[i] += tbinormals[j];
+				a2emodel::tangents[i] += ttangents[j];
+			}
+			a2emodel::normals[i] /= (float)a2emodel::normal_list[i].count;
+			a2emodel::binormals[i] /= (float)a2emodel::normal_list[i].count;
+			a2emodel::tangents[i] /= (float)a2emodel::normal_list[i].count;
+		}
+	}
+
+	delete [] tnormals;
+	delete [] tbinormals;
+	delete [] ttangents;
+
+	delete [] all_indices;
+	delete [] all_tex_indices;
+}
+
+/*! sets the current light color (used for parallax mapping)
+ *  @param lcol the light color
+ */
+void a2emodel::set_light_color(float* lcol) {
+	a2emodel::light_color = lcol;
+}
+
+/*! sets the current light position (used for parallax mapping)
+ *  @param lpos the light position
+ */
+void a2emodel::set_light_position(vertex3* lpos) {
+	a2emodel::light_position = lpos;
 }

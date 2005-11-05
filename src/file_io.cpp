@@ -18,7 +18,8 @@
 
 /*! there is no function currently
  */
-file_io::file_io() {
+file_io::file_io(msg* m) {
+	file_io::m = m;
 }
 
 /*! there is no function currently
@@ -39,7 +40,7 @@ void file_io::open_file(char* filename, bool binary) {
 	}
 
 	if(!file_io::filestream.is_open()) {
-		cout << "DEBUG: " << "file_io.cpp" << "error while loading file \"" << filename << "\"!" << endl;
+		m->print(msg::MDEBUG, "file_io.cpp", "open_file(): error while loading file %s!", filename);
 	}
 }
 
@@ -79,7 +80,7 @@ int file_io::get_int() {
 	char* tmp = new char[4];
 	file_io::filestream.read(tmp, 4);
 	i = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
-	delete tmp;
+	delete [] tmp;
 
 	return i;
 }
@@ -91,7 +92,7 @@ unsigned int file_io::get_uint() {
 	char* tmp = new char[4];
 	file_io::filestream.read(tmp, 4);
 	u = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
-	delete tmp;
+	delete [] tmp;
 
 	return u;
 }
@@ -103,7 +104,7 @@ float file_io::get_float() {
 	char* tmp = new char[4];
 	file_io::filestream.read(tmp, 4);
 	memcpy(&f, tmp, 4);
-	delete tmp;
+	delete [] tmp;
 
 	return f;
 }

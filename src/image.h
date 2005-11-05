@@ -45,7 +45,6 @@ public:
 	void draw();
 	void draw(unsigned int scale_x, unsigned int scale_y);
 	void open_image(char* filename);
-	void set_e(engine* iengine);
 
 	void set_position(unsigned int x, unsigned int y);
 	void set_position(core::pnt* position);
@@ -55,6 +54,7 @@ public:
 protected:
 	msg* m;
 	engine* e;
+	texman* t;
 
 	GLuint texture;
 

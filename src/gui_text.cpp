@@ -31,6 +31,9 @@ gui_text::gui_text(engine* e) {
 	// point font to NULL
 	font = NULL;
 
+	// point color to NULL
+	gui_text::color = NULL;
+
 	// get classes
 	gui_text::e = e;
 	gui_text::c = e->get_core();
@@ -43,7 +46,7 @@ gui_text::gui_text(engine* e) {
 gui_text::~gui_text() {
 	m->print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
 
-	delete text;
+	delete [] text;
 	if(font) {
 		delete font;
 	}
@@ -86,9 +89,9 @@ void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 	glTranslatef((GLfloat)(gui_text::point->x + x),
 		(GLfloat)(gui_text::e->get_screen()->h - gui_text::point->y - 10.0f - y),
 		0.0f);
-	glColor3f((GLfloat)(gui_text::color.r / 255),
-		(GLfloat)(gui_text::color.g / 255),
-		(GLfloat)(gui_text::color.b / 255));
+	glColor3f((GLfloat)(gui_text::color->r / 255),
+		(GLfloat)(gui_text::color->g / 255),
+		(GLfloat)(gui_text::color->b / 255));
 	gui_text::font->Render(text);
 
 	glPopMatrix();
@@ -113,7 +116,7 @@ char* gui_text::get_text() {
 
 //! returns the text color
 SDL_Color gui_text::get_color() {
-	return gui_text::color;
+	return *gui_text::color;
 }
 
 //! returns the text
@@ -152,7 +155,10 @@ void gui_text::set_text(char* text) {
 /*! sets the text color
  *  @param color the text color we want to set
  */
-void gui_text::set_color(SDL_Color color) {
+void gui_text::set_color(SDL_Color* color) {
+    if(gui_text::color != NULL) {
+        delete gui_text::color;
+    }
 	gui_text::color = color;
 }
 
@@ -160,9 +166,9 @@ void gui_text::set_color(SDL_Color color) {
  *  @param color the text color we want to set
  */
 void gui_text::set_color(unsigned int color) {
-	gui_text::color.r = (color & 0xFF0000) >> 16;
-	gui_text::color.g = (color & 0xFF00) >> 8;
-	gui_text::color.b = color & 0xFF;
+	gui_text::color->r = (color & 0xFF0000) >> 16;
+	gui_text::color->g = (color & 0xFF00) >> 8;
+	gui_text::color->b = color & 0xFF;
 }
 
 /*! sets the font name
@@ -196,7 +202,7 @@ void gui_text::set_notext() {
 	gui_text::text[0] = 0;
 }
 
-/*! returns the pointer to the currently used FTFont element 
+/*! returns the pointer to the currently used FTFont element
  */
 FTFont* gui_text::get_font() {
 	return gui_text::font;
@@ -209,7 +215,7 @@ unsigned int gui_text::get_text_width() {
 	return (unsigned int)wide;
 }
 
-/*! returns the text's height 
+/*! returns the text's height
  */
 unsigned int gui_text::get_text_height() {
 	float x, y, z, ux, uy, uz;

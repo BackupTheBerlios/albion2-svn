@@ -22,12 +22,14 @@ a2ematerial::a2ematerial(engine* e) {
 	texture_count = 0;
 	tex_names = NULL;
 	textures = NULL;
+	mat_type = 0x00;
 
 	// get classes
 	a2ematerial::e = e;
 	a2ematerial::c = e->get_core();
 	a2ematerial::m = e->get_msg();
 	a2ematerial::file = e->get_file_io();
+	a2ematerial::t = e->get_texman();
 }
 
 /*! there is no function currently
@@ -40,7 +42,7 @@ a2ematerial::~a2ematerial() {
 	}
 
 	if(textures != NULL) {
-		delete textures;
+		delete [] textures;
 	}
 
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
@@ -61,7 +63,10 @@ void a2ematerial::load_material(char* filename) {
 		delete file_type;
 		return;
 	}
-	delete file_type;
+	delete [] file_type;
+
+	// get material type
+	a2ematerial::mat_type = (file->get_char() & 0xFF);
 
 	// get texture count
 	a2ematerial::texture_count = file->get_uint();
@@ -76,27 +81,35 @@ void a2ematerial::load_material(char* filename) {
 	unsigned int size = file->get_filesize();
 
 	// the remaining data ...
-	char* data = new char[size - 14];
+	char* data = new char[size - 15];
 	file->get_block(data, size - 16);
-	data[size - 15] = 0;
+	data[size - 16] = 0;
 
 	// load the texture names
 	unsigned int x = 0;
-	char** tokens = new char*[a2ematerial::texture_count + 1];
-	tokens[x] = strtok(data, "ÿ");
-	while(tokens[x] != NULL) {
+	char** tokens = new char*[a2ematerial::texture_count];
+	char* tok = new char[2];
+	tok[0] = (char)0xFF;
+	tok[1] = (char)0x00;
+	tokens[x] = strtok(data, tok);
+	while(x < (a2ematerial::texture_count-1)) {
 		x++;
-		tokens[x] = strtok(NULL, "ÿ");
+		tokens[x] = strtok(NULL, tok);
 	}
 
-	for(unsigned int i = 0; i < x; i++) {
+	for(unsigned int i = 0; i < (x+1); i++) {
 		a2ematerial::tex_names[i] = new char[strlen(tokens[i])+1];
 		memcpy(a2ematerial::tex_names[i], tokens[i], strlen(tokens[i]));
 		a2ematerial::tex_names[i][strlen(tokens[i])] = 0;
-		if(i == x - 1) { a2ematerial::tex_names[i][strlen(tokens[i])-1] = 0; }
+		if(i == x - 1) { a2ematerial::tex_names[i][strlen(tokens[i])] = 0; }
 	}
 
-	delete data;
+	delete [] tok;
+	delete [] data;
+	delete [] tokens;
+
+	// close file
+	file->close_file();
 
 	// load the textures
 	a2ematerial::load_textures();
@@ -105,30 +118,9 @@ void a2ematerial::load_material(char* filename) {
 /*! loads the textures (just .png)
  */
 void a2ematerial::load_textures() {
-	SDL_Surface** tex_surface = new SDL_Surface*[a2ematerial::texture_count];
-
-	for(unsigned int i = 0; i < a2ematerial::texture_count; i++) {
-		tex_surface[i] = IMG_LoadPNG_RW(SDL_RWFromFile(a2ematerial::tex_names[i], "rb"));
-		if(!tex_surface) {
-			m->print(msg::MERROR, "a2ematerial.cpp", "error loading texture file \"%s\"!", a2ematerial::tex_names[i]);
-			return;
-		}
-	}
-
-	glGenTextures(a2ematerial::texture_count, &a2ematerial::textures[0]);
-	for(unsigned int i = 0; i < a2ematerial::texture_count; i++) {
-		glBindTexture(GL_TEXTURE_2D, a2ematerial::textures[i]);	
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-
-		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tex_surface[i]->w, tex_surface[i]->h,
-			GL_RGB, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);
-	}
-
-	for(unsigned int i = 0; i < a2ematerial::texture_count; i++) {
-		if(tex_surface[i]) {
-			SDL_FreeSurface(tex_surface[i]);
+	if(e->get_init_mode() == engine::GRAPHICAL) {
+		for(unsigned int i = 0; i < texture_count; i++) {
+			textures[i] = t->add_texture(tex_names[i], 3, GL_RGB);
 		}
 	}
 }
@@ -138,4 +130,10 @@ void a2ematerial::load_textures() {
  */
 GLuint* a2ematerial::get_texture(unsigned int num) {
 	return &a2ematerial::textures[num];
+}
+
+/*! returns the material type (MAT_TYPES)
+ */
+char a2ematerial::get_material_type() {
+	return a2ematerial::mat_type;
 }

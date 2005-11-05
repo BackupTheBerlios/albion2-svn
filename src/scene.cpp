@@ -20,7 +20,7 @@
 
 /*! there is no function currently
  */
-scene::scene(engine* e) {
+scene::scene(engine* e, shader* s) {
 	scene::cmodels = 0;
 	scene::camodels = 0;
 	scene::clights = 0;
@@ -59,6 +59,7 @@ scene::scene(engine* e) {
 
 	// get classes
 	scene::e = e;
+	scene::s = s;
 	scene::c = e->get_core();
 	scene::m = e->get_msg();
 }
@@ -69,10 +70,20 @@ scene::~scene() {
 	m->print(msg::MDEBUG, "scene.cpp", "freeing scene stuff");
 
 	delete scene::position;
-	delete scene::mambient;
-	delete scene::mdiffuse;
-	delete scene::mspecular;
-	delete scene::mshininess;
+	delete [] scene::mambient;
+	delete [] scene::mdiffuse;
+	delete [] scene::mspecular;
+	delete [] scene::mshininess;
+
+	m->print(msg::MDEBUG, "scene.cpp", "deleting static models");
+	for(unsigned int i = 0; i < cmodels; i++) {
+	    delete scene::models[i];
+	}
+
+	m->print(msg::MDEBUG, "scene.cpp", "deleting animated models");
+	for(unsigned int i = 0; i < camodels; i++) {
+	    delete scene::amodels[i];
+	}
 
 	m->print(msg::MDEBUG, "scene.cpp", "scene stuff freed");
 }
@@ -109,28 +120,17 @@ void scene::draw() {
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	/*glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glEnable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);*/
-	//LightModelfv(LIGHT_MODEL_AMBIENT, &globalAmbient);
-
 	for(unsigned int i = 0; i < cmodels; i++) {
+		models[i]->set_light_color(lights[0]->get_lambient());
+		models[i]->set_light_position(lights[0]->get_position());
 		models[i]->draw();
 	}
 
 	for(unsigned int i = 0; i < camodels; i++) {
+		amodels[i]->set_light_color(lights[0]->get_lambient());
+		amodels[i]->set_light_position(lights[0]->get_position());
 		amodels[i]->draw();
 	}
-
-	/*glDepthMask(0);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE);*/
-	//LightModelfv(LIGHT_MODEL_AMBIENT, &zero);
-
-
 }
 
 /*! adds a static model to the scene
@@ -174,6 +174,33 @@ void scene::delete_model(a2emodel* model) {
 
 	// decrease model count
 	cmodels--;
+}
+
+/*! removes an animated model from the scene
+ *  @param model pointer to the animated model
+ */
+void scene::delete_model(a2eanim* model) {
+	unsigned int num = 0;
+	for(unsigned int i = 0; i < camodels; i++) {
+		if(amodels[i] == model) {
+			// shouldn't be deleted automatically
+			//delete models[i];
+			num = i;
+			i = camodels;
+		}
+		else if(i == (camodels-1)) {
+			m->print(msg::MDEBUG, "scene.cpp", "can't delete animated model: model doesn't exist!");
+			return;
+		}
+	}
+
+	for(unsigned int i = num; i < (camodels-1); i++) {
+		amodels[i] = amodels[i+1];
+	}
+	amodels[(camodels-1)] = NULL;
+
+	// decrease model count
+	camodels--;
 }
 
 /*! adds a light to the scene
@@ -298,11 +325,11 @@ bool scene::get_light() {
 }
 
 a2eanim* scene::create_a2eanim() {
-	a2eanim* a2ea = new a2eanim(e);
+	a2eanim* a2ea = new a2eanim(e, s);
 	return a2ea;
 }
 
 a2emodel* scene::create_a2emodel() {
-	a2emodel* a2em = new a2emodel(e);
+	a2emodel* a2em = new a2emodel(e, s);
 	return a2em;
 }

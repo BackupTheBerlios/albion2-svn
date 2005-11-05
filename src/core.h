@@ -53,7 +53,8 @@ public:
 	};
 	
 	struct coord {
-		float u, v;
+		float u;
+		float v;
 	};
 
 	// remeber that the 'w-float' is the fourth element!
@@ -62,7 +63,9 @@ public:
 	};
 
 	struct index {
-		unsigned int i1, i2, i3;
+		unsigned int i1;
+		unsigned int i2;
+		unsigned int i3;
 	};
 
 	struct line {
@@ -110,6 +113,14 @@ public:
 	float rad_to_deg(float rad);
 
 	void get_2d_from_3d(vertex3* v, pnt* p);
+
+	void compute_normal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3& normal);
+	void compute_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3* normal,
+		vertex3& binormal, vertex3& tangent,
+		coord* t1, coord* t2, coord* t3);
+	void compute_normal_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3,
+		vertex3& normal, vertex3& binormal, vertex3& tangent,
+		coord* t1, coord* t2, coord* t3);
 
 protected:
 	unsigned int value, bit, num;

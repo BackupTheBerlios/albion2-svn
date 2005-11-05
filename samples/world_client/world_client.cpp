@@ -21,12 +21,12 @@
  *
  * \author flo
  *
- * \date April - August 2005
+ * \date April - September 2005
  *
  * Albion 2 Engine Sample - World Client Sample
  */
 
-int handle_server_data(char *data) {
+int handle_server_data(char* data) {
 	int used = 0;
 	switch ((data[0] & 0xFF)) {
 		case net::CDAT: {
@@ -34,15 +34,14 @@ int handle_server_data(char *data) {
 				max_clients = (data[1] & 0xFF);
 				client_num = (data[2] & 0xFF);
 
-				is_initialized = true;
-
 				// init clients
 				clients = new client[max_clients];
 				for(unsigned int i = 0; i < max_clients; i++) {
 					clients[i].id = 0;
 					clients[i].name = new char[32];
 					sprintf(clients[i].name, "unknown");
-					clients[i].status = 0;
+					clients[i].status = ST_OFFLINE;
+					clients[i].motion = MT_STANDING;
 					clients[i].position = new vertex3();
 					clients[i].position->x = 0.0f;
 					clients[i].position->y = 0.0f;
@@ -54,16 +53,17 @@ int handle_server_data(char *data) {
 					clients[i].text_point->x = 10;
 					clients[i].text_point->y = 10;
 					clients[i].text = agui->add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
-					// we don't want to show up the text already
+					// we don't want the text to be shown up already
 					clients[i].text->set_notext();
 
 					clients[i].model = NULL;
+					clients[i].mat = NULL;
 				}
 				cout << "rcv cdat size: " << 3 << endl;
 				used = 3;
 			}
 			else {
-				m->print(msg::MDEBUG, "world_client.cpp", "network and clients are already initialized");
+				m->print(msg::MDEBUG, "world_client.cpp", "handle_server_data(CDAT): network and clients are already initialized!");
 				used = 3;
 			}
 			break;
@@ -91,17 +91,18 @@ int handle_server_data(char *data) {
 				}
 				case DT_UPDATE: {
 					unsigned int cnum = (data[2] & 0xFF);
-					if(clients[cnum].status != 0) {
+					if(clients[cnum].status != ST_OFFLINE) {
 						memcpy(&clients[cnum].position->x, &data[3], 4);
 						memcpy(&clients[cnum].position->y, &data[3+4], 4);
 						memcpy(&clients[cnum].position->z, &data[3+8], 4);
 						memcpy(&clients[cnum].rotation, &data[3+12], 4);
+						memcpy(&clients[cnum].motion, &data[3+16], 4);
 					}
 					else {
-						m->print(msg::MDEBUG, "world_client.cpp", "client doesn't exist anymore (update routine)");
+						m->print(msg::MDEBUG, "world_client.cpp", "handle_server_data(UPDATE): client doesn't exist anymore!");
 					}
 
-					used = 3 + 16;
+					used = 3 + 20;
 					break;
 				}
 				default:
@@ -113,9 +114,9 @@ int handle_server_data(char *data) {
 			unsigned int cur_client;
 
 			cur_client = (data[1] & 0xFF);
-			if((cur_client >= max_clients) || clients[cur_client].status == 1) {
+			if((cur_client >= max_clients) || clients[cur_client].status != ST_OFFLINE) {
 				// client doesn't exist / all client "ports" are in use -> break
-				m->print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already initalized! (add routine)", cur_client);
+				m->print(msg::MDEBUG, "world_client.cpp", "handle_server_data(ADD): client #%u doesn't exist or is already initalized!", cur_client);
 				break;
 			}
 
@@ -124,7 +125,7 @@ int handle_server_data(char *data) {
 			memcpy(clients[cur_client].name, &data[9], len);
 			clients[cur_client].name[len+1] = 0;
 			clients[cur_client].text->set_text(clients[cur_client].name);
-			clients[cur_client].status = 1;
+			clients[cur_client].status = ST_ONLINE;
 			clients[cur_client].id = cur_client;
 			clients[cur_client].host = (unsigned int)SDLNet_Read32(&data[2]);
 			clients[cur_client].port = (unsigned int)SDLNet_Read16(&data[6]);
@@ -140,10 +141,22 @@ int handle_server_data(char *data) {
 			cplayers++;
 
 			// create the players model
-			clients[cur_client].model = sce->create_a2emodel();
-			clients[cur_client].model->load_model("../data/player.a2m");
+			clients[cur_client].model = sce->create_a2eanim();
+			clients[cur_client].model->load_model("player_anim.a2m");
+			clients[cur_client].model->add_animation("player.a2a");
+			clients[cur_client].model->play_frames(0, 0);
+			// slow down the animation a bit ...
+			clients[cur_client].model->get_current_animation()->frame_time = clients[cur_client].model->get_current_animation()->frame_time * 10.0f;
+			clients[cur_client].model->set_scale(0.016f, 0.016f, 0.016f);
 			clients[cur_client].model->set_visible(true);
+			clients[cur_client].model->set_material(player_mat);
+
 			sce->add_model(clients[cur_client].model);
+
+			// after we added the "local" player, everything should be initialized now
+			if(cur_client == client_num) {
+				is_initialized = true;
+			}
 
 			cout << "rcv add size: " << 9 + len << endl;
 			used = 9 + len;
@@ -152,9 +165,9 @@ int handle_server_data(char *data) {
 		case net::DEL: {
 			// which client should be deleted?
 			unsigned int cur_client = (data[1] & 0xFF);
-			if((cur_client >= max_clients) || clients[cur_client].status != 1) {
+			if((cur_client >= max_clients) || clients[cur_client].status == ST_OFFLINE) {
 				// client doesn't exist / all client "ports" are in use -> break
-				m->print(msg::MDEBUG, "world_client.cpp", "client #%u doesn't exist or is already deleted! (delete routine)", cur_client);
+				m->print(msg::MDEBUG, "world_client.cpp", "handle_server_data(DELETE): client #%u doesn't exist or is already deleted!", cur_client);
 				break;
 			}
 
@@ -174,6 +187,23 @@ int handle_server_data(char *data) {
 		cout << "rcv kick size: " << 1 << endl;
 		used = 1;
 		break;
+		case 0x57: {
+			if((data[1] & 0xFF) == 0x45 &&
+				(data[2] & 0xFF) == 0x32 &&
+				(data[3] & 0xFF) == 0x41) {
+				// seems like we have a fast connection here and get more than one packet at one time ;)
+				// so just skip the header: used = 4;
+				used = 4;
+			}
+			else {
+				// unknown package type
+				m->print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type (%u)! - skipping byte",
+					(unsigned int)(data[0] & 0xFF));
+				cout << "rcv unknown size: " << 1 << endl;
+				used = 1;
+			}
+		}
+		break;
 		default: {
 			// unknown package type
 			m->print(msg::MDEBUG, "world_client.cpp", "received a package with an unknown type (%u)! - skipping byte",
@@ -186,12 +216,12 @@ int handle_server_data(char *data) {
 	return used;
 }
 
-void handle_server(void) {
+void handle_server() {
 	char* data = new char[512];
 	unsigned int pos, len, used;
 
 	// checks if client is still connected to the server
-	len = SDLNet_TCP_Recv(n->tcp_ssock, data, 512);
+	len = n->recv_packet(&n->tcp_ssock, data, 512, 0xFFFFFFFF);
 	if(len <= 0) {
 		n->close_socket(n->tcp_ssock);
 	}
@@ -199,6 +229,7 @@ void handle_server(void) {
 		pos = 0;
 		while(len > 0) {
 			used = handle_server_data(&data[pos]);
+
 			pos += used;
 			len -= used;
 			if(used == 0) {
@@ -225,7 +256,7 @@ void delete_player(unsigned int num) {
 	clients[num].rotation = 0.0f;
 	clients[num].host = 0;
 	clients[num].port = 0;
-	clients[num].status = 0;
+	clients[num].status = ST_OFFLINE;
 	clients[num].text->set_notext();
 	sprintf(clients[num].name, "unknown");
 
@@ -270,7 +301,7 @@ void send_msg() {
 		data[i+7] = 0;
 		cout << "dt_msg size: " << length+1 + 7 << endl;
 		if(n->tcp_ssock != NULL) {
-			SDLNet_TCP_Send(n->tcp_ssock, data, length+1 + 7);
+			n->send_packet(&n->tcp_ssock, data, length+1 + 7, 0xFFFFFFFF);
 		}
 
 		// add msg to the list box
@@ -417,26 +448,30 @@ void update() {
 	char* data = new char[7];
 	data[0] = net::DAT;
 	data[1] = DT_UPDATE;
-	memcpy(&data[2], &cam->get_rotation()->y, 4);
+	memcpy(&data[2], &clients[client_num].model->get_rotation()->y, 4);
 
 	// send data
 	if(n->tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n->tcp_ssock, data, 6);
+        n->send_packet(&n->tcp_ssock, data, 6, 0xFFFFFFFF);
 	}
 	delete data;
 
 	// update players data
 	for(unsigned int i = 0; i < cplayers; i++) {
-		if(clients[i].status != 0) {
+		if(clients[i].status != ST_OFFLINE) {
 			clients[i].model->set_position(clients[i].position->x, clients[i].position->y - 2.0f, clients[i].position->z);
-			clients[i].model->set_rotation(0.0f, clients[i].rotation - 90.0f, 0.0f);
+			clients[i].model->set_rotation(0.0f, clients[i].rotation, 0.0f);
+			if(clients[i].motion == MT_STANDING) {
+                clients[i].model->play_frames(0, 0);
+			}
+			else if(clients[i].motion == MT_MOVING) {
+                clients[i].model->play_frames(0, 31);
+			}
+			else {
+                clients[i].model->play_frames(0, 0);
+			}
 		}
 	}
-
-	// update the players cam
-	cam->set_position(-clients[client_num].position->x - sinf(clients[client_num].rotation * piover180) * 15.0f,
-		clients[client_num].position->y + 10.0f,
-		-clients[client_num].position->z - cosf(clients[client_num].rotation * piover180) * 15.0f);
 
 	// reset players light
 	player_light->set_position(clients[client_num].position->x,
@@ -444,18 +479,73 @@ void update() {
 		clients[client_num].position->z);
 }
 
-void move(MOVE_TYPE type) {
+void handle_cam() {
+	if(is_initialized) {
+		if(control_state == 0) {
+			// calculate the rotation via the current mouse cursor position
+			int cursor_pos_x = 0;
+			int cursor_pos_y = 0;
+			SDL_GetMouseState((int*)&cursor_pos_x, (int*)&cursor_pos_y);
+
+			float xpos = (1.0f / (float)e->get_screen()->w) * (float)cursor_pos_x;
+			float ypos = (1.0f / (float)e->get_screen()->h) * (float)cursor_pos_y;
+
+			float roty = clients[client_num].model->get_rotation()->y;
+
+			if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
+				roty += (0.5f - xpos) * cam->get_rotation_speed();
+				SDL_WarpMouse(e->get_screen()->w/2, e->get_screen()->h/2);
+			}
+
+			if(roty > 360.0f) {
+				roty -= 360.0f;
+			}
+			else if(roty < 0.0f) {
+				roty += 360.0f;
+			}
+
+			clients[client_num].rotation = roty;
+			clients[client_num].model->set_rotation(clients[client_num].model->get_rotation()->x,
+													roty,
+													clients[client_num].model->get_rotation()->z);
+		}
+		// update the players cam
+		cam->set_position(-clients[client_num].position->x - sinf(clients[client_num].rotation * piover180) * 15.0f,
+			-clients[client_num].position->y - 10.0f,
+			-clients[client_num].position->z - cosf(clients[client_num].rotation * piover180) * 15.0f);
+		cam->set_rotation(cam->get_rotation()->x, clients[client_num].rotation, cam->get_rotation()->z);
+	}
+}
+
+void move(CONTROL_STATES type) {
+	// check if the motion is already set to this state
+	if(clients[client_num].motion != type) {
+		// create package
+		char* data = new char[4];
+
+		data[0] = net::DAT;
+		data[1] = DT_MOVE;
+		data[2] = type;
+
+		// send data
+		if(n->tcp_ssock != NULL) {
+			n->send_packet(&n->tcp_ssock, data, 3, 0xFFFFFFFF);
+		}
+		delete data;
+	}
+}
+
+void set_motion(CONTROL_STATES type) {
 	// create package
 	char* data = new char[4];
 
 	data[0] = net::DAT;
-	data[1] = DT_MOVE;
-	//data[2] = client_num;
+	data[1] = DT_MOTION;
 	data[2] = type;
 
 	// send data
 	if(n->tcp_ssock != NULL) {
-        SDLNet_TCP_Send(n->tcp_ssock, data, 3);
+        n->send_packet(&n->tcp_ssock, data, 3, 0xFFFFFFFF);
 	}
 	delete data;
 }
@@ -512,15 +602,37 @@ void init() {
 				}
 				// get width
 				else if(strcmp(fline_tok[0], "width") == 0) {
-					width = atoi(fline_tok[1]);
+					width = (unsigned int)atoi(fline_tok[1]);
 				}
 				// get height
 				else if(strcmp(fline_tok[0], "height") == 0) {
-					height = atoi(fline_tok[1]);
+					height = (unsigned int)atoi(fline_tok[1]);
 				}
 				// get depth
 				else if(strcmp(fline_tok[0], "depth") == 0) {
-					depth = atoi(fline_tok[1]);
+					depth = (unsigned int)atoi(fline_tok[1]);
+				}
+				// get fullscreen
+				else if(strcmp(fline_tok[0], "fullscreen") == 0) {
+					if(strcmp(fline_tok[1], "0") == 0) {
+						fullscreen = false;
+					}
+					else {
+						fullscreen = true;
+					}
+				}
+				// get netlog
+				else if(strcmp(fline_tok[0], "netlog") == 0) {
+					if(strcmp(fline_tok[1], "0") == 0) {
+						netlog = false;
+					}
+					else {
+						netlog = true;
+					}
+				}
+				// get sleep time
+				else if(strcmp(fline_tok[0], "sleep") == 0) {
+					fpslim = (unsigned int)atoi(fline_tok[1]);
 				}
 			}
 		}
@@ -530,7 +642,7 @@ void init() {
 
 void update_names() {
 	for(unsigned int i = 0; i < cplayers; i++) {
-		if(clients[i].status != 0) {
+		if(clients[i].status != ST_OFFLINE) {
 			// set new player text position
 			c->get_2d_from_3d(clients[i].position, clients[i].text_point);
 			clients[i].text_point->y -= 50;
@@ -542,7 +654,7 @@ void draw_names() {
 	e->start_2d_draw();
 	gfx::rect* r = new gfx::rect();
 	for(unsigned int i = 0; i < cplayers; i++) {
-		if(clients[i].status != 0) {
+		if(clients[i].status != ST_OFFLINE) {
 			core::pnt* p = clients[i].text_point;
 			r->x1 = p->x - 4;
 			r->y1 = p->y - 4;
@@ -565,23 +677,30 @@ int main(int argc, char *argv[])
 	// get file_io class
 	fio = e->get_file_io();
 
-	// itialize everything (and load the settings)
+	// initialize everything (and load the settings)
 	init();
 
 	// initialize the engine
-	e->init(width, height, depth, false);
+	e->init(width, height, depth, fullscreen);
 	e->set_caption("A2E Sample - World Client Sample");
 	e->set_cursor_visible(false);
+	e->set_fps_limit(fpslim);
 
 	// init class pointers
 	c = e->get_core();
 	m = e->get_msg();
 	aevent = e->get_event();
-	sce = new scene(e);
-	agfx = new gfx();
+	agfx = e->get_gfx();
+	s = new shader(e);
+	sce = new scene(e, s);
 	cam = new camera(e);
 	n = new net(e);
 	agui = new gui(e);
+
+	clients = NULL;
+
+	// set net logging
+	n->set_netlog(netlog);
 
 	// set a color scheme (blue)
 	e->set_color_scheme(scheme);
@@ -595,24 +714,48 @@ int main(int argc, char *argv[])
 	agui->init();
 
 	chat_window = agui->add_window(agfx->pnt_to_rect(0, 0, 250 + 4, 275 + 21), 100, "World Chat", true);
-	chat_msg_list = agui->add_list_box(agfx->pnt_to_rect(0, 0, 250, 250), 101, "Chat List Box", 100);
+	chat_msg_list = agui->add_list_box(agfx->pnt_to_rect(0, 0, 250, 250), 101, 100);
 	chat_msg_input = agui->add_input_box(agfx->pnt_to_rect(0, 250, 200, 275), 102, "", 100);
 	chat_msg_send = agui->add_button(agfx->pnt_to_rect(200, 250, 250, 275), 103, "Send", 100);
 
 	// initialize the camera
 	cam->set_position(0.0f, 50.0f, 0.0f);
 	cam->set_cam_input(false);
+	cam->set_mouse_input(false);
 	cam->set_rotation_speed(50.0f);
+	cam->set_rotation(-25.0f, 0.0f, 0.0f);
+
+	// load materials
+	level_mat = new a2ematerial(e);
+	level_mat->load_material("../data/level.a2mtl");
+	
+	scale_mat = new a2ematerial(e);
+	scale_mat->load_material("../data/scale.a2mtl");
+	
+	player_mat = new a2ematerial(e);
+	player_mat->load_material("../data/scale.a2mtl");
 
 	// load the models and set new positions
 	level = sce->create_a2emodel();
 	level->load_model("../data/move_level.a2m"); 
-	level->set_scale(0.5f, 0.5f, 0.5f);
+	level->set_hard_scale(0.5f, 0.5f, 0.5f);
+	level->set_material(level_mat);
 	sce->add_model(level);
 
 	sphere = sce->create_a2emodel();
-	sphere->load_model("../data/player_sphere.a2m"); 
+	sphere->load_model("../data/player_sphere.a2m");
+	sphere->set_visible(false);
+	sphere->set_material(scale_mat);
 	sce->add_model(sphere);
+
+	l1 = new light(e, -50.0f, 100.0f, -50.0f);
+	float lamb[] = { 0.1f, 0.1f, 0.1f, 0.0f};
+	float ldif[] = { 0.2f, 0.2f, 0.2f, 0.0f};
+	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};
+	l1->set_lambient(lamb);
+	l1->set_ldiffuse(ldif);
+	l1->set_lspecular(lspc);
+	sce->add_light(l1);
 
 	player_light = new light(e, 0.0f, 50.0f, 0.0f);
 	float pamb[] = { 1.0f, 1.0f, 1.0f, 0.0f};
@@ -625,15 +768,6 @@ int main(int argc, char *argv[])
 	player_light->set_linear_attenuation(1.0f / range);
 	player_light->set_quadratic_attenuation(0.0f);
 	sce->add_light(player_light);
-
-	l1 = new light(e, -50.0f, 100.0f, -50.0f);
-	float lamb[] = { 0.1f, 0.1f, 0.1f, 0.0f};
-	float ldif[] = { 0.2f, 0.2f, 0.2f, 0.0f};
-	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};
-	l1->set_lambient(lamb);
-	l1->set_ldiffuse(ldif);
-	l1->set_lspecular(lspc);
-	sce->add_light(l1);
 
 	// init network stuff
 	if(n->init()) {
@@ -676,13 +810,37 @@ int main(int argc, char *argv[])
 							done = true;
 							break;
 						case SDLK_UP:
-							if(control_state == 0) { move(MV_FORWARD); }
+							if(control_state == 0) {
+								move(MV_FORWARD);
+								set_motion(MT_MOVING);
+							}
 							break;
 						case SDLK_DOWN:
-							if(control_state == 0) { move(MV_BACKWARD); }
+							if(control_state == 0) {
+								move(MV_BACKWARD);
+								set_motion(MT_MOVING);
+							}
 							break;
 						case SDLK_RETURN:
-							if(control_state == 1) { send_msg(); }
+							if(control_state == 1) {
+								send_msg();
+							}
+							break;
+						default:
+						break;
+					}
+					break;
+				case SDL_KEYUP:
+					switch(aevent->get_event().key.keysym.sym) {
+						case SDLK_UP:
+							if(control_state == 0) {
+								set_motion(MT_STANDING);
+							}
+							break;
+						case SDLK_DOWN:
+							if(control_state == 0) {
+								set_motion(MT_STANDING);
+							}
 							break;
 						default:
 						break;
@@ -695,11 +853,9 @@ int main(int argc, char *argv[])
 							control_state = !control_state;
 							if(control_state == 0) {
 								e->set_cursor_visible(false);
-								cam->set_mouse_input(true);
 							}
 							else {
 								e->set_cursor_visible(true);
-								cam->set_mouse_input(false);
 							}
 							break;
 						default:
@@ -752,12 +908,14 @@ int main(int argc, char *argv[])
 		e->set_caption(tmp);
 
 		// send new client data to server
+		handle_cam();
 		if(is_initialized) { update(); }
 
 		// start drawing the scene
 		e->start_draw();
 
 		cam->run();
+
 		sce->draw();
 
 		update_names();
@@ -768,20 +926,33 @@ int main(int argc, char *argv[])
 		e->stop_draw();
 	}
 
-	delete tmp;
+	delete [] tmp;
 
 	n->exit();
 
 	// remove player models from the scene list
-	for(unsigned int i = 0; i < max_clients; i++) {
-		if(clients[i].status != 0) {
-            sce->delete_model(clients[i].model);
+	if(clients != NULL) {
+		for(unsigned int i = 0; i < max_clients; i++) {
+			if(clients[i].status != ST_OFFLINE) {
+				sce->delete_model(clients[i].model);
+			}
 		}
 	}
 
-	delete clients;
-	delete client_name;
-	delete server;
+	if(clients != NULL) { delete [] clients; }
+	delete [] client_name;
+	delete [] server;
+	delete n;
+	delete level_mat;
+	delete player_mat;
+	delete scale_mat;
+	delete player_light;
+	delete l1;
+	delete sce;
+	delete cam;
+	delete s;
+	delete agui;
+	delete e;
 
 	return 0;
 }

@@ -208,7 +208,7 @@ void ode::delete_object(unsigned int num) {
 		ode::ode_objects[i] = ode::ode_objects[i+1];
 	}
 	ode::ode_objects[(ode::object_count-1)] = NULL;
-	
+
 	// decrease object count
 	ode::object_count--;
 }

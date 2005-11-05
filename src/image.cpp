@@ -15,8 +15,6 @@
  */
 
 #include "image.h"
-#include "gfx.h"
-#include "msg.h"
 
 /*! there is no function currently
  */
@@ -31,6 +29,7 @@ image::image(engine* e) {
 	// get classes
 	image::e = e;
 	image::m = e->get_msg();
+	image::t = e->get_texman();
 }
 
 /*! there is no function currently
@@ -82,27 +81,9 @@ void image::draw() {
  *  @param filename the image files name
  */
 void image::open_image(char* filename) {
-	if(image::texture) { glDeleteTextures(1, &(image::texture)); }
-
-	SDL_Surface* img_srf = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
-	if(!img_srf) {
-		m->print(msg::MERROR, "image.cpp", "error loading image file \"%s\"!", filename);
-		return;
-	}
-
-	image::width = img_srf->w;
-	image::heigth = img_srf->h;
-
-	glGenTextures(1, &(image::texture));
-	glBindTexture(GL_TEXTURE_2D, image::texture);	
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, img_srf->w, img_srf->h,
-		GL_RGB, GL_UNSIGNED_BYTE, img_srf->pixels);
-
-	SDL_FreeSurface(img_srf);
+	texture = t->add_texture(filename);
+	image::width = t->get_texture(texture)->width;
+	image::heigth = t->get_texture(texture)->height;
 }
 
 /*! sets the position (2 * unsigned int) of the image
@@ -125,11 +106,4 @@ void image::set_position(core::pnt* position) {
  */
 core::pnt* image::get_position() {
 	return image::position;
-}
-
-/*! creates a e -> a pointer to the engine class
- *  @param iengine the engine we want to handle
- */
-void image::set_e(engine* iengine) {
-	image::e = iengine;
 }

@@ -45,14 +45,20 @@ public:
 	~vertex3();
 
 	// overloading routines ...
-	vertex3 operator+(vertex3& v);
-	vertex3 operator-(vertex3& v);
+	vertex3 operator+(const vertex3& v);
+	vertex3 operator-(const vertex3& v);
 	vertex3 operator/(float f);
 	vertex3 operator*(float f);
-	vertex3& operator+=(vertex3& v);
-	vertex3& operator-=(vertex3& v);
+	float operator*(vertex3& v);
+	vertex3 operator^(const vertex3& v);
+	vertex3& operator+=(const vertex3& v);
+	vertex3& operator-=(const vertex3& v);
+	vertex3& operator*=(float f);
+	vertex3& operator/=(float f);
+	friend ostream& operator<<(ostream& o, vertex3& v);
 
 	vertex3 normalize();
+	void norm();
 
 };
 

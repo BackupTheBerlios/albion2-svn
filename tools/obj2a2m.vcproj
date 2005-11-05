@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="obj2a2m"
-	ProjectGUID="{8BFC2757-8483-214B-9459-88E8F89843CE}"
+	ProjectGUID="{C1ACBBF1-6ED7-5B40-B762-FB80CA9F1A53}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

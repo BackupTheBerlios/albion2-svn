@@ -13,12 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __ENGINE_H__
 #define __ENGINE_H__
 
 #ifdef WIN32
 #include <windows.h>
+#include <winnt.h>
 #endif
 
 #include <iostream>
@@ -27,23 +28,33 @@
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
+//#include <GL/glut.h>
+#include <GL/glext.h>
+
+#ifdef WIN32
+#include <GL/wglext.h>
+#else
+#include <GL/glx.h>
+#endif
+
 #include "msg.h"
 #include "core.h"
 #include "gui_style.h"
 #include "file_io.h"
 #include "event.h"
 #include "gfx.h"
+#include "texman.h"
+#include "extensions.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
 /*! @class engine
  *  @brief main engine
- *  @author laxity
  *  @author flo
- *  @version 0.3.1
+ *  @author laxity
  *  @todo more functions
- *  
+ *
  *  the main engine
  */
 
@@ -82,6 +93,8 @@ public:
 	void set_fps_limit(unsigned int ms);
 	unsigned int get_fps_limit();
 
+	unsigned int get_init_mode();
+
 	// class return functions
 	core* get_core();
 	msg* get_msg();
@@ -89,6 +102,15 @@ public:
 	event* get_event();
 	gui_style* get_gui_style();
 	gfx* get_gfx();
+	texman* get_texman();
+	ext* get_ext();
+
+    // the initialization mode is used to determine if we should load
+    // or compute graphical stuff like textures or shaders
+	enum INIT_MODE {
+	    GRAPHICAL,
+	    CONSOLE
+	};
 
 protected:
 	core* c;
@@ -97,6 +119,8 @@ protected:
 	file_io* f;
 	event* e;
 	gfx* g;
+	texman* t;
+	ext* exts;
 
 	unsigned int width, height, depth, flags;
 	SDL_Surface* screen;
@@ -107,6 +131,8 @@ protected:
 	bool cursor_visible;
 
 	unsigned int fps_limit;
+
+	unsigned int mode;
 };
 
 #endif

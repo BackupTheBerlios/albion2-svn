@@ -45,18 +45,19 @@ public:
 
  	quaternion();
 	quaternion(float r, float x, float y, float z);
-	quaternion(quaternion& q);
+	quaternion(const quaternion& q);
+	//quaternion(const quaternion q);
 	quaternion(float f, vertex3 v);
  	~quaternion();
 
-	quaternion operator=(quaternion& q);
-	quaternion operator+(quaternion& q);
-	quaternion operator-(quaternion& q);
-	quaternion operator*(quaternion& q);
+	quaternion operator=(const quaternion& q);
+	quaternion operator+(const quaternion& q);
+	quaternion operator-(const quaternion& q);
+	quaternion operator*(const quaternion& q);
 	quaternion operator*(float f);
 	quaternion operator/(quaternion& q);
-	quaternion operator+=(quaternion& q);
-	quaternion operator-=(quaternion& q);
+	quaternion operator+=(const quaternion& q);
+	quaternion operator-=(const quaternion& q);
 	quaternion operator*=(quaternion& q);
 	quaternion operator*=(float f);
 	quaternion operator/=(quaternion& q);

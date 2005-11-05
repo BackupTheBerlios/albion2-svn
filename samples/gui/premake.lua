@@ -15,9 +15,9 @@ if (OS == "windows") then
 	tinsert(package.config["Release"].defines, { "NDEBUG" })
 	tinsert(package.links, {"opengl32", "glu32", "glaux", "odbc32", "odbccp32", "SDL", "SDLmain", "SDL_net", "SDL_image", "ftgl_dynamic_MTD", "ode", "a2e"})
 else
-	tinsert(package.includepaths, {"../../src", "/usr/include/freetype2", "/usr/include/FTGL"})
-	tinsert(package.libpaths, {findlib("Xxf86vm"), "jpeglib", "zlib", "../../bin",})
+	tinsert(package.includepaths, {"../../src", "/usr/include", "/usr/include/freetype2", "/usr/include/FTGL", "/usr/include/ode", "/usr/include/opcode", "/usr/include/opcode/ICE"})
+	tinsert(package.libpaths, {"jpeglib", "zlib", "../../lib", findlib("GL"), findlib("GLU"), findlib("SDL"), findlib("ftgl"), findlib("ode"), findlib("OPCODE")})
 	tinsert(package.buildoptions, "-Os -c `sdl-config --cflags`")
-	tinsert(package.linkoptions, "`sdl-config --libs`")
-	tinsert(package.links, {"GL", "GLU", "Xxf86vm", "z", "jpeg", "a2e", "SDL_net", "SDL_image", "ode", "OPCODE", "freetype", "ftgl"})
+	tinsert(package.linkoptions, "-fPic `sdl-config --libs`")
+	tinsert(package.links, {"GL", "GLU", "z", "jpeg", "a2e", "SDL_net", "SDL_image", "ode", "OPCODE", "freetype", "ftgl"})
 end

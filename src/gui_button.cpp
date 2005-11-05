@@ -28,6 +28,8 @@ gui_button::gui_button(engine* e) {
 	gui_button::c = e->get_core();
 	gui_button::m = e->get_msg();
 	gui_button::g = e->get_gfx();
+
+	gui_button::pressed = false;
 }
 
 /*! there is no function currently

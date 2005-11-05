@@ -44,7 +44,7 @@ gui_window::gui_window(engine* e) {
 gui_window::~gui_window() {
 	m->print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
 
-	delete gui_window::caption;
+	delete [] gui_window::caption;
 
 	m->print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
 }

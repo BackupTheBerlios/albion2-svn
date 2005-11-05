@@ -48,15 +48,27 @@ public:
 
 	GLuint* get_texture(unsigned int num);
 
+	char get_material_type();
+
+	enum MAT_TYPES {
+		NONE = 0x00,
+		DIFFUSE = 0x01,
+		BUMP = 0x02,
+		PARALLAX = 0x03
+	};
+
 protected:
 	msg* m;
 	core* c;
 	file_io* file;
 	engine* e;
+	texman* t;
 
 	unsigned int texture_count;
 	char** tex_names;
 	GLuint* textures;
+
+	char mat_type;
 
 };
 

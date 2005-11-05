@@ -14,11 +14,55 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef __TEXMAN_H__
+#define __TEXMAN_H__
+
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 #include <iostream>
-#include <SDL/SDL.h>
+#include "msg.h"
+#include <SDL/SDL_image.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 using namespace std;
+
+#include "win_dll_export.h"
+
+/*! @class texman
+ *  @brief texture management routines
+ *  @author flo
+ *  @version 0.1
+ *  @todo nothing atm
+ *  
+ *  the texman class
+ */
+
+class A2E_API texman
+{
+protected:
+	struct texture;
+public:
+	texman(msg* m);
+	~texman();
+
+	unsigned int add_texture(char* filename, GLint components = 3, GLenum format = GL_RGB);
+	texture* get_texture(unsigned int num);
+
+protected:
+	msg* m;
+
+	struct texture {
+		char* filename;
+		GLuint tex;
+		unsigned int width;
+		unsigned int height;
+	};
+
+	unsigned int ctextures;
+	texture* textures;
+
+};
 
 #endif

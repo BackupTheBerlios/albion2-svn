@@ -46,16 +46,9 @@ unsigned int* indices3[MAX_OBJS];
 unsigned int* texindices1[MAX_OBJS];
 unsigned int* texindices2[MAX_OBJS];
 unsigned int* texindices3[MAX_OBJS];
-unsigned int* normindices1[MAX_OBJS];
-unsigned int* normindices2[MAX_OBJS];
-unsigned int* normindices3[MAX_OBJS];
 unsigned int* tex_number;
 unsigned int* texcords1;
 unsigned int* texcords2;
-unsigned int* texcords3;
-unsigned int* normcords1;
-unsigned int* normcords2;
-unsigned int* normcords3;
 
 unsigned int material_count = 0;
 unsigned int texture_count = 0;

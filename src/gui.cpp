@@ -26,8 +26,34 @@ gui::gui(engine* e) {
 	//char* ib_text = (char*)malloc(1024);
 	ib_text_length = 0;
 	//char* set_text = (char*)malloc(1028);
-	for(unsigned int i = 0; i < 1028; i++) {
-        set_text[i] = 0;
+
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_buttons[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_texts[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_input_boxes[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_list_boxes[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_vbars[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_check_boxes[i] = NULL;
+	}
+
+	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
+		gui_windows[i] = NULL;
 	}
 
 	// set current active window id to zero
@@ -48,34 +74,34 @@ gui::~gui() {
 
 	delete p;
 	delete r;
-	delete input_text;
+	delete [] input_text;
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-		delete gui_buttons[i];
+		if(gui_buttons[i] != NULL) { delete gui_buttons[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-        delete gui_texts[i];
+        if(gui_texts[i] != NULL) { delete gui_texts[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-        delete gui_input_boxes[i];
+        if(gui_input_boxes[i] != NULL) { delete gui_input_boxes[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-        delete gui_list_boxes[i];
+        if(gui_list_boxes[i] != NULL) { delete gui_list_boxes[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-        delete gui_vbars[i];
+        if(gui_vbars[i] != NULL) { delete gui_vbars[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-        delete gui_check_boxes[i];
+        if(gui_check_boxes[i] != NULL) { delete gui_check_boxes[i]; }
 	}
 
 	for(unsigned int i = 0; i < MAX_ELEMENTS; i++) {
-		delete gui_windows[i];
+		if(gui_windows[i] != NULL) { delete gui_windows[i]; }
 	}
 
 	m->print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
@@ -358,7 +384,7 @@ void gui::draw() {
 						else {
 							gui::gui_input_boxes[gui::gui_elements[i].num]->set_active(false);
 						}
-						
+
 						gui::gui_input_boxes[gui::gui_elements[i].num]->draw(wp->x, wp->y);
 					}
 					break;
@@ -476,7 +502,7 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned in
 	gui::gui_elements[celements].num = cbuttons;
 	gui::gui_elements[celements].wid = wid;
 	gui::gui_elements[celements].is_drawn = true;
-	
+
 	// celements has to be incremented _before_ we add the text, otherwise
 	// our button stuff will be overwritten
 	celements++;
@@ -521,10 +547,10 @@ gui_button* gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, u
  */
 gui_text* gui::add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid) {
-	SDL_Color col;
-	col.r = (color & 0xFF0000) >> 16;
-	col.g = (color & 0x00FF00) >> 8;
-	col.b = color & 0x0000FF;
+	SDL_Color* col = new SDL_Color();
+	col->r = (color & 0xFF0000) >> 16;
+	col->g = (color & 0x00FF00) >> 8;
+	col->b = color & 0x0000FF;
 
 	gui::gui_elements[celements].id = id;
 	gui::gui_elements[celements].type = gui::TEXT;
@@ -561,7 +587,7 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text,
 	gui::gui_elements[celements].num = cinput_boxes;
 	gui::gui_elements[celements].wid = wid;
 	gui::gui_elements[celements].is_drawn = true;
-	
+
 	// celements has to be incremented _before_ we add the text, otherwise
 	// our input box stuff will be overwritten
 	celements++;
@@ -597,7 +623,7 @@ gui_input* gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text,
  *  @param text the list boxes text
  *  @param wid the id of the window we want the element to be in (0 = no window)
  */
-gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid) {
+gui_list* gui::add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wid) {
 	gui::gui_elements[celements].id = id;
 	gui::gui_elements[celements].type = gui::LIST;
 	gui::gui_elements[celements].num = clist_boxes;
@@ -664,7 +690,7 @@ gui_check* gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text,
 	gui::gui_elements[celements].num = ccboxes;
 	gui::gui_elements[celements].wid = wid;
 	gui::gui_elements[celements].is_drawn = true;
-	
+
 	// celements has to be incremented _before_ we add the text, otherwise
 	// our check box stuff will be overwritten
 	celements++;
@@ -699,7 +725,7 @@ gui_window* gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption
 	gui::gui_elements[celements].num = cwindows;
 	gui::gui_elements[celements].wid = id;
 	gui::gui_elements[celements].is_drawn = true;
-	
+
 	// celements has to be incremented _before_ we add the text, otherwise
 	// our button stuff will be overwritten
 	celements++;

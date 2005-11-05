@@ -28,7 +28,6 @@
 #include <engine.h>
 #include <msg.h>
 #include <core.h>
-#include <net.h>
 #include <gfx.h>
 #include <event.h>
 #include <camera.h>
@@ -37,6 +36,7 @@
 #include <ode.h>
 #include <ode_object.h>
 #include <light.h>
+#include <shader.h>
 using namespace std;
 
 enum cam_type {
@@ -50,14 +50,13 @@ enum cam_type {
 void update_cam(cam_type ctype);
 
 msg* m;
-net* n;
 core* c;
 engine* e;
-gfx* agfx;
 event* aevent;
 camera* cam;
 ode* o;
 scene* sce;
+shader* s;
 
 a2emodel* level;
 a2emodel* sphere;

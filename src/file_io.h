@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "msg.h"
 #include <SDL/SDL.h>
 using namespace std;
 
@@ -36,7 +37,7 @@ using namespace std;
 class A2E_API file_io
 {
 public:
-	file_io();
+	file_io(msg* m);
 	~file_io();
 
 	void open_file(char* filename, bool binary);
@@ -53,6 +54,7 @@ public:
 	void write_block(char* data, unsigned int size);
 
 protected:
+	msg* m;
 	fstream filestream;
 
 };

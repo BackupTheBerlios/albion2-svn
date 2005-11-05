@@ -22,7 +22,6 @@
 #endif
 
 #define MAX_CLIENTS 32
-#define PORT 1337
 #define OBJECTS 64
 
 #include <iostream>
@@ -42,25 +41,39 @@
 #include <ode.h>
 #include <ode_object.h>
 #include <light.h>
+#include <shader.h>
 using namespace std;
 
 enum DATA_TYPE {
 	DT_MSG,
 	DT_MOVE,
-	DT_UPDATE
+	DT_UPDATE,
+	DT_MOTION
 };
 
-enum MOVE_TYPE {
+enum CONTROL_STATES {
+	// move states
 	MV_FORWARD,
 	MV_BACKWARD,
 	MV_LEFT,
-	MV_RIGHT
+	MV_RIGHT,
+
+	// status states
+	ST_OFFLINE,
+	ST_ONLINE,
+
+	// motion states
+	MT_STANDING,
+	MT_SITTING,
+	MT_MOVING,
+	MT_JUMPING
 };
 
 struct client {
 	unsigned int id;
 	char* name;
 	unsigned int status;
+	unsigned int motion;
 	vertex3* position;
 	float rotation;
 	unsigned int host;
@@ -69,19 +82,22 @@ struct client {
 	core::pnt* text_point;
 	gui_text* text;
 
-	a2emodel* model;
+	a2eanim* model;
+	a2ematerial* mat;
 };
 
 int handle_server_data(char *data);
-void handle_server(void);
+void handle_server();
 void send_msg();
 void add_msg(unsigned int length, char* msg, ...);
 void update();
-void move(MOVE_TYPE type);
+void move(CONTROL_STATES type);
+void set_motion(CONTROL_STATES type);
 void init();
 void update_names();
 void draw_names();
 void delete_player(unsigned int num);
+void handle_cam();
 
 msg* m;
 net* n;
@@ -92,9 +108,13 @@ event* aevent;
 camera* cam;
 file_io* fio;
 gui* agui;
+shader* s;
 
 scene* sce;
 
+a2ematerial* level_mat;
+a2ematerial* scale_mat;
+a2ematerial* player_mat;
 a2emodel* level;
 a2emodel* sphere;
 
@@ -130,6 +150,7 @@ unsigned int port = 0;
 unsigned int width = 640;
 unsigned int height = 480;
 unsigned int depth = 24;
+bool fullscreen = false;
 
 light* l1;
 light* player_light;
@@ -143,5 +164,11 @@ gui_list* chat_msg_list;
 gui_input* chat_msg_input;
 gui_button* chat_msg_send;
 unsigned int lid = 0;
+
+float direction = 0.0f;
+float ydirection = 0.0f;
+
+bool netlog = false;
+unsigned int fpslim = 0;
 
 #endif

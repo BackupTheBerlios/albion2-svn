@@ -41,7 +41,7 @@ quaternion::quaternion(float r, float x, float y, float z) {
 /*! creates a quaternion object
  *  @param q another quaternion that you want to copy
  */
-quaternion::quaternion(quaternion& q) {
+quaternion::quaternion(const quaternion& q) {
 	quaternion::r = q.r;
 	quaternion::x = q.x;
 	quaternion::y = q.y;
@@ -63,7 +63,7 @@ quaternion::~quaternion() {
 
 /*! = operator overload
  */
-quaternion quaternion::operator=(quaternion& q) {
+quaternion quaternion::operator=(const quaternion& q) {
 	quaternion::r = q.r;
 	quaternion::x = q.x;
 	quaternion::y = q.y;
@@ -73,19 +73,19 @@ quaternion quaternion::operator=(quaternion& q) {
 
 /*! + operator overload
  */
-quaternion quaternion::operator+(quaternion& q) {
-	return quaternion(quaternion::r + q.r, quaternion::x + q.x, quaternion::y + q.y, quaternion::z + q.z);
+quaternion quaternion::operator+(const quaternion& q) {
+	return quaternion(r + q.r, x + q.x, y + q.y, z + q.z);
 }
 
 /*! - operator overload
  */
-quaternion quaternion::operator-(quaternion& q) {
+quaternion quaternion::operator-(const quaternion& q) {
 	return quaternion(quaternion::r - q.r, quaternion::x - q.x, quaternion::y - q.y, quaternion::z - q.z);
 }
 
 /*! * operator overload
  */
-quaternion quaternion::operator*(quaternion& q) {
+quaternion quaternion::operator*(const quaternion& q) {
 	return quaternion(quaternion::r * q.r - quaternion::x * q.x - quaternion::y * q.y - quaternion::z * q.z, 
 				quaternion::r * q.x + quaternion::x * q.r + quaternion::y * q.z - quaternion::z * q.y,
 				quaternion::r * q.y + quaternion::y * q.r + quaternion::z * q.x - quaternion::x * q.z,
@@ -106,7 +106,7 @@ quaternion quaternion::operator/(quaternion& q) {
 
 /*! += operator overload
  */
-quaternion quaternion::operator+=(quaternion& q) {
+quaternion quaternion::operator+=(const quaternion& q) {
 	quaternion::r += q.r;
 	quaternion::x += q.x;
 	quaternion::y += q.y;
@@ -116,7 +116,7 @@ quaternion quaternion::operator+=(quaternion& q) {
 
 /*! -= operator overload
  */
-quaternion quaternion::operator-=(quaternion& q) {
+quaternion quaternion::operator-=(const quaternion& q) {
 	quaternion::r -= q.r;
 	quaternion::x -= q.x;
 	quaternion::y -= q.y;

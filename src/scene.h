@@ -25,7 +25,8 @@
 #include "a2emodel.h"
 #include "a2eanim.h"
 #include "light.h"
-#include <math.h>
+#include "shader.h"
+#include <cmath>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -33,7 +34,6 @@ using namespace std;
 /*! @class scene
  *  @brief a2e scene manager
  *  @author flo
- *  @version 0.2
  *  @todo more functions
  *  
  *  the scene manager class
@@ -42,7 +42,7 @@ using namespace std;
 class A2E_API scene
 {
 public:
-	scene(engine* e);
+	scene(engine* e, shader* s);
 	~scene();
 
 	a2eanim* create_a2eanim();
@@ -52,6 +52,7 @@ public:
 	void add_model(a2emodel* model);
 	void add_model(a2eanim* model);
 	void delete_model(a2emodel* model);
+	void delete_model(a2eanim* model);
 	void add_light(light* light);
 
 	void set_position(float x, float y, float z);
@@ -72,6 +73,7 @@ protected:
 	msg* m;
 	core* c;
 	engine* e;
+	shader* s;
 
 	vertex3* position;
 

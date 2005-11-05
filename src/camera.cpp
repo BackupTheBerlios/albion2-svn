@@ -78,13 +78,13 @@ void camera::run() {
 		
 		if(evt->is_key_up()) {
 			position->x += (float)sin(rotation->y * piover180) * 0.75f;
-			position->y += (float)sin(rotation->x * piover180) * 0.75f;
+			position->y -= (float)sin(rotation->x * piover180) * 0.75f;
 			position->z += (float)cos(rotation->y * piover180) * 0.75f;
 		}
 		
 		if(evt->is_key_down()) {
 			position->x -= (float)sin(rotation->y * piover180) * 0.75f;
-			position->y -= (float)sin(rotation->x * piover180) * 0.75f;
+			position->y += (float)sin(rotation->x * piover180) * 0.75f;
 			position->z -= (float)cos(rotation->y * piover180) * 0.75f;
 		}
 	}
@@ -124,7 +124,7 @@ void camera::run() {
 	glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
 
 	// reposition
-	e->set_position(camera::position->x, -camera::position->y, camera::position->z);
+	e->set_position(camera::position->x, camera::position->y, camera::position->z);
 }
 
 /*! sets the position of the camera

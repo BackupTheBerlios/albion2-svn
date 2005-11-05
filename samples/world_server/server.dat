@@ -1,0 +1,9 @@
+[enginedata]
+netlog=1
+
+[serverdata]
+port=1338
+max_players=32
+max_objects=64
+
+[EOF]

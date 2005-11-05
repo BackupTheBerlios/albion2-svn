@@ -4,35 +4,37 @@ ifndef CONFIG
   CONFIG=Debug
 endif
 
+# Forward declare all of my variables
 OUTDIR =
+OBJDIR =
 BINDIR =
 LIBDIR =
 CFLAGS =
 CPPFLAGS =
-LDFLAGS = -L$(BINDIR) -L$(LIBDIR)
+LDFLAGS =
 ifeq ($(CONFIG),Debug)
-BINDIR = ../bin
-LIBDIR = ../lib
-OUTDIR = $(BINDIR)
-OBJDIR = obj
+  BINDIR = ../bin
+  LIBDIR = ../lib
+  OUTDIR = $(LIBDIR)
+  OBJDIR = obj
 
-  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "A2E_EXPORTS" -D "_DEBUG"
-  CFLAGS += $(CPPFLAGS)
+  CPPFLAGS = -MD -I /usr/include -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include/ode -I /usr/include/opcode -I /usr/include/opcode/ICE
+  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
-  TARGET = ./a2e.dll
+  LDFLAGS +=  -fPic `sdl-config --libs` -L /usr/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
+  TARGET = ./liba2e.a
 endif
 ifeq ($(CONFIG),Release)
-BINDIR = ../bin
-LIBDIR = ../lib
-OUTDIR = $(BINDIR)
-OBJDIR = obj
+  BINDIR = ../bin
+  LIBDIR = ../lib
+  OUTDIR = $(LIBDIR)
+  OBJDIR = obj
 
-  CPPFLAGS = -MD -D "WIN32" -D "_CONSOLE" -D "A2E_EXPORTS" -D "NDEBUG"
-  CFLAGS += $(CPPFLAGS) -O2
+  CPPFLAGS = -MD -I /usr/include -I /usr/include/freetype2 -I /usr/include/FTGL -I /usr/include/ode -I /usr/include/opcode -I /usr/include/opcode/ICE
+  CFLAGS += $(CPPFLAGS) `sdl-config --cflags` -Wall -O2
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -lopengl32 -lglu32 -lglaux -lodbc32 -lodbccp32 -lSDL -lSDLmain -lSDL_net -lSDL_image -lftgl_dynamic_MTD -lode
-  TARGET = ./a2e.dll
+  LDFLAGS +=  -fPic `sdl-config --libs` -L /usr/lib -L /usr/lib -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl
+  TARGET = ./liba2e.a
 endif
 
 $(OBJDIR)/%.o : %.cc
@@ -86,11 +88,14 @@ $(OBJDIR)/%.o : %.s
 	rm -f $(OBJDIR)/$*.d
 
 OBJECTS = \
+	$(OBJDIR)/a2eanim.o \
+	$(OBJDIR)/a2ematerial.o \
 	$(OBJDIR)/a2emodel.o \
 	$(OBJDIR)/camera.o \
 	$(OBJDIR)/core.o \
 	$(OBJDIR)/engine.o \
 	$(OBJDIR)/event.o \
+	$(OBJDIR)/extensions.o \
 	$(OBJDIR)/file_io.o \
 	$(OBJDIR)/gfx.o \
 	$(OBJDIR)/gui.o \
@@ -105,13 +110,15 @@ OBJECTS = \
 	$(OBJDIR)/gui_window.o \
 	$(OBJDIR)/image.o \
 	$(OBJDIR)/light.o \
-	$(OBJDIR)/main.o \
 	$(OBJDIR)/msg.o \
 	$(OBJDIR)/net.o \
 	$(OBJDIR)/ode.o \
 	$(OBJDIR)/ode_object.o \
+	$(OBJDIR)/quaternion.o \
 	$(OBJDIR)/scene.o \
-	$(OBJDIR)/shadow.o \
+	$(OBJDIR)/shader.o \
+	$(OBJDIR)/texman.o \
+	$(OBJDIR)/vertex3.o \
 
 VPATH =
 
@@ -121,7 +128,8 @@ $(OUTDIR)/$(TARGET): $(OBJECTS)
 	@echo Linking a2e
 	-@if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
 	-@if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
-	@$(CXX) -o $@ $(filter-out %.so, $^) $(LDFLAGS)
+	@ar -cr $@ $^
+	@ranlib $@
 
 clean:
 	@echo Cleaning a2e

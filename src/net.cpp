@@ -23,6 +23,11 @@ using namespace std;
  */
 net::net(engine* e) {
 	max_clients = MAX_CLIENTS;
+	header = 0x41324557;
+
+	netlog = false;
+	logfile = new fstream();
+	logfile->open("netlog.txt", fstream::out);
 
 	// get classes
 	net::e = e;
@@ -34,6 +39,8 @@ net::net(engine* e) {
 net::~net() {
 	m->print(msg::MDEBUG, "net.cpp", "freeing net stuff");
 
+	logfile->close();
+	delete logfile;
 
 	m->print(msg::MDEBUG, "net.cpp", "net stuff freed");
 }
@@ -42,7 +49,7 @@ net::~net() {
  */
 bool net::init() {
 	if(SDLNet_Init() == -1) {
-		m->print(msg::MERROR, "net.cpp", "SDLNet_Init", "%s", SDLNet_GetError());
+		m->print(msg::MERROR, "net.cpp", "SDLNet_Init: %s", SDLNet_GetError());
 		return false;
 	}
 
@@ -55,7 +62,7 @@ void net::exit() {
 	SDLNet_Quit();
 
 	if(clients) {
-		delete clients;
+		delete [] clients;
 	}
 }
 
@@ -97,7 +104,7 @@ bool net::create_server(unsigned int type, unsigned short int port, const unsign
 			}
 			SDLNet_TCP_AddSocket(socketset, tcp_ssock);
 
-			// everything is set up now - the clients are now able to connect to the server 
+			// everything is set up now - the clients are now able to connect to the server
 
 			break;
 		case net::UDP:
@@ -183,7 +190,7 @@ bool net::create_client(char* server, unsigned int type, unsigned short int port
 void net::handle_server() {
 	TCPsocket tmpsock;
 	unsigned int cur_client;
-	unsigned char data;
+	char* data = new char[1];
 
 	tmpsock = SDLNet_TCP_Accept(tcp_ssock);
 	if(tmpsock == NULL) {
@@ -202,8 +209,8 @@ void net::handle_server() {
 		for(cur_client = 0; cur_client < net::max_clients; ++cur_client) {
 			if(clients[cur_client].sock && !clients[cur_client].is_active) {
 				// kick this client
-				data = net::KICK;
-				SDLNet_TCP_Send(clients[cur_client].sock, &data, 1);
+				data[0] = net::KICK;
+				send_packet(&clients[cur_client].sock, data, 1, cur_client);
 				SDLNet_TCP_DelSocket(socketset, clients[cur_client].sock);
 				SDLNet_TCP_Close(clients[cur_client].sock);
 				m->print(msg::MDEBUG, "net.cpp", "inactive client (%d) was kicked", cur_client);
@@ -214,8 +221,8 @@ void net::handle_server() {
 
 	if(cur_client == net::max_clients) {
 		// the server doesn't permit any further connections
-		data = net::KICK;
-		SDLNet_TCP_Send(tmpsock, &data, 1);
+		data[0] = net::KICK;
+		send_packet(&tmpsock, data, 1, 0xFFFFFFFF);
 		SDLNet_TCP_Close(tmpsock);
 		m->print(msg::MDEBUG, "net.cpp", "connection refused: server doesn't permit any further connections");
 	}
@@ -238,7 +245,7 @@ void net::handle_client(unsigned int cur_client) {
 	char cdata[32];
 
 	// checks if connection has been closed
-	if(SDLNet_TCP_Recv(clients[cur_client].sock, data, 512) <= 0) {
+	if(recv_packet(&clients[cur_client].sock, data, 512, cur_client) <= 0) {
         m->print(msg::MDEBUG, "net.cpp", "closing %s socket (%d)",
 			clients[cur_client].is_active ? "active" : "inactive", cur_client);
 		// send delete data to all clients
@@ -248,7 +255,7 @@ void net::handle_client(unsigned int cur_client) {
 			data[1] = cur_client;
 			for(unsigned int i = 0; i < net::max_clients; ++i) {
 				if(clients[i].is_active) {
-					SDLNet_TCP_Send(clients[i].sock, data, 2);
+					send_packet(&clients[i].sock, data, 2, i);
 				}
 			}
 		}
@@ -263,7 +270,8 @@ void net::handle_client(unsigned int cur_client) {
 				// send max client data (for the future maybe other stuff too)
 				cdata[0] = net::CDAT;
 				cdata[1] = net::max_clients;
-				SDLNet_TCP_Send(clients[cur_client].sock, cdata, 2);
+				cdata[2] = cur_client;
+				send_packet(&clients[cur_client].sock, cdata, 3, cur_client);
 
 				// get client data
 				memcpy(&clients[cur_client].ip.port, &data[1], 2);
@@ -315,7 +323,7 @@ void net::handle_client(unsigned int cur_client) {
 				// send package to all clients except the one who send the data
 				for(unsigned int i = 0; i < net::max_clients; i++) {
 					if(clients[i].is_active && i != cur_client) {
-						SDLNet_TCP_Send(clients[i].sock, ndata, len+1 + 6);
+						send_packet(&clients[i].sock, ndata, len+1 + 6, i);
 					}
 				}
 			}
@@ -345,7 +353,7 @@ void net::send_new_client(unsigned int snd_client, unsigned int rcv_client) {
 	data[8] = n;
 	data[9+n] = 0;
 	memcpy(&data[9], clients[snd_client].name, n);
-	SDLNet_TCP_Send(clients[rcv_client].sock, data, 9+n);
+	send_packet(&clients[rcv_client].sock, data, 9+n, rcv_client);
 }
 
 /*! checks if a client has send an event
@@ -388,7 +396,7 @@ void net::send_activation(char* client_name) {
 		data[4 + len++] = 0;
 
 		// send the package to the server
-		SDLNet_TCP_Send(tcp_ssock, data, 4 + len);
+		send_packet(&tcp_ssock, data, 4 + len, 0xFFFFFFFF);
 	}
 
 	return;
@@ -427,4 +435,193 @@ void net::delete_client(unsigned int num) {
 	for(unsigned int i = num; i < (MAX_CLIENTS-1); i++) {
 		clients[i] = clients[i+1];
 	}
+}
+
+void net::send_packet(TCPsocket* sock, char* data, int len, unsigned int client_num) {
+	char* packet = new char[len+4];
+
+	// add the header to the packet
+	memcpy(&packet[0], &header, 4);
+
+	// reorder the packet data
+	for(int i = 0; i < len; i++) {
+		memcpy(&packet[i+4], &data[i], 1);
+	}
+
+	// send the packet
+	SDLNet_TCP_Send(*sock, packet, len+4);
+
+	if(net::netlog) {
+		char* dbg = new char[(len-4)*3+20];
+		dbg[0] = 0;
+		for(int i = 0; i < (len-4); i++) {
+			sprintf(dbg, "%s %X\0", dbg, (unsigned int)(data[i] & 0xFF));
+		}
+
+		time_t rawtime;
+		struct tm* tinfo;
+		time(&rawtime);
+		tinfo = localtime(&rawtime);
+
+		*(net::logfile) << "<";
+
+		if(tinfo->tm_mday < 10) {
+			*(net::logfile) << "0" << tinfo->tm_mday << ".";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_mday << ".";
+		}
+
+		if((tinfo->tm_mon+1) < 10) {
+			*(net::logfile) << "0" << (tinfo->tm_mon+1) << ".";
+		}
+		else {
+			*(net::logfile) << (tinfo->tm_mon+1) << ".";
+		}
+
+		*(net::logfile) << (tinfo->tm_year + 1900) << " ";
+
+		if(tinfo->tm_hour < 10) {
+			*(net::logfile) << "0" << tinfo->tm_hour << ":";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_hour << ":";
+		}
+
+		if(tinfo->tm_min < 10) {
+			*(net::logfile) << "0" << tinfo->tm_min << ":";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_min << ":";
+		}
+
+		if(tinfo->tm_sec < 10) {
+			*(net::logfile) << "0" << tinfo->tm_sec;
+		}
+		else {
+			*(net::logfile) << tinfo->tm_sec;
+		}
+
+		char* cnum = new char[64];
+		if(client_num != 0xFFFFFFFF) {
+            sprintf(cnum, "%s(%u)\0", clients[client_num].name, client_num);
+		}
+		else {
+            sprintf(cnum, "server\0");
+		}
+
+		*(net::logfile) << "> send packet (len: " << (len-4) << " / client: " << cnum << "): " << dbg << endl;
+
+		delete cnum;
+
+		delete dbg;
+	}
+
+	delete packet;
+}
+
+int net::recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int client_num) {
+	char* packet = new char[maxlen + 4];
+	unsigned int head = 0;
+
+	// receive the package
+	int len = SDLNet_TCP_Recv(*sock, packet, maxlen+4);
+	// received packet length is equal or less than zero -> return 0
+	if(len <= 0) {
+		return 0;
+	}
+
+	// check header, if it's false -> return 0
+	memcpy(&head, &packet[0], 4);
+	if(head != header) {
+		return 0;
+	}
+
+	// everything is okay, save packet to data and return the
+	// packet length subtracted by the header length
+	for(int i = 0; i < (len-4); i++) {
+		memcpy(&data[i], &packet[i+4], 1);
+	}
+
+	if(net::netlog) {
+		char* dbg = new char[(len-4)*3+20];
+		dbg[0] = 0;
+		for(int i = 0; i < (len-4); i++) {
+			sprintf(dbg, "%s %X\0", dbg, (unsigned int)(data[i] & 0xFF));
+		}
+
+		time_t rawtime;
+		struct tm* tinfo;
+		time(&rawtime);
+		tinfo = localtime(&rawtime);
+
+		*(net::logfile) << "<";
+
+		if(tinfo->tm_mday < 10) {
+			*(net::logfile) << "0" << tinfo->tm_mday << ".";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_mday << ".";
+		}
+
+		if((tinfo->tm_mon+1) < 10) {
+			*(net::logfile) << "0" << (tinfo->tm_mon+1) << ".";
+		}
+		else {
+			*(net::logfile) << (tinfo->tm_mon+1) << ".";
+		}
+
+		*(net::logfile) << (tinfo->tm_year + 1900) << " ";
+
+		if(tinfo->tm_hour < 10) {
+			*(net::logfile) << "0" << tinfo->tm_hour << ":";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_hour << ":";
+		}
+
+		if(tinfo->tm_min < 10) {
+			*(net::logfile) << "0" << tinfo->tm_min << ":";
+		}
+		else {
+			*(net::logfile) << tinfo->tm_min << ":";
+		}
+
+		if(tinfo->tm_sec < 10) {
+			*(net::logfile) << "0" << tinfo->tm_sec;
+		}
+		else {
+			*(net::logfile) << tinfo->tm_sec;
+		}
+
+		char* cnum = new char[64];
+		if(client_num != 0xFFFFFFFF) {
+            sprintf(cnum, "%s(%u)\0", clients[client_num].name, client_num);
+		}
+		else {
+            sprintf(cnum, "server\0");
+		}
+
+		*(net::logfile) << "> recv packet (len: " << (len-4) << " / client: " << cnum << "): " << dbg << endl;
+
+		delete cnum;
+
+		delete dbg;
+	}
+
+	delete packet;
+	return (len-4);
+}
+
+/*! sets the netlog state
+ *  @param state the state of logging (true = enabled, false = disabled)
+ */
+void net::set_netlog(bool state) {
+	net::netlog = state;
+}
+
+/*! returns true if network logging is enabled and false if it is disabled
+ */
+bool net::get_netlog() {
+	return net::netlog;
 }

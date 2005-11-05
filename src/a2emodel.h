@@ -34,6 +34,8 @@
 #include "vertex3.h"
 #include "file_io.h"
 #include "engine.h"
+#include "a2ematerial.h"
+#include "shader.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -50,21 +52,22 @@ using namespace std;
 class A2E_API a2emodel
 {
 public:
-	a2emodel(engine* e);
+	a2emodel(engine* e, shader* s);
 	~a2emodel();
 
 	void load_model(char* filename);
 	void draw();
-	void load_textures();
 	void set_position(float x, float y, float z);
 	vertex3* get_position();
 	void set_scale(float x, float y, float z);
+	void set_hard_scale(float x, float y, float z);
 	vertex3* get_scale();
 	void set_rotation(float x, float y, float z);
 	vertex3* get_rotation();
 
 	vertex3* get_vertices();
 	core::index* get_indices();
+	core::index* get_tex_indices();
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
 
@@ -77,20 +80,29 @@ public:
 	void set_visible(bool state);
 	bool get_visible();
 
+	void set_material(a2ematerial* material);
+
 	// stuff for collision detection
 	void set_radius(float radius);
 	void set_length(float length);
 	float get_radius();
 	float get_length();
 
-	// for debug purposes
-	void set_texture(GLuint texture, unsigned int num);
+	// used for parallax mapping
+	void generate_normal_list();
+	void generate_normals();
+
+	void set_light_color(float* lcol);
+	void set_light_position(vertex3* lpos);
 
 protected:
 	msg* m;
 	file_io* file;
 	core* c;
 	engine* e;
+	texman* t;
+	shader* s;
+	ext* exts;
 
 	char model_type[9];
 	char model_name[9];
@@ -98,14 +110,17 @@ protected:
 	vertex3* vertices;
 	unsigned int texture_count;
 	char* tex_names[MAX_OBJS];
-	unsigned int normal_count;
 	unsigned int object_count;
 	char* obj_names[MAX_OBJS];
 	unsigned int* index_count;
 	unsigned int* tex_value;
+	unsigned int tex_vertex_count;
+	core::coord* tex_coords;
 	core::index* indices[MAX_OBJS];
-	core::triangle* tex_cords[MAX_OBJS];
-	core::triangle* normals[MAX_OBJS];
+	core::index* tex_indices[MAX_OBJS];
+	vertex3* normals;
+	vertex3* binormals;
+	vertex3* tangents;
 
 	GLuint textures[MAX_OBJS];
 
@@ -117,11 +132,24 @@ protected:
 
 	bool draw_wireframe;
 
-	bool visible;
+	bool is_visible;
+
+	bool is_material;
+	a2ematerial* material;
 
 	// some variables for collision detection
 	float radius;
 	float length;
+
+	// normal stuff
+	struct nlist {
+		unsigned int* num;
+		unsigned int count;
+	};
+    nlist* normal_list;
+
+	float* light_color;
+	vertex3* light_position;
 };
 
 #endif

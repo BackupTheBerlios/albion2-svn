@@ -149,8 +149,8 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 	delete p1;
 	delete r1;
 
-	delete ids;
-	delete new_ids;
+	delete [] ids;
+	delete [] new_ids;
 
 	// vbar handling
 	gui_list::set_position(vbar_handler->get_position());
@@ -244,10 +244,10 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 		}
 	}
 
-	SDL_Color col;
-	col.b = e->get_gui_style()->STYLE_FONT & 0xFF;
-	col.g = (e->get_gui_style()->STYLE_FONT & 0xFF00) >> 8;
-	col.r = (e->get_gui_style()->STYLE_FONT & 0xFF0000) >> 16;
+	SDL_Color* col = new SDL_Color();
+	col->b = e->get_gui_style()->STYLE_FONT & 0xFF;
+	col->g = (e->get_gui_style()->STYLE_FONT & 0xFF00) >> 8;
+	col->r = (e->get_gui_style()->STYLE_FONT & 0xFF0000) >> 16;
 
 	gui_text* gtext = new gui_text(e);
 

@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MODEL_LOADER_H__
 #define __MODEL_LOADER_H__
 
@@ -35,6 +35,7 @@
 #include <ode.h>
 #include <ode_object.h>
 #include <light.h>
+#include <shader.h>
 using namespace std;
 
 engine* e;
@@ -44,7 +45,7 @@ gfx* agfx;
 event* aevent;
 camera* cam;
 ode* o;
-
+shader* s;
 scene* sce;
 
 a2emodel* plane;

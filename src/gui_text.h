@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __GUI_TEXT_H__
 #define __GUI_TEXT_H__
 
@@ -33,7 +33,7 @@ using namespace std;
  *  @author flo
  *  @version 0.3.1
  *  @todo more functions
- *  
+ *
  *  the gui_text class
  */
 
@@ -63,7 +63,7 @@ public:
 	void set_id(unsigned int id);
 	void set_point(core::pnt* point);
 	void set_text(char* text);
-	void set_color(SDL_Color color);
+	void set_color(SDL_Color* color);
 	void set_color(unsigned int color);
 	void set_font_name(char* font_name);
 	void set_font_size(unsigned int font_size);
@@ -89,7 +89,7 @@ protected:
 	//! the text itself
 	char* text;
 	//! the texts color
-	SDL_Color color;
+	SDL_Color* color;
 	//! the font name
 	char* font_name;
 	//! the font size
