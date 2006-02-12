@@ -109,9 +109,27 @@ vertex3& vertex3::operator/=(float f) {
 	return *this;
 }
 
+/*! == operator overload
+ */
+bool vertex3::operator==(const vertex3& v) {
+	if(vertex3::x == v.x && vertex3::y == v.y && vertex3::z == v.z) {
+		return true;
+	}
+	return false;
+}
+
+/*! != operator overload
+ */
+bool vertex3::operator!=(const vertex3& v) {
+	if(vertex3::x == v.x && vertex3::y == v.y && vertex3::z == v.z) {
+		return false;
+	}
+	return true;
+}
+
 /*! << operator overload
  */
-std::ostream& operator<<(std::ostream& o, vertex3& v) {
+A2E_API ostream& operator<<(ostream& o, vertex3& v) {
 	o << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 	return o;
 }
@@ -140,4 +158,32 @@ vertex3 vertex3::operator^(const vertex3& v) {
  */
 float vertex3::operator*(vertex3& v) {
 	return (vertex3::x * v.x + vertex3::y * v.y + vertex3::z * v.z);
+}
+
+/*! adjusts the vertex3 object by another vertex3 object
+ */
+void vertex3::adjust(vertex3* v) {
+	vertex3::x *= v->x;
+	vertex3::y *= v->y;
+	vertex3::z *= v->z;
+}
+
+/*! sets the x, y and z value of the vertex to the specified parameters
+ *  @param x the x value
+ *  @param y the y value
+ *  @param z the z value
+ */
+void vertex3::set(float x, float y, float z) {
+	vertex3::x = x;
+	vertex3::y = y;
+	vertex3::z = z;
+}
+
+/*! sets the x, y and z value of the vertex to the specified parameters
+ *  @param v the vertex from which we want to overtake the x, y and z value
+ */
+void vertex3::set(vertex3* v) {
+	vertex3::x = v->x;
+	vertex3::y = v->y;
+	vertex3::z = v->z;
 }

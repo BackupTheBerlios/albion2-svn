@@ -24,6 +24,8 @@ float ode_object::density = 5.0f;
 ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	ode_object::world = world;
 	ode_object::space = space;
+	ode_object::dvertices = NULL;
+	ode_object::dindices = NULL;
 	ode_object::set_model(model);
 	ode_object::set_geom(ode_object::get_model(), type);
 	ode_object::body = 0;
@@ -66,6 +68,9 @@ ode_object::~ode_object() {
 	// destroy the trimesh
 	if(ode_object::trimesh) { dGeomTriMeshDataDestroy(ode_object::trimesh); }
 
+	if(ode_object::dvertices != NULL) { delete [] ode_object::dvertices; }
+	if(ode_object::dindices != NULL) { delete [] ode_object::dindices; }
+
 	m->print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }
 
@@ -88,10 +93,12 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			// because ode uses another vertex3/index store format,
 			// we need to convert the a2emodel vertices/indices
 			ode_object::dvertices = new dVector3[vertex_count];
+			unsigned int x = 0;
 			for(unsigned int i = 0; i < ode_object::vertex_count; i++) {
-				ode_object::dvertices[i][0] = vertices[i].x;
-				ode_object::dvertices[i][1] = vertices[i].y;
-				ode_object::dvertices[i][2] = vertices[i].z;
+				ode_object::dvertices[x][0] = vertices[i].x;
+				ode_object::dvertices[x][1] = vertices[i].y;
+				ode_object::dvertices[x][2] = vertices[i].z;
+				x++;
 			}
 
 			unsigned int j = 0;
@@ -122,6 +129,8 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			// set the geoms position
 			dGeomSetPosition(ode_object::geom, model->get_position()->x,
 				model->get_position()->y, model->get_position()->z);
+
+			delete [] indices;
 
 			// contact caching
 			/*dGeomTriMeshEnableTC(ode_object::geom, 0, 1);
@@ -274,6 +283,11 @@ void ode_object::set_mass(float mass) {
 }
 
 
+/*! adds a force to the object specified by x, y and z
+ *  @param x add force on the x axis
+ *  @param y add force on the y axis
+ *  @param z add force on the z axis
+ */
 void ode_object::add_force(float x, float y, float z) {
 	const dReal* cur_force = dBodyGetForce(ode_object::body);
 
@@ -299,6 +313,9 @@ void ode_object::add_force(float x, float y, float z) {
 	}
 }
 
+/*! sets the maximum force that the object can encounter
+ *  @param force the maximal force
+ */
 void ode_object::set_max_force(float force) {
 	ode_object::max_force = force;
 }

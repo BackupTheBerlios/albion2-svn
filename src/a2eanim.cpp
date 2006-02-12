@@ -40,6 +40,7 @@ a2eanim::a2eanim(engine* e, shader* s) {
 	canimations = 0;
 	current_animation = 0;
 	current_frame = 0;
+	last_frame = 0;
 	timer = SDL_GetTicks();
 
 	joints = NULL;
@@ -60,6 +61,11 @@ a2eanim::a2eanim(engine* e, shader* s) {
 	angle0 = 0.0f;
 
 	normal_list = NULL;
+
+	bbox = new core::aabbox();
+
+	init = false;
+	vbo = false;
 
 	// get classes
 	a2eanim::e = e;
@@ -99,6 +105,20 @@ a2eanim::~a2eanim() {
 		delete [] a2eanim::normal_list;
 	}
 
+	delete bbox;
+
+	// delete vbos
+	if(vbo) {
+		for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_vertices_id)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_vertices_id);
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_tex_coords_id)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_tex_coords_id);
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_normals_id)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_normals_id);
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_binormals_id)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_binormals_id);
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_tangents_id)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_tangents_id);
+			if(exts->glIsBufferARB(a2eanim::meshes[i].vbo_indices_ids)) exts->glDeleteBuffersARB(1, &a2eanim::meshes[i].vbo_indices_ids);
+		}
+	}
+
 	m->print(msg::MDEBUG, "a2eanim.cpp", "a2eanim stuff freed");
 }
 
@@ -109,6 +129,7 @@ void a2eanim::draw() {
 		// frame stuff
 		if(a2eanim::current_frame < a2eanim::end_frame &&
 			SDL_GetTicks() - a2eanim::timer > a2eanim::current_frame * a2eanim::animations[current_animation]->frame_time) {
+			a2eanim::last_frame = a2eanim::current_frame;
 			a2eanim::current_frame = (unsigned int)((float)(SDL_GetTicks() - a2eanim::timer) /
 				a2eanim::animations[current_animation]->frame_time);
 		}
@@ -138,119 +159,205 @@ void a2eanim::draw() {
 		// scale the model
 		glScalef(a2eanim::scale->x, a2eanim::scale->y, a2eanim::scale->z);
 
-		if(s->is_shader_support() && a2eanim::material->get_material_type() == a2ematerial::PARALLAX) {
+		if(!init) {
 			// generate the normals, binormals and tangents
 			generate_normals();
 
-			glEnable(GL_LIGHTING);
-			s->use_shader(1);
+			// create buffers
+			if(vbo) {
+				for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+					// vertices vbo
+					exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_vertices_id);
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
+					exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+						a2eanim::meshes[i].vertices, GL_DYNAMIC_DRAW_ARB);
 
-			s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
-			s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
+					// normals vbo
+					exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_normals_id);
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_normals_id);
+					exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+						a2eanim::meshes[i].normal[a2eanim::current_frame], GL_DYNAMIC_DRAW_ARB);
 
-			s->set_uniform1i(2, 0);
-			s->set_uniform1i(3, 1);
-			s->set_uniform1i(4, 2);
-			s->set_uniform4f(5, light_color[0], light_color[1], light_color[2], light_color[3]);
+					if(exts->is_shader_support()) {
+						// binormals vbo
+						exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_binormals_id);
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_binormals_id);
+						exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+							a2eanim::meshes[i].binormal[a2eanim::current_frame], GL_DYNAMIC_DRAW_ARB);
 
-			exts->glActiveTextureARB(GL_TEXTURE0_ARB);
-			glBindTexture(GL_TEXTURE_2D, *(a2eanim::material->get_texture(0)));
-			glEnable(GL_TEXTURE_2D);
-			exts->glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D, *(a2eanim::material->get_texture(1)));
-			glEnable(GL_TEXTURE_2D);
-			exts->glActiveTextureARB(GL_TEXTURE2_ARB);
-			glBindTexture(GL_TEXTURE_2D, *(a2eanim::material->get_texture(2)));
-			glEnable(GL_TEXTURE_2D);
-
-			for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glVertexPointer(3, GL_FLOAT, 0, a2eanim::meshes[i].vertices);
-
-				exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[0]);
-				exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].normal[a2eanim::current_frame]);
-				exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[1]);
-				exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].binormal[a2eanim::current_frame]);
-				exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[2]);
-				exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].tangent[a2eanim::current_frame]);
-				exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[3]);
-				exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].tex_coords);
-
-				glFrontFace(GL_CW);
-				glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, a2eanim::meshes[i].indices);
-				glFrontFace(GL_CCW);
-			}
-
-			exts->glActiveTextureARB(GL_TEXTURE2_ARB);
-			glDisable(GL_TEXTURE_2D);
-			exts->glActiveTextureARB(GL_TEXTURE1_ARB);
-			glDisable(GL_TEXTURE_2D);
-			exts->glActiveTextureARB(GL_TEXTURE0_ARB);
-			glDisable(GL_TEXTURE_2D);
-			glDisable(GL_LIGHTING);
-			s->use_shader(0);
-		}
-		else {
-			// generate the normals, binormals and tangents
-			generate_normals();
-
-			if(a2eanim::is_material) {
-				glBindTexture(GL_TEXTURE_2D, *(a2eanim::material->get_texture(0)));
-			}
-
-			glEnable(GL_LIGHTING);
-
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glEnable(GL_TEXTURE_2D);
-			for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
-				/*glBegin(GL_TRIANGLES);
-				for(unsigned int j = 0; j < a2eanim::meshes[i].triangle_count; j++) {
-					glNormal3f(a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i3].x,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i3].y,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i3].z); // normal
-
-					glTexCoord2f(a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i3].u,
-						a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i3].v);
-					glVertex3f(a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i3].x,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i3].y,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i3].z);
-
-
-					glNormal3f(a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i2].x,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i2].y,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i2].z); // normal
-
-					glTexCoord2f(a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i2].u,
-						a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i2].v);
-					glVertex3f(a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i2].x,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i2].y,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i2].z);
-
-
-					glNormal3f(a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i1].x,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i1].y,
-						a2eanim::meshes[i].normal[a2eanim::current_frame][a2eanim::meshes[i].indices[j].i1].z); // normal
-
-					glTexCoord2f(a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i1].u,
-						a2eanim::meshes[i].tex_coords[a2eanim::meshes[i].indices[j].i1].v);
-					glVertex3f(a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i1].x,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i1].y,
-						a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[j].i1].z);
+						// tangents vbo
+						exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_tangents_id);
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tangents_id);
+						exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+							a2eanim::meshes[i].tangent[a2eanim::current_frame], GL_DYNAMIC_DRAW_ARB);
+					}
 				}
-				glEnd();*/
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glEnableClientState(GL_NORMAL_ARRAY);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				glVertexPointer(3, GL_FLOAT, 0, a2eanim::meshes[i].vertices);
-				glNormalPointer(GL_FLOAT, 0, a2eanim::meshes[i].normal[a2eanim::current_frame]);
-				glTexCoordPointer(2, GL_FLOAT, 0, a2eanim::meshes[i].tex_coords);
-
-				glFrontFace(GL_CW);
-				glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, a2eanim::meshes[i].indices);
-				glFrontFace(GL_CCW);
 			}
-			glDisable(GL_TEXTURE_2D);
-			glDisable(GL_LIGHTING);
+
+			init = true;
+		}
+
+		if(last_frame != current_frame && vbo) {
+			for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+				// vertices vbo
+				exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
+				exts->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+					a2eanim::meshes[i].vertices);
+
+				// normals vbo
+				exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_normals_id);
+				exts->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+					a2eanim::meshes[i].normal[a2eanim::current_frame]);
+
+				if(exts->is_shader_support()) {
+					// binormals vbo
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_binormals_id);
+					exts->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+						a2eanim::meshes[i].binormal[a2eanim::current_frame]);
+
+					// tangents vbo
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tangents_id);
+					exts->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, a2eanim::meshes[i].vertex_count * 3 * sizeof(float),
+						a2eanim::meshes[i].tangent[a2eanim::current_frame]);
+				}
+			}
+		}
+
+		for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+			if(exts->is_shader_support() && a2eanim::material->get_material_type(i) == a2ematerial::PARALLAX) {
+				glEnable(GL_LIGHTING);
+				s->use_shader(1);
+
+				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
+				s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
+
+				s->set_uniform1i(2, 0);
+				s->set_uniform1i(3, 1);
+				s->set_uniform1i(4, 2);
+				s->set_uniform4f(5, light_color[0], light_color[1], light_color[2], light_color[3]);
+
+				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+				glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 0));
+				glEnable(GL_TEXTURE_2D);
+				exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+				glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 1));
+				glEnable(GL_TEXTURE_2D);
+				exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+				glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 2));
+				glEnable(GL_TEXTURE_2D);
+
+				if(a2eanim::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
+
+				if(vbo) {
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
+					glVertexPointer(3, GL_FLOAT, 0, NULL);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_normals_id);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[0]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_binormals_id);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[1]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+					
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tangents_id);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[2]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tex_coords_id);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[3]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+					glEnableClientState(GL_VERTEX_ARRAY);
+
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_indices_ids);
+					glFrontFace(GL_CW);
+					glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, NULL);
+					glFrontFace(GL_CCW);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+				}
+				else {
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glVertexPointer(3, GL_FLOAT, 0, a2eanim::meshes[i].vertices);
+
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[0]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].normal[a2eanim::current_frame]);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[1]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].binormal[a2eanim::current_frame]);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[2]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].tangent[a2eanim::current_frame]);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[3]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, a2eanim::meshes[i].tex_coords);
+					
+					glEnableClientState(GL_VERTEX_ARRAY);
+
+					glFrontFace(GL_CW);
+					glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, a2eanim::meshes[i].indices);
+					glFrontFace(GL_CCW);
+				}
+
+				if(a2eanim::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
+
+				exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+				glDisable(GL_TEXTURE_2D);
+				exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+				glDisable(GL_TEXTURE_2D);
+				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+				glDisable(GL_TEXTURE_2D);
+				glDisable(GL_LIGHTING);
+				s->use_shader(0);
+			}
+			else {
+				if(a2eanim::is_material) {
+					glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 0));
+				}
+
+				glEnable(GL_LIGHTING);
+
+				glColor3f(1.0f, 1.0f, 1.0f);
+				glEnable(GL_TEXTURE_2D);
+				if(a2eanim::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
+
+				if(vbo) {
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
+					glVertexPointer(3, GL_FLOAT, 0, NULL);
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_normals_id);
+					glNormalPointer(GL_FLOAT, 0, NULL);
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tex_coords_id);
+					glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glEnableClientState(GL_NORMAL_ARRAY);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_indices_ids);
+					glFrontFace(GL_CW);
+					glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, NULL);
+					glFrontFace(GL_CCW);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+				}
+				else {
+					glVertexPointer(3, GL_FLOAT, 0, a2eanim::meshes[i].vertices);
+					glNormalPointer(GL_FLOAT, 0, a2eanim::meshes[i].normal[a2eanim::current_frame]);
+					glTexCoordPointer(2, GL_FLOAT, 0, a2eanim::meshes[i].tex_coords);
+
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glEnableClientState(GL_NORMAL_ARRAY);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+					glFrontFace(GL_CW);
+					glDrawElements(GL_TRIANGLES, a2eanim::meshes[i].triangle_count * 3, GL_UNSIGNED_INT, a2eanim::meshes[i].indices);
+					glFrontFace(GL_CCW);
+				}
+
+				if(a2eanim::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
+				glDisable(GL_TEXTURE_2D);
+				glDisable(GL_LIGHTING);
+			}
 		}
 
 		glPopMatrix();
@@ -295,9 +402,16 @@ void a2eanim::draw_joints() {
 
 /*! loads a .a2m model file
  *  @param filename the name of the .a2m model file
+ *  @param vbo flag that specifies if vertex buffer objects should be used
  */
-void a2eanim::load_model(char* filename) {
-	file->open_file(filename, true);
+void a2eanim::load_model(char* filename, bool vbo) {
+	a2eanim::vbo = vbo;
+	// if vertex buffer objects are not supported, set vbo to false
+	if(!exts->is_vbo_support()) {
+		a2eanim::vbo = false;
+	}
+
+	file->open_file(filename, file_io::OT_READ_BINARY);
 
 	// get file type
 	file->get_block(a2eanim::file_type, 8);
@@ -351,9 +465,6 @@ void a2eanim::load_model(char* filename) {
 		a2eanim::meshes[i].weight_indices = new unsigned int[a2eanim::meshes[i].vertex_count];
 		a2eanim::meshes[i].weight_counts = new unsigned int[a2eanim::meshes[i].vertex_count];
 		a2eanim::meshes[i].vertices = new vertex3[a2eanim::meshes[i].vertex_count];
-		//a2eanim::meshes[i].normal = new vertex3[a2eanim::meshes[i].vertex_count];
-		//a2eanim::meshes[i].binormal = new vertex3[a2eanim::meshes[i].vertex_count];
-		//a2eanim::meshes[i].tangent = new vertex3[a2eanim::meshes[i].vertex_count];
 		for(unsigned int j = 0; j < a2eanim::meshes[i].vertex_count; j++) {
 			// uv coordinates
 			a2eanim::meshes[i].tex_coords[j].u = file->get_float();
@@ -433,6 +544,29 @@ void a2eanim::load_model(char* filename) {
 	}
 
 	a2eanim::generate_normal_list();
+
+	if(vbo) {
+		for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+			a2eanim::meshes[i].vbo_binormals_id = 0;
+			a2eanim::meshes[i].vbo_indices_ids = 0;
+			a2eanim::meshes[i].vbo_normals_id = 0;
+			a2eanim::meshes[i].vbo_tangents_id = 0;
+			a2eanim::meshes[i].vbo_tex_coords_id = 0;
+			a2eanim::meshes[i].vbo_vertices_id = 0;
+
+			// tex_coords vbo
+			exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_tex_coords_id);
+			exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_tex_coords_id);
+			exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vertex_count * 2 * sizeof(float),
+				a2eanim::meshes[i].tex_coords, GL_STATIC_DRAW_ARB);
+
+			// indices vbos
+			exts->glGenBuffersARB(1, &a2eanim::meshes[i].vbo_indices_ids);
+			exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_indices_ids);
+			exts->glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, a2eanim::meshes[i].triangle_count * 3 * sizeof(unsigned int),
+				a2eanim::meshes[i].indices, GL_STATIC_DRAW_ARB);
+		}
+	}
 }
 
 /*! loads an .a2a animation file
@@ -449,7 +583,7 @@ void a2eanim::add_animation(char* filename) {
 
 
 	// load animation file
-	file->open_file(filename, true);
+	file->open_file(filename, file_io::OT_READ_BINARY);
 
 	// create new animation
 	animation* ani = new animation();
@@ -508,7 +642,7 @@ void a2eanim::add_animation(char* filename) {
 	for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
 		a2eanim::meshes[i].normal = new vertex3*[ani->frame_count];
 		// if there is no shader support, we don't even need to allocate memory for binormals and tangents
-		if(s->is_shader_support()) {
+		if(exts->is_shader_support()) {
 			a2eanim::meshes[i].binormal = new vertex3*[ani->frame_count];
 			a2eanim::meshes[i].tangent = new vertex3*[ani->frame_count];
 		}
@@ -516,7 +650,7 @@ void a2eanim::add_animation(char* filename) {
 		for(unsigned int j = 0; j < ani->frame_count; j++) {
 			a2eanim::meshes[i].normal[j] = new vertex3[a2eanim::meshes[i].vertex_count];
 			// if there is no shader support, we don't even need to allocate memory for binormals and tangents
-			if(s->is_shader_support()) {
+			if(exts->is_shader_support()) {
 				a2eanim::meshes[i].binormal[j] = new vertex3[a2eanim::meshes[i].vertex_count];
 				a2eanim::meshes[i].tangent[j] = new vertex3[a2eanim::meshes[i].vertex_count];
 			}
@@ -539,8 +673,21 @@ void a2eanim::add_animation(char* filename) {
 
 	// reassign animation pointers
 	animations = anis;
+
+	// (re-)build bounding box
+	a2eanim::build_bounding_box();
 }
 
+
+/*! deletes all animations
+ */
+void a2eanim::delete_animations() {
+	delete [] a2eanim::animations;
+	a2eanim::canimations = 0;
+}
+
+/*! skins the mesh
+ */
 void a2eanim::skin_mesh() {
 	vertex3 position;
 	for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
@@ -565,6 +712,12 @@ void a2eanim::skin_mesh() {
 	}
 }
 
+/*! builds a specific bone specified by the parameters/arguments
+ *  @param frame use the bone information of the specified frame
+ *  @param jnt the joint from which we want to create the bone
+ *  @param parent_translation the parents joint/bone position/translation
+ *  @param parent_oriantation the parents joint/bone rotation/orientation
+ */
 void a2eanim::build_bone(unsigned int frame, joint* jnt, vertex3* parent_translation, quaternion* parent_oriantation) {
 	vertex3 translation = animations[current_animation]->joint_base_translation[jnt->num];
 	quaternion orientation = animations[current_animation]->joint_base_orientation[jnt->num];
@@ -789,14 +942,7 @@ void a2eanim::generate_normal_list() {
 			}
 			normal_list[i][j].count = x;
 			if(x != 0) {
-				// b/c vc++ sucks, we are not allowed to write "(normal_list[i][j].count - 1)"
-				// in here, otherwise we would get a sdl segmentation fault ;P
 				normal_list[i][j].num = new unsigned int[normal_list[i][j].count];
-/*#ifdef WIN32
-				normal_list[i][j].num = new unsigned int[normal_list[i][j].count];
-#else
-				normal_list[i][j].num = new unsigned int[(normal_list[i][j].count - 1)];
-#endif*/
 				for(unsigned int l = 0; l < x; l++) {
 					normal_list[i][j].num[l] = tmp_num[l];
 				}
@@ -832,7 +978,7 @@ void a2eanim::generate_normals() {
 						a2eanim::meshes[i].normal[j][k].z = 0.0f;
 						// if there is no shader support, we don't need
 						// to initialize the binormal and tangent vectors
-						if(s->is_shader_support()) {
+						if(exts->is_shader_support()) {
 							a2eanim::meshes[i].binormal[j][k].x = 0.0f;
 							a2eanim::meshes[i].binormal[j][k].y = 0.0f;
 							a2eanim::meshes[i].binormal[j][k].z = 0.0f;
@@ -844,7 +990,7 @@ void a2eanim::generate_normals() {
 						for(unsigned int l = 0; l < a2eanim::normal_list[i][k].count; l++) {
 							// if there is no shader support, we don't need
 							// to compute the binormal and tangent vectors
-							if(s->is_shader_support()) {
+							if(exts->is_shader_support()) {
 								c->compute_normal_tangent_binormal(
 									&a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[a2eanim::normal_list[i][k].num[l]].i1],
 									&a2eanim::meshes[i].vertices[a2eanim::meshes[i].indices[a2eanim::normal_list[i][k].num[l]].i2],
@@ -867,7 +1013,7 @@ void a2eanim::generate_normals() {
 							a2eanim::meshes[i].normal[j][k] += normals[l];
 							// if there is no shader support, we don't need
 							// to compute the binormal and tangent vectors
-							if(s->is_shader_support()) {
+							if(exts->is_shader_support()) {
 								a2eanim::meshes[i].binormal[j][k] += binormals[l];
 								a2eanim::meshes[i].tangent[j][k] += tangents[l];
 							}
@@ -875,7 +1021,7 @@ void a2eanim::generate_normals() {
 						a2eanim::meshes[i].normal[j][k] /= (float)a2eanim::normal_list[i][k].count;
 						// if there is no shader support, we don't need
 						// to compute the binormal and tangent vectors
-						if(s->is_shader_support()) {
+						if(exts->is_shader_support()) {
 							a2eanim::meshes[i].normal[j][k] *= -1.0f;
 							a2eanim::meshes[i].binormal[j][k] /= (float)a2eanim::normal_list[i][k].count;
 							a2eanim::meshes[i].tangent[j][k] /= (float)a2eanim::normal_list[i][k].count;
@@ -904,4 +1050,58 @@ void a2eanim::set_light_color(float* lcol) {
  */
 void a2eanim::set_light_position(vertex3* lpos) {
 	a2eanim::light_position = lpos;
+}
+
+/*! returns the models bounding box
+ */
+core::aabbox* a2eanim::get_bounding_box() {
+	return a2eanim::bbox;
+}
+
+/*! builds the models bounding box
+ */
+void a2eanim::build_bounding_box() {
+	// create frame 0 and build the bounding box
+	for(unsigned int i = 0; i < a2eanim::base_joint_count; i++) {
+		a2eanim::build_bone(0, base_joints[i], &base_joints[i]->position, &base_joints[i]->orientation);
+	}
+	a2eanim::skin_mesh();
+
+	float minx, miny, minz, maxx, maxy, maxz;
+	minx = a2eanim::meshes[0].vertices[0].x;
+	miny = a2eanim::meshes[0].vertices[0].y;
+	minz = a2eanim::meshes[0].vertices[0].z;
+	maxx = a2eanim::meshes[0].vertices[0].x;
+	maxy = a2eanim::meshes[0].vertices[0].y;
+	maxz = a2eanim::meshes[0].vertices[0].z;
+	for(unsigned int i = 1; i < a2eanim::meshes[0].vertex_count; i++) {
+		if(a2eanim::meshes[0].vertices[i].x < minx) {
+			minx = a2eanim::meshes[0].vertices[i].x;
+		}
+		if(a2eanim::meshes[0].vertices[i].y < miny) {
+			miny = a2eanim::meshes[0].vertices[i].y;
+		}
+		if(a2eanim::meshes[0].vertices[i].z < minz) {
+			minz = a2eanim::meshes[0].vertices[i].z;
+		}
+
+		if(a2eanim::meshes[0].vertices[i].x > maxx) {
+			maxx = a2eanim::meshes[0].vertices[i].x;
+		}
+		if(a2eanim::meshes[0].vertices[i].y > maxy) {
+			maxy = a2eanim::meshes[0].vertices[i].y;
+		}
+		if(a2eanim::meshes[0].vertices[i].z > maxz) {
+			maxz = a2eanim::meshes[0].vertices[i].z;
+		}
+	}
+
+	if(a2eanim::bbox) { delete a2eanim::bbox; }
+	a2eanim::bbox = new core::aabbox();
+	a2eanim::bbox->vmin.x = minx;
+	a2eanim::bbox->vmin.y = miny;
+	a2eanim::bbox->vmin.z = minz;
+	a2eanim::bbox->vmax.x = maxx;
+	a2eanim::bbox->vmax.y = maxy;
+	a2eanim::bbox->vmax.z = maxz;
 }

@@ -50,6 +50,7 @@ public:
 	void draw(unsigned int x, unsigned int y);
 
     void set_vbar_handler(gui_vbar* ivbar);
+    gui_vbar* get_vbar_handler();
 
 	// gui list box element variables functions
 
@@ -61,6 +62,8 @@ public:
 	bool get_active();
 	unsigned int get_position();
 	unsigned int get_selected_id();
+	gui_list_item* get_item(unsigned int id);
+	gui_list_item* get_selected_item();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);

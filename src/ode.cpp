@@ -213,6 +213,8 @@ void ode::delete_object(unsigned int num) {
 	ode::object_count--;
 }
 
+/*! updates all ode objects
+ */
 void ode::update_objects() {
 	for(unsigned int i = 0; i < object_count; i++) {
 		if(ode::ode_objects[i]) {
@@ -233,7 +235,7 @@ void ode::update_objects() {
 	}
 }
 
-/*! returns the ode object #num
+/*! returns the ode object with the number 'num'
  *  @param num the index/number of the object you want to get
  */
 ode_object* ode::get_ode_object(unsigned int num) {

@@ -1,0 +1,8 @@
+[A2EMATERIAL - 11 bytes (char[11])]
+
+[OBJECT/ELEMENT COUNT - 4 bytes (unsigned int)]
+[FOR EACH OBJECT/ELEMENT]
+  [MATERIAL TYPE - 1 byte (char) (0 = NONE, 1 = DIFFUSE, 2 = BUMP, 3 = PARALLAX)]
+  [COLOR COMPONENTS/COLOR TYPE - 1 byte (char) (0 = RGB, 1 = RGBA)]
+  [TEXTURE NAMES - MATERIAL TYPE * x bytes (char*) - separated by an [0xFF]]
+[END FOR]

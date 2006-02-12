@@ -34,6 +34,9 @@ gui_text::gui_text(engine* e) {
 	// point color to NULL
 	gui_text::color = NULL;
 
+	gui_text::font_name = NULL;
+	gui_text::point = new core::pnt();
+
 	// get classes
 	gui_text::e = e;
 	gui_text::c = e->get_core();
@@ -47,9 +50,20 @@ gui_text::~gui_text() {
 	m->print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
 
 	delete [] text;
-	if(font) {
+	if(font != NULL) {
 		delete font;
 	}
+
+	if(gui_text::color != NULL) {
+		delete gui_text::color;
+	}
+
+	// doesnt't work?
+	/*if(gui_text::font_name != NULL) {
+		delete [] gui_text::font_name;
+	}*/
+
+	delete gui_text::point;
 
 	m->print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");
 }
@@ -82,7 +96,7 @@ void gui_text::draw(unsigned int x, unsigned int y) {
 void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glPushMatrix();
 
 	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
@@ -140,7 +154,7 @@ void gui_text::set_id(unsigned int id) {
  *  @param point the starting point we want to set
  */
 void gui_text::set_point(core::pnt* point) {
-	gui_text::point = point;
+	memcpy(gui_text::point, point, 8);
 }
 
 /*! sets the text

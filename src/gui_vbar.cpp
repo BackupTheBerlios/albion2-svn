@@ -71,7 +71,7 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 		gui_vbar::rectangle->x2 + x, gui_vbar::rectangle->y2 + y);
 
 	// draw bar bg
-	g->draw_filled_rectangle(e->get_screen(), r1,
+	g->draw_filled_rectangle(r1,
 		e->get_gui_style()->STYLE_BARBG);
 
 	// draw up button
@@ -102,12 +102,10 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 		g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + y, gui_vbar::rectangle->x2 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth + y);
-		g->draw_filled_rectangle(e->get_screen(),
-			r1, e->get_gui_style()->STYLE_BG);
+		g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g->draw_2colored_rectangle(e->get_screen(),
-			r1, e->get_gui_style()->STYLE_LIGHT,
+		g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_LIGHT,
 			e->get_gui_style()->STYLE_DARK);
 
 		// draw 2 colored border
@@ -115,8 +113,7 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 			gui_vbar::rectangle->y1 + 14 + heigth_position + 1 + y,
 			gui_vbar::rectangle->x2 - 1 + x,
 			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1 + y);
-		g->draw_2colored_rectangle(e->get_screen(),
-			r1, e->get_gui_style()->STYLE_BG,
+		g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_BG,
 			e->get_gui_style()->STYLE_INDARK);
 
 
@@ -245,6 +242,16 @@ void gui_vbar::set_up_button_handler(gui_button* ibutton) {
  */
 void gui_vbar::set_down_button_handler(gui_button* ibutton) {
 	gui_vbar::down_button_handler = ibutton;
+}
+
+//! returns the up button handler
+gui_button* gui_vbar::get_up_button_handler() {
+	return gui_vbar::up_button_handler;
+}
+
+//! returns the down button handler
+gui_button* gui_vbar::get_down_button_handler() {
+	return gui_vbar::down_button_handler;
 }
 
 /*! sets the new mouse click point

@@ -28,7 +28,6 @@ using namespace std;
 /*! @class file_io
  *  @brief file input/output
  *  @author flo
- *  @version 0.1.1
  *  @todo more functions
  *  
  *  the file input/output class
@@ -40,7 +39,16 @@ public:
 	file_io(msg* m);
 	~file_io();
 
-	void open_file(char* filename, bool binary);
+	enum FIO_OPEN_TYPE {
+		OT_READ,
+		OT_READWRITE,
+		OT_WRITE,
+		OT_READ_BINARY,
+		OT_READWRITE_BINARY,
+		OT_WRITE_BINARY
+	};
+
+	void open_file(char* filename, FIO_OPEN_TYPE open_type);
 	void close_file();
 	unsigned int get_filesize();
 	void get_line(char* finput);
@@ -52,6 +60,10 @@ public:
 	void seek(unsigned int offset);
 	unsigned int get_current_offset();
 	void write_block(char* data, unsigned int size);
+	void put_uint(unsigned int uint);
+	void put_swap_uint(unsigned int uint);
+	void put_float(float flt);
+	void put_bool(bool b);
 
 protected:
 	msg* m;

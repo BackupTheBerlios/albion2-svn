@@ -392,7 +392,8 @@ void net::send_activation(char* client_name) {
 			len = (int)strlen(client_name);
 		}
 		data[3] = len;
-		strncpy(&data[4], client_name, len);
+		//strncpy(&data[4], client_name, len);
+		memcpy(&data[4], client_name, len);
 		data[4 + len++] = 0;
 
 		// send the package to the server
@@ -455,7 +456,7 @@ void net::send_packet(TCPsocket* sock, char* data, int len, unsigned int client_
 		char* dbg = new char[(len-4)*3+20];
 		dbg[0] = 0;
 		for(int i = 0; i < (len-4); i++) {
-			sprintf(dbg, "%s %X\0", dbg, (unsigned int)(data[i] & 0xFF));
+			sprintf(dbg, "%s %X%c", dbg, (unsigned int)(data[i] & 0xFF), 0x00);
 		}
 
 		time_t rawtime;
@@ -504,10 +505,10 @@ void net::send_packet(TCPsocket* sock, char* data, int len, unsigned int client_
 
 		char* cnum = new char[64];
 		if(client_num != 0xFFFFFFFF) {
-            sprintf(cnum, "%s(%u)\0", clients[client_num].name, client_num);
+			sprintf(cnum, "%s(%u)%c", clients[client_num].name, client_num, 0x00);
 		}
 		else {
-            sprintf(cnum, "server\0");
+			sprintf(cnum, "server%c", 0x00);
 		}
 
 		*(net::logfile) << "> send packet (len: " << (len-4) << " / client: " << cnum << "): " << dbg << endl;
@@ -547,7 +548,7 @@ int net::recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int clien
 		char* dbg = new char[(len-4)*3+20];
 		dbg[0] = 0;
 		for(int i = 0; i < (len-4); i++) {
-			sprintf(dbg, "%s %X\0", dbg, (unsigned int)(data[i] & 0xFF));
+			sprintf(dbg, "%s %X%c", dbg, (unsigned int)(data[i] & 0xFF), 0x00);
 		}
 
 		time_t rawtime;
@@ -596,10 +597,10 @@ int net::recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int clien
 
 		char* cnum = new char[64];
 		if(client_num != 0xFFFFFFFF) {
-            sprintf(cnum, "%s(%u)\0", clients[client_num].name, client_num);
+			sprintf(cnum, "%s(%u)%c", clients[client_num].name, client_num, 0x00);
 		}
 		else {
-            sprintf(cnum, "server\0");
+			sprintf(cnum, "server%c", 0x00);
 		}
 
 		*(net::logfile) << "> recv packet (len: " << (len-4) << " / client: " << cnum << "): " << dbg << endl;

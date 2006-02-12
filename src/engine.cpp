@@ -37,14 +37,76 @@ engine::engine() {
 	fps_limit = 10;
 	flags = 0;
 	position = NULL;
+	screen = NULL;
+	key_repeat = 200;
+	width = 640;
+	height = 480;
+	depth = 16;
+	fullscreen = false;
+	color_scheme = gui_style::BLUE;
 
-	c = new core();
 	m = new msg();
-	gstyle = new gui_style();
+	c = new core(m);
 	f = new file_io(m);
 	e = new event();
 	g = new gfx();
+	gstyle = new gui_style(g, m);
 	t = new texman(m);
+	l = new lua(m);
+	x = new xml(m);
+
+	// load config
+	if(!x->open("../data/config.xml")) {
+		m->print(msg::MERROR, "engine.cpp", "engine(): couldn't open config file - using standard settings!");
+	}
+	else {
+		while(x->process()) {
+			if(strcmp(x->get_node_name(), "screen") == 0) {
+				if(x->get_attribute("width") != NULL) {
+					width = (unsigned int)atoi(x->get_attribute("width"));
+				}
+
+				if(x->get_attribute("height") != NULL) {
+					height = (unsigned int)atoi(x->get_attribute("height"));
+				}
+
+				if(x->get_attribute("depth") != NULL) {
+					depth = (unsigned int)atoi(x->get_attribute("depth"));
+				}
+
+				if(x->get_attribute("fullscreen") != NULL) {
+					if(atoi(x->get_attribute("fullscreen")) != 0) {
+						engine::fullscreen = true;
+					}
+				}
+			}
+			else if(strcmp(x->get_node_name(), "gui") == 0) {
+				if(x->get_attribute("color_scheme") != NULL) {
+					if(strcmp(x->get_attribute("color_scheme"), "BLACKWHITE") == 0) {
+						color_scheme = gui_style::BLACKWHITE;
+					}
+					else if(strcmp(x->get_attribute("color_scheme"), "BLUE") == 0) {
+						color_scheme = gui_style::BLUE;
+					}
+					else if(strcmp(x->get_attribute("color_scheme"), "WINDOWS") == 0) {
+						color_scheme = gui_style::WINDOWS;
+					}
+				}
+			}
+			else if(strcmp(x->get_node_name(), "key_repeat") == 0) {
+				if(x->get_attribute("time") != NULL) {
+					key_repeat = (unsigned int)atoi(x->get_attribute("time"));
+				}
+			}
+			else if(strcmp(x->get_node_name(), "sleep") == 0) {
+				if(x->get_attribute("time") != NULL) {
+					fps_limit = (unsigned int)atoi(x->get_attribute("time"));
+				}
+			}
+		}
+
+		x->close();
+	}
 }
 
 /*! there is no function currently
@@ -63,40 +125,48 @@ engine::~engine() {
 	delete g;
 	delete t;
 	delete exts;
+	delete l;
+	delete x;
 
 	m->print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
 
 	delete m;
 
     SDL_Quit();
-	exit(0);
 }
 
-/*! initializes the engine in console only mode
- */
-void engine::init(bool console) {
-	if(console == true) {
-	    engine::mode = engine::CONSOLE;
-		// create extension class object
-		exts = new ext(engine::mode);
-		m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console only mode");
-	}
-	else {
-		engine::init(640, 400, 16, false);
-	}
-}
-
-/*! initializes the engine in console + graphical mode
+/*! initializes the engine in console + graphical or console only mode
+ *  @param console the initialization mode (false = gfx/console, true = console only)
  *  @param width the window width
  *  @param height the window height
  *  @param depth the depth of the window (16, 24 or 32)
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
-void engine::init(unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
+void engine::init(bool console, unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
+	if(console == true) {
+	    engine::mode = engine::CONSOLE;
+		// create extension class object
+		exts = new ext(engine::mode, m);
+		m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console only mode");
+	}
+	else {
+		engine::width = width;
+		engine::height = height;
+		engine::depth = depth;
+		engine::fullscreen = fullscreen;
+
+		engine::init();
+	}
+}
+
+/*! initializes the engine in console + graphical mode
+ */
+void engine::init() {
     engine::mode = engine::GRAPHICAL;
 	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console + graphical mode");
 
 	// initialize sdl
+	atexit(SDL_Quit);
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
 		m->print(msg::MERROR, "engine.cpp", "can't init SDL: %s", SDL_GetError());
 		exit(1);
@@ -104,7 +174,6 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	else {
 		m->print(msg::MDEBUG, "engine.cpp", "sdl initialized");
 	}
-	atexit(SDL_Quit);
 
 	// get video info
 	video_info = SDL_GetVideoInfo();
@@ -133,7 +202,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 		m->print(msg::MDEBUG, "engine.cpp", "using software surface");
 	}
 	if(video_info->blit_hw) {
-		engine::flags |= SDL_HWACCEL;
+		//engine::flags |= SDL_HWACCEL;
 		m->print(msg::MDEBUG, "engine.cpp", "hardware acceleration enabled");
 	}
 	else {
@@ -146,6 +215,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	else {
 		m->print(msg::MDEBUG, "engine.cpp", "fullscreen disabled");
 	}
+	engine::flags |= SDL_HWACCEL;
 
 	// gl attributes
 	switch(depth) {
@@ -163,6 +233,19 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+			break;
+		default:
+			if(depth < 16) {
+				m->print(msg::MERROR, "engine.cpp", "init(): to low depth, please use at least a depth of 16bit!");
+				return;
+			}
+			else { // depth > 16
+				m->print(msg::MERROR, "engine.cpp", "init(): unknown depth of %ubit! engine will run in 16bit mode!", depth);
+				depth = 16;
+				SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+				SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+				SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+			}
 			break;
 	}
 
@@ -185,13 +268,15 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 			height, depth);
 	}
 
+	g->set_surface(screen);
+
 	// print out some opengl informations
 	m->print(msg::MDEBUG, "engine.cpp", "vendor: %s", glGetString(GL_VENDOR));
 	m->print(msg::MDEBUG, "engine.cpp", "renderer: %s", glGetString(GL_RENDERER));
 	m->print(msg::MDEBUG, "engine.cpp", "version: %s", glGetString(GL_VERSION));
 
 	// enable key repeat
-	if((SDL_EnableKeyRepeat(200, SDL_DEFAULT_REPEAT_INTERVAL))) {
+	if((SDL_EnableKeyRepeat(key_repeat, SDL_DEFAULT_REPEAT_INTERVAL))) {
 		m->print(msg::MDEBUG, "engine.cpp", "setting keyboard repeat failed: %s",
 				SDL_GetError());
 		exit(1);
@@ -202,7 +287,7 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 
 	gstyle->init(screen);
 	m->print(msg::MDEBUG, "engine.cpp", "gui style initialized");
-	gstyle->set_color_scheme(gui_style::WINDOWS);
+	gstyle->set_color_scheme(color_scheme);
 	m->print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
 
 	// initialize ogl
@@ -217,10 +302,10 @@ void engine::init(unsigned int width, unsigned int height, unsigned int depth, b
 	engine::position = new vertex3();
 
 	// create extension class object
-	exts = new ext(engine::mode);
+	exts = new ext(engine::mode, m);
 }
 
-/*! sets the window width
+/*! sets the windows width
  *  @param width the window width
  */
 void engine::set_width(unsigned int width) {
@@ -295,7 +380,6 @@ void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
 bool engine::init_gl() {
 	// enable texture mapping
 	glEnable(GL_TEXTURE_2D);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	// enable smooth shading
 	glShadeModel(GL_SMOOTH);
 	// set clear color
@@ -312,35 +396,26 @@ bool engine::init_gl() {
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glAlphaFunc(GL_GREATER, 0.1f);
+
 	return true;
 }
 
 /*! opengl drawing code
  */
 bool engine::draw_gl_scene() {
-	unsigned int bgcolor = gstyle->STYLE_WINDOW_BG;
-	glClearColor((GLclampf)((float)((bgcolor & 0xFF0000) >> 16) / 255),
-		(GLclampf)((float)((bgcolor & 0xFF00) >> 8) / 255),
-		(GLclampf)((float)(bgcolor & 0xFF) / 255), 0.0f);
-
-    // clear the color and depth buffers.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-	/*float pinf[4][4];
-	pinf[1][0] = pinf[2][0] = pinf[3][0] = pinf[0][1] = pinf[2][1] = pinf[3][1] =
-		pinf[0][2] = pinf[1][2] = pinf[0][3] = pinf[1][3] = pinf[3][3] = 0.0f;
-	pinf[0][0] = atanf(60.0f) / (engine::width / engine::height);
-	pinf[1][1] = atanf(60.0f);
-	pinf[3][2] = -2.0f * 0.1f;
-	pinf[2][2] = pinf[2][3] = -1.0f;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(&pinf[0][0]);*/
-
-    // we don't want to modify the projection matrix.
-	glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
+	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
+	
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	// clear the color and depth buffers.
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	
+	// we don't want to modify the projection matrix.
+	//glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	
 	return true;
 }
 
@@ -392,6 +467,7 @@ vertex3* engine::get_position() {
 void engine::start_2d_draw() {
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
+	glDisable(GL_BLEND);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -415,6 +491,7 @@ void engine::stop_2d_draw() {
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
+	glEnable(GL_BLEND);
 }
 
 /*! sets the cursors visibility to state
@@ -493,8 +570,14 @@ texman* engine::get_texman() {
 	return engine::t;
 }
 
-/*! returns the texman class
+/*! returns the extensions class
  */
 ext* engine::get_ext() {
 	return engine::exts;
+}
+
+/*! returns the lua class
+ */
+lua* engine::get_lua() {
+	return engine::l;
 }

@@ -207,8 +207,8 @@ vertex3 quaternion::rotate(vertex3& v) {
  *  @param a resize float?
  *  @param v rotation vector
  */
-void quaternion::set_rotation(float a, vertex3 tv) {
-	vertex3 tmp = tv.normalize();
+void quaternion::set_rotation(float a, vertex3 v) {
+	vertex3 tmp = v.normalize();
 	a *= (float)PI / 180.0f;
 	float sin_a = sinf (a / 2);
 	float cos_a = cosf (a / 2);

@@ -52,6 +52,8 @@ public:
 
 	void set_rotation_speed(float speed);
 	float get_rotation_speed();
+	void set_cam_speed(float speed);
+	float get_cam_speed();
 
 	void set_cam_input(bool state);
 	void set_mouse_input(bool state);
@@ -68,6 +70,7 @@ protected:
 	vertex3* rotation;
 	float up_down;
 	float rotation_speed;
+	float cam_speed;
 
 	float piover180;
 

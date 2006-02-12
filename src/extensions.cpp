@@ -30,15 +30,32 @@ using namespace std;
 
 /*! create and initialize the extension class
  */
-ext::ext(unsigned int imode) {
+ext::ext(unsigned int imode, msg* m) {
 	ext::mode = imode;
 
 	glActiveTextureARB = NULL;
 	glMultiTexCoord3fARB = NULL;
 
+	glBindBufferARB = NULL;
+	glBufferDataARB = NULL;
+	glBufferSubDataARB = NULL;
+	glDeleteBuffersARB = NULL;
+	glGenBuffersARB = NULL;
+	glMapBufferARB = NULL;
+	glUnmapBufferARB = NULL;
+
+	multitexture_support = false;
+	shader_support = false;
+	vbo_support = false;
+
 	if(is_ext_supported("GL_ARB_multitexture")) {
 		glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glActiveTextureARB");
+		glMultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC)glGetProcAddress((ProcType)"glMultiTexCoord2fARB");
 		glMultiTexCoord3fARB = (PFNGLMULTITEXCOORD3FARBPROC)glGetProcAddress((ProcType)"glMultiTexCoord3fARB");
+		multitexture_support = true;
+	}
+	else {
+		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_multitexture'!");
 	}
 
 	if(is_ext_supported("GL_ARB_fragment_shader") &&
@@ -47,6 +64,25 @@ ext::ext(unsigned int imode) {
 		is_ext_supported("GL_ARB_shading_language_100")) {
 		glEnableVertexAttribArrayARB = (PFNGLENABLEVERTEXATTRIBARRAYARBPROC)glGetProcAddress((ProcType)"glEnableVertexAttribArrayARB");
 		glVertexAttribPointerARB = (PFNGLVERTEXATTRIBPOINTERARBPROC)glGetProcAddress((ProcType)"glVertexAttribPointerARB");
+		shader_support = true;
+	}
+	else {
+		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_fragment_shader', 'GL_ARB_vertex_shader', 'GL_ARB_shader_objects' and/or 'GL_ARB_shading_language_100'!");
+	}
+
+	if(is_ext_supported("GL_ARB_vertex_buffer_object")) {
+		glBindBufferARB = (PFNGLBINDBUFFERARBPROC)glGetProcAddress((ProcType)"glBindBufferARB");
+		glBufferDataARB = (PFNGLBUFFERDATAARBPROC)glGetProcAddress((ProcType)"glBufferDataARB");
+		glBufferSubDataARB = (PFNGLBUFFERSUBDATAARBPROC)glGetProcAddress((ProcType)"glBufferSubDataARB");
+		glDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC)glGetProcAddress((ProcType)"glDeleteBuffersARB");
+		glGenBuffersARB = (PFNGLGENBUFFERSARBPROC)glGetProcAddress((ProcType)"glGenBuffersARB");
+		glMapBufferARB = (PFNGLMAPBUFFERARBPROC)glGetProcAddress((ProcType)"glMapBufferARB");
+		glUnmapBufferARB = (PFNGLUNMAPBUFFERARBPROC)glGetProcAddress((ProcType)"glUnmapBufferARB");
+		glIsBufferARB = (PFNGLISBUFFERARBPROC)glGetProcAddress((ProcType)"glIsBufferARB");
+		vbo_support = true;
+	}
+	else {
+		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!\nthe engine will only work properly in console mode!");
 	}
 }
 
@@ -64,11 +100,25 @@ bool ext::is_ext_supported(char* ext_name) {
 		if(strstr(exts, ext_name) != NULL) {
 			return true;
 		}
-		else {
-			return false;
-		}
 	}
-	else {
-		return false;
-	}
+	return false;
+}
+
+/*! returns true if multi texturing is supported
+ */
+bool ext::is_multitexture_support() {
+	return ext::multitexture_support;
+}
+
+/*! returns true if glsl shaders are supported
+ */
+bool ext::is_shader_support() {
+	return ext::shader_support;
+}
+
+
+/*! returns true if vertex buffer objects are supported
+ */
+bool ext::is_vbo_support() {
+	return ext::vbo_support;
 }

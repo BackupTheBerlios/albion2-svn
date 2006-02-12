@@ -26,6 +26,7 @@
 #include <SDL/SDL_image.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/glext.h>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -33,8 +34,7 @@ using namespace std;
 /*! @class texman
  *  @brief texture management routines
  *  @author flo
- *  @version 0.1
- *  @todo nothing atm
+ *  @todo -
  *  
  *  the texman class
  */
@@ -47,14 +47,15 @@ public:
 	texman(msg* m);
 	~texman();
 
-	unsigned int add_texture(char* filename, GLint components = 3, GLenum format = GL_RGB);
+	unsigned int add_texture(const char* filename, GLint components = 3, GLenum format = GL_RGB);
+	unsigned int add_cubemap_texture(const char** filenames, GLint components = 3, GLenum format = GL_RGB);
 	texture* get_texture(unsigned int num);
 
 protected:
 	msg* m;
 
 	struct texture {
-		char* filename;
+		const char* filename;
 		GLuint tex;
 		unsigned int width;
 		unsigned int height;

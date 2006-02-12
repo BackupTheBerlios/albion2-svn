@@ -47,6 +47,7 @@ public:
 	void draw();
 	void draw(unsigned int x, unsigned int y);
 	void set_text_handler(gui_text* itext);
+	gui_text* get_text_handler();
 
 
 	// gui button element variables functions

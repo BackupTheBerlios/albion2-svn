@@ -44,7 +44,7 @@ using namespace std;
 /*! @class a2eanim
  *  @brief class for loading and displaying an a2e skeletal animated model
  *  @author flo
- *  @todo more functions
+ *  @todo -
  *  
  *  the a2e skeletal animation class
  *  
@@ -65,8 +65,9 @@ public:
 	void draw();
 	void draw_joints();
 
-	void load_model(char* filename);
+	void load_model(char* filename, bool vbo = false);
 	void add_animation(char* filename);
+	void delete_animations();
 
 	void build_bone(unsigned int frame, joint* jnt, vertex3* parent_translation, quaternion* parent_oriantation);
 	void skin_mesh();
@@ -96,6 +97,9 @@ public:
 
 	void set_visible(bool state);
 	bool get_visible();
+
+	core::aabbox* get_bounding_box();
+	void build_bounding_box();
 
 	// used for parallax mapping
 	void generate_normal_list();
@@ -127,8 +131,10 @@ protected:
 		unsigned int vertex_count;
 		unsigned int* weight_counts;
 		unsigned int* weight_indices;
-		core::coord* tex_coords;
 		vertex3* vertices;
+		core::coord* tex_coords;
+		GLuint vbo_vertices_id;
+		GLuint vbo_tex_coords_id;
 
 		// boolean that determines if we already computed
 		// the normal, binormal and tangent vector
@@ -136,9 +142,13 @@ protected:
 		vertex3** normal;
 		vertex3** binormal;
 		vertex3** tangent;
+		GLuint vbo_normals_id;
+		GLuint vbo_binormals_id;
+		GLuint vbo_tangents_id;
 
 		unsigned int triangle_count;
 		core::index* indices;
+		GLuint vbo_indices_ids;
 
 		unsigned int weight_count;
 		int* bone_indices;
@@ -181,6 +191,7 @@ protected:
 	unsigned int current_animation;
 
 	unsigned int current_frame;
+	unsigned int last_frame;
 	unsigned int timer;
 
 	bool is_material;
@@ -202,6 +213,13 @@ protected:
     nlist** normal_list;
 	float* light_color;
 	vertex3* light_position;
+
+	core::aabbox* bbox;
+
+	bool init;
+
+	//! flag that specifies if this model is using a vertex buffer object
+	bool vbo;
 };
 
 #endif

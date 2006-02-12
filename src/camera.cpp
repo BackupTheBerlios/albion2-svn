@@ -33,6 +33,7 @@ camera::camera(engine* e) {
 	camera::mouse_input = true;
 
 	rotation_speed = 100.0f;
+	cam_speed = 1.0f;
 
 	camera::position->x = 0.0f;
 	camera::position->y = 0.0f;
@@ -67,25 +68,25 @@ void camera::run() {
 	if(camera::cam_input) {
 		// ... recalculate the cameras position
 		if(evt->is_key_right()) {
-			position->x += (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
-			position->z += (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
+			position->x += (float)sin((rotation->y - 90.0f) * piover180) * cam_speed;
+			position->z += (float)cos((rotation->y - 90.0f) * piover180) * cam_speed;
 		}
 
 		if(evt->is_key_left()) {
-			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * 0.75f;
-			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * 0.75f;
+			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * cam_speed;
+			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * cam_speed;
 		}
 		
 		if(evt->is_key_up()) {
-			position->x += (float)sin(rotation->y * piover180) * 0.75f;
-			position->y -= (float)sin(rotation->x * piover180) * 0.75f;
-			position->z += (float)cos(rotation->y * piover180) * 0.75f;
+			position->x += (float)sin(rotation->y * piover180) * cam_speed;
+			position->y -= (float)sin(rotation->x * piover180) * cam_speed;
+			position->z += (float)cos(rotation->y * piover180) * cam_speed;
 		}
 		
 		if(evt->is_key_down()) {
-			position->x -= (float)sin(rotation->y * piover180) * 0.75f;
-			position->y += (float)sin(rotation->x * piover180) * 0.75f;
-			position->z -= (float)cos(rotation->y * piover180) * 0.75f;
+			position->x -= (float)sin(rotation->y * piover180) * cam_speed;
+			position->y += (float)sin(rotation->x * piover180) * cam_speed;
+			position->z -= (float)cos(rotation->y * piover180) * cam_speed;
 		}
 	}
 
@@ -98,7 +99,7 @@ void camera::run() {
 		float xpos = (1.0f / (float)e->get_screen()->w) * (float)cursor_pos_x;
 		float ypos = (1.0f / (float)e->get_screen()->h) * (float)cursor_pos_y;
 
-		if(xpos < 0.5f || xpos > 0.5f || ypos < 0.5f || ypos > 0.5f) {
+		if(xpos != 0.5f || ypos != 0.5f) {
 			rotation->x += (0.5f - ypos) * rotation_speed;
 			rotation->y += (0.5f - xpos) * rotation_speed;
 			SDL_WarpMouse(e->get_screen()->w/2, e->get_screen()->h/2);
@@ -202,4 +203,17 @@ void camera::set_rotation_speed(float speed) {
  */
 float camera::get_rotation_speed() {
 	return camera::rotation_speed;
+}
+
+/*! sets the cameras speed to speed
+ *  @param speed the new camera speed
+ */
+void camera::set_cam_speed(float speed) {
+	camera::cam_speed = speed;
+}
+
+/*! returns cameras speed
+ */
+float camera::get_cam_speed() {
+	return camera::cam_speed;
 }

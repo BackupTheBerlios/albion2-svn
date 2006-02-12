@@ -59,19 +59,18 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		gui_input::rectangle->x2 + x, gui_input::rectangle->y2 + y);
 
 	// draw bg
-	g->draw_filled_rectangle(e->get_screen(), r1,
+	g->draw_filled_rectangle(r1,
 		e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g->draw_2colored_rectangle(e->get_screen(), r1,
+	g->draw_2colored_rectangle(r1,
 		e->get_gui_style()->STYLE_INDARK,
 		e->get_gui_style()->STYLE_LIGHT);
 
 	// draw 2 colored border
 	g->pnt_to_rect(r1, gui_input::rectangle->x1 + x + 1, gui_input::rectangle->y1 + y + 1,
 		gui_input::rectangle->x2 + x - 1, gui_input::rectangle->y2 + y - 1);
-	g->draw_2colored_rectangle(e->get_screen(),
-		r1, e->get_gui_style()->STYLE_DARK,
+	g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_DARK,
 		e->get_gui_style()->STYLE_DARK2);
 
 	// width chart:
@@ -157,8 +156,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			text_handler->set_point(p1);
 			text_handler->draw(new_text, x, y);
 
-			delete new_text;
-			delete tmp_text;
+			delete [] new_text;
+			delete [] tmp_text;
 
 			// we need to set a bool, if the marker is out of the drawable
 			// input box rectangle, so we can set it to the "end" of the input box
@@ -208,8 +207,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
 
-				delete new_text;
-				delete tmp_text;
+				delete [] new_text;
+				delete [] tmp_text;
 
 				// we need to set a bool, if the marker is out of the drawable
 				// input box rectangle, so we can set it to the "end" of the input box
@@ -246,7 +245,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				text_handler->set_point(p1);
 				text_handler->draw(new_text, x, y);
 
-				delete new_text;
+				delete [] new_text;
 			}
 		}
 	}
@@ -315,6 +314,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	blink_text_handler->draw(x, y);
 	delete p2;
 	is_in_rectangle = true;
+
+	delete r1;
 }
 
 /*! creates a text_handler -> a pointer to the gui_text class
@@ -329,6 +330,16 @@ void gui_input::set_text_handler(gui_text* itext) {
  */
 void gui_input::set_blink_text_handler(gui_text* itext) {
 	gui_input::blink_text_handler = itext;
+}
+
+//! returns the text_handler
+gui_text* gui_input::get_text_handler() {
+	return gui_input::text_handler;
+}
+
+//! returns the blink_text_handler
+gui_text* gui_input::get_blink_text_handler() {
+	return gui_input::blink_text_handler;
 }
 
 //! returns the input boxes id
@@ -408,10 +419,4 @@ void gui_input::set_notext() {
 	gui_input::text_handler->set_notext();
 	gui_input::text[0] = 0;
 	gui_input::text_length = 0;
-}
-
-/*! returns the text handler
- */
-gui_text* gui_input::get_text_handler() {
-	return gui_input::text_handler;
 }

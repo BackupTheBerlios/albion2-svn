@@ -32,6 +32,8 @@ gui_window::gui_window(engine* e) {
 	// 1024 chars
 	gui_window::caption = new char[64];
 
+	gui_window::rectangle = NULL;
+
 	// get classes
 	gui_window::e = e;
 	gui_window::c = e->get_core();
@@ -45,6 +47,7 @@ gui_window::~gui_window() {
 	m->print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
 
 	delete [] gui_window::caption;
+	if(gui_window::rectangle != NULL) {	delete gui_window::rectangle; }
 
 	m->print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
 }
@@ -54,13 +57,11 @@ gui_window::~gui_window() {
 void gui_window::draw() {
 	if(gui_window::border) {
 		// draw bg
-		g->draw_filled_rectangle(e->get_screen(),
-			gui_window::rectangle,
+		g->draw_filled_rectangle(gui_window::rectangle,
 			e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g->draw_2colored_rectangle(e->get_screen(),
-			gui_window::rectangle,
+		g->draw_2colored_rectangle(gui_window::rectangle,
 			e->get_gui_style()->STYLE_LIGHT,
 			e->get_gui_style()->STYLE_DARK);
 
@@ -71,12 +72,11 @@ void gui_window::draw() {
 		r->x2 -= 1;
 		r->y2 = r->y1 + 17;
 		r->y1 += 1;
-		g->draw_filled_rectangle(e->get_screen(), r,
-			e->get_gui_style()->STYLE_DARK);
+		g->draw_filled_rectangle(r,	e->get_gui_style()->STYLE_DARK);
 
 		r->y1 = r->y2 + 1;
 		r->y2 = gui_window::rectangle->y2 - 1;
-		g->draw_2colored_rectangle(e->get_screen(), r,
+		g->draw_2colored_rectangle(r,
 			e->get_gui_style()->STYLE_LIGHT,
 			e->get_gui_style()->STYLE_DARK);
 

@@ -62,6 +62,12 @@ shader::shader(engine* e) {
 shader::~shader() {
 	m->print(msg::MDEBUG, "shader.cpp", "freeing shader stuff");
 
+    for(unsigned int i = 0; i < cshaders; i++) {
+        delete [] shaders[i].uniforms;
+        delete [] shaders[i].attributes;
+    }
+	delete [] shaders;
+
 	m->print(msg::MDEBUG, "shader.cpp", "shader stuff freed");
 }
 
@@ -167,7 +173,7 @@ unsigned int shader::add_shader(char* vname, char* fname, unsigned int cuniforms
 		shaders[cshaders].attributes = new int[shaders[cshaders].cattributes];
 
 		// load the vertex shader
-		f->open_file(vname, true);
+		f->open_file(vname, file_io::OT_READ_BINARY);
 		unsigned int vs_fsize = f->get_filesize();
 		shader_text = new char[vs_fsize+1];
 		f->get_block(shader_text, vs_fsize);
@@ -189,7 +195,7 @@ unsigned int shader::add_shader(char* vname, char* fname, unsigned int cuniforms
 		}
 
 		// load the fragment shader
-		f->open_file(fname, true);
+		f->open_file(fname, file_io::OT_READ_BINARY);
 		unsigned int fs_fsize = f->get_filesize();
 		shader_text = new char[fs_fsize+1];
 		f->get_block(shader_text, fs_fsize);
@@ -258,13 +264,7 @@ unsigned int shader::add_shader(char* vname, char* fname, unsigned int cuniforms
 		cshaders++;
 	}
 
-	return cshaders;
-}
-
-/*! returns true if glsl shaders are supported
- */
-bool shader::is_shader_support() {
-	return shader::shader_support;
+	return cshaders-1;
 }
 
 /*! "uses" a shader program object
@@ -545,6 +545,9 @@ void shader::set_attribute4fv(unsigned int num, float* var) {
 	}
 }
 
+/*! returns the 'num'th shader object
+ *  @param num the number of the shader object we want to get/return
+ */
 shader::shader_object* shader::get_shader_object(unsigned int num) {
 	return &shaders[num];
 }

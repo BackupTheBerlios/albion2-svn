@@ -16,17 +16,20 @@
 
 /*! @brief header for win32 dll export
  *  @author flo
- *  @version 0.1
  *  @todo -
  *
  *  This is the Win32 DLL export Header
  */
 
+
 #ifdef WIN32
 #define snprintf _snprintf
+#ifndef vsnprintf
 #define vsnprintf _vsnprintf
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#pragma warning(disable: 4251)
 #ifdef A2E_EXPORTS
 #define A2E_API __declspec(dllexport)
 #else

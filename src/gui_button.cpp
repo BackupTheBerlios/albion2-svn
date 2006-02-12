@@ -37,6 +37,8 @@ gui_button::gui_button(engine* e) {
 gui_button::~gui_button() {
 	m->print(msg::MDEBUG, "gui_button.cpp", "freeing gui_button stuff");
 
+	// the buttons text is deleted by the gui_text element
+	delete gui_button::rectangle;
 
 	m->print(msg::MDEBUG, "gui_button.cpp", "gui_button stuff freed");
 }
@@ -56,11 +58,11 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 			gui_button::rectangle->x2 + x, gui_button::rectangle->y2 + y);
 
 		// draw bg
-		g->draw_filled_rectangle(e->get_screen(), r1,
+		g->draw_filled_rectangle(r1,
 			e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g->draw_2colored_rectangle(e->get_screen(), r1,
+		g->draw_2colored_rectangle(r1,
 			e->get_gui_style()->STYLE_LIGHT,
 			e->get_gui_style()->STYLE_DARK);
 
@@ -68,14 +70,14 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 		g->cord_to_pnt(p2, gui_button::rectangle->x2-1 + x, gui_button::rectangle->y2-1 + y);
 
 		// draw first line inside of the button
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_INDARK);
 
 		g->cord_to_pnt(p1, gui_button::rectangle->x1+1 + x, gui_button::rectangle->y2-1 + y);
 		g->cord_to_pnt(p2, gui_button::rectangle->x2 + x, gui_button::rectangle->y2-1 + y);
 
 		// draw second line inside of the button
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_INDARK);
 
 		if(icon == 0) {
@@ -108,7 +110,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 3,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// second line
@@ -116,7 +118,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 2,
 						y + gui_button::rectangle->y1 + heigth_button/2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// third line
@@ -124,13 +126,13 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 - 1);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 1,
 						y + gui_button::rectangle->y1 + heigth_button/2 - 1);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// fourth "line" (point)
 					g->cord_to_pnt(p1, x + gui_button::rectangle->x1 + width_button/2,
 						y + gui_button::rectangle->y1 + heigth_button/2 - 2);
-					g->draw_point(e->get_screen(), p1,
+					g->draw_point(p1,
 						e->get_gui_style()->STYLE_ARROW);
 					break;
 				case 2:
@@ -139,7 +141,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 3,
 						y + gui_button::rectangle->y1 + heigth_button/2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// second line
@@ -147,7 +149,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 2,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// third line
@@ -155,13 +157,13 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 1,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// fourth "line" (point)
 					g->cord_to_pnt(p1, x + gui_button::rectangle->x1 + width_button/2,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 3);
-					g->draw_point(e->get_screen(), p1,
+					g->draw_point(p1,
 						e->get_gui_style()->STYLE_ARROW);
 					break;
 				case 3:
@@ -170,7 +172,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + 3);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x2 - 3,
 						y + gui_button::rectangle->y2 - 4);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_FONT2);
 
 					// second line
@@ -178,7 +180,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y2 - 3);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x2 - 3,
 						y + gui_button::rectangle->y1 + 2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_FONT2);
 					break;
 				default:
@@ -191,11 +193,11 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 		gui_button::rectangle->x2 + x, gui_button::rectangle->y2 + y);
 
 		// draw bg
-		g->draw_filled_rectangle(e->get_screen(), r1,
+		g->draw_filled_rectangle(r1,
 			e->get_gui_style()->STYLE_BG);
 
 		// draw 2 colored border
-		g->draw_2colored_rectangle(e->get_screen(), r1,
+		g->draw_2colored_rectangle(r1,
 			e->get_gui_style()->STYLE_DARK,
 			e->get_gui_style()->STYLE_LIGHT);
 
@@ -205,8 +207,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 			gui_button::rectangle->y2-1 + y);
 
 		// draw 2 colored border
-		g->draw_2colored_rectangle(e->get_screen(),
-			r1, e->get_gui_style()->STYLE_INDARK,
+		g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_INDARK,
 			e->get_gui_style()->STYLE_BG);
 
 		if(icon == 0) {
@@ -240,7 +241,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 4,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// second line
@@ -248,7 +249,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 3,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// third line
@@ -256,13 +257,13 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 2,
 						y + gui_button::rectangle->y1 + heigth_button/2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// fourth "line" (point)
 					g->cord_to_pnt(p1, x + gui_button::rectangle->x1 + width_button/2 + 1,
 						y + gui_button::rectangle->y1 + heigth_button/2 - 1);
-					g->draw_point(e->get_screen(), p1,
+					g->draw_point(p1,
 						e->get_gui_style()->STYLE_ARROW);
 					break;
 				case 2:
@@ -271,7 +272,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 4,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 1);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// second line
@@ -279,7 +280,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 3,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 2);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// third line
@@ -287,13 +288,13 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + heigth_button/2 + 3);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x1 + width_button/2 + 2,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 3);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_ARROW);
 
 					// fourth "line" (point)
 					g->cord_to_pnt(p1, x + gui_button::rectangle->x1 + width_button/2 + 1,
 						y + gui_button::rectangle->y1 + heigth_button/2 + 4);
-					g->draw_point(e->get_screen(), p1,
+					g->draw_point(p1,
 						e->get_gui_style()->STYLE_ARROW);
 					break;
 				case 3:
@@ -302,7 +303,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y1 + 4);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x2 - 2,
 						y + gui_button::rectangle->y2 - 3);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_FONT2);
 
 					// second line
@@ -310,7 +311,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 						y + gui_button::rectangle->y2 - 2);
 					g->cord_to_pnt(p2, x + gui_button::rectangle->x2 - 2,
 						y + gui_button::rectangle->y1 + 3);
-					g->draw_line(e->get_screen(), p1, p2,
+					g->draw_line(p1, p2,
 						e->get_gui_style()->STYLE_FONT2);
 					break;
 				default:
@@ -330,6 +331,11 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
  */
 void gui_button::set_text_handler(gui_text* itext) {
 	gui_button::text_handler = itext;
+}
+
+//! returns the text_handler
+gui_text* gui_button::get_text_handler() {
+	return gui_button::text_handler;
 }
 
 //! returns the buttons id

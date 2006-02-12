@@ -18,12 +18,14 @@
 #define __A2EMATERIAL_H__
 
 #include <iostream>
+#include <list>
+#include <string>
+#include <cmath>
 #include <SDL/SDL_image.h>
 #include "msg.h"
 #include "core.h"
 #include "file_io.h"
 #include "engine.h"
-#include <cmath>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -31,8 +33,7 @@ using namespace std;
 /*! @class a2ematerial
  *  @brief material routines
  *  @author flo
- *  @version 0.1
- *  @todo nothing atm
+ *  @todo -
  *  
  *  the a2ematerial class
  */
@@ -46,9 +47,10 @@ public:
 	void load_material(char* filename);
 	void load_textures();
 
-	GLuint* get_texture(unsigned int num);
+	GLuint get_texture(unsigned int obj_num, unsigned int num);
 
-	char get_material_type();
+	char get_material_type(unsigned int obj_num);
+	char get_color_type(unsigned int obj_num);
 
 	enum MAT_TYPES {
 		NONE = 0x00,
@@ -64,11 +66,15 @@ protected:
 	engine* e;
 	texman* t;
 
-	unsigned int texture_count;
-	char** tex_names;
-	GLuint* textures;
+	struct texture_elem {
+		unsigned int obj_num; // needed?
+		char mat_type;
+		char col_type;
+		string* tex_names;
+		GLuint* textures;
+	};
 
-	char mat_type;
+	list<texture_elem> textures;
 
 };
 

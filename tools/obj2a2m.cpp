@@ -15,19 +15,13 @@
  */
 
 #include "obj2a2m.h"
-#include <iostream>
-#include <fstream>
-using namespace std;
-#include <string.h>
-
-#define MAX_OBJS 32
 
 /*!
  * \mainpage
  *
  * \author flo
  *
- * \date August - November 2005
+ * \date v1: August 2004 - November 2005 /// v2: January - February 2006
  *
  * Albion 2 Engine Tool - Alias Wavefront .obj -> A2E .a2m Converter
  *
@@ -35,38 +29,14 @@ using namespace std;
  * little specification of the A2E static model format:
  *
  * [A2EMODEL - 8 bytes]
- * [NAME - 8 bytes]
- * [VERTEX COUNT - 4 bytes]
- * [VERTICES - 4 bytes * VERTEX COUNT]
- * [TEXTURE COUNT - 4 bytes]
- * [TEXTURE NAMES - 32 bytes * TEXTURE COUNT]
- * [NORMAL COUNT - 4 bytes]
+ * [TYPE - 1 byte (0x00)]
+ * [VERTEX/TC COUNT - 4 bytes]
+ * [VERTICES - 4 bytes * 3 * VERTEX/TC COUNT]
+ * [TEXTURE COORDINATES - 4 bytes * 2 * VERTEX/TC COUNT]
  * [OBJECT COUNT - 4 bytes]
  * [FOR EACH OBJECT COUNT]
- * 	[OBJECT NAME - 8 bytes]
  * 	[INDEX COUNT - 4 bytes]
- * 	[TEXTURE VALUE - 4 bytes]
- * 	[INDICES - 4 bytes * INDEX COUNT]
- * 	[TEXTURE COORDINATES - 4 bytes * INDEX COUNT * 3]
- * 	[NORMAL VERTICES - 4 bytes * INDEX COUNT * 3]
- * [END FOR]
- *
- *
- * [A2EMODEL - 8 bytes]
- * [NAME - 8 bytes]
- * [VERTEX COUNT - 4 bytes]
- * [VERTICES - 4 bytes * VERTEX COUNT]
- * [TEXTURE COUNT - 4 bytes]
- * [TEXTURE NAMES - 32 bytes * TEXTURE COUNT]
- * [TEXTURE COORDINATE COUNT - 4 bytes]
- * [TEXTURE COORDINATES - 4 bytes * TEXTURE COORDINATE COUNT * 2]
- * [OBJECT COUNT - 4 bytes]
- * [FOR EACH OBJECT COUNT]
- * 	[OBJECT NAME - 8 bytes]
- * 	[INDEX COUNT - 4 bytes]
- * 	[TEXTURE VALUE - 4 bytes]
- * 	[INDICES - 4 bytes * INDEX COUNT * 3]
- * 	[TEXTURE INDICES - 4 bytes * INDEX COUNT * 3]
+ * 	[INDICES - 4 bytes * 3 * INDEX COUNT]
  * [END FOR]
  */
 
@@ -77,13 +47,6 @@ void put_uint(fstream* file, unsigned int uint) {
 	file->put(uint & 0xFF);
 }
 
-void put_swap_uint(fstream* file, unsigned int uint) {
-	file->put(uint & 0xFF);
-	file->put((uint >> 8) & 0xFF);
-	file->put((uint >> 16) & 0xFF);
-	file->put((uint >> 24) & 0xFF);
-}
-
 void put_float(fstream* file, float flt) {
 	char* tmp = new char[4];
 	memcpy(tmp, &flt, 4);
@@ -91,403 +54,208 @@ void put_float(fstream* file, float flt) {
 	delete [] tmp;
 }
 
-void load_materials(char* filename) {
-	fstream mtlfile;
-	mtlfile.open(filename, fstream::in | fstream::binary);
-	if(!mtlfile.is_open()) {
-		cout << "error opening .mtl file!" << endl;
-		return;
-	}
-	char* mtlline = (char*)malloc(256);
-	while(!mtlfile.eof()) {
-		mtlfile.getline(mtlline, 256);
-		switch(mtlline[0]) {
-			case 'n': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				char* line_tok[8];
-				line_tok[x] = strtok(mtlline, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				if(strcmp(line_tok[0], "newmtl") == 0) {
-					material_count++;
-				}
-			}
-			break;
-			default:
-				break;
-		}
-	}
-
-	mtlfile.clear();
-	// seek to begining
-	mtlfile.seekg(0, ios::beg);
-
-	for(unsigned int i = 0; i < material_count; i++) {
-		mat_names[i] = (char*)malloc(33);
-		for(unsigned int j = 0; j < 33; j++) {
-			mat_names[i][j] = 0;
-		}
-		tex_names[i] = (char*)malloc(33);
-		for(unsigned int j = 0; j < 33; j++) {
-			tex_names[i][j] = 0;
-		}
-	}
-
-	unsigned int mc = 0;
-	unsigned int tc = 0;
-
-	while(!mtlfile.eof()) {
-		mtlfile.getline(mtlline, 256);
-		switch(mtlline[0]) {
-			case 'n': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				char* line_tok[8];
-				line_tok[x] = strtok(mtlline, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				if(strcmp(line_tok[0], "newmtl") == 0) {
-					sprintf(mat_names[mc], line_tok[1]);
-					mc++;
-				}
-			}
-			break;
-			case 'm': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				char* line_tok[8];
-				line_tok[x] = strtok(mtlline, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				if(strcmp(line_tok[0], "map_Kd") == 0) {
-					sprintf(tex_names[tc], line_tok[1]);
-					texture_count++;
-					tc++;
-				}
-			}
-			break;
-			default:
-				break;
-		}
-	}
-
-	free(mtlline);
-	mtlfile.close();
-}
-
-int main(int argc, char *argv[])
-{
-	char* usage = "usage: obj2a2m <file.obj> <file.a2m>";
+int main(int argc, char *argv[]) {
+	string usage = "usage: obj2a2m <file.obj> <file.a2m>";
 	if(argc == 1) {
 		cout << "no .obj and .a2m file specified!" << endl << usage << endl;
 		return 0;
 	}
-	if(argc == 2) {
+	else if(argc == 2) {
 		cout << "no .obj or .a2m file specified!" << endl << usage << endl;
 		return 0;
+	}
+	else {
+		cout << "converting " << argv[1] << " to " << argv[2] << " ..." << endl;
 	}
 
 	char* obj_filename = argv[1];
 	char* a2m_filename = argv[2];
 
-	fstream ofile;
-	ofile.open(obj_filename, fstream::in | fstream::binary);
-	if(!ofile.is_open()) {
+	fstream ifile;
+	ifile.open(obj_filename, fstream::in | fstream::binary);
+	if(!ifile.is_open() || ifile.fail()) {
 		cout << "error opening .obj file!" << endl;
 		return 0;
 	}
 
-	// init stuf
-	index_count = (unsigned int*)malloc(sizeof(unsigned int)*MAX_OBJS);
-	for(unsigned int i = 0; i < MAX_OBJS; i++) {
-		index_count[i] = 0;
-	}
+	// .obj data loading
+	string buffer;
+	float x, y, z;
+	bool obj = false;
+	while(!ifile.eof()) {
+		ifile >> buffer;
 
-	// end init
-
-	char* line = (char*)malloc(256);
-	// get the objs name and the vertex/index count
-	while(!ofile.eof()) {
-		ofile.getline(line, 256);
-		switch(line[0]) {
-			case 'g': {
-				if(line[1] == ' ') {
-					// tokenize(tm) the line
-					unsigned int x = 0;
-					char* line_tok[8];
-					line_tok[x] = strtok(line, " ");
-					while(line_tok[x] != NULL) {
-						x++;
-						line_tok[x] = strtok(NULL, " ");
-					}
-
-					obj_names[object_count] = (char*)malloc(9);
-					for(unsigned int i = 0; i < 9; i++) {
-						obj_names[object_count][i] = 0;
-					}
-
-					memcpy(obj_names[object_count], line_tok[1], 8);
-					//obj_names[object_count][9] = 0;
-
-					object_count++;
-				}
-			}
-			break;
-			case 'v':
-				if(line[1] == ' ') {
-					vertex_count++;
-				}
-				else if(line[1] == 't') {
-					tex_vertex_count++;
-				}
-				break;
-			case 'f':
-				index_count[object_count-1]++;
-				total_index_count++;
-				break;
-			default:
-				break;
+		if(buffer == "v") {
+			ifile >> x;
+			ifile >> y;
+			ifile >> z;
+			vertices.push_back(*new vertex3(x, y, z));
 		}
+		else if(buffer == "vt") {
+			ifile >> x;
+			ifile >> y;
+			tex_coords.push_back(*new core::coord());
+			tex_coords.back().u = x;
+			tex_coords.back().v = y;
+		}
+		else if(buffer == "g") {
+			obj ? object_count++, obj = false : obj = true;
+		}
+
+		buffer.clear();
 	}
 
-	ofile.clear();
-	// seek to begining
-	ofile.seekg(0, ios::beg);
+	indices = new vector<core::index>[object_count];
+	ivertices.reserve(tex_coords.size());
 
-	vertices1 = (unsigned int*)malloc(sizeof(unsigned int)*vertex_count);
-	vertices2 = (unsigned int*)malloc(sizeof(unsigned int)*vertex_count);
-	vertices3 = (unsigned int*)malloc(sizeof(unsigned int)*vertex_count);
-
-	texcords1 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
-	texcords2 = (unsigned int*)malloc(sizeof(unsigned int)*tex_vertex_count);
-
-	for(unsigned int i = 0; i < object_count; i++) {
-		indices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		indices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		indices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		texindices1[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		texindices2[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
-		texindices3[i] = (unsigned int*)malloc(sizeof(unsigned int)*index_count[i]);
+	// 12.345678f indicates an uninitialized vertex
+	vertex3 vui(12.345678f, 12.345678f, 12.345678f);
+	for(unsigned int i = 0; i < tex_coords.size(); i++) {
+		ivertices.push_back(*new vertex3(vui));
 	}
 
-	tex_number = (unsigned int*)malloc(sizeof(unsigned int)*object_count);
+	ifile.clear();
+	ifile.seekg(0, ios::beg);
+	msg* m = new msg();
+	core* c = new core(m);
+	obj = false;
+	while(!ifile.eof()) {
+		ifile >> buffer;
 
-	unsigned int vc = 0;
-	unsigned int ic = 0;
-	unsigned int tc = 0;
-	unsigned int oc = 0;
-	bool is_first_obj = false;
+		if(buffer == "f") {
+			indices[cur_object].push_back(*new core::index);
+			for(unsigned int i = 0; i < 3; i++) {
+				ifile >> buffer;
+				unsigned int dc = c->get_delimiter_count((char*)buffer.c_str(), 0x2F);
+				if(dc == 0) {
+					cout << "no texture coordinates specified! wrong file format?" << endl;
+					return 0;
+				}
+				else if(dc > 2) {
+					cout << "wrong file format!" << endl;
+					return 0;
+				}
 
-	char* line_tok[8];
+				char** ind = c->tokenize((char*)buffer.c_str(), 0x2F);
+				unsigned int vind = atoi(ind[0])-1;
+				unsigned int tind = atoi(ind[1])-1;
 
-	// get the vertices and indices
-	while(!ofile.eof()) {
-		ofile.getline(line, 256);
-		switch(line[0]) {
-			case 'g': {
-				if(line[1] == ' ') {
-					is_first_obj = true;
+				if(ivertices[tind] == vui) {
+					ivertices[tind].set(&vertices.at(vind));
+					if(i == 0) {
+						indices[cur_object].back().i1 = tind;
+					}
+					else if(i == 1) {
+						indices[cur_object].back().i2 = tind;
+					}
+					else {
+						indices[cur_object].back().i3 = tind;
+					}
+				}
+				else if(ivertices[tind] != vui && ivertices[tind] != vertices.at(vind)) {
+					bool found = false;
+					for(unsigned int j = 0; j < tex_coords.size(); j++) {
+						if(ivertices[j] == &vertices.at(vind)) {
+							// equal vertex found
+							if(tex_coords.at(j).u == tex_coords.at(tind).u &&
+								tex_coords.at(j).v == tex_coords.at(tind).v) {
+								// equal texture coordinate found
+								found = true;
+								if(i == 0) {
+									indices[cur_object].back().i1 = j;
+								}
+								else if(i == 1) {
+									indices[cur_object].back().i2 = j;
+								}
+								else {
+									indices[cur_object].back().i3 = j;
+								}
+							}
+						}
+					}
+
+					if(!found) {
+						// no equal vertex and texture coordinate found, add new ones
+						ivertices.push_back(*new vertex3(vertices.at(vind)));
+						tex_coords.push_back(*new core::coord());
+						tex_coords.back().u = tex_coords.at(tind).u;
+						tex_coords.back().v = tex_coords.at(tind).v;
+
+						if(i == 0) {
+							indices[cur_object].back().i1 = (unsigned int)ivertices.size()-1;
+						}
+						else if(i == 1) {
+							indices[cur_object].back().i2 = (unsigned int)ivertices.size()-1;
+						}
+						else {
+							indices[cur_object].back().i3 = (unsigned int)ivertices.size()-1;
+						}
+					}
 				}
 				else {
-					if(is_first_obj) { oc++; ic = 0; }
-				}
-			}
-			break;
-			case 'v': {
-				switch(line[1]) {
-					case ' ': {
-						// tokenize(tm) the line
-						unsigned int x = 0;
-						//char* line_tok[8];
-						line_tok[x] = strtok(line, " ");
-						while(line_tok[x] != NULL) {
-							x++;
-							line_tok[x] = strtok(NULL, " ");
-						}
-
-						float flt;
-
-						flt = (float)atof(line_tok[1]);
-						memcpy(&vertices1[vc], &flt, 4);
-						flt = (float)atof(line_tok[2]);
-						memcpy(&vertices2[vc], &flt, 4);
-						flt = (float)atof(line_tok[3]);
-						memcpy(&vertices3[vc], &flt, 4);
-
-						vc++;
+					if(i == 0) {
+						indices[cur_object].back().i1 = tind;
 					}
-					break;
-					case 't': {
-						// tokenize(tm) the line
-						unsigned int x = 0;
-						//char* line_tok[8];
-						line_tok[x] = strtok(line, " ");
-						while(line_tok[x] != NULL) {
-							x++;
-							line_tok[x] = strtok(NULL, " ");
-						}
-
-						float flt;
-
-						flt = (float)atof(line_tok[1]);
-						memcpy(&texcords1[tc], &flt, 4);
-						flt = (float)atof(line_tok[2]);
-						memcpy(&texcords2[tc], &flt, 4);
-
-						tc++;
+					else if(i == 1) {
+						indices[cur_object].back().i2 = tind;
 					}
-					break;
-					default:
-						break;
-				}
-			}
-			break;
-			case 'f': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				//char* line_tok[8];
-				line_tok[x] = strtok(line, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				// tokenize(tm) the line_tok
-				unsigned int y = 0;
-				char* itok[8];
-				itok[y] = strtok(line_tok[1], "/");
-				while(itok[y] != NULL) {
-					y++;
-					itok[y] = strtok(NULL, "/");
-				}
-				indices1[oc][ic] = atoi(itok[0]) - 1;
-				texindices1[oc][ic] = atoi(itok[1]) - 1;
-
-				// and the same again ...
-				y = 0;
-				itok[y] = strtok(line_tok[2], "/");
-				while(itok[y] != NULL) {
-					y++;
-					itok[y] = strtok(NULL, "/");
-				}
-				indices2[oc][ic] = atoi(itok[0]) - 1;
-				texindices2[oc][ic] = atoi(itok[1]) - 1;
-
-				// ... and again ...
-				y = 0;
-				itok[y] = strtok(line_tok[3], "/");
-				while(itok[y] != NULL) {
-					y++;
-					itok[y] = strtok(NULL, "/");
-				}
-				indices3[oc][ic] = atoi(itok[0]) - 1;
-				texindices3[oc][ic] = atoi(itok[1]) - 1;
-
-				ic++;
-			}
-			break;
-			case 'm': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				//char* line_tok[8];
-				line_tok[x] = strtok(line, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				if(strcmp(line_tok[0], "mtllib") == 0) {
-					load_materials(line_tok[1]);
-				}
-			}
-			break;
-			case 'u': {
-				// tokenize(tm) the line
-				unsigned int x = 0;
-				//char* line_tok[8];
-				line_tok[x] = strtok(line, " ");
-				while(line_tok[x] != NULL) {
-					x++;
-					line_tok[x] = strtok(NULL, " ");
-				}
-
-				if(strcmp(line_tok[0], "usemtl") == 0) {
-					for(unsigned int i = 0; i < material_count; i++) {
-						if(strcmp(line_tok[1], mat_names[i]) == 0) {
-							tex_number[oc] = i;
-						}
+					else {
+						indices[cur_object].back().i3 = tind;
 					}
 				}
 			}
-			break;
-			default:
-				break;
+		}
+		else if(buffer == "g") {
+			ginit ? (obj ? cur_object++, obj = false : obj = true) : ginit = true;
+		}
+
+		buffer.clear();
+	}
+
+	ifile.close();
+
+	// write data to the .a2m file
+	fstream ofile;
+	ofile.open(a2m_filename, fstream::out | fstream::binary);
+
+	ofile << "A2EMODEL" << char(0x00);
+	put_uint(&ofile, (unsigned int)tex_coords.size());
+
+	for(unsigned int i = 0; i < tex_coords.size(); i++) {
+		if(ivertices[i] != vui) {
+			put_float(&ofile, ivertices[i].x);
+			put_float(&ofile, ivertices[i].y);
+			put_float(&ofile, ivertices[i].z);
+		}
+		else {
+			cout << "unassigned vertex #" << i << "! (seems like the vertex is specified, but not used by any triangle - putting three 0.0f instead)" << endl;
+			put_float(&ofile, 0.0f);
+			put_float(&ofile, 0.0f);
+			put_float(&ofile, 0.0f);
 		}
 	}
-	free(line);
+
+	for(vector<core::coord>::iterator tc_iter = tex_coords.begin(); tc_iter != tex_coords.end(); tc_iter++) {
+		put_float(&ofile, tc_iter->u);
+		put_float(&ofile, tc_iter->v);
+	}
+
+	put_uint(&ofile, object_count);
+
+	for(unsigned int i = 0; i < object_count; i++) {
+		put_uint(&ofile, (unsigned int)indices[i].size());
+		for(vector<core::index>::iterator ind_iter = indices[i].begin(); ind_iter != indices[i].end(); ind_iter++) {
+			put_uint(&ofile, ind_iter->i1);
+			put_uint(&ofile, ind_iter->i2);
+			put_uint(&ofile, ind_iter->i3);
+		}
+	}
 
 	ofile.close();
 
-	fstream afile;
-	afile.open(a2m_filename, fstream::out | fstream::binary);
+	cout << "successfully converted " << obj_filename << " to " << a2m_filename << "!" << endl;
 
-	char* a2m_type = "A2EMODEL";
-	afile.write(a2m_type, 8);
-	afile.put(0x00);
-	afile.write(model_name, 8);
-
-	put_uint(&afile, vertex_count);
-	for(unsigned int i = 0; i < vertex_count; i++) {
-		put_swap_uint(&afile, vertices1[i]);
-		put_swap_uint(&afile, vertices2[i]);
-		put_swap_uint(&afile, vertices3[i]);
-	}
-
-	put_uint(&afile, texture_count);
-	for(unsigned int i = 0; i < texture_count; i++) {
-		afile.write(tex_names[i], 32);
-	}
-
-	put_uint(&afile, tex_vertex_count);
-	for(unsigned int i = 0; i < tex_vertex_count; i++) {
-		put_swap_uint(&afile, texcords1[i]);
-		put_swap_uint(&afile, texcords2[i]);
-	}
-
-	put_uint(&afile, object_count);
-	for(unsigned int i = 0; i < object_count; i++) {
-		afile.write(obj_names[i], 8);
-
-		put_uint(&afile, index_count[i]);
-
-		put_uint(&afile, tex_number[i]);
-
-		for(unsigned int j = 0; j < index_count[i]; j++) {
-			put_uint(&afile, indices1[i][j]);
-			put_uint(&afile, indices2[i][j]);
-			put_uint(&afile, indices3[i][j]);
-		}
-
-		for(unsigned int j = 0; j < index_count[i]; j++) {
-			put_uint(&afile, texindices1[i][j]);
-			put_uint(&afile, texindices2[i][j]);
-			put_uint(&afile, texindices3[i][j]);
-		}
-	}
-	
-	afile.close();
-
-	cout << vertex_count << " vertices, " << total_index_count << " indices and " << total_index_count*3 << " texture vertices successfully converted!" << endl;
+	Sleep(1000);
 
 	return 0;
 }

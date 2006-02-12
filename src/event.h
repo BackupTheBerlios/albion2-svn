@@ -62,8 +62,7 @@ public:
 		bool is_drawn;
 	};
 
-	gui_element* get_active_element();
-	void set_active_element(gui_element* active_element);
+	void set_active_type(unsigned int type);
 
 	void get_input_text(char* tmp_text);
 	//! input types
@@ -139,7 +138,8 @@ protected:
 	bool key_left;
 
 	//! current active gui element
-	gui_element* active_element;
+	//gui_element* active_element;
+	unsigned int active_type;
 
 	//! the input text of a input box
 	char input_text[512];

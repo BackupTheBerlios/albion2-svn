@@ -28,7 +28,6 @@
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
-//#include <GL/glut.h>
 #include <GL/glext.h>
 
 #ifdef WIN32
@@ -45,6 +44,8 @@
 #include "gfx.h"
 #include "texman.h"
 #include "extensions.h"
+#include "lua.h"
+#include "xml.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -65,8 +66,8 @@ public:
 	~engine();
 
 	// graphic control functions
-	void init(bool console);
-	void init(unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
+	void init();
+	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
 	void start_draw();
@@ -104,6 +105,7 @@ public:
 	gfx* get_gfx();
 	texman* get_texman();
 	ext* get_ext();
+	lua* get_lua();
 
     // the initialization mode is used to determine if we should load
     // or compute graphical stuff like textures or shaders
@@ -121,8 +123,11 @@ protected:
 	gfx* g;
 	texman* t;
 	ext* exts;
+	lua* l;
+	xml* x;
 
 	unsigned int width, height, depth, flags;
+	bool fullscreen;
 	SDL_Surface* screen;
 	const SDL_VideoInfo* video_info;
 
@@ -133,6 +138,10 @@ protected:
 	unsigned int fps_limit;
 
 	unsigned int mode;
+
+	unsigned int key_repeat;
+
+	gui_style::COLOR_SCHEME color_scheme;
 };
 
 #endif

@@ -27,7 +27,6 @@
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
-//#include <GL/glut.h>
 #include <GL/glext.h>
 
 #ifdef WIN32
@@ -114,7 +113,6 @@ public:
 
 	void init_extensions();
 	unsigned int add_shader(char* vname, char* fname, unsigned int cuniforms, char** uniforms, unsigned int cattributes, char** attributes);
-	bool is_shader_support();
 	void use_shader(unsigned int num);
 	shader_object* get_shader_object(unsigned int num);
 

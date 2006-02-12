@@ -30,13 +30,13 @@ event::event() {
 /*! there is no function currently
  */
 event::~event() {
-	cout << "DEBUG: " << "event.cpp" << "freeing event stuff" << endl;
+	cout << "DEBUG: " << "event.cpp" << " freeing event stuff" << endl;
 
 	if(event::gui_event_stack != NULL) {
 		delete [] event::gui_event_stack;
 	}
 
-	cout << "DEBUG: " << "event.cpp" << "event stuff freed" << endl;
+	cout << "DEBUG: " << "event.cpp" << " event stuff freed" << endl;
 }
 
 /*! initializes the event class and sets an sdl_event handler
@@ -182,7 +182,7 @@ void event::handle_events(unsigned int event_type) {
 					}
 					break;
 				case event::GUI:
-					switch(active_element->type) {
+					switch(active_type) {
 						// input box
 						case 1: {
 							for(int i = 0; i < 4; i++) {
@@ -549,17 +549,11 @@ void event::add_gui_event(GEVENT_TYPE event_type, unsigned int id) {
 	gui_event_stack[cgui_event].id = id;
 }
 
-/*! returns a pointer to the currently active gui element
+/*! sets the currently active gui element type
+ *  @param type the active gui element's type
  */
-event::gui_element* event::get_active_element() {
-	return event::active_element;
-}
-
-/*! sets the currently active gui element
- *  @param active_element pointer to the new active gui element
- */
-void event::set_active_element(event::gui_element* active_element) {
-	event::active_element = active_element;
+void event::set_active_type(unsigned int type) {
+	event::active_type = type;
 }
 
 /*! gets the current input text (for any input box) and writes it to tmp_text

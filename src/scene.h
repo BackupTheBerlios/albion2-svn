@@ -34,7 +34,7 @@ using namespace std;
 /*! @class scene
  *  @brief a2e scene manager
  *  @author flo
- *  @todo more functions
+ *  @todo implement a method to render all models in sequencing from far to near to the cameras pos, depending on their position
  *  
  *  the scene manager class
  */

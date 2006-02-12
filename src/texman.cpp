@@ -29,6 +29,11 @@ texman::texman(msg* m) {
 /*! deletes the texman object
  */
 texman::~texman() {
+	for(unsigned int i = 0; i < ctextures; i++) {
+		glDeleteTextures(1, &textures[i].tex);
+	}
+
+	delete [] textures;
 }
 
 /*! adds a texture and returns its (internal?) number
@@ -36,10 +41,11 @@ texman::~texman() {
  *  @param components the textures components (number of colors)
  *  @param format the textures format (GL_RGB, GL_LUMINANCE, ...)
  */
-unsigned int texman::add_texture(char* filename, GLint components, GLenum format) {
+unsigned int texman::add_texture(const char* filename, GLint components, GLenum format) {
 	// create a sdl surface and load the texture
-	SDL_Surface* tex_surface = new SDL_Surface();
-	tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
+	/*SDL_Surface* tex_surface = new SDL_Surface();
+	tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));*/
+	SDL_Surface* tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
 	if(!tex_surface) {
 		m->print(msg::MERROR, "texman.cpp", "add_texture(): error loading texture file \"%s\"!", filename);
 		return 0;
@@ -51,6 +57,7 @@ unsigned int texman::add_texture(char* filename, GLint components, GLenum format
 			textures[i].height == (unsigned int)tex_surface->h &&
 			textures[i].width == (unsigned int)tex_surface->w) {
 			// we already loaded the texture, so just return its number
+			SDL_FreeSurface(tex_surface);
 			return textures[i].tex;
 		}
 	}
@@ -72,7 +79,7 @@ unsigned int texman::add_texture(char* filename, GLint components, GLenum format
 	glBindTexture(GL_TEXTURE_2D, texman::textures[ctextures].tex);
 
 	// build mipmaps
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -81,14 +88,86 @@ unsigned int texman::add_texture(char* filename, GLint components, GLenum format
 		format, GL_UNSIGNED_BYTE, tex_surface->pixels);
 
 	// delete the sdl surface, b/c it isn't needed any more
-	if(tex_surface) {
-		SDL_FreeSurface(tex_surface);
+	SDL_FreeSurface(tex_surface);
+	//delete tex_surface;
+
+	// increment texture count
+	ctextures++;
+
+	return textures[ctextures-1].tex;
+}
+
+/*! adds a cubemap texture and returns its (internal?) number
+ *  @param filenames the textures file names
+ *  @param components the textures components (number of colors)
+ *  @param format the textures format (GL_RGB, GL_LUMINANCE, ...)
+ */
+unsigned int texman::add_cubemap_texture(const char** filenames, GLint components, GLenum format) {
+	// create a sdl surface and load the texture
+	SDL_Surface** tex_surface = new SDL_Surface*[6];
+	for(unsigned int i = 0; i < 6; i++) {
+		tex_surface[i] = new SDL_Surface();
+		tex_surface[i] = IMG_LoadPNG_RW(SDL_RWFromFile(filenames[i], "rb"));
+		if(!tex_surface[i]) {
+			m->print(msg::MERROR, "texman.cpp", "add_cubemap_texture(): error loading texture file \"%s\"!", filenames[i]);
+			return 0;
+		}
+	}
+
+	// look if we already loaded this texture
+	/*for(unsigned int i = 0; i < ctextures; i++) {
+		if(strcmp(textures[i].filename, filename) == 0 &&
+			textures[i].height == (unsigned int)tex_surface[i]->h &&
+			textures[i].width == (unsigned int)tex_surface[i]->w) {
+			// we already loaded the texture, so just return its number
+			SDL_FreeSurface(tex_surface);
+			return textures[i].tex;
+		}
+	}*/
+
+	// create a new texture element
+	texture* new_textures = new texture[ctextures+1];
+	for(unsigned int i = 0; i < ctextures; i++) {
+		new_textures[i] = textures[i];
+	}
+	new_textures[ctextures].filename = filenames[0];
+	new_textures[ctextures].height = tex_surface[0]->h;
+	new_textures[ctextures].width = tex_surface[0]->w;
+	new_textures[ctextures].tex = 0;
+	delete [] textures;
+	textures = new_textures;
+
+	// now create/generate an opengl texture and bind it
+	glGenTextures(1, &texman::textures[ctextures].tex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texman::textures[ctextures].tex);
+
+	// build mipmaps
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+
+	GLenum cmap[6] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+
+	for(unsigned int i = 0; i < 6; i++) {
+		gluBuild2DMipmaps(cmap[i], components, tex_surface[i]->w, tex_surface[i]->h,
+			format, GL_UNSIGNED_BYTE, tex_surface[i]->pixels);
+	}
+
+	// delete the sdl surface, b/c it isn't needed any more
+	for(unsigned int i = 0; i < 6; i++) {
+		if(tex_surface[i]) {
+			SDL_FreeSurface(tex_surface[i]);
+		}
 	}
 
 	// increment texture count
 	ctextures++;
 
 	return textures[ctextures-1].tex;
+	return 0;
 }
 
 /*! returns the texture with the tex number num

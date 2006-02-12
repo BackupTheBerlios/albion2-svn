@@ -47,6 +47,8 @@ public:
 	void draw(unsigned int x, unsigned int y);
 	void set_text_handler(gui_text* itext);
 	void set_blink_text_handler(gui_text* itext);
+	gui_text* get_text_handler();
+	gui_text* get_blink_text_handler();
 
 
 	// gui input box element variables functions
@@ -65,10 +67,6 @@ public:
 	bool get_active();
 
 	void set_notext();
-
-
-	// for debug purposes
-	gui_text* get_text_handler();
 
 protected:
 	msg* m;

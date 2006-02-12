@@ -1,0 +1,13 @@
+[A2EMAP - 6 bytes (char[6])]
+[OBJECT COUNT - 4 bytes (unsigned int)]
+
+-- start of objects [size per object: 163 bytes (+?)]
+[MODEL NAME - 32 bytes (char[32])]
+[MODEL FILE NAME - 32 bytes (char[32])]
+[ANIMATION FILE NAME - 32 bytes (char[32])]
+[MODEL TYPE - 1 byte (char) (0 = static, 1 = dynamic/animated)]
+[MATERIAL FILE NAME - 32 bytes (char[32])]
+[POSITION - 12 bytes (vertex3)]
+[ORIENTATION - 12 bytes (vertex3)]
+[SCALE - 12 bytes (vertex3)]
+[PHYSICAL PROPERTIES - 4 bytes (unsigned int) (0 = box, 1 = sphere, 2 = cylinder, 3 = trimesh)] <-- todo: more properties needed

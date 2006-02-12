@@ -30,7 +30,6 @@ using namespace std;
 /*! @class image
  *  @brief functions to display an image
  *  @author flo
- *  @version 0.1
  *  @todo more functions
  *  
  *  the image class
@@ -44,7 +43,7 @@ public:
 
 	void draw();
 	void draw(unsigned int scale_x, unsigned int scale_y);
-	void open_image(char* filename);
+	void open_image(char* filename, GLint components = 3, GLenum format = GL_RGB);
 
 	void set_position(unsigned int x, unsigned int y);
 	void set_position(core::pnt* position);
@@ -57,6 +56,8 @@ protected:
 	texman* t;
 
 	GLuint texture;
+
+	bool alpha;
 
 	core::pnt* position;
 	unsigned int width;

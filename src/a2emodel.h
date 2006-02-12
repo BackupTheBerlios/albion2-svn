@@ -21,12 +21,11 @@
 #include <windows.h>
 #endif
 
-#define MAX_OBJS 32
-
 #include <iostream>
+#include <cmath>
+#include <vector>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
-#include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "msg.h"
@@ -43,8 +42,7 @@ using namespace std;
 /*! @class a2emodel
  *  @brief class for loading and displaying an a2e model
  *  @author flo
- *  @version 0.2
- *  @todo more functions
+ *  @todo -
  *  
  *  the a2emodel class
  */
@@ -55,7 +53,7 @@ public:
 	a2emodel(engine* e, shader* s);
 	~a2emodel();
 
-	void load_model(char* filename);
+	void load_model(char* filename, bool vbo = false);
 	void draw();
 	void set_position(float x, float y, float z);
 	vertex3* get_position();
@@ -104,25 +102,22 @@ protected:
 	shader* s;
 	ext* exts;
 
-	char model_type[9];
-	char model_name[9];
-	unsigned int vertex_count;
 	vertex3* vertices;
-	unsigned int texture_count;
-	char* tex_names[MAX_OBJS];
-	unsigned int object_count;
-	char* obj_names[MAX_OBJS];
-	unsigned int* index_count;
-	unsigned int* tex_value;
-	unsigned int tex_vertex_count;
 	core::coord* tex_coords;
-	core::index* indices[MAX_OBJS];
-	core::index* tex_indices[MAX_OBJS];
+	core::index** indices;
+	unsigned int object_count;
+	unsigned int vertex_count;
+	unsigned int* index_count;
+	GLuint vbo_vertices_id;
+	GLuint vbo_tex_coords_id;
+	GLuint* vbo_indices_ids;
+	GLuint vbo_normals_id;
+	GLuint vbo_binormals_id;
+	GLuint vbo_tangents_id;
+
 	vertex3* normals;
 	vertex3* binormals;
 	vertex3* tangents;
-
-	GLuint textures[MAX_OBJS];
 
 	vertex3* position;
 	vertex3* scale;
@@ -150,6 +145,9 @@ protected:
 
 	float* light_color;
 	vertex3* light_position;
+
+	//! flag that specifies if this model is using a vertex buffer object
+	bool vbo;
 };
 
 #endif

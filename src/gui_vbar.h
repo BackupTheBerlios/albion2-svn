@@ -71,6 +71,8 @@ public:
 
 	void set_up_button_handler(gui_button* ibutton);
 	void set_down_button_handler(gui_button* ibutton);
+	gui_button* get_up_button_handler();
+	gui_button* get_down_button_handler();
 
 protected:
 	msg* m;

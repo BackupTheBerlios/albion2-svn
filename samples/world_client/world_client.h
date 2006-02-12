@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __WORLD_CLIENT_H__
 #define __WORLD_CLIENT_H__
 
@@ -80,7 +80,7 @@ struct client {
 	unsigned int port;
 
 	core::pnt* text_point;
-	gui_text* text;
+	GUI_OBJ text;
 
 	a2eanim* model;
 	a2ematerial* mat;

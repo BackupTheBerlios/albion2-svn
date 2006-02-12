@@ -19,6 +19,7 @@
 #include <math.h>
 
 /*! creates a new light object
+ *  @param e pointer to the engine class
  *  @param x the lights x position
  *  @param y the lights y position
  *  @param z the lights z position
@@ -68,10 +69,10 @@ light::~light() {
 	m->print(msg::MDEBUG, "light.cpp", "freeing light stuff");
 
 	delete light::position;
-	/*delete light::lambient;
-	delete light::ldiffuse;
-	delete light::lspecular;
-	delete light::spot_dir;*/
+	delete [] light::lambient;
+	delete [] light::ldiffuse;
+	delete [] light::lspecular;
+	delete [] light::spot_dir;
 
 	m->print(msg::MDEBUG, "light.cpp", "light stuff freed");
 }
@@ -91,28 +92,40 @@ void light::set_position(float x, float y, float z) {
  *  @param lambient the lights ambient color (float[3])
  */
 void light::set_lambient(float* lambient) {
-	light::lambient = lambient;
+	light::lambient[0] = lambient[0];
+	light::lambient[1] = lambient[1];
+	light::lambient[2] = lambient[2];
+	light::lambient[3] = lambient[3];
 }
 
 /*! sets the lights diffuse color
  *  @param ldiffuse the lights diffuse color (float[3])
  */
 void light::set_ldiffuse(float* ldiffuse) {
-	light::ldiffuse = ldiffuse;
+	light::ldiffuse[0] = ldiffuse[0];
+	light::ldiffuse[1] = ldiffuse[1];
+	light::ldiffuse[2] = ldiffuse[2];
+	light::ldiffuse[3] = ldiffuse[3];
 }
 
 /*! sets the lights specular color
  *  @param lspecular the lights specular color (float[3])
  */
 void light::set_lspecular(float* lspecular) {
-	light::lspecular = lspecular;
+	light::lspecular[0] = lspecular[0];
+	light::lspecular[1] = lspecular[1];
+	light::lspecular[2] = lspecular[2];
+	light::lspecular[3] = lspecular[3];
 }
 
 /*! sets the lights spot (specular?) light direction
  *  @param direction the spots direction (float[3])
  */
 void light::set_spot_direction(float* direction) {
-	light::spot_dir = direction;
+	light::spot_dir[0] = direction[0];
+	light::spot_dir[1] = direction[1];
+	light::spot_dir[2] = direction[2];
+	light::spot_dir[3] = direction[3];
 }
 
 /*! sets the lights spot light cutoff angle

@@ -1,0 +1,24 @@
+[A2EANIM - 7 bytes (char[7])]
+
+[JOINT COUNT - 4 bytes (unsigned int)]
+
+[FOR EACH JOINT]
+	[JOINT PARENT - 4 bytes (unsigned int)]
+	[JOINT FLAGS - 4 bytes (unsigned int) (b0 = Tx, b1 = Ty, b2 = Tz, b3 = Qx, b4 = Qy, b5 = Qz)]
+	[JOINT START INDEX - 4 bytes (unsigned int)]
+	[JOINT BASE TRANSLATION - 3 * 4 bytes (vertex3)]
+	[JOINT BASE ORIENTATION - 4 * 4 bytes (quaternion)]
+[END FOR EACH]
+
+[FRAME COUNT - 4 bytes (unsigned int)]
+[FRAME TIME - 4 bytes (FRAME COUNT / FRAME RATE (* 2 ?)) (float)]
+[ANIMATED COMPONENTS COUNT - 4 bytes (unsigned int)]
+
+[FOR EACH FRAME]
+	[FOR EACH ANIMATED COMPONENT]
+		[(JOINT) TRANSLATION - 3 * 4 bytes (vertex3)] // if available/needed
+		[(JOINT) ORIENTATION - 4 * 4 bytes (quaternion)] // if available/needed
+	[END FOR EACH]
+[END FOR EACH]
+
+[END OF SPEC]

@@ -17,6 +17,7 @@
 #include "image.h"
 
 /*! there is no function currently
+ *  @param e pointer to the engine class
  */
 image::image(engine* e) {
 	image::position = new core::pnt();
@@ -25,6 +26,8 @@ image::image(engine* e) {
 
 	image::width = 0;
 	image::heigth = 0;
+
+	alpha = false;
 
 	// get classes
 	image::e = e;
@@ -53,6 +56,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
 	glColor3f(1.0f, 1.0f, 1.0f);
+	if(alpha) { glEnable(GL_BLEND); }
 	glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex2i(image::position->x, screen_heigth - image::position->y);
@@ -63,6 +67,8 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 		glTexCoord2f(1.0f, 0.0f);
 		glVertex2i(image::position->x + scale_x, screen_heigth - image::position->y);
 	glEnd();
+	if(alpha) { glDisable(GL_BLEND); }
+	glDisable(GL_TEXTURE_2D);
 
 	// if we want to draw 3d stuff later on, we have to clear
 	// the depth buffer, otherwise nothing will be seen
@@ -79,9 +85,12 @@ void image::draw() {
 
 /*! opens an image file
  *  @param filename the image files name
+ *  @param components how many color components should be used (in bytes)
+ *  @param format the images format (GL_RGB, GL_RGBA, etc. ...)
  */
-void image::open_image(char* filename) {
-	texture = t->add_texture(filename);
+void image::open_image(char* filename, GLint components, GLenum format) {
+	if(components == 4) { alpha = true; }
+	texture = t->add_texture(filename, components, format);
 	image::width = t->get_texture(texture)->width;
 	image::heigth = t->get_texture(texture)->height;
 }

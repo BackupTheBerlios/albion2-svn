@@ -19,11 +19,6 @@
 /*! there is no function currently
  */
 a2ematerial::a2ematerial(engine* e) {
-	texture_count = 0;
-	tex_names = NULL;
-	textures = NULL;
-	mat_type = 0x00;
-
 	// get classes
 	a2ematerial::e = e;
 	a2ematerial::c = e->get_core();
@@ -37,13 +32,11 @@ a2ematerial::a2ematerial(engine* e) {
 a2ematerial::~a2ematerial() {
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
 
-	if(tex_names != NULL) {
-		delete [] tex_names;
-	}
-
-	if(textures != NULL) {
-		delete [] textures;
-	}
+    for(list<texture_elem>::iterator titer = textures.begin(); titer != textures.end(); titer++) {
+        delete [] titer->tex_names;
+        delete [] titer->textures;
+    }
+	textures.clear();
 
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
 }
@@ -52,7 +45,7 @@ a2ematerial::~a2ematerial() {
  *  @param filename the materials filename
  */
 void a2ematerial::load_material(char* filename) {
-	file->open_file(filename, true);
+	file->open_file(filename, file_io::OT_READ_BINARY);
 
 	// get file type
 	char* file_type = new char[12];
@@ -65,48 +58,43 @@ void a2ematerial::load_material(char* filename) {
 	}
 	delete [] file_type;
 
-	// get material type
-	a2ematerial::mat_type = (file->get_char() & 0xFF);
+	unsigned int celems = file->get_uint();
+	for(unsigned int i = 0; i < celems; i++) {
+		textures.push_back(*new a2ematerial::texture_elem());
+		textures.back().obj_num = i;
 
-	// get texture count
-	a2ematerial::texture_count = file->get_uint();
+		// get material type
+		textures.back().mat_type = file->get_char();
+		if(textures.back().mat_type > 0x03) {
+			m->print(msg::MERROR, "a2ematerial.cpp", "load_material(): unknown material type (obj: %u, type: %u)!",
+				i, (unsigned int)textures.back().mat_type);
+		}
 
-	// create tex name pointers
-	a2ematerial::tex_names = new char*[a2ematerial::texture_count];
+		// get color type
+		textures.back().col_type = file->get_char();
+		if(textures.back().col_type > 0x01) {
+			m->print(msg::MERROR, "a2ematerial.cpp", "load_material(): unknown color type (obj: %u, type: %u)!",
+				i, (unsigned int)textures.back().col_type);
+		}
 
-	// create textures
-	a2ematerial::textures = new GLuint[a2ematerial::texture_count];
+		// create tex name pointers
+		textures.back().tex_names = new string[textures.back().mat_type];
 
-	// get filesize
-	unsigned int size = file->get_filesize();
+		// create textures
+		textures.back().textures = new GLuint[textures.back().mat_type];
 
-	// the remaining data ...
-	char* data = new char[size - 15];
-	file->get_block(data, size - 16);
-	data[size - 16] = 0;
-
-	// load the texture names
-	unsigned int x = 0;
-	char** tokens = new char*[a2ematerial::texture_count];
-	char* tok = new char[2];
-	tok[0] = (char)0xFF;
-	tok[1] = (char)0x00;
-	tokens[x] = strtok(data, tok);
-	while(x < (a2ematerial::texture_count-1)) {
-		x++;
-		tokens[x] = strtok(NULL, tok);
+		// get texture file names
+		unsigned int x = 0;
+		while(x < (unsigned int)textures.back().mat_type) {
+			unsigned char c = file->get_char();
+			if(c == 0xFF) {
+				x++;
+			}
+			else {
+				textures.back().tex_names[x] += c;
+			}
+		}
 	}
-
-	for(unsigned int i = 0; i < (x+1); i++) {
-		a2ematerial::tex_names[i] = new char[strlen(tokens[i])+1];
-		memcpy(a2ematerial::tex_names[i], tokens[i], strlen(tokens[i]));
-		a2ematerial::tex_names[i][strlen(tokens[i])] = 0;
-		if(i == x - 1) { a2ematerial::tex_names[i][strlen(tokens[i])] = 0; }
-	}
-
-	delete [] tok;
-	delete [] data;
-	delete [] tokens;
 
 	// close file
 	file->close_file();
@@ -119,21 +107,53 @@ void a2ematerial::load_material(char* filename) {
  */
 void a2ematerial::load_textures() {
 	if(e->get_init_mode() == engine::GRAPHICAL) {
-		for(unsigned int i = 0; i < texture_count; i++) {
-			textures[i] = t->add_texture(tex_names[i], 3, GL_RGB);
+		for(list<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
+			for(unsigned int i = 0; i < (unsigned int)tex_iter->mat_type; i++) {
+				if(tex_iter->col_type == 0x01) {
+					tex_iter->textures[i] = t->add_texture(tex_iter->tex_names[i].c_str(), 4, GL_RGBA);
+				}
+				else {
+					tex_iter->textures[i] = t->add_texture(tex_iter->tex_names[i].c_str(), 3, GL_RGB);
+				}
+			}
 		}
 	}
 }
 
 /*! returns a texture
+ *  @param obj_num the number of the object we want to get texture data from
  *  @param num the textures num we want to get
  */
-GLuint* a2ematerial::get_texture(unsigned int num) {
-	return &a2ematerial::textures[num];
+GLuint a2ematerial::get_texture(unsigned int obj_num, unsigned int num) {
+	for(list<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
+		if(tex_iter->obj_num == obj_num) {
+			return tex_iter->textures[num];
+		}
+	}
+	m->print(msg::MERROR, "a2ematerial.cpp", "get_texture(): texture element/object #%u or texture #%u does not exist!", obj_num, num);
+	return 0;
 }
 
 /*! returns the material type (MAT_TYPES)
  */
-char a2ematerial::get_material_type() {
-	return a2ematerial::mat_type;
+char a2ematerial::get_material_type(unsigned int obj_num) {
+	for(list<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
+		if(tex_iter->obj_num == obj_num) {
+			return tex_iter->mat_type;
+		}
+	}
+	m->print(msg::MERROR, "a2ematerial.cpp", "get_material_type(): texture element/object #%u does not exist!", obj_num);
+	return 0;
+}
+
+/*! returns the color type (0x00 = RGB, 0x01 = RGBA)
+ */
+char a2ematerial::get_color_type(unsigned int obj_num) {
+	for(list<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
+		if(tex_iter->obj_num == obj_num) {
+			return tex_iter->col_type;
+		}
+	}
+	m->print(msg::MERROR, "a2ematerial.cpp", "get_color_type(): texture element/object #%u does not exist!", obj_num);
+	return 0;
 }

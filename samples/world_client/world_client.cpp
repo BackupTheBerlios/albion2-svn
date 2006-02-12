@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date April - September 2005
+ * \date April 2005 - February 2006
  *
  * Albion 2 Engine Sample - World Client Sample
  */
@@ -54,7 +54,7 @@ int handle_server_data(char* data) {
 					clients[i].text_point->y = 10;
 					clients[i].text = agui->add_text("vera.ttf", 12, "-", 0x000000, clients[i].text_point, i, 0);
 					// we don't want the text to be shown up already
-					clients[i].text->set_notext();
+					agui->get_text(clients[i].text)->set_notext();
 
 					clients[i].model = NULL;
 					clients[i].mat = NULL;
@@ -124,7 +124,7 @@ int handle_server_data(char* data) {
 			unsigned int len = (unsigned int)(data[8] & 0xFF);
 			memcpy(clients[cur_client].name, &data[9], len);
 			clients[cur_client].name[len+1] = 0;
-			clients[cur_client].text->set_text(clients[cur_client].name);
+			agui->get_text(clients[cur_client].text)->set_text(clients[cur_client].name);
 			clients[cur_client].status = ST_ONLINE;
 			clients[cur_client].id = cur_client;
 			clients[cur_client].host = (unsigned int)SDLNet_Read32(&data[2]);
@@ -257,7 +257,7 @@ void delete_player(unsigned int num) {
 	clients[num].host = 0;
 	clients[num].port = 0;
 	clients[num].status = ST_OFFLINE;
-	clients[num].text->set_notext();
+	agui->get_text(clients[num].text)->set_notext();
 	sprintf(clients[num].name, "unknown");
 
 	// delete the players objects
@@ -382,7 +382,7 @@ void add_msg(unsigned int length, char* msg, ...) {
 				sprintf(tmp, "%s %s", tmp, tokens[i]);
 				tmp_text->set_text(tmp);
 				cur_width = tmp_text->get_text_width();
-				
+
 				char* str = new char[(unsigned int)strlen(tmp)+1];
 				strcpy(str, tmp);
 				unsigned int k = 0;
@@ -554,7 +554,7 @@ void init() {
 	client_name = new char[32];
 	server = new char[32];
 
-	fio->open_file("settings.dat", false);
+	fio->open_file("settings.dat", file_io::OT_READ);
 	char fline[256];
 	bool end = false;
 
@@ -659,10 +659,10 @@ void draw_names() {
 			r->x1 = p->x - 4;
 			r->y1 = p->y - 4;
 
-			r->x2 = p->x + clients[i].text->get_text_width() + 4;
-			r->y2 = p->y + clients[i].text->get_text_height() + 4;
-			agfx->draw_filled_rectangle(sf, r, 0xFFFFFF);
-			agfx->draw_rectangle(sf, r, 0x000000);
+			r->x2 = p->x + agui->get_text(clients[i].text)->get_text_width() + 4;
+			r->y2 = p->y + agui->get_text(clients[i].text)->get_text_height() + 4;
+			agfx->draw_filled_rectangle(r, 0xFFFFFF);
+			agfx->draw_rectangle(r, 0x000000);
 		}
 	}
 	delete r;
@@ -681,7 +681,7 @@ int main(int argc, char *argv[])
 	init();
 
 	// initialize the engine
-	e->init(width, height, depth, fullscreen);
+	e->init();
 	e->set_caption("A2E Sample - World Client Sample");
 	e->set_cursor_visible(false);
 	e->set_fps_limit(fpslim);
@@ -713,10 +713,10 @@ int main(int argc, char *argv[])
 	// initialize gui and chat sutff
 	agui->init();
 
-	chat_window = agui->add_window(agfx->pnt_to_rect(0, 0, 250 + 4, 275 + 21), 100, "World Chat", true);
-	chat_msg_list = agui->add_list_box(agfx->pnt_to_rect(0, 0, 250, 250), 101, 100);
-	chat_msg_input = agui->add_input_box(agfx->pnt_to_rect(0, 250, 200, 275), 102, "", 100);
-	chat_msg_send = agui->add_button(agfx->pnt_to_rect(200, 250, 250, 275), 103, "Send", 100);
+	chat_window = agui->get_window(agui->add_window(agfx->pnt_to_rect(0, 0, 250 + 4, 275 + 21), 100, "World Chat", true));
+	chat_msg_list = agui->get_list(agui->add_list_box(agfx->pnt_to_rect(0, 0, 250, 250), 101, 100));
+	chat_msg_input = agui->get_input(agui->add_input_box(agfx->pnt_to_rect(0, 250, 200, 275), 102, "", 100));
+	chat_msg_send = agui->get_button(agui->add_button(agfx->pnt_to_rect(200, 250, 250, 275), 103, "Send", 100));
 
 	// initialize the camera
 	cam->set_position(0.0f, 50.0f, 0.0f);
@@ -728,16 +728,16 @@ int main(int argc, char *argv[])
 	// load materials
 	level_mat = new a2ematerial(e);
 	level_mat->load_material("../data/level.a2mtl");
-	
+
 	scale_mat = new a2ematerial(e);
 	scale_mat->load_material("../data/scale.a2mtl");
-	
+
 	player_mat = new a2ematerial(e);
 	player_mat->load_material("../data/scale.a2mtl");
 
 	// load the models and set new positions
 	level = sce->create_a2emodel();
-	level->load_model("../data/move_level.a2m"); 
+	level->load_model("../data/move_level.a2m");
 	level->set_hard_scale(0.5f, 0.5f, 0.5f);
 	level->set_material(level_mat);
 	sce->add_model(level);

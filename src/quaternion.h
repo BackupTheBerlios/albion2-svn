@@ -73,7 +73,7 @@ public:
 	quaternion unit();
 
 	vertex3 rotate(vertex3& v);
-	void set_rotation(float a, vertex3 tv);
+	void set_rotation(float a, vertex3 v);
 	void set_rotation(float a, float i, float j, float k);
 };
 

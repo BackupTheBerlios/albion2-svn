@@ -22,10 +22,12 @@
 #endif
 
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include "msg.h"
 #include "vertex3.h"
+#include "line3.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -35,7 +37,6 @@ using namespace std;
 /*! @class core
  *  @brief core stuff
  *  @author flo
- *  @version 0.1.7
  *  @todo more functions, write extra classes for each of these crappy structs ...
  *  
  *  the core stuff
@@ -44,7 +45,7 @@ using namespace std;
 class A2E_API core
 {
 public:
-	core();
+	core(msg* m);
 	~core();
 
 	struct pnt {
@@ -98,21 +99,24 @@ public:
 	unsigned int get_bit(unsigned int value, unsigned int bit);
 	unsigned int set_bit(unsigned int value, unsigned int bit, unsigned int num);
 
-	float get_distance(vertex3 p1, vertex3 p2);
+	float get_distance(vertex3* p1, vertex3* p2);
 
-	bool is_vertex_in_line(line l1, vertex3 p1, float precision = 1);
-	bool is_vertex_in_triangle(triangle t1, vertex3 p1, float precision = 1);
-	bool is_vertex_in_quad(quad q1, vertex3 p1, float precision = 1);
+	bool is_vertex_in_line(line* l1, vertex3* p1, float precision = 1);
+	bool is_vertex_in_triangle(triangle* t1, vertex3* p1, float precision = 1);
+	bool is_vertex_in_quad(quad* q1, vertex3* p1, float precision = 1);
+
+	/*bool is_line_in_triangle(triangle* t1, line* l1);
+	bool is_line_in_quad(quad* t1, line* l1);*/
+	bool is_line_in_bbox(aabbox* bbox, line3* l1);
 
 	void vertex_to_line(vertex3 p1, vertex3 p2, line &rline);
 	void vertex_to_triangle(vertex3 p1, vertex3 p2, vertex3 p3, triangle &rtriangle);
 	void vertex_to_quad(vertex3 p1, vertex3 p2, vertex3 p3, vertex3 p4, quad &rquad);
 
-	void mmatrix4_by_vertex4(matrix4 m, vertex4 v);
-
 	float rad_to_deg(float rad);
 
 	void get_2d_from_3d(vertex3* v, pnt* p);
+	void get_3d_from_2d(pnt* p, vertex3* v);
 
 	void compute_normal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3& normal);
 	void compute_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3, vertex3* normal,
@@ -122,8 +126,15 @@ public:
 		vertex3& normal, vertex3& binormal, vertex3& tangent,
 		coord* t1, coord* t2, coord* t3);
 
+	unsigned int get_delimiter_count(char* string, char delim);
+	char** tokenize(char* string, char delim);
+
+	void ftoa(float f, char* str);
+
 protected:
 	unsigned int value, bit, num;
+	msg* m;
+
 };
 
 #endif

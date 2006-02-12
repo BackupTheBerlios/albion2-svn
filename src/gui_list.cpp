@@ -67,19 +67,18 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 		gui_list::rectangle->x2 + x, gui_list::rectangle->y2 + y);
 
 	// draw bg
-	g->draw_filled_rectangle(e->get_screen(), r1,
+	g->draw_filled_rectangle(r1,
 		e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g->draw_2colored_rectangle(e->get_screen(), r1,
+	g->draw_2colored_rectangle(r1,
 		e->get_gui_style()->STYLE_INDARK,
 		e->get_gui_style()->STYLE_LIGHT);
 
 	// draw 2 colored border
 	g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1,
 		gui_list::rectangle->x2 + x - 1, gui_list::rectangle->y2 + y - 1);
-	g->draw_2colored_rectangle(e->get_screen(),
-		r1, e->get_gui_style()->STYLE_DARK,
+	g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_DARK,
 		e->get_gui_style()->STYLE_DARK2);
 
 	// draw items
@@ -136,10 +135,8 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 					r1->y1 = p1->y - 4 + y;
 					r1->x2 = gui_list::rectangle->x2 - 15 + x;
 					r1->y2 = p1->y + 13 + y;
-					g->draw_filled_rectangle(e->get_screen(),
-						r1, e->get_gui_style()->STYLE_SELECTED);
-					g->draw_rectangle(e->get_screen(),
-						r1, e->get_gui_style()->STYLE_DARK);
+					g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_SELECTED);
+					g->draw_rectangle(r1, e->get_gui_style()->STYLE_DARK);
 				}
 
 				items[j]->draw(x, y);
@@ -161,6 +158,11 @@ void gui_list::draw(unsigned int x, unsigned int y) {
  */
 void gui_list::set_vbar_handler(gui_vbar* ivbar) {
 	gui_list::vbar_handler = ivbar;
+}
+
+//! returns the vbar handler
+gui_vbar* gui_list::get_vbar_handler() {
+	return gui_list::vbar_handler;
 }
 
 //! returns the list boxes id
@@ -346,4 +348,22 @@ void gui_list::set_selected_id(unsigned int sid) {
 	}
 
 	gui_list::sid = sid;
+}
+
+/*! returns the selected list box item
+ */
+gui_list_item* gui_list::get_selected_item() {
+	return gui_list::get_item(gui_list::sid);
+}
+
+/*! returns the list box item with the id specified by 'id'
+ *  @param id the items id
+ */
+gui_list_item* gui_list::get_item(unsigned int id) {
+	for(unsigned int i = 0; i < citems; i++) {
+		if(items[i]->get_id() == id) {
+			return items[i];
+		}
+	}
+	return NULL;
 }

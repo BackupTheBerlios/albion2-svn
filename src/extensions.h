@@ -27,8 +27,8 @@
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
-//#include <GL/glut.h>
 #include <GL/glext.h>
+#include "msg.h"
 
 #ifdef WIN32
 #include <GL/wglext.h>
@@ -49,16 +49,29 @@ using namespace std;
 class A2E_API ext
 {
 public:
-	ext(unsigned int imode);
+	ext(unsigned int imode, msg* m);
 	~ext();
 
 	bool is_ext_supported(char* ext_name);
+	bool is_multitexture_support();
+	bool is_shader_support();
+	bool is_vbo_support();
 
 	PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
+	PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2fARB;
 	PFNGLMULTITEXCOORD3FARBPROC glMultiTexCoord3fARB;
 
 	PFNGLENABLEVERTEXATTRIBARRAYARBPROC glEnableVertexAttribArrayARB;
 	PFNGLVERTEXATTRIBPOINTERARBPROC glVertexAttribPointerARB;
+
+	PFNGLBINDBUFFERARBPROC glBindBufferARB;
+	PFNGLBUFFERDATAARBPROC glBufferDataARB;
+	PFNGLBUFFERSUBDATAARBPROC glBufferSubDataARB;
+	PFNGLDELETEBUFFERSARBPROC glDeleteBuffersARB;
+	PFNGLGENBUFFERSARBPROC glGenBuffersARB;
+	PFNGLMAPBUFFERARBPROC glMapBufferARB;
+	PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB;
+	PFNGLISBUFFERARBPROC glIsBufferARB;
 
 	// - taken from engine.h -
     // the initialization mode is used to determine if we should load
@@ -70,6 +83,11 @@ public:
 
 protected:
 	unsigned int mode;
+	msg* m;
+
+	bool multitexture_support;
+	bool shader_support;
+	bool vbo_support;
 
 };
 

@@ -376,7 +376,7 @@ void handle_server() {
 }
 
 void init() {
-	f->open_file("server.dat", false);
+	f->open_file("server.dat", file_io::OT_READ_BINARY);
 	char fline[256];
 	bool end = false;
 

@@ -4,14 +4,12 @@ project.libdir = "lib"
 
 dopackage("src")
 dopackage("tools")
-dopackage("samples")
+dopackage("mapeditor")
 
-dopackage("samples/chat")
+
 dopackage("samples/gui")
 dopackage("samples/model")
 dopackage("samples/move")
 dopackage("samples/skeletal")
 dopackage("samples/world_client")
 dopackage("samples/world_server")
-dopackage("samples/glsl")
-dopackage("samples/hans")

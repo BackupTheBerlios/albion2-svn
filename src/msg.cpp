@@ -92,6 +92,19 @@ void msg::print(unsigned int type, const char* file, const char* str, ...)
 					*(msg::file) << "ERROR #" << err_counter << ": " << file << endl;
 				}
 			}
+			else if(file == NULL) {
+				cerr << "ERROR #" << err_counter << ": ";
+
+				va_start(argc, str);
+					vsnprintf(ostr, msg_size, str, argc);
+				va_end(argc);
+
+				cout << ostr << endl;
+
+				if(msg::log) {
+					*(msg::file) << "ERROR #" << err_counter << ": " << ostr << endl;
+				}
+			}
 			else {
 				cerr << "ERROR #" << err_counter << ": " << file << ": ";
 

@@ -29,14 +29,31 @@ file_io::~file_io() {
 
 /*! opens a input file stream
  *  @param filename the name of the file
- *  @param binary flag if we read the file content binary of ascii wise
+ *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-void file_io::open_file(char* filename, bool binary) {
-	if(binary) {
-		file_io::filestream.open(filename, fstream::in | fstream::out | fstream::binary);
-	}
-	else {
-		file_io::filestream.open(filename, fstream::in);
+void file_io::open_file(char* filename, FIO_OPEN_TYPE open_type) {
+	switch(open_type) {
+		case file_io::OT_READ:
+			file_io::filestream.open(filename, fstream::in);
+			break;
+		case file_io::OT_READWRITE:
+			file_io::filestream.open(filename, fstream::in | fstream::out);
+			break;
+		case file_io::OT_WRITE:
+			file_io::filestream.open(filename, fstream::out);
+			break;
+		case file_io::OT_READ_BINARY:
+			file_io::filestream.open(filename, fstream::in | fstream::binary);
+			break;
+		case file_io::OT_READWRITE_BINARY:
+			file_io::filestream.open(filename, fstream::in | fstream::out | fstream::binary);
+			break;
+		case file_io::OT_WRITE_BINARY:
+			file_io::filestream.open(filename, fstream::out | fstream::binary);
+			break;
+		default:
+			file_io::filestream.open(filename, fstream::in);
+			break;
 	}
 
 	if(!file_io::filestream.is_open()) {
@@ -146,4 +163,41 @@ unsigned int file_io::get_current_offset() {
  */
 void file_io::write_block(char* data, unsigned int size) {
 	file_io::filestream.write(data, size);
+}
+
+/*! puts an unsigned int into the current file stream
+ *  @param uint the unsigned int we want to write/put into the file stream
+ */
+void file_io::put_uint(unsigned int uint) {
+	file_io::filestream.put((uint >> 24) & 0xFF);
+	file_io::filestream.put((uint >> 16) & 0xFF);
+	file_io::filestream.put((uint >> 8) & 0xFF);
+	file_io::filestream.put(uint & 0xFF);
+}
+
+/*! puts a swapped unsigned int into the current file stream
+ *  @param uint the unsigned int we want to write/put into the file stream
+ */
+void file_io::put_swap_uint(unsigned int uint) {
+	file_io::filestream.put(uint & 0xFF);
+	file_io::filestream.put((uint >> 8) & 0xFF);
+	file_io::filestream.put((uint >> 16) & 0xFF);
+	file_io::filestream.put((uint >> 24) & 0xFF);
+}
+
+/*! puts a float into the current file stream
+ *  @param flt the float we want to write/put into the file stream
+ */
+void file_io::put_float(float flt) {
+	char* tmp = new char[4];
+	memcpy(tmp, &flt, 4);
+	file_io::filestream.write(tmp, 4);
+	delete [] tmp;
+}
+
+/*! puts a bool into the current file stream
+ *  @param b the bool we want to write/put into the file stream
+ */
+void file_io::put_bool(bool b) {
+	b ? file_io::filestream.put(0x01) : file_io::filestream.put(0x00);
 }

@@ -58,11 +58,10 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 		gui_check::rectangle->y1 + 14 + y);
 
 	// draw bg
-	g->draw_filled_rectangle(e->get_screen(),
-		r1, e->get_gui_style()->STYLE_BG2);
+	g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_BG2);
 
 	// draw 2 colored border
-	g->draw_2colored_rectangle(e->get_screen(), r1,
+	g->draw_2colored_rectangle(r1,
 		e->get_gui_style()->STYLE_INDARK,
 		e->get_gui_style()->STYLE_LIGHT);
 
@@ -71,8 +70,7 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 		gui_check::rectangle->y1 + 1 + y,
 		gui_check::rectangle->x1 + 13 + x,
 		gui_check::rectangle->y1 + 13 + y);
-	g->draw_2colored_rectangle(e->get_screen(),
-		r1, e->get_gui_style()->STYLE_DARK,
+	g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_DARK,
 		e->get_gui_style()->STYLE_DARK2);
 
 	if(gui_check::checked) {
@@ -82,19 +80,19 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 11 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 3 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 11 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 4 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 6 + x, gui_check::rectangle->y1 + 12 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 12 + x, gui_check::rectangle->y1 + 5 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 
@@ -102,19 +100,19 @@ void gui_check::draw(unsigned int x, unsigned int y) {
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 6 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 3 + x, gui_check::rectangle->y1 + 8 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 7 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 4 + x, gui_check::rectangle->y1 + 9 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 		g->cord_to_pnt(p1, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 8 + y);
 		g->cord_to_pnt(p2, gui_check::rectangle->x1 + 5 + x, gui_check::rectangle->y1 + 10 + y);
 
-		g->draw_line(e->get_screen(), p1, p2,
+		g->draw_line(p1, p2,
 			e->get_gui_style()->STYLE_DARK);
 
 		delete p2;
@@ -142,6 +140,11 @@ void gui_check::draw() {
  */
 void gui_check::set_text_handler(gui_text* itext) {
 	gui_check::text_handler = itext;
+}
+
+//! returns the text_handler
+gui_text* gui_check::get_text_handler() {
+	return gui_check::text_handler;
 }
 
 //! returns the check boxes id

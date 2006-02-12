@@ -15,8 +15,6 @@
  */
 
 #include "scene.h"
-#include "msg.h"
-#include <math.h>
 
 /*! there is no function currently
  */
@@ -120,16 +118,16 @@ void scene::draw() {
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	for(unsigned int i = 0; i < cmodels; i++) {
-		models[i]->set_light_color(lights[0]->get_lambient());
-		models[i]->set_light_position(lights[0]->get_position());
-		models[i]->draw();
-	}
-
 	for(unsigned int i = 0; i < camodels; i++) {
 		amodels[i]->set_light_color(lights[0]->get_lambient());
 		amodels[i]->set_light_position(lights[0]->get_position());
 		amodels[i]->draw();
+	}
+
+	for(unsigned int i = 0; i < cmodels; i++) {
+		models[i]->set_light_color(lights[0]->get_lambient());
+		models[i]->set_light_position(lights[0]->get_position());
+		models[i]->draw();
 	}
 }
 
@@ -324,11 +322,15 @@ bool scene::get_light() {
 	return scene::is_light;
 }
 
+/*! creates an a2eanim object and returns it
+ */
 a2eanim* scene::create_a2eanim() {
 	a2eanim* a2ea = new a2eanim(e, s);
 	return a2ea;
 }
 
+/*! creates an a2emodel object and returns it
+ */
 a2emodel* scene::create_a2emodel() {
 	a2emodel* a2em = new a2emodel(e, s);
 	return a2em;

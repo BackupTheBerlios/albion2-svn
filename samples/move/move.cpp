@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 {
 	// initialize the engine
 	e = new engine();
-	e->init(800, 600, 24, false);
+	e->init();
 	e->set_caption("A2E Sample - Move Sample");
 	e->set_cursor_visible(false);
 

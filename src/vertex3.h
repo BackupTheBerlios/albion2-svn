@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __VERTEX3_H__
 #define __VERTEX3_H__
 
@@ -26,9 +26,8 @@ using namespace std;
 /*! @class vertex3
  *  @brief vertex3 routines
  *  @author flo
- *  @version 0.1
  *  @todo nothing atm
- *  
+ *
  *  the vertex3 class
  */
 
@@ -55,10 +54,15 @@ public:
 	vertex3& operator-=(const vertex3& v);
 	vertex3& operator*=(float f);
 	vertex3& operator/=(float f);
-	friend ostream& operator<<(ostream& o, vertex3& v);
+	bool operator==(const vertex3& v);
+	bool operator!=(const vertex3& v);
+	A2E_API friend ostream& operator<<(ostream& o, vertex3& v);
 
 	vertex3 normalize();
 	void norm();
+	void adjust(vertex3* v);
+	void set(float x, float y, float z);
+	void set(vertex3* v);
 
 };
 

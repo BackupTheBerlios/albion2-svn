@@ -17,42 +17,25 @@
 #ifndef __OBJ2A2M_H__
 #define __OBJ2A2M_H__
 
-#define MAX_OBJS 32
-
 #ifdef WIN32
 #include <windows.h>
 #endif
 
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <string>
+#include <core.h>
+#include <msg.h>
+#include <vertex3.h>
 using namespace std;
 
-void load_materials(char* filename);
-
-char model_name[9];
-char* obj_names[MAX_OBJS];
+vector<vertex3> vertices;
+vector<vertex3> ivertices;
+vector<core::coord> tex_coords;
+vector<core::index>* indices;
 unsigned int object_count = 0;
-unsigned int vertex_count = 0;
-unsigned int tex_vertex_count = 0;
-unsigned int normal_vertex_count = 0;
-unsigned int total_index_count = 0;
-unsigned int* index_count;
-unsigned int* vertices1;
-unsigned int* vertices2;
-unsigned int* vertices3;
-unsigned int* indices1[MAX_OBJS];
-unsigned int* indices2[MAX_OBJS];
-unsigned int* indices3[MAX_OBJS];
-unsigned int* texindices1[MAX_OBJS];
-unsigned int* texindices2[MAX_OBJS];
-unsigned int* texindices3[MAX_OBJS];
-unsigned int* tex_number;
-unsigned int* texcords1;
-unsigned int* texcords2;
-
-unsigned int material_count = 0;
-unsigned int texture_count = 0;
-char* mat_names[32];
-char* tex_names[32];
+unsigned int cur_object = 0;
+bool ginit = false;
 
 #endif
