@@ -30,6 +30,7 @@ gui::gui(engine* e) {
 	gui::m = e->get_msg();
 	gui::evt = e->get_event();
 	gui::g = e->get_gfx();
+	gui::gf = e->get_gui_font();
 }
 
 /*! there is no function currently
@@ -436,11 +437,6 @@ GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, unsig
  */
 GUI_OBJ gui::add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid) {
-	SDL_Color* col = new SDL_Color();
-	col->r = (color & 0xFF0000) >> 16;
-	col->g = (color & 0x00FF00) >> 8;
-	col->b = color & 0x0000FF;
-
 	gui::gui_elements.push_back(*new gui_element());
 	gui::gui_elements.back().id = id;
 	gui::gui_elements.back().type = gui::TEXT;
@@ -452,10 +448,11 @@ GUI_OBJ gui::add_text(char* font_name, unsigned int font_size, char* text,
 
 	gui::gui_texts.back().set_init(false);
 	gui::gui_texts.back().set_id(id);
-	gui::gui_texts.back().new_text(font_name, font_size);
+
+	// font stuff
+	gui::gui_texts.back().set_font(gf->add_font(font_name, font_size, color));
 	gui::gui_texts.back().set_point(point);
 	gui::gui_texts.back().set_text(text);
-	gui::gui_texts.back().set_color(col);
 	gui::gui_texts.back().set_init(true);
 
 	//return &gui::gui_texts.back();

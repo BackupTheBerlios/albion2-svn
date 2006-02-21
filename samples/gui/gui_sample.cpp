@@ -85,6 +85,14 @@ int main(int argc, char *argv[])
 	img->open_image("../../data/engine_logo.png");
 	img->set_position(800 - 446, 600 - 130);
 
+	// needed for fps counting
+	unsigned int fps = 0;
+	unsigned int fps_time = 0;
+	char tmp[512];
+	for(int i = 0; i < 512; i++) {
+		tmp[i] = 0;
+	}
+
 	core::pnt* mpos = new core::pnt();
 	char* xpos = new char[8];
 	char* ypos = new char[8];
@@ -140,6 +148,15 @@ int main(int argc, char *argv[])
 			xpos_text_obj->set_text(xpos);
 			ypos_text_obj->set_text(ypos);
 		}
+
+		// print out the fps count
+		fps++;
+		if(SDL_GetTicks() - fps_time > 1000) {
+			sprintf(tmp, "A2E Sample - GUI Sample | FPS: %u", fps);
+			fps = 0;
+			fps_time = SDL_GetTicks();
+		}
+		e->set_caption(tmp);
 
 		e->start_draw();
 

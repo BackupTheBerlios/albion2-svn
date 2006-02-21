@@ -25,6 +25,7 @@
 #include <fstream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_thread.h>
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -103,18 +104,19 @@ public:
 
 	// used for parallax mapping
 	void generate_normal_list();
-	void generate_normals();
+	void generate_normals(); // with threading
+	void generate_normals_nt(); // w/o / no threading
 
 	void set_light_color(float* lcol);
 	void set_light_position(vertex3* lpos);
 
 protected:
-	msg* m;
+	static msg* m;
 	file_io* file;
-	core* c;
+	static core* c;
 	engine* e;
 	shader* s;
-	ext* exts;
+	static ext* exts;
 
 	struct joint {
 		int num;
@@ -220,6 +222,24 @@ protected:
 
 	//! flag that specifies if this model is using a vertex buffer object
 	bool vbo;
+
+	// for multi-threading ...
+	void mt_compute_nbt();
+	static int mt_nbt(void* data);
+
+	unsigned int thread_count;
+	static vertex3** mt_normals;
+	static vertex3** mt_binormals;
+	static vertex3** mt_tangents;
+	static unsigned int mt_cur_mesh;
+	static unsigned int mt_cur_frame;
+	static unsigned int* mt_start_num;
+	static unsigned int* mt_end_num;
+	static mesh* mt_mesh;
+	static nlist* mt_normal_list;
+	static bool* mt_thread_done;
+	static bool* mt_thread_done2;
+	static unsigned int mt_cur_tn;
 };
 
 #endif

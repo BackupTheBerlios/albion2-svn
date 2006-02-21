@@ -109,6 +109,18 @@ vertex3& vertex3::operator/=(float f) {
 	return *this;
 }
 
+/*! * operator overload / cross product (^=)
+ */
+vertex3& vertex3::operator^=(const vertex3& v) {
+	float tmp1, tmp2;
+	tmp1 = vertex3::y * v.z - vertex3::z * v.y;
+	tmp2 = vertex3::z * v.x - vertex3::x * v.z;
+	vertex3::z = vertex3::x * v.y - vertex3::y * v.x;
+	vertex3::x = tmp1;
+	vertex3::y = tmp2;
+	return *this;
+}
+
 /*! == operator overload
  */
 bool vertex3::operator==(const vertex3& v) {

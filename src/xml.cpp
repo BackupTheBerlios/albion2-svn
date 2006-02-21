@@ -31,7 +31,9 @@ xml::xml(msg* m) {
 /*! delete everything
  */
 xml::~xml() {
-    if(tmp != NULL) { delete tmp; }
+    if(tmp != NULL) {
+		//delete tmp; // ???
+	}
 }
 
 bool xml::open(char* filename) {
@@ -84,7 +86,9 @@ int xml::get_attribute_count() {
 }
 
 char* xml::get_attribute(char* att_name) {
-    if(tmp != NULL) { free(tmp); }
+    if(tmp != NULL) {
+		//free(tmp); // hm?
+	}
     tmp = (char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
 	return tmp;
 }

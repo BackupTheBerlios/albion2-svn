@@ -145,6 +145,7 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="0"
+				FloatingPointModel="0"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -164,7 +165,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalOptions=""
 				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib lua.lib libxml2.lib"
 				OutputFile="$(OutDir)\a2e.dll"
 				LinkIncremental="1"
@@ -179,6 +179,7 @@
 				LinkTimeCodeGeneration="0"
 				ImportLibrary="..\lib\a2e.lib"
 				TargetMachine="1"
+				DelaySign="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -413,6 +414,14 @@
 		</File>
 		<File
 			RelativePath="gui_check.h"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_font.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_font.h"
 			>
 		</File>
 		<File

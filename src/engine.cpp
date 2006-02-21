@@ -28,6 +28,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserve
 	}
     return TRUE;
 }
+
+//! pseudo main function for properly linking with sdl ...
+int main(int argc, char *argv[]) {
+	return 0;
+}
 #endif // WIN32
 
 /*! there is no function currently
@@ -54,6 +59,7 @@ engine::engine() {
 	t = new texman(m);
 	l = new lua(m);
 	x = new xml(m);
+	gf = new gui_font(m);
 
 	// load config
 	if(!x->open("../data/config.xml")) {
@@ -103,6 +109,11 @@ engine::engine() {
 					fps_limit = (unsigned int)atoi(x->get_attribute("time"));
 				}
 			}
+			else if(strcmp(x->get_node_name(), "thread") == 0) {
+				if(x->get_attribute("count") != NULL) {
+					thread_count = (unsigned int)atoi(x->get_attribute("count"));
+				}
+			}
 		}
 
 		x->close();
@@ -127,6 +138,7 @@ engine::~engine() {
 	delete exts;
 	delete l;
 	delete x;
+	delete gf;
 
 	m->print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
 
@@ -167,7 +179,7 @@ void engine::init() {
 
 	// initialize sdl
 	atexit(SDL_Quit);
-	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) == -1) {
 		m->print(msg::MERROR, "engine.cpp", "can't init SDL: %s", SDL_GetError());
 		exit(1);
 	}
@@ -178,8 +190,7 @@ void engine::init() {
 	// get video info
 	video_info = SDL_GetVideoInfo();
 	if(!video_info) {
-		m->print(msg::MDEBUG, "engine.cpp", "video query failed: %s",
-			SDL_GetError());
+		m->print(msg::MDEBUG, "engine.cpp", "video query failed: %s", SDL_GetError());
 		exit(1);
 	}
 	else {
@@ -303,6 +314,11 @@ void engine::init() {
 
 	// create extension class object
 	exts = new ext(engine::mode, m);
+
+	// print out informations about additional threads
+	thread_count == 0 ? m->print(msg::MDEBUG, "engine.cpp", "using no additional threads!") :
+		m->print(msg::MDEBUG, "engine.cpp", "using %u additional thread%s!", thread_count,
+		(thread_count == 1 ? "" : "s"));
 }
 
 /*! sets the windows width
@@ -580,4 +596,16 @@ ext* engine::get_ext() {
  */
 lua* engine::get_lua() {
 	return engine::l;
+}
+
+/*! returns the gui_font class
+ */
+gui_font* engine::get_gui_font() {
+	return engine::gf;
+}
+
+/*! returns the number/amount of additional threads (besides the main thread)
+ */
+unsigned int engine::get_thread_count() {
+	return engine::thread_count;
 }

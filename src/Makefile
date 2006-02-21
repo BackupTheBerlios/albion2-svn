@@ -45,6 +45,7 @@ OBJECTS = \
 	$(OBJDIR)/gui.o \
 	$(OBJDIR)/gui_button.o \
 	$(OBJDIR)/gui_check.o \
+	$(OBJDIR)/gui_font.o \
 	$(OBJDIR)/gui_input.o \
 	$(OBJDIR)/gui_list.o \
 	$(OBJDIR)/gui_list_item.o \
@@ -142,6 +143,11 @@ $(OBJDIR)/gui_button.o: gui_button.cpp
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJDIR)/gui_check.o: gui_check.cpp
+	-@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/gui_font.o: gui_font.cpp
 	-@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<

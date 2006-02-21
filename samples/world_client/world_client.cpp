@@ -323,7 +323,7 @@ void add_msg(unsigned int length, char* msg, ...) {
 
 	// word wrap ...
 	gui_text* tmp_text = new gui_text(e);
-	tmp_text->new_text("../data/vera.ttf", 12);
+	//tmp_text->new_text("../data/vera.ttf", 12); // hm ... TODO?
 	tmp_text->set_text(new_msg);
 
 	unsigned int max_width = 250 - 17;

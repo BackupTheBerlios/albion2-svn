@@ -15,26 +15,15 @@
  */
 
 #include "gui_text.h"
-#include "gfx.h"
-#include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
 gui_text::gui_text(engine* e) {
 	is_notext = false;
 
-	// 1024 chars
-	gui_text::text = new char[1024];
+	// reserve 32 bytes ...
+	gui_text::text.reserve(32);
 
-	// point font to NULL
-	font = NULL;
-
-	// point color to NULL
-	gui_text::color = NULL;
-
-	gui_text::font_name = NULL;
 	gui_text::point = new core::pnt();
 
 	// get classes
@@ -49,35 +38,11 @@ gui_text::gui_text(engine* e) {
 gui_text::~gui_text() {
 	m->print(msg::MDEBUG, "gui_text.cpp", "freeing gui_text stuff");
 
-	delete [] text;
-	if(font != NULL) {
-		delete font;
-	}
-
-	if(gui_text::color != NULL) {
-		delete gui_text::color;
-	}
-
-	// doesnt't work?
-	/*if(gui_text::font_name != NULL) {
-		delete [] gui_text::font_name;
-	}*/
+	text.erase();
 
 	delete gui_text::point;
 
 	m->print(msg::MDEBUG, "gui_text.cpp", "gui_text stuff freed");
-}
-
-/*! creates a new FTFont element and sets it as the currently used font
- *  @param font_name the name of the .ttf file
- *  @param font_size the font size in pixel
- */
-void gui_text::new_text(char* font_name, unsigned int font_size) {
-	font = new FTGLTextureFont(font_name);
-	font->FaceSize(font_size);
-
-	gui_text::font_name = font_name;
-	gui_text::font_size = font_size;
 }
 
 /*! draws the text
@@ -85,7 +50,7 @@ void gui_text::new_text(char* font_name, unsigned int font_size) {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_text::draw(unsigned int x, unsigned int y) {
-	gui_text::draw(gui_text::text, x, y);
+	gui_text::draw(gui_text::text.c_str(), x, y);
 }
 
 /*! draws the text, that is specified by the parameter text
@@ -93,7 +58,7 @@ void gui_text::draw(unsigned int x, unsigned int y) {
  *  @param x specifies how much the element is moved on the x axis
  *  @param y specifies how much the element is moved on the y axis
  */
-void gui_text::draw(char* text, unsigned int x, unsigned int y) {
+void gui_text::draw(const char* text, unsigned int x, unsigned int y) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -103,10 +68,10 @@ void gui_text::draw(char* text, unsigned int x, unsigned int y) {
 	glTranslatef((GLfloat)(gui_text::point->x + x),
 		(GLfloat)(gui_text::e->get_screen()->h - gui_text::point->y - 10.0f - y),
 		0.0f);
-	glColor3f((GLfloat)(gui_text::color->r / 255),
-		(GLfloat)(gui_text::color->g / 255),
-		(GLfloat)(gui_text::color->b / 255));
-	gui_text::font->Render(text);
+	glColor3f((GLfloat)((gui_text::font->color & 0xFF0000) >> 16) / 255,
+		(GLfloat)((gui_text::font->color & 0xFF00) >> 8) / 255,
+		(GLfloat)(gui_text::font->color & 0xFF) / 255);
+	gui_text::font->ttf_font->Render(text);
 
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
@@ -124,23 +89,8 @@ core::pnt* gui_text::get_point() {
 }
 
 //! returns the text
-char* gui_text::get_text() {
-	return gui_text::text;
-}
-
-//! returns the text color
-SDL_Color gui_text::get_color() {
-	return *gui_text::color;
-}
-
-//! returns the text
-char* gui_text::get_font_name() {
-	return gui_text::font_name;
-}
-
-//! returns the text
-unsigned int gui_text::get_font_size() {
-	return gui_text::font_size;
+const char* gui_text::get_text() {
+	return gui_text::text.c_str();
 }
 
 /*! sets the text id
@@ -162,44 +112,7 @@ void gui_text::set_point(core::pnt* point) {
  */
 void gui_text::set_text(char* text) {
 	is_notext = false;
-	memcpy(gui_text::text, text, strlen(text));
-	gui_text::text[strlen(text)] = 0;
-}
-
-/*! sets the text color
- *  @param color the text color we want to set
- */
-void gui_text::set_color(SDL_Color* color) {
-    if(gui_text::color != NULL) {
-        delete gui_text::color;
-    }
-	gui_text::color = color;
-}
-
-/*! sets the text color
- *  @param color the text color we want to set
- */
-void gui_text::set_color(unsigned int color) {
-	gui_text::color->r = (color & 0xFF0000) >> 16;
-	gui_text::color->g = (color & 0xFF00) >> 8;
-	gui_text::color->b = color & 0xFF;
-}
-
-/*! sets the font name
- *  @param font_name the font name we want to set
- */
-void gui_text::set_font_name(char* font_name) {
-	gui_text::font_name = font_name;
-	delete font;
-	font = new FTGLTextureFont(font_name);
-}
-
-/*! sets the font size
- *  @param font_size the font size we want to set
- */
-void gui_text::set_font_size(unsigned int font_size) {
-	gui_text::font_size = font_size;
-	font->FaceSize(font_size);
+	gui_text::text = text;
 }
 
 /*! sets the init state
@@ -213,26 +126,33 @@ void gui_text::set_init(bool state) {
  */
 void gui_text::set_notext() {
 	gui_text::is_notext = true;
-	gui_text::text[0] = 0;
-}
-
-/*! returns the pointer to the currently used FTFont element
- */
-FTFont* gui_text::get_font() {
-	return gui_text::font;
+	gui_text::text = "";
 }
 
 /*! returns the text's width
  */
 unsigned int gui_text::get_text_width() {
-	float wide = font->Advance(text);
-	return (unsigned int)wide;
+	float width = font->ttf_font->Advance(text.c_str());
+	return (unsigned int)width;
 }
 
 /*! returns the text's height
  */
 unsigned int gui_text::get_text_height() {
 	float x, y, z, ux, uy, uz;
-	font->BBox(text, x, y, z, ux, uy, uz);
+	font->ttf_font->BBox(text.c_str(), x, y, z, ux, uy, uz);
 	return (unsigned int)(uy - y);
+}
+
+/*! sets the font object of our text
+ *  @param font the font object
+ */
+void gui_text::set_font(gui_font::font* font) {
+	gui_text::font = font;
+}
+
+/*! returns the font object
+ */
+gui_font::font* gui_text::get_font() {
+	return gui_text::font;
 }

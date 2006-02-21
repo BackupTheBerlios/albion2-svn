@@ -69,6 +69,8 @@ public:
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
 
+	void scale_tex_coords(float su, float sv);
+
 	void build_bounding_box();
 	core::aabbox* get_bounding_box();
 

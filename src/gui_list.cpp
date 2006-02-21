@@ -44,6 +44,7 @@ gui_list::gui_list(engine* e) {
 	gui_list::c = e->get_core();
 	gui_list::m = e->get_msg();
 	gui_list::g = e->get_gfx();
+	gui_list::gf = e->get_gui_font();
 }
 
 /*! there is no function currently
@@ -246,19 +247,16 @@ gui_list_item* gui_list::add_item(char* text, unsigned int id) {
 		}
 	}
 
-	SDL_Color* col = new SDL_Color();
-	col->b = e->get_gui_style()->STYLE_FONT & 0xFF;
-	col->g = (e->get_gui_style()->STYLE_FONT & 0xFF00) >> 8;
-	col->r = (e->get_gui_style()->STYLE_FONT & 0xFF0000) >> 16;
-
 	gui_text* gtext = new gui_text(e);
 
 	gtext->set_init(false);
 	gtext->set_id(id);
-	gtext->new_text("vera.ttf", 12);
+
+	// add 2 fonts with 2 different colors
+	gtext->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
+	gtext->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
 	gtext->set_point(g->cord_to_pnt(0,0));
 	gtext->set_text(text);
-	gtext->set_color(col);
 	gtext->set_init(true);
 
 	items[citems] = new gui_list_item(e);
@@ -302,7 +300,7 @@ unsigned int gui_list::get_citems() {
 void gui_list::select_pos(unsigned int x, unsigned int y) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == sid) {
-            items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT);
+			items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
 		}
 	}
 
@@ -319,7 +317,7 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 
 			if(g->is_pnt_in_rectangle(r, pos)) {
 				sid = items[i]->get_id();
-				items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT2);
+				items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
 				i = citems;
 			}
 	}
@@ -340,10 +338,10 @@ unsigned int gui_list::get_selected_id() {
 void gui_list::set_selected_id(unsigned int sid) {
 	for(unsigned int i = 0; i < citems; i++) {
 		if(items[i]->get_id() == gui_list::sid) {
-            items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT);
+            items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
 		}
 		else if(items[i]->get_id() == sid) {
-			items[i]->get_text_handler()->set_color(e->get_gui_style()->STYLE_FONT2);
+			items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
 		}
 	}
 

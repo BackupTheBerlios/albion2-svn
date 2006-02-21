@@ -147,7 +147,7 @@ void a2emodel::draw() {
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				}
-				if(a2emodel::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
+				if(a2emodel::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
 
 
 				// do we use a vertex buffer object?
@@ -197,7 +197,7 @@ void a2emodel::draw() {
 				}
 
 
-				if(a2emodel::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
+				if(a2emodel::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
 				// reset to filled mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -213,38 +213,44 @@ void a2emodel::draw() {
 				s->use_shader(0);
 			}
 			else {
-				glEnable(GL_TEXTURE_2D);
 				glEnable(GL_LIGHTING);
-				glBindTexture(GL_TEXTURE_2D, a2emodel::material->get_texture(i, 0));
 				// if the wireframe flag is set, draw the model in wireframe mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				}
-				if(a2emodel::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
 
+				a2emodel::material->enable_texture(i);
 
 				// do we use a vertex buffer object?
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_vertices_id);
 					glVertexPointer(3, GL_FLOAT, 0, NULL);
-
-					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
-					glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+					glEnableClientState(GL_VERTEX_ARRAY);
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_normals_id);
 					glNormalPointer(GL_FLOAT, 0, NULL);
+					glEnableClientState(GL_NORMAL_ARRAY);
+
+
+					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
+						glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
 
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
-
-					glEnableClientState(GL_VERTEX_ARRAY);
-					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-					glEnableClientState(GL_NORMAL_ARRAY);
 
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, NULL);
 
 					glDisableClientState(GL_VERTEX_ARRAY);
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					glDisableClientState(GL_NORMAL_ARRAY);
+					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
@@ -252,28 +258,35 @@ void a2emodel::draw() {
 				// if not (or the extension isn't supported, use vertex arrays
 				else {
 					glVertexPointer(3, GL_FLOAT, 0, vertices);
-					glTexCoordPointer(2, GL_FLOAT, 0, tex_coords);
-					glNormalPointer(GL_FLOAT, 0, normals);
-
 					glEnableClientState(GL_VERTEX_ARRAY);
-					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					glNormalPointer(GL_FLOAT, 0, normals);
 					glEnableClientState(GL_NORMAL_ARRAY);
+					
+					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glTexCoordPointer(2, GL_FLOAT, 0, tex_coords);
+						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
 
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, indices[i]);
 
 					glDisableClientState(GL_VERTEX_ARRAY);
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					glDisableClientState(GL_NORMAL_ARRAY);
+					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
 				}
 
+				a2emodel::material->disable_texture(i);
 
-				if(a2emodel::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
 				// reset to filled mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 				glDisable(GL_LIGHTING);
-				glDisable(GL_TEXTURE_2D);
 			}
 		}
 
@@ -727,4 +740,25 @@ void a2emodel::set_light_color(float* lcol) {
  */
 void a2emodel::set_light_position(vertex3* lpos) {
 	a2emodel::light_position = lpos;
+}
+
+/*! scales the texture coordinates by (su, sv) - note that this is a "hard scale" and the vbo is updated automatically
+ *  @param su the su scale factor
+ *  @param sv the sv scale factor
+ */
+void a2emodel::scale_tex_coords(float su, float sv) {
+	for(unsigned int i = 0; i < vertex_count; i++) {
+		tex_coords[i].u *= su;
+		tex_coords[i].v *= sv;
+	}
+
+	if(a2emodel::vbo) {
+		// delete old vertex coordinates
+		if(exts->glIsBufferARB(vbo_tex_coords_id)) { exts->glDeleteBuffersARB(1, &vbo_tex_coords_id); }
+		// create new buffer
+		exts->glGenBuffersARB(1, &vbo_tex_coords_id);
+		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float),
+			tex_coords, GL_STATIC_DRAW_ARB);
+	}
 }

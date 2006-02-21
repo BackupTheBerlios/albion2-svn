@@ -2,7 +2,28 @@
 
 [OBJECT/ELEMENT COUNT - 4 bytes (unsigned int)]
 [FOR EACH OBJECT/ELEMENT]
-  [MATERIAL TYPE - 1 byte (char) (0 = NONE, 1 = DIFFUSE, 2 = BUMP, 3 = PARALLAX)]
-  [COLOR COMPONENTS/COLOR TYPE - 1 byte (char) (0 = RGB, 1 = RGBA)]
+  [MATERIAL TYPE - 1 byte (char) (0 = NONE, 1 = DIFFUSE, 2 = BUMP, 3 = PARALLAX, 4 = MULTITEXTURE)]
+  
+  [IF MATERIAL TYPE == MULTITEXTURE] // "only" texenv combine stuff is supported atm
+    [TEXTURE COUNT - 4 bytes (unsigned int)]
+    [FOR EACH TEXTURE]
+      [COLOR COMPONENTS/COLOR TYPE - 1 byte (char) (0 = RGB, 1 = RGBA)]
+      [RGB COMBINE MODE - 1 byte (0 = REPLACE, 1 = MODULATE, 2 = ADD, 3 = ADD_SIGNED, 4 = SUBTRACT, 5 = INTERPOLATE, 255/0xFF = NONE)]
+      [ALPHA COMBINE MODE - 1 byte (0 = REPLACE, 1 = MODULATE, 2 = ADD, 3 = ADD_SIGNED, 4 = SUBTRACT, 5 = INTERPOLATE, 255/0xFF = NONE)]
+      // Arg count: 1, 2, 2, 2, 2, 3, (0)
+      [FOR EACH RGB ARG]
+        [SOURCE x - 1 byte (0 = PRIMARY_COLOR, 1 = (CURRENT) TEXTURE, 2 = CONSTANT, 3 = PREVIOUS)]
+        [OPERAND x - 1 byte (0 = SRC_COLOR, 1 = ONE_MINUS_SRC_COLOR, 2 = SRC_ALPHA, 3 = ONE_MINUS_SRC_ALPHA)]
+      [END FOR RGB EACH]
+      [FOR EACH ALPHA ARG]
+        [SOURCE x - 1 byte (0 = PRIMARY_COLOR, 1 = (CURRENT) TEXTURE, 2 = CONSTANT, 3 = PREVIOUS)]
+        [OPERAND x - 1 byte (0 = SRC_ALPHA, 1 = ONE_MINUS_SRC_ALPHA)]
+      [END FOR ALPHA EACH]
+    [END FOR EACH] 
+  [END IF]
+  [ELSE]
+    [COLOR COMPONENTS/COLOR TYPES - 1 byte (char) * ("TEXTURE COUNT") (0 = RGB, 1 = RGBA)]
+  [END ELSE]
+  
   [TEXTURE NAMES - MATERIAL TYPE * x bytes (char*) - separated by an [0xFF]]
 [END FOR]

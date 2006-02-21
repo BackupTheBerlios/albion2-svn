@@ -280,9 +280,12 @@ void core::compute_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3, verte
 void core::compute_normal_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3,
 		vertex3& normal, vertex3& binormal, vertex3& tangent,
 		coord* t1, coord* t2, coord* t3) {
-	vertex3 edge1 = (*v1) - (*v2);
-	vertex3 edge2 = (*v3) - (*v1);
-	normal = edge2 ^ edge1;
+	vertex3 edge1(v1);
+	edge1 -= v2;
+	vertex3 edge2(v3);
+	edge2 -= v1;
+	normal.set(&edge2);
+	normal ^= edge1;
 	normal.norm();
 
 	// binormal 
@@ -298,7 +301,8 @@ void core::compute_normal_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3
 	tangent.norm();
 
 	// adjust
-	vertex3 txb = tangent ^ binormal;
+	vertex3 txb(&tangent);
+	txb ^= binormal;
 	if(normal * txb < 0.0f) {
 		tangent *= -1.0f;
 

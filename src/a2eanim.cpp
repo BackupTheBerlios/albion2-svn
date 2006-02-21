@@ -16,6 +16,22 @@
 
 #include "a2eanim.h"
 
+core* a2eanim::c = NULL;
+msg* a2eanim::m = NULL;
+ext* a2eanim::exts = NULL;
+vertex3** a2eanim::mt_normals = NULL;
+vertex3** a2eanim::mt_binormals = NULL;
+vertex3** a2eanim::mt_tangents = NULL;
+unsigned int a2eanim::mt_cur_mesh = 0;
+unsigned int a2eanim::mt_cur_frame = 0;
+unsigned int* a2eanim::mt_start_num = NULL;
+unsigned int* a2eanim::mt_end_num = NULL;
+a2eanim::mesh* a2eanim::mt_mesh = NULL;
+a2eanim::nlist* a2eanim::mt_normal_list = NULL;
+bool* a2eanim::mt_thread_done = NULL;
+bool* a2eanim::mt_thread_done2 = NULL;
+unsigned int a2eanim::mt_cur_tn = 0;
+
 /*! there is no function currently
  */
 a2eanim::a2eanim(engine* e, shader* s) {
@@ -74,6 +90,10 @@ a2eanim::a2eanim(engine* e, shader* s) {
 	a2eanim::m = e->get_msg();
 	a2eanim::file = e->get_file_io();
 	a2eanim::exts = e->get_ext();
+
+
+	// thread count - 2 additional threads atm
+	thread_count = e->get_thread_count();
 }
 
 /*! there is no function currently
@@ -161,7 +181,10 @@ void a2eanim::draw() {
 
 		if(!init) {
 			// generate the normals, binormals and tangents
-			generate_normals();
+			unsigned int t1 = SDL_GetTicks();
+			thread_count == 0 ? generate_normals_nt() : generate_normals();
+			unsigned int t2 = SDL_GetTicks() - t1;
+			m->print(msg::MDEBUG, "a2eanim.cpp", "n/nbt computing time: %u ms", t2);
 
 			// create buffers
 			if(vbo) {
@@ -246,7 +269,7 @@ void a2eanim::draw() {
 				glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 2));
 				glEnable(GL_TEXTURE_2D);
 
-				if(a2eanim::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
+				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
 
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
@@ -298,7 +321,7 @@ void a2eanim::draw() {
 					glFrontFace(GL_CCW);
 				}
 
-				if(a2eanim::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
+				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
 
 				exts->glActiveTextureARB(GL_TEXTURE2_ARB);
 				glDisable(GL_TEXTURE_2D);
@@ -318,7 +341,7 @@ void a2eanim::draw() {
 
 				glColor3f(1.0f, 1.0f, 1.0f);
 				glEnable(GL_TEXTURE_2D);
-				if(a2eanim::material->get_color_type(i) == 0x01) { glEnable(GL_BLEND); }
+				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
 
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
@@ -354,7 +377,7 @@ void a2eanim::draw() {
 					glFrontFace(GL_CCW);
 				}
 
-				if(a2eanim::material->get_color_type(i) == 0x01) { glDisable(GL_BLEND); }
+				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
 				glDisable(GL_TEXTURE_2D);
 				glDisable(GL_LIGHTING);
 			}
@@ -952,9 +975,128 @@ void a2eanim::generate_normal_list() {
 	delete [] tmp_num;
 }
 
-/*! generates the normals, binormals and tangents of the current mesh
+/*! generates the normals, binormals and tangents of the current mesh - with threading
  */
 void a2eanim::generate_normals() {
+	mt_normals = new vertex3*[thread_count];
+	mt_binormals = new vertex3*[thread_count];
+	mt_tangents = new vertex3*[thread_count];
+
+	SDL_mutex** mutexes = new SDL_mutex*[thread_count]; // mutexes, or mutices: that is the question ...
+	SDL_Thread** threads = new SDL_Thread*[thread_count];
+	mt_thread_done = new bool[thread_count];
+	mt_thread_done2 = new bool[thread_count];
+	mt_start_num = new unsigned int[thread_count];
+	mt_end_num = new unsigned int[thread_count];
+
+	for(unsigned int i = 0; i < thread_count; i++) {
+		mt_normals[i] = new vertex3[16];
+		mt_binormals[i] = new vertex3[16];
+		mt_tangents[i] = new vertex3[16];
+
+		mutexes[i] = SDL_CreateMutex();
+		if(mutexes[i] == NULL) {
+			m->print(msg::MERROR, "a2eanim.cpp", "generate_normals(): unable to create mutex (#%u): %s!", i, SDL_GetError());
+		}
+
+		mt_thread_done[i] = false;
+		mt_thread_done2[i] = true;
+		mt_cur_tn = i;
+		threads[i] = SDL_CreateThread(mt_nbt, mutexes[i]);
+		if(threads[i] == NULL) {
+			m->print(msg::MERROR, "a2eanim.cpp", "generate_normals(): unable to create thread (#%u): %s!", i, SDL_GetError());
+		}
+	}
+
+	for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+		unsigned int std_range = a2eanim::meshes[i].vertex_count / thread_count;
+		unsigned int remain = a2eanim::meshes[i].vertex_count - (std_range * thread_count);
+		for(unsigned int j = 0; j < thread_count; j++) {
+			mt_start_num[j] = 0;
+			mt_end_num[j] = 0;
+
+			if(j > 0)
+				mt_start_num[j] += mt_end_num[j-1];
+
+			mt_end_num[j] = mt_start_num[j] + std_range;
+			if(j < remain)
+				mt_end_num[j]++;
+
+			cout << "thread #" << j << " range: " << mt_start_num[j] << " - " << mt_end_num[j] << " : " << (mt_end_num[j] - mt_start_num[j]) << endl;
+		}
+
+		if(!a2eanim::meshes[i].nbt_computed) {
+			for(unsigned int j = 0; j < a2eanim::animations[a2eanim::current_animation]->frame_count; j++) {
+				cout << "frame " << j << "/" << a2eanim::animations[a2eanim::current_animation]->frame_count << endl;
+				// build the bones for this frame ...
+				for(unsigned int k = 0; k < a2eanim::base_joint_count; k++) {
+					a2eanim::build_bone(j, base_joints[k], &base_joints[k]->position, &base_joints[k]->orientation);
+				}
+				// ... and skin the mesh
+				a2eanim::skin_mesh();
+
+
+				mt_cur_mesh = i;
+				mt_cur_frame = j;
+				mt_mesh = &meshes[i];
+				mt_normal_list = normal_list[i];
+
+
+				for(unsigned int k = 0; k < thread_count; k++) {
+					SDL_mutexP(mutexes[k]);
+					mt_thread_done2[k] = false;
+					SDL_mutexV(mutexes[k]);
+				}
+
+				bool end = false;
+cout << "before end loop" << endl;
+				for(unsigned int k = 0; k < thread_count; k++) {
+cout << "insight 1" << endl;
+					while(!end) {
+cout << "locking mutex #" << k << " ..." << endl;
+						SDL_mutexP(mutexes[k]);
+cout << "locked mutex #" << k << " ..." << endl;
+						if(mt_thread_done2[k]) {
+							end = true;
+						}
+cout << "unlocking mutex #" << k << " ..." << endl;
+						SDL_mutexV(mutexes[k]);
+cout << "unlocked mutex #" << k << " ..." << endl;
+					}
+cout << "setting #" << k << "end to false" << endl;
+					end = false;
+				}
+			}
+		}
+		a2eanim::meshes[i].nbt_computed = true;
+	}
+
+	for(unsigned int i = 0; i < thread_count; i++) {
+		SDL_mutexP(mutexes[i]);
+		mt_thread_done[i] = true;
+		SDL_mutexV(mutexes[i]);
+
+		if(threads[i] != NULL) { SDL_WaitThread(threads[i], NULL); }
+		SDL_DestroyMutex(mutexes[i]);
+	}
+
+	delete [] threads;
+	delete [] mutexes;
+
+	delete [] mt_thread_done;
+	delete [] mt_thread_done2;
+
+	delete [] mt_start_num;
+	delete [] mt_end_num;
+
+	delete [] mt_normals;
+	delete [] mt_binormals;
+	delete [] mt_tangents;
+}
+
+/*! generates the normals, binormals and tangents of the current mesh - without threading
+ */
+void a2eanim::generate_normals_nt() {
 	vertex3* normals = new vertex3[16];
 	vertex3* binormals = new vertex3[16];
 	vertex3* tangents = new vertex3[16];
@@ -1105,3 +1247,68 @@ void a2eanim::build_bounding_box() {
 	a2eanim::bbox->vmax.y = maxy;
 	a2eanim::bbox->vmax.z = maxz;
 }
+
+int a2eanim::mt_nbt(void* data) {
+	SDL_mutex* lock = (SDL_mutex*)data;
+
+	SDL_mutexP(lock);
+	unsigned int tn = mt_cur_tn; // thread number
+	SDL_mutexV(lock);
+
+	while(!mt_thread_done[tn]) {
+		SDL_mutexP(lock);
+		if(!mt_thread_done2[tn]) {
+			for(unsigned int i = mt_start_num[tn]; i < mt_end_num[tn]; i++) {
+				// check if vertex is part of a triangle
+				if(a2eanim::mt_normal_list[i].count != 0) {
+					// compute the normals, binormals and tangents for all triangles the vertex is part of
+					for(unsigned int l = 0; l < mt_normal_list[i].count; l++) {
+						// if there is no shader support, we don't need
+						// to compute the binormal and tangent vectors
+						if(exts->is_shader_support()) {
+							c->compute_normal_tangent_binormal(
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i1],
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i2],
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i3],
+								mt_normals[tn][l], mt_binormals[tn][l], mt_tangents[tn][l],
+								&mt_mesh->tex_coords[mt_mesh->indices[mt_normal_list[i].num[l]].i1],
+								&mt_mesh->tex_coords[mt_mesh->indices[mt_normal_list[i].num[l]].i2],
+								&mt_mesh->tex_coords[mt_mesh->indices[mt_normal_list[i].num[l]].i3]);
+						}
+						else {
+							c->compute_normal(
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i1],
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i2],
+								&mt_mesh->vertices[mt_mesh->indices[mt_normal_list[i].num[l]].i3],
+								mt_normals[tn][l]);
+						}
+					}
+
+					// add all normals, binormals and tangents and divide them by the amount of them
+					for(unsigned int l = 0; l < a2eanim::mt_normal_list[i].count; l++) {
+						a2eanim::mt_mesh->normal[mt_cur_frame][i] += mt_normals[tn][l];
+						// if there is no shader support, we don't need
+						// to compute the binormal and tangent vectors
+						if(exts->is_shader_support()) {
+							a2eanim::mt_mesh->binormal[mt_cur_frame][i] += mt_binormals[tn][l];
+							a2eanim::mt_mesh->tangent[mt_cur_frame][i] += mt_tangents[tn][l];
+						}
+					}
+					a2eanim::mt_mesh->normal[mt_cur_frame][i] /= (float)a2eanim::mt_normal_list[i].count;
+					// if there is no shader support, we don't need
+					// to compute the binormal and tangent vectors
+					if(exts->is_shader_support()) {
+						a2eanim::mt_mesh->normal[mt_cur_frame][i] *= -1.0f;
+						a2eanim::mt_mesh->binormal[mt_cur_frame][i] /= (float)a2eanim::mt_normal_list[i].count;
+						a2eanim::mt_mesh->tangent[mt_cur_frame][i] /= (float)a2eanim::mt_normal_list[i].count;
+					}
+				}
+			}
+			mt_thread_done2[tn] = true;
+		}
+		SDL_mutexV(lock);
+	}
+
+	return 1;
+}
+

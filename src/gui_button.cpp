@@ -83,7 +83,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 		if(icon == 0) {
 			// draw text
 			float fx, fy, z, ux, uy, uz = 0.0f;
-			text_handler->get_font()->BBox(text_handler->get_text(), fx, fy, z, ux, uy, uz);
+			text_handler->get_font()->ttf_font->BBox(text_handler->get_text(), fx, fy, z, ux, uy, uz);
 			unsigned int width = (unsigned int)(ux - fx);
 			unsigned int heigth = (unsigned int)(uy - fy);
 			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;
@@ -213,7 +213,7 @@ void gui_button::draw(bool is_pressed, unsigned int x, unsigned int y) {
 		if(icon == 0) {
 			// draw text
 			float fx, fy, z, ux, uy, uz = 0.0f;
-			text_handler->get_font()->BBox(text_handler->get_text(), fx, fy, z, ux, uy, uz);
+			text_handler->get_font()->ttf_font->BBox(text_handler->get_text(), fx, fy, z, ux, uy, uz);
 			unsigned int width = (unsigned int)(ux - fx - 1.0f);
 			unsigned int heigth = (unsigned int)(uy - fy - 1.0f);
 			unsigned int width_button = gui_button::rectangle->x2 - gui_button::rectangle->x1;

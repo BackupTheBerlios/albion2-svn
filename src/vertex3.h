@@ -50,6 +50,7 @@ public:
 	vertex3 operator*(float f);
 	float operator*(vertex3& v);
 	vertex3 operator^(const vertex3& v);
+	vertex3& operator^=(const vertex3& v);
 	vertex3& operator+=(const vertex3& v);
 	vertex3& operator-=(const vertex3& v);
 	vertex3& operator*=(float f);

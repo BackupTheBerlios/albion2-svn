@@ -83,14 +83,14 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	float glyph_width;
 	float text_width = 0;
 	float after_text_width = 0;
-	char* tmp_text = text_handler->get_text();
+	char* tmp_text = (char*)text_handler->get_text();
 	char* tmp_char = new char[2];
 	for(unsigned int i = 0; i < strlen(text_handler->get_text()); i++) {
 		//tmp_char[0] = tmp_text[i];
 		//snprintf(tmp_char, 1, "%c", tmp_text[i]);
 		memcpy(tmp_char, &tmp_text[i], 1);
 		tmp_char[1] = 0;
-		glyph_width = text_handler->get_font()->Advance(tmp_char);
+		glyph_width = text_handler->get_font()->ttf_font->Advance(tmp_char);
 		if(i < text_pos) {
 			text_width += glyph_width;
 		}
@@ -119,7 +119,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		if(text_pos == strlen(text_handler->get_text())) {
 			width_diff = (unsigned int)text_width - width_input_box;
 
-			char* ptext = text_handler->get_text();
+			char* ptext = (char*)text_handler->get_text();
 			unsigned int len = (unsigned int)strlen(ptext);
 
 			char* tmp_text = new char[len+1];
@@ -132,7 +132,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			float cur_width = 0.0f;
 			while(cur_width < (float)width_input_box) {
 				tmp_text[pos] = ptext[(len-1) - pos];
-				cur_width = text_handler->get_font()->Advance(tmp_text);
+				cur_width = text_handler->get_font()->ttf_font->Advance(tmp_text);
 				pos++;
 			}
 			pos--;
@@ -149,7 +149,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			}
 
 			// and now render the text
-			g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+			g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 			/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
@@ -169,7 +169,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			if(text_width >= width_input_box) {
 				width_diff = (unsigned int)text_width - width_input_box;
 
-				char* ptext = text_handler->get_text();
+				char* ptext = (char*)text_handler->get_text();
 				//unsigned int len = strlen(ptext);
 				unsigned int len = text_pos;
 
@@ -183,7 +183,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				float cur_width = 0.0f;
 				while(cur_width < (float)width_input_box) {
 					tmp_text[pos] = ptext[(len-1) - pos];
-					cur_width = text_handler->get_font()->Advance(tmp_text);
+					cur_width = text_handler->get_font()->ttf_font->Advance(tmp_text);
 					pos++;
 				}
 				pos--;
@@ -200,7 +200,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				}
 
 				// and now render the text
-				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
@@ -216,7 +216,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			}
 			// ... or not
 			else  {
-				char* ptext = text_handler->get_text();
+				char* ptext = (char*)text_handler->get_text();
 				unsigned int len = (unsigned int)strlen(ptext);
 
 				char* new_text = new char[len+1];
@@ -229,7 +229,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				float cur_width = 0.0f;
 				while(cur_width < (float)width_input_box) {
 					new_text[pos] = ptext[pos];
-					cur_width = text_handler->get_font()->Advance(new_text);
+					cur_width = text_handler->get_font()->ttf_font->Advance(new_text);
 					pos++;
 				}
 				pos--;
@@ -238,7 +238,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				new_text[pos] = 0;
 
 				// and now render the text
-				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->Advance(new_text),
+				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/

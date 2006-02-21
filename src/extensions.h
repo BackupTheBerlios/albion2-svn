@@ -33,6 +33,7 @@
 #ifdef WIN32
 #include <GL/wglext.h>
 #else
+#define GLX_GLXEXT_LEGACY
 #include <GL/glx.h>
 #endif
 
@@ -54,10 +55,12 @@ public:
 
 	bool is_ext_supported(char* ext_name);
 	bool is_multitexture_support();
+	bool is_texenv_combine_support();
 	bool is_shader_support();
 	bool is_vbo_support();
 
 	PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
+	PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
 	PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2fARB;
 	PFNGLMULTITEXCOORD3FARBPROC glMultiTexCoord3fARB;
 
@@ -86,6 +89,7 @@ protected:
 	msg* m;
 
 	bool multitexture_support;
+	bool texenv_combine_support;
 	bool shader_support;
 	bool vbo_support;
 

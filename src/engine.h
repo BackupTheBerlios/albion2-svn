@@ -46,6 +46,7 @@
 #include "extensions.h"
 #include "lua.h"
 #include "xml.h"
+#include "gui_font.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -96,6 +97,8 @@ public:
 
 	unsigned int get_init_mode();
 
+	unsigned int get_thread_count();
+
 	// class return functions
 	core* get_core();
 	msg* get_msg();
@@ -106,6 +109,7 @@ public:
 	texman* get_texman();
 	ext* get_ext();
 	lua* get_lua();
+	gui_font* get_gui_font();
 
     // the initialization mode is used to determine if we should load
     // or compute graphical stuff like textures or shaders
@@ -125,6 +129,7 @@ protected:
 	ext* exts;
 	lua* l;
 	xml* x;
+	gui_font* gf;
 
 	unsigned int width, height, depth, flags;
 	bool fullscreen;
@@ -140,6 +145,8 @@ protected:
 	unsigned int mode;
 
 	unsigned int key_repeat;
+
+	unsigned int thread_count;
 
 	gui_style::COLOR_SCHEME color_scheme;
 };

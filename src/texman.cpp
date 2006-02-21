@@ -43,8 +43,6 @@ texman::~texman() {
  */
 unsigned int texman::add_texture(const char* filename, GLint components, GLenum format) {
 	// create a sdl surface and load the texture
-	/*SDL_Surface* tex_surface = new SDL_Surface();
-	tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));*/
 	SDL_Surface* tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
 	if(!tex_surface) {
 		m->print(msg::MERROR, "texman.cpp", "add_texture(): error loading texture file \"%s\"!", filename);

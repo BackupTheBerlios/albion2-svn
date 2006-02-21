@@ -20,7 +20,7 @@
 #define glGetProcAddress(x) wglGetProcAddress(x)
 #define ProcType LPCSTR
 #else
-#define glGetProcAddress(x) glXGetProcAddress(x)
+#define glGetProcAddress(x) glXGetProcAddressARB(x)
 #define ProcType GLubyte*
 #endif
 
@@ -50,12 +50,20 @@ ext::ext(unsigned int imode, msg* m) {
 
 	if(is_ext_supported("GL_ARB_multitexture")) {
 		glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glActiveTextureARB");
+		glClientActiveTextureARB = (PFNGLCLIENTACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glClientActiveTextureARB");
 		glMultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC)glGetProcAddress((ProcType)"glMultiTexCoord2fARB");
 		glMultiTexCoord3fARB = (PFNGLMULTITEXCOORD3FARBPROC)glGetProcAddress((ProcType)"glMultiTexCoord3fARB");
 		multitexture_support = true;
 	}
 	else {
 		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_multitexture'!");
+	}
+
+	if(is_ext_supported("GL_ARB_texture_env_combine")) {
+		texenv_combine_support = true;
+	}
+	else {
+		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_texture_env_combine'!");
 	}
 
 	if(is_ext_supported("GL_ARB_fragment_shader") &&
@@ -82,7 +90,7 @@ ext::ext(unsigned int imode, msg* m) {
 		vbo_support = true;
 	}
 	else {
-		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!\nthe engine will only work properly in console mode!");
+		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!");
 	}
 }
 
@@ -108,6 +116,12 @@ bool ext::is_ext_supported(char* ext_name) {
  */
 bool ext::is_multitexture_support() {
 	return ext::multitexture_support;
+}
+
+/*! returns true if texture environment combine is supported
+ */
+bool ext::is_texenv_combine_support() {
+	return ext::texenv_combine_support;
 }
 
 /*! returns true if glsl shaders are supported

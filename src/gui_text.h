@@ -18,12 +18,15 @@
 #define __GUI_TEXT_H__
 
 #include <iostream>
+#include <string>
+#include <list>
 #include <SDL/SDL.h>
 #include <FTGL/FTGLTextureFont.h>
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
 #include "engine.h"
+#include "gui_font.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -31,7 +34,6 @@ using namespace std;
 /*! @class gui_text
  *  @brief gui text element functions
  *  @author flo
- *  @version 0.3.1
  *  @todo more functions
  *
  *  the gui_text class
@@ -44,7 +46,7 @@ public:
 	~gui_text();
 
 	void draw(unsigned int x, unsigned int y);
-	void draw(char* text, unsigned int x, unsigned int y);
+	void draw(const char* text, unsigned int x, unsigned int y);
 	void new_text(char* font_name, unsigned int font_size);
 
 
@@ -52,23 +54,16 @@ public:
 
 	void remake_text();
 
+	gui_font::font* get_font();
 	unsigned int get_id();
 	core::pnt* get_point();
-	char* get_text();
-	SDL_Color get_color();
-	char* get_font_name();
-	unsigned int get_font_size();
-	FTFont* get_font();
+	const char* get_text();
 
+	void set_font(gui_font::font* font);
 	void set_id(unsigned int id);
 	void set_point(core::pnt* point);
 	void set_text(char* text);
-	void set_color(SDL_Color* color);
-	void set_color(unsigned int color);
-	void set_font_name(char* font_name);
-	void set_font_size(unsigned int font_size);
 	void set_init(bool state);
-	void set_font(FTFont* font);
 
 	void set_notext();
 	unsigned int get_text_width();
@@ -82,18 +77,14 @@ protected:
 
 	// gui text element variables
 
+	//! pointer to a font
+	gui_font::font* font;
 	//! text id
 	unsigned int id;
 	//! text starting point (x,y)
 	core::pnt* point;
 	//! the text itself
-	char* text;
-	//! the texts color
-	SDL_Color* color;
-	//! the font name
-	char* font_name;
-	//! the font size
-	unsigned int font_size;
+	string text;
 	//! bool if everything was initialized
 	bool is_init;
 
@@ -104,7 +95,6 @@ protected:
 	float texmaxx;
 	float texmaxy;
 
-	FTFont* font;
 
 };
 

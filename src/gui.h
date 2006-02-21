@@ -32,6 +32,7 @@
 #include "gui_vbar.h"
 #include "gui_check.h"
 #include "gui_window.h"
+#include "gui_font.h"
 using namespace std;
 typedef unsigned int GUI_OBJ;
 
@@ -106,6 +107,7 @@ protected:
 	event* evt;
 	engine* e;
 	gfx* g;
+	gui_font* gf;
 
 	SDL_Surface* gui_surface;
 

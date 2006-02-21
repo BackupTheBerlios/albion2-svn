@@ -28,6 +28,7 @@
 #include "gui_button.h"
 #include "gui_list_item.h"
 #include "gui_vbar.h"
+#include "gui_font.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -35,7 +36,6 @@ using namespace std;
 /*! @class gui_list
  *  @brief gui list box element functions
  *  @author flo
- *  @version 0.2.1
  *  @todo more functions
  *  
  *  the gui_list class
@@ -80,6 +80,7 @@ protected:
 	core* c;
 	engine* e;
 	gfx* g;
+	gui_font* gf;
 
 
 	gui_vbar* vbar_handler;
