@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<engine>
-	<screen width="1024" height="768" depth="32" fullscreen="0"/>
-	<gui scheme="WINDOWS" color_scheme="BLUE"/>
-	<key_repeat time="200"/>
-	<sleep time="0"/>
-	<thread count="2"/> // number of additional threads besides the main thread
-</engine>
