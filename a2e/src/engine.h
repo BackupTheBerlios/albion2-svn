@@ -36,6 +36,7 @@
 #include <GL/glx.h>
 #endif
 
+#include <string>
 #include "msg.h"
 #include "core.h"
 #include "gui_style.h"
@@ -63,7 +64,7 @@ using namespace std;
 class A2E_API engine
 {
 public:
-	engine();
+	engine(const char* datapath = "../data/");
 	~engine();
 
 	// graphic control functions
@@ -99,6 +100,10 @@ public:
 
 	unsigned int get_thread_count();
 
+	void set_data_path(const char* data_path = "../data/");
+	string get_data_path();
+	char* data_path(char* str);
+
 	// class return functions
 	core* get_core();
 	msg* get_msg();
@@ -130,6 +135,9 @@ protected:
 	lua* l;
 	xml* x;
 	gui_font* gf;
+
+	string datapath;
+	string tmp_str;
 
 	unsigned int width, height, depth, flags;
 	bool fullscreen;

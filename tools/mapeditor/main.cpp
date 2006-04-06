@@ -29,7 +29,7 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e = new engine();
+	e = new engine("../../data/");
 	e->init();
 
 	// init class pointers
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 	unsigned int fps = 0;
 	unsigned int fps_time = 0;
 	char* tmp = new char[512];
-	sprintf(tmp, "A2E Mapeditor - v0.02");
+	sprintf(tmp, "A2E Mapeditor - v0.03");
 
 	// main loop
 	while(!done)
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
-			sprintf(tmp, "A2E Mapeditor - v0.02 | FPS: %u | Pos: %f %f %f", fps,
+			sprintf(tmp, "A2E Mapeditor - v0.03 | FPS: %u | Pos: %f %f %f", fps,
 				-cam->get_position()->x, -cam->get_position()->y, -cam->get_position()->z);
 			fps = 0;
 			fps_time = SDL_GetTicks();

@@ -31,7 +31,7 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e = new engine();
+	e = new engine("../../data/");
 	e->init();
 	e->set_caption("A2E Sample - GUI Sample");
 
@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
 	// initialize the gui
 	agui->init();
 
-	GUI_OBJ t1 = agui->add_text("../data/vera.ttf", 14, "test text", 0xFFFFFF, agfx->cord_to_pnt(100, 5), 102, 0);
-	GUI_OBJ output_text = agui->add_text("../data/vera.ttf", 12, "-", 0xFFFFFF, agfx->cord_to_pnt(10, 580), 103, 0);
+	GUI_OBJ t1 = agui->add_text("STANDARD", 14, "test text", 0xFFFFFF, agfx->cord_to_pnt(100, 5), 102, 0);
+	GUI_OBJ output_text = agui->add_text("STANDARD", 12, "-", 0xFFFFFF, agfx->cord_to_pnt(10, 580), 103, 0);
 	GUI_OBJ i1 = agui->add_input_box(agfx->pnt_to_rect(10, 300, 100, 320), 105, "input text", 0);
 	GUI_OBJ l1 = agui->add_list_box(agfx->pnt_to_rect(400, 200, 750, 440), 106, 0);
 	gui_text* t1_obj = agui->get_text(t1);
@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
 	c1_obj->add_item("fghth", 7);
 
 	GUI_OBJ wnd = agui->add_window(agfx->pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
-	GUI_OBJ xpos_text = agui->add_text("../data/vera.ttf", 12, "0", 0x000000, agfx->cord_to_pnt(20, 20), 107, 110);
-	GUI_OBJ ypos_text = agui->add_text("../data/vera.ttf", 12, "0", 0x000000, agfx->cord_to_pnt(20, 40), 108, 110);
+	GUI_OBJ xpos_text = agui->add_text("STANDARD", 12, "0", 0x000000, agfx->cord_to_pnt(20, 20), 107, 110);
+	GUI_OBJ ypos_text = agui->add_text("STANDARD", 12, "0", 0x000000, agfx->cord_to_pnt(20, 40), 108, 110);
 	GUI_OBJ cbox = agui->add_check_box(agfx->pnt_to_rect(10, 70, 200, 90), 109, "Test Check Box", 110);
 	gui_window* wnd_obj = agui->get_window(wnd);
 	gui_text* xpos_text_obj = agui->get_text(xpos_text);
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	}
 
 	image* img = new image(e);
-	img->open_image("../../data/engine_logo.png");
+	img->open_image(e->data_path("engine_logo.png"));
 	img->set_position(800 - 446, 600 - 130);
 
 	// needed for fps counting

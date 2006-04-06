@@ -22,6 +22,7 @@
 #endif
 
 #include <iostream>
+#include <string>
 #include "msg.h"
 #include <SDL/SDL_image.h>
 #include <GL/gl.h>
@@ -55,7 +56,7 @@ protected:
 	msg* m;
 
 	struct texture {
-		const char* filename;
+		string filename;
 		GLuint tex;
 		unsigned int width;
 		unsigned int height;

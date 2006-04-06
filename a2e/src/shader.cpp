@@ -54,7 +54,10 @@ shader::shader(engine* e) {
 	// create parallax mapping shader
 	char* pl_uniforms[] = { "cam_pos", "light_pos", "diffuse_map", "normal_map", "height_map", "light_color" };
 	char* pl_attributes[] = { "normal", "binormal", "tangent", "texture_coord" };
-	shader::add_shader("../data/parallax.vs", "../data/parallax.fs", 6, pl_uniforms, 4, pl_attributes);
+
+	string vs_path = e->data_path("parallax.vs");
+	string fs_path = e->data_path("parallax.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 6, pl_uniforms, 4, pl_attributes);
 }
 
 /*! delete everything

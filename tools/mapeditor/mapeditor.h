@@ -58,10 +58,10 @@ public:
 		list<a2eanim>::iterator amodel;
 		list<a2ematerial>::iterator mat;
 		bool type;
-		char model_name[32];
-		char model_filename[32];
-		char ani_filename[32];
-		char mat_filename[32];
+		char model_name[64];
+		char model_filename[64];
+		char ani_filename[64];
+		char mat_filename[64];
 		unsigned int phys_type;
 	};
 

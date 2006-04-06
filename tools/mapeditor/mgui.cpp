@@ -39,7 +39,6 @@ mgui::mgui(engine* e, gui* agui, mapeditor* me, scene* sce) {
 	menu_id = 0xFFFFFFFF; // there is no gui object with the id 0xFFFFFFFF
 	prop_wnd_id = 0xFFFFFFFF;
 	ao_wnd_id = 0xFFFFFFFF;
-	od_wnd_id = 0xFFFFFFFF;
 }
 
 mgui::~mgui() {
@@ -90,7 +89,7 @@ void mgui::run() {
 					}
 					break;
 					case 201: {
-						me->open_map((char*)od_dirlist->get_selected_item()->text.c_str());
+						me->open_map((char*)string(e->get_data_path() + agui->get_open_diaolg_list()->get_selected_item()->text).c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
@@ -100,19 +99,19 @@ void mgui::run() {
 					break;
 					case 407: {
 						if(me->is_map_opened()) {
-							create_open_dialog(420, "Add Model File", "models/", "a2m", 50, 50);
+							od_wnd = agui->get_window(agui->add_open_dialog(420, "Add Model File", (char*)string(e->get_data_path() + "./").c_str(), "a2m", 50, 50));
 						}
 					}
 					break;
 					case 408: {
 						if(me->is_map_opened()) {
-							create_open_dialog(430, "Add Animation File", "models/", "a2a", 50, 50);
+							od_wnd = agui->get_window(agui->add_open_dialog(430, "Add Animation File", (char*)string(e->get_data_path() + "./").c_str(), "a2a", 50, 50));
 						}
 					}
 					break;
 					case 409: {
 						if(me->is_map_opened()) {
-							create_open_dialog(440, "Add Material File", "models/", "a2mtl", 50, 50);
+							od_wnd = agui->get_window(agui->add_open_dialog(440, "Add Material File", (char*)string(e->get_data_path() + "./").c_str(), "a2mtl", 50, 50));
 						}
 					}
 					break;
@@ -125,17 +124,15 @@ void mgui::run() {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a material filename!");
 							break;
 						}
-						e->get_file_io()->open_file(ao_e_model->get_text(), file_io::OT_READ_BINARY);
-						e->get_file_io()->seek(8);
-						char model_type = e->get_file_io()->get_char();
-						e->get_file_io()->close_file();
 
-						if(model_type == 0x01 && strlen(ao_e_ani->get_text()) == 0) {
+						bool ani = sce->is_a2eanim((char*)string(e->get_data_path() + ao_e_model->get_text()).c_str());
+
+						if(ani && strlen(ao_e_ani->get_text()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a animation filename!");
 							break;
 						}
 
-						if(model_type == 0x00) {
+						if(!ani) {
 							me->add_object(ao_e_model->get_text(), ao_e_mat->get_text());
 						}
 						else {
@@ -146,17 +143,17 @@ void mgui::run() {
 					}
 					break;
 					case 421: {
-						ao_e_model->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
+						ao_e_model->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
 					case 431: {
-						ao_e_ani->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
+						ao_e_ani->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
 					case 441: {
-						ao_e_mat->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
+						ao_e_mat->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
@@ -250,7 +247,7 @@ void mgui::save_map() {
 }
 
 void mgui::open_map_dialog() {
-	create_open_dialog(200, "Open Map File", "./", "a2map");
+	od_wnd = agui->get_window(agui->add_open_dialog(200, "Open Map File", (char*)string(e->get_data_path() + "./").c_str(), "a2map"));
 }
 
 void mgui::add_obj_dialog() {
@@ -260,9 +257,9 @@ void mgui::add_obj_dialog() {
 
 	ao_wnd_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 410, 150), 400, "Add Object", true);
 	ao_wnd = agui->get_window(ao_wnd_id);
-	ao_model_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 14), 401, 400));
-	ao_ani_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 34), 402, 400));
-	ao_mat_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 54), 403, 400));
+	ao_model_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 14), 401, 400));
+	ao_ani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 34), 402, 400));
+	ao_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 54), 403, 400));
 	ao_e_model = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 10, 295, 28), 404, "", 400));
 	ao_e_ani = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 30, 295, 48), 405, "", 400));
 	ao_e_mat = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 50, 295, 68), 406, "", 400));
@@ -277,12 +274,12 @@ void mgui::load_main_gui() {
 		if(!menu->get_deleted()) return;
 	}
 
-	mopen_tex = e->get_texman()->add_texture("icons/open.png", 4, GL_RGBA);
-	msave_tex = e->get_texman()->add_texture("icons/save.png", 4, GL_RGBA);
-	mclose_tex = e->get_texman()->add_texture("icons/close.png", 4, GL_RGBA);
-	mprop_tex = e->get_texman()->add_texture("icons/prop.png", 4, GL_RGBA);
-	madd_tex = e->get_texman()->add_texture("icons/add.png", 4, GL_RGBA);
-	mdel_tex = e->get_texman()->add_texture("icons/del.png", 4, GL_RGBA);
+	mopen_tex = e->get_texman()->add_texture(e->data_path("icons/open.png"), 4, GL_RGBA);
+	msave_tex = e->get_texman()->add_texture(e->data_path("icons/save.png"), 4, GL_RGBA);
+	mclose_tex = e->get_texman()->add_texture(e->data_path("icons/close.png"), 4, GL_RGBA);
+	mprop_tex = e->get_texman()->add_texture(e->data_path("icons/prop.png"), 4, GL_RGBA);
+	madd_tex = e->get_texman()->add_texture(e->data_path("icons/add.png"), 4, GL_RGBA);
+	mdel_tex = e->get_texman()->add_texture(e->data_path("icons/del.png"), 4, GL_RGBA);
 
 	menu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 100, "main gui", false);
 	menu = agui->get_window(menu_id);
@@ -309,23 +306,23 @@ void mgui::open_property_wnd() {
 	prop_wnd_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 285, 516), 300, "Properties", true);
 	prop_wnd = agui->get_window(prop_wnd_id);
 
-	pmod_name = agui->get_text(agui->add_text("vera.ttf", font_size, "Model Name", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 10), 301, 300));
-	pmod_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 30), 302, 300));
-	pani_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 50), 303, 300));
-	pmat_fname = agui->get_text(agui->add_text("vera.ttf", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 70), 304, 300));
-	ppos = agui->get_text(agui->add_text("vera.ttf", font_size, "Position", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 90), 305, 300));
-	pposx = agui->get_text(agui->add_text("vera.ttf", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 110), 306, 300));
-	pposy = agui->get_text(agui->add_text("vera.ttf", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 130), 307, 300));
-	pposz = agui->get_text(agui->add_text("vera.ttf", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 150), 308, 300));
-	porient = agui->get_text(agui->add_text("vera.ttf", font_size, "Orientation", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 170), 309, 300));
-	porientx = agui->get_text(agui->add_text("vera.ttf", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 190), 310, 300));
-	porienty = agui->get_text(agui->add_text("vera.ttf", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 210), 311, 300));
-	porientz = agui->get_text(agui->add_text("vera.ttf", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 230), 312, 300));
-	pscale = agui->get_text(agui->add_text("vera.ttf", font_size, "Scale", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 250), 313, 300));
-	pscalex = agui->get_text(agui->add_text("vera.ttf", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 270), 314, 300));
-	pscaley = agui->get_text(agui->add_text("vera.ttf", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 290), 315, 300));
-	pscalez = agui->get_text(agui->add_text("vera.ttf", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 310), 316, 300));
-	pphys_prop = agui->get_text(agui->add_text("vera.ttf", font_size, "Physical Type", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 330), 317, 300));
+	pmod_name = agui->get_text(agui->add_text("STANDARD", font_size, "Model Name", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 10), 301, 300));
+	pmod_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 30), 302, 300));
+	pani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 50), 303, 300));
+	pmat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 70), 304, 300));
+	ppos = agui->get_text(agui->add_text("STANDARD", font_size, "Position", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 90), 305, 300));
+	pposx = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 110), 306, 300));
+	pposy = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 130), 307, 300));
+	pposz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 150), 308, 300));
+	porient = agui->get_text(agui->add_text("STANDARD", font_size, "Orientation", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 170), 309, 300));
+	porientx = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 190), 310, 300));
+	porienty = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 210), 311, 300));
+	porientz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 230), 312, 300));
+	pscale = agui->get_text(agui->add_text("STANDARD", font_size, "Scale", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 250), 313, 300));
+	pscalex = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 270), 314, 300));
+	pscaley = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 290), 315, 300));
+	pscalez = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 310), 316, 300));
+	pphys_prop = agui->get_text(agui->add_text("STANDARD", font_size, "Physical Type", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 330), 317, 300));
 
 	pemod_name = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 6, 241, 24), 318, "", 300));
 	pemod_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 26, 241, 44), 319, "", 300));
@@ -434,65 +431,4 @@ void mgui::apply_changes() {
 
 void mgui::close_map() {
 	me->close_map();
-}
-
-//! TODO: should be moved to gui class
-void mgui::create_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x, unsigned int y) {
-	if(agui->exist(od_wnd_id)) {
-		if(!od_wnd->get_deleted()) return;
-	}
-
-	od_wnd_id = agui->add_window(e->get_gfx()->pnt_to_rect(x, y, 370+x, 220+y), id, caption, true);
-	od_wnd = agui->get_window(od_wnd_id);
-	od_open = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), id+1, "Open", id));
-	od_cancel = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 1, "Cancel", id));
-	od_dirlist = agui->get_list(agui->add_list_box(e->get_gfx()->pnt_to_rect(0, 0, 300, 198), id+2, id));
-
-#ifdef WIN32
-	struct _finddata_t c_file;
-	intptr_t hFile;
-	unsigned int i = 0;
-
-	char* fstring = new char[strlen(dir) + 2 + strlen(ext) + 1];
-	strcpy(fstring, dir);
-	strcat(fstring, "*.");
-	strcat(fstring, ext);
-	if((hFile = _findfirst(fstring, &c_file)) != -1L) {
-		do {
-			unsigned int fnlen = (unsigned int)strlen(c_file.name);
-			if(c_file.size != 0 &&
-				c_file.name[fnlen-3] == ext[strlen(ext)-3] &&
-				c_file.name[fnlen-2] == ext[strlen(ext)-2] &&
-				c_file.name[fnlen-1] == ext[strlen(ext)-1]) {
-				od_dirlist->add_item(c_file.name, i);
-				i++;
-			}
-		}
-		while(_findnext(hFile, &c_file) == 0);
-
-		_findclose(hFile);
-	}
-	delete [] fstring;
-#else
-	struct dirent **namelist;
-	unsigned int i = 0;
-
-	string fstring = dir;
-	fstring += ".";
-	int n = scandir(fstring.c_str(), &namelist, 0, alphasort);
-	if (n >= 0) {
-		while(n--) {
-			unsigned int fnlen = (unsigned int)strlen(namelist[n]->d_name);
-			if(namelist[n]->d_type != DT_DIR &&
-				namelist[n]->d_name[fnlen-3] == ext[strlen(ext)-3] &&
-				namelist[n]->d_name[fnlen-2] == ext[strlen(ext)-2] &&
-				namelist[n]->d_name[fnlen-1] == ext[strlen(ext)-1]) {
-				od_dirlist->add_item(namelist[n]->d_name, i);
-				i++;
-			}
-			free(namelist[n]);
-		}
-		free(namelist);
-	}
-#endif
 }

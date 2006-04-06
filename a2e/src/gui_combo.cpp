@@ -114,14 +114,14 @@ void gui_combo::draw(unsigned int x, unsigned int y) {
 				}
 				else {
 					// draw marked item
-					item_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
+					item_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT2));
 					r2->x1 = r1->x1 + 1;
 					r2->x2 = r1->x2;
 					r2->y1 = r1->y1 + 1 + 18*i;
 					r2->y2 = r1->y1 + 18*(i+1);
 					g->draw_filled_rectangle(r2, e->get_gui_style()->STYLE_SELECTED);
 					item_text->draw(iiter->text.c_str(), r1->x1 + 2, r1->y1 + 2 + 18 * i);
-					item_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
+					item_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT));
 				}
 				i++;
 			}
@@ -211,6 +211,16 @@ void gui_combo::set_selected_id(unsigned int id) {
 
 unsigned int gui_combo::get_selected_id() {
 	return gui_combo::selected_id;
+}
+
+gui_combo::item* gui_combo::get_selected_item() {
+	for(vector<gui_combo::item>::iterator iiter = items.begin(); iiter != items.end(); iiter++) {
+		if(iiter->id == gui_combo::selected_id) {
+			return &*iiter;
+		}
+	}
+	m->print(msg::MERROR, "gui_combo.cpp", "get_selected_item(): an item with the id #%u doesn't exist!", gui_combo::selected_id);
+	return NULL;
 }
 
 unsigned int gui_combo::get_item_count() {

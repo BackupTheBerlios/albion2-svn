@@ -90,7 +90,7 @@ void update_cam(cam_type ctype) {
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e = new engine();
+	e = new engine("../../data/");
 	e->init();
 	e->set_caption("A2E Sample - Move Sample");
 	e->set_cursor_visible(false);
@@ -119,29 +119,29 @@ int main(int argc, char *argv[])
 
 	// load materials
 	a2ematerial* level_mat = new a2ematerial(e);
-	level_mat->load_material("../data/level.a2mtl");
+	level_mat->load_material(e->data_path("level.a2mtl"));
 
 	a2ematerial* logo_mat = new a2ematerial(e);
-	logo_mat->load_material("../data/logo.a2mtl");
+	logo_mat->load_material(e->data_path("logo.a2mtl"));
 	
 	a2ematerial* scale_mat = new a2ematerial(e);
-	scale_mat->load_material("../data/scale.a2mtl");
+	scale_mat->load_material(e->data_path("scale.a2mtl"));
 
 	// load the models and set new positions
 	level = sce->create_a2emodel();
-	level->load_model("../data/move_level.a2m");
+	level->load_model(e->data_path("move_level.a2m"));
 	level->set_position(0.0f, 0.0f, 0.0f);
 	level->set_material(level_mat);
 
 	sphere = sce->create_a2emodel();
-	sphere->load_model("../data/player_sphere.a2m");
+	sphere->load_model(e->data_path("player_sphere.a2m"));
 	sphere->set_position(-2.0f, 15.0f, -2.0f);
 	sphere->set_visible(false);
 	sphere->set_radius(2.0f);
 	sphere->set_material(scale_mat);
 
 	player = sce->create_a2emodel();
-	player->load_model("../data/player.a2m");
+	player->load_model(e->data_path("player.a2m"));
 	player->set_position(sphere->get_position()->x, sphere->get_position()->y - 2.0f, sphere->get_position()->z);
 	player->set_material(scale_mat);
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	sce->add_model(player);
 
 	a2emodel* test = sce->create_a2emodel();
-	test->load_model("../data/a2logo.a2m");
+	test->load_model(e->data_path("a2logo.a2m"));
 	test->set_position(0.0f, 50.0f, 0.0f);
 	test->set_material(logo_mat);
 	sce->add_model(test);
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	for(unsigned int i = 0; i < (unsigned int)sqrt((float)cspheres); i++) {
 		for(unsigned int j = 0; j < (unsigned int)sqrt((float)cspheres); j++) {
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j] = sce->create_a2emodel();
-			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->load_model("../data/sphere.a2m");
+			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->load_model(e->data_path("sphere.a2m"));
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_position((float)i*5, 20.0f, (float)j*5);
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_scale(0.5f, 0.5f, 0.5f);
 			spheres[i*(unsigned int)sqrt((float)cspheres) + j]->set_radius(1.0f);

@@ -37,7 +37,6 @@ using namespace std;
 /*! @class ode
  *  @brief open dynamic engine bindings/functions
  *  @author flo
- *  @version 0.1
  *  @todo more functions
  *  
  *  bindings and functions for using the open dynamic engine

@@ -20,8 +20,8 @@
 dWorldID ode::world = 0;
 dSpaceID ode::space = 0;
 dJointGroupID ode::joint_group = 0;
-//float ode::gravity = -9.8f;
-float ode::gravity = -20.0f;
+float ode::gravity = -9.8f;
+//float ode::gravity = -20.0f;
 float ode::cfm = 1e-5f;
 float ode::erp = 0.2f;
 

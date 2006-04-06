@@ -80,17 +80,17 @@ void mdl::load_model(char* filename, char* ani_filename) {
 		amodel = NULL;
 	}
 
-	ani = sce->is_a2eanim(filename);
+	ani = sce->is_a2eanim(e->data_path(filename));
 
 	if(!ani) {
 		model = sce->create_a2emodel();
-		model->load_model(filename, true);
+		model->load_model(e->data_path(filename), true);
 		sce->add_model(model);
 	}
 	else {
 		amodel = sce->create_a2eanim();
-		amodel->load_model(filename, true);
-		amodel->add_animation(ani_filename);
+		amodel->load_model(e->data_path(filename), true);
+		amodel->add_animation(e->data_path(ani_filename));
 		sce->add_model(amodel);
 	}
 
@@ -113,7 +113,7 @@ void mdl::set_material(char* filename) {
 	}
 
 	mat = new a2ematerial(e);
-	mat->load_material(filename);
+	mat->load_material(e->data_path(filename));
 
 	if(!ani) {
 		model->set_material(mat);
@@ -130,7 +130,7 @@ a2ematerial* mdl::get_material() {
 }
 
 void mdl::save_material(const char* filename) {
-	mdl::f->open_file((char*)filename, file_io::OT_WRITE_BINARY);
+	mdl::f->open_file(e->data_path((char*)filename), file_io::OT_WRITE_BINARY);
 
 	mdl::f->write_block("A2EMATERIAL", 11);
 

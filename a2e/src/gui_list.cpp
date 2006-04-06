@@ -82,7 +82,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 		}
 		else {
-			list_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
+			list_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT2));
 
 			g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18,
 				gui_list::rectangle->x2 + x - 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18 + 17);
@@ -90,7 +90,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 
 			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 
-			list_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
+			list_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT));
 		}
 	}
 

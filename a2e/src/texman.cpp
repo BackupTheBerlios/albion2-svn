@@ -51,7 +51,7 @@ unsigned int texman::add_texture(const char* filename, GLint components, GLenum 
 
 	// look if we already loaded this texture
 	for(unsigned int i = 0; i < ctextures; i++) {
-		if(strcmp(textures[i].filename, filename) == 0 &&
+		if(strcmp(textures[i].filename.c_str(), filename) == 0 &&
 			textures[i].height == (unsigned int)tex_surface->h &&
 			textures[i].width == (unsigned int)tex_surface->w &&
 			components == textures[i].components &&

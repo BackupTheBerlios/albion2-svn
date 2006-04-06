@@ -29,7 +29,7 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e = new engine();
+	e = new engine("../../data/");
 	e->init();
 	e->set_caption("A2E Sample - Model Loader");
 
@@ -57,29 +57,29 @@ int main(int argc, char *argv[])
 
 	// load materials
 	a2ematerial* ground_mat = new a2ematerial(e);
-	ground_mat->load_material("../data/ground.a2mtl");
+	ground_mat->load_material(e->data_path("ground.a2mtl"));
 
 	a2ematerial* cc_mat = new a2ematerial(e);
-	cc_mat->load_material("../data/celtic_house.a2mtl");
+	cc_mat->load_material(e->data_path("celtic_house.a2mtl"));
 
 	a2ematerial* scale_mat = new a2ematerial(e);
-	scale_mat->load_material("../data/scale.a2mtl");
+	scale_mat->load_material(e->data_path("scale.a2mtl"));
 
 	// load the model and set a new position
 	plane = sce->create_a2emodel();
-	plane->load_model("../data/ground.a2m", true);
+	plane->load_model(e->data_path("ground.a2m"), true);
 	plane->set_position(0.0f, -13.0f, 0.0f);
 	plane->set_draw_wireframe(wireframe);
 	plane->set_material(ground_mat);
 
 	cottage = sce->create_a2emodel();
-	cottage->load_model("../data/celtic_house.a2m", true);
+	cottage->load_model(e->data_path("celtic_house.a2m"), true);
 	cottage->set_position(0.0f, 0.0f, 0.0f);
 	cottage->set_draw_wireframe(wireframe);
 	cottage->set_material(cc_mat);
 
 	sphere = sce->create_a2emodel();
-	sphere->load_model("../data/player_sphere.a2m", true);
+	sphere->load_model(e->data_path("player_sphere.a2m"), true);
 	sphere->set_position(45.0f, 20.0f, 20.0f);
 	sphere->set_radius(1.0f);
 	sphere->set_material(scale_mat);

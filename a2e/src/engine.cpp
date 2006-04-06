@@ -37,7 +37,8 @@ int main(int argc, char *argv[]) {
 
 /*! there is no function currently
  */
-engine::engine() {
+engine::engine(const char* datapath) {
+	engine::datapath = datapath;
 	cursor_visible = true;
 	fps_limit = 10;
 	flags = 0;
@@ -62,7 +63,7 @@ engine::engine() {
 	gf = new gui_font(m);
 
 	// load config
-	if(!x->open("../data/config.xml")) {
+	if(!x->open(data_path("config.xml"))) {
 		m->print(msg::MERROR, "engine.cpp", "engine(): couldn't open config file - using standard settings!");
 	}
 	else {
@@ -608,4 +609,25 @@ gui_font* engine::get_gui_font() {
  */
 unsigned int engine::get_thread_count() {
 	return engine::thread_count;
+}
+
+/*! sets the data path
+ *  @param data_path the data path
+ */
+void engine::set_data_path(const char* data_path) {
+	engine::datapath = data_path;
+}
+
+/*! returns the data path
+ */
+string engine::get_data_path() {
+	return engine::datapath;
+}
+
+/*! returns the data path + str
+ *  @param str str we want to "add" to the data path
+ */
+char* engine::data_path(char* str) {
+	tmp_str = engine::datapath + str;
+	return (char*)tmp_str.c_str();
 }

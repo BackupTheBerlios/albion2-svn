@@ -525,7 +525,7 @@ GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id
 	// create class
 	gui::gui_buttons.push_back(*new gui_button(e));
 
-	gui::gui_buttons.back().set_text_handler(get_text(add_text("vera.ttf", 12, text,
+	gui::gui_buttons.back().set_text_handler(get_text(add_text("STANDARD", 12, text,
 		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -591,7 +591,12 @@ GUI_OBJ gui::add_text(char* font_name, unsigned int font_size, char* text,
 	gui::gui_texts.back().set_id(id);
 
 	// font stuff
-	gui::gui_texts.back().set_font(gf->add_font(font_name, font_size, color));
+	if(strcmp(font_name, "STANDARD") == 0) {
+		gui::gui_texts.back().set_font(gf->add_font(e->data_path("vera.ttf"), font_size, color));
+	}
+	else {
+		gui::gui_texts.back().set_font(gf->add_font(font_name, font_size, color));
+	}
 	gui::gui_texts.back().set_point(point);
 	gui::gui_texts.back().set_text(text);
 	gui::gui_texts.back().set_init(true);
@@ -616,13 +621,13 @@ GUI_OBJ gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text, un
 	// create class
 	gui::gui_input_boxes.push_back(*new gui_input(e));
 
-	gui::gui_input_boxes.back().set_text_handler(get_text(add_text("vera.ttf", 12, text,
+	gui::gui_input_boxes.back().set_text_handler(get_text(add_text("STANDARD", 12, text,
 		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements.back().is_drawn = false;
 
-	gui::gui_input_boxes.back().set_blink_text_handler(get_text(add_text("vera.ttf", 12, " ",
+	gui::gui_input_boxes.back().set_blink_text_handler(get_text(add_text("STANDARD", 12, " ",
 		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFFFF)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -653,7 +658,7 @@ GUI_OBJ gui::add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wi
 	gui::gui_list_boxes.push_back(*new gui_list(e));
 
 	// add text
-	gui::gui_list_boxes.back().set_list_text(get_text(add_text("vera.ttf", 12, "",
+	gui::gui_list_boxes.back().set_list_text(get_text(add_text("STANDARD", 12, "",
 		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
 	// don't draw our text automatically
 	gui::gui_elements.back().is_drawn = false;
@@ -716,7 +721,7 @@ GUI_OBJ gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text, un
 	// create class
 	gui::gui_check_boxes.push_back(*new gui_check(e));
 
-	gui::gui_check_boxes.back().set_text_handler(get_text(add_text("vera.ttf", 12, text,
+	gui::gui_check_boxes.back().set_text_handler(get_text(add_text("STANDARD", 12, text,
 		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -745,7 +750,7 @@ GUI_OBJ gui::add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int w
 	// create class
 	gui::gui_combo_boxes.push_back(*new gui_combo(e));
 
-	gui::gui_combo_boxes.back().set_item_text(get_text(add_text("vera.ttf", 12, "",
+	gui::gui_combo_boxes.back().set_item_text(get_text(add_text("STANDARD", 12, "",
 		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
 	gui::gui_elements.back().is_drawn = false; // text shouldn't be drawn automatically
 	gui::gui_combo_boxes.back().set_list_button(get_button(add_button(g->pnt_to_rect(0,0,1,1), 2,
@@ -780,7 +785,7 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 			id+0xFFFFFF, "x", 0, id)));
 	}
 
-	gui::gui_windows.back().set_text_handler(get_text(add_text("vera.ttf", 12, caption,
+	gui::gui_windows.back().set_text_handler(get_text(add_text("STANDARD", 12, caption,
 		e->get_gui_style()->STYLE_FONT2, g->cord_to_pnt(0,0), id+0xFFFF, id)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -1453,7 +1458,7 @@ GUI_OBJ gui::add_msgbox_ok(unsigned int id, char* caption, char* text) {
 	msg_ok_wnd = get_window(msg_ok_wnd_id);
 	msg_ok = get_button(add_button(e->get_gfx()->pnt_to_rect((unsigned int)((float)w * 0.5f) - 32,
 		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), 0, id+1, "OK", 0, id));
-	msg_text = get_text(add_text("vera.ttf", 12, text, e->get_gui_style()->STYLE_FONT2,
+	msg_text = get_text(add_text("STANDARD", 12, text, e->get_gui_style()->STYLE_FONT2,
 		e->get_gfx()->cord_to_pnt(0, 0), id+2, id));
 	unsigned int tw = (unsigned int)((float)(w - msg_text->get_text_width()) / 2.0f);
 	unsigned int th = (unsigned int)((float)h / 2.0f) - 30;

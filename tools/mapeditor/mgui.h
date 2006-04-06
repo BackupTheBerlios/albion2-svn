@@ -65,8 +65,6 @@ public:
 	void save_map();
 	void close_map();
 
-	void create_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30);
-
 protected:
 	engine* e;
 	gui* agui;
@@ -150,12 +148,7 @@ protected:
 	gui_button* ao_mat_browse;
 	gui_button* ao_add;
 
-
-	GUI_OBJ od_wnd_id;
 	gui_window* od_wnd;
-	gui_button* od_open;
-	gui_button* od_cancel;
-	gui_list* od_dirlist;
 
 };
 

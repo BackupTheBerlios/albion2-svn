@@ -213,6 +213,7 @@ void a2ematerial::load_material(char* filename) {
 		while(x < textures.back().tex_count) {
 			unsigned char c = file->get_char();
 			if(c == 0xFF) {
+				textures.back().tex_names[x] = textures.back().tex_names[x];
 				x++;
 			}
 			else {
@@ -235,10 +236,10 @@ void a2ematerial::load_textures() {
 		for(vector<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
 			for(unsigned int i = 0; i < tex_iter->tex_count; i++) {
 				if(tex_iter->col_type[i] == 0x01) {
-					tex_iter->textures[i] = t->add_texture(tex_iter->tex_names[i].c_str(), 4, GL_RGBA);
+					tex_iter->textures[i] = t->add_texture(e->data_path((char*)tex_iter->tex_names[i].c_str()), 4, GL_RGBA);
 				}
 				else {
-					tex_iter->textures[i] = t->add_texture(tex_iter->tex_names[i].c_str(), 3, GL_RGB);
+					tex_iter->textures[i] = t->add_texture(e->data_path((char*)tex_iter->tex_names[i].c_str()), 3, GL_RGB);
 				}
 			}
 		}

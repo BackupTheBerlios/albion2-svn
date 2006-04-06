@@ -29,7 +29,7 @@
 int main(int argc, char *argv[])
 {
 	// initialize the engine
-	e = new engine();
+	e = new engine("../../data/");
 	e->init();
 
 	// init class pointers
@@ -62,13 +62,18 @@ int main(int argc, char *argv[])
 
 	// set the light
 	light* l1 = new light(e, 0.0f, 80.0f, 0.0f);
-	float lamb[] = { 0.12f, 0.12f, 0.12f, 1.0f};
+	/*float lamb[] = { 0.12f, 0.12f, 0.12f, 1.0f};
+	float ldif[] = { 0.9f, 0.9f, 0.9f, 1.0f};
+	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};*/
+	float lamb[] = { 0.5f, 0.5f, 0.5f, 1.0f};
 	float ldif[] = { 0.9f, 0.9f, 0.9f, 1.0f};
 	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 	l1->set_lambient(lamb);
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
 	sce->add_light(l1);
+	// for testing purposes
+	sce->set_light(false);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -77,9 +82,6 @@ int main(int argc, char *argv[])
 	sprintf(tmp, "A2E Material Editor - v0.01");
 
 	mg->load_main_gui();
-
-	// for testing purposes
-	sce->set_light(false);
 
 	// main loop
 	while(!done)

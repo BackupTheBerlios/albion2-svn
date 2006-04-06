@@ -32,7 +32,6 @@ using namespace std;
 /*! @class ode_object
  *  @brief class for ode objects (bodies) and their functions
  *  @author flo
- *  @version 0.1
  *  @todo more functions
  *  
  *  ode object (body) functions

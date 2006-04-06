@@ -43,6 +43,8 @@ using namespace std;
 
 class A2E_API gui_combo
 {
+protected:
+	struct item;
 public:
 	gui_combo(engine* e);
 	~gui_combo();
@@ -70,6 +72,7 @@ public:
 	void set_selected_item(unsigned int item);
 	void set_selected_id(unsigned int id);
 	unsigned int get_selected_id();
+	item* get_selected_item();
 
 	unsigned int get_item_count();
 
