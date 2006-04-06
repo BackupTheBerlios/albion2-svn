@@ -121,8 +121,8 @@ void camera::run() {
 	}
 
 	// rotate
-	glRotatef(360.0f - rotation->x, 1.0f, 0.0f , 0.0f);
-	glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
+	glRotatef(360.0f - rotation->x, 1.0f, 0.0f, 0.0f);
+	glRotatef(360.0f - rotation->y, 0.0f, 1.0f, 0.0f);
 
 	// reposition
 	e->set_position(camera::position->x, camera::position->y, camera::position->z);

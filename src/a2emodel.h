@@ -95,6 +95,8 @@ public:
 	void set_light_color(float* lcol);
 	void set_light_position(vertex3* lpos);
 
+	unsigned int get_object_count();
+
 protected:
 	msg* m;
 	file_io* file;

@@ -48,6 +48,12 @@ public:
 	void set_position(unsigned int x, unsigned int y);
 	void set_position(core::pnt* position);
 
+	GLuint get_texture();
+	void set_texture(GLuint tex);
+
+	void set_scaling(bool state);
+	bool get_scaling();
+
 	core::pnt* get_position();
 
 protected:
@@ -62,6 +68,8 @@ protected:
 	core::pnt* position;
 	unsigned int width;
 	unsigned int heigth;
+
+	bool scale;
 
 };
 

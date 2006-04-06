@@ -90,7 +90,7 @@ void mgui::run() {
 					}
 					break;
 					case 201: {
-						me->open_map(od_dirlist->get_selected_item()->get_text());
+						me->open_map((char*)od_dirlist->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
@@ -146,17 +146,17 @@ void mgui::run() {
 					}
 					break;
 					case 421: {
-						ao_e_model->set_text(od_dirlist->get_selected_item()->get_text());
+						ao_e_model->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
 					case 431: {
-						ao_e_ani->set_text(od_dirlist->get_selected_item()->get_text());
+						ao_e_ani->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
 					case 441: {
-						ao_e_mat->set_text(od_dirlist->get_selected_item()->get_text());
+						ao_e_mat->set_text((char*)od_dirlist->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
@@ -277,14 +277,28 @@ void mgui::load_main_gui() {
 		if(!menu->get_deleted()) return;
 	}
 
+	mopen_tex = e->get_texman()->add_texture("icons/open.png", 4, GL_RGBA);
+	msave_tex = e->get_texman()->add_texture("icons/save.png", 4, GL_RGBA);
+	mclose_tex = e->get_texman()->add_texture("icons/close.png", 4, GL_RGBA);
+	mprop_tex = e->get_texman()->add_texture("icons/prop.png", 4, GL_RGBA);
+	madd_tex = e->get_texman()->add_texture("icons/add.png", 4, GL_RGBA);
+	mdel_tex = e->get_texman()->add_texture("icons/del.png", 4, GL_RGBA);
+
 	menu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 100, "main gui", false);
 	menu = agui->get_window(menu_id);
-	mopen_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(1, 1, 19, 19), 101, "O", 100));
-	msave_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(20, 1, 38, 19), 102, "S", 100));
-	mclose_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(39, 1, 57, 19), 103, "C", 100));
-	mproperties = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(58, 1, 76, 19), 104, "P", 100));
-	madd_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(77, 1, 95, 19), 105, "A", 100));
-	mdel_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(96, 1, 114, 19), 106, "D", 100));
+	mopen_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(1, 1, 19, 19), 0, 101, "", mopen_tex, 100));
+	msave_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(20, 1, 38, 19), 0, 102, "", msave_tex, 100));
+	mclose_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(39, 1, 57, 19), 0, 103, "", mclose_tex, 100));
+	mproperties = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(58, 1, 76, 19), 0, 104, "", mprop_tex, 100));
+	madd_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(77, 1, 95, 19), 0, 105, "", madd_tex, 100));
+	mdel_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(96, 1, 114, 19), 0, 106, "", mdel_tex, 100));
+
+	mopen_map->set_image_scaling(false);
+	msave_map->set_image_scaling(false);
+	mclose_map->set_image_scaling(false);
+	mproperties->set_image_scaling(false);
+	madd_obj->set_image_scaling(false);
+	mdel_obj->set_image_scaling(false);
 }
 
 void mgui::open_property_wnd() {
@@ -334,7 +348,7 @@ void mgui::open_property_wnd() {
 	plphys_prop->add_item("Trimesh", 3);
 	plphys_prop->set_selected_id(0xFFFFFFFF);
 
-	papply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 436, 241, 456), 0, 332, "Apply", 300));
+	papply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 436, 241, 456), 0, 332, "Apply", 0, 300));
 
 	prop_wnd_opened = true;
 }

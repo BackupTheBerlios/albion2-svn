@@ -417,6 +417,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\gui_combo.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_combo.h"
+			>
+		</File>
+		<File
 			RelativePath=".\gui_font.cpp"
 			>
 		</File>
@@ -438,14 +446,6 @@
 		</File>
 		<File
 			RelativePath="gui_list.h"
-			>
-		</File>
-		<File
-			RelativePath="gui_list_item.cpp"
-			>
-		</File>
-		<File
-			RelativePath="gui_list_item.h"
 			>
 		</File>
 		<File

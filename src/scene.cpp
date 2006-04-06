@@ -33,25 +33,25 @@ scene::scene(engine* e, shader* s) {
 	scene::mspecular = new float[4];
 	scene::mshininess = new float[4];
 
-	scene::mambient[0] = 0.0f;
-	scene::mambient[1] = 0.0f;
-	scene::mambient[2] = 0.0f;
-	scene::mambient[3] = 0.0f;
+	scene::mambient[0] = 1.0f;
+	scene::mambient[1] = 1.0f;
+	scene::mambient[2] = 1.0f;
+	scene::mambient[3] = 1.0f;
 
-	scene::mdiffuse[0] = 0.0f;
-	scene::mdiffuse[1] = 0.0f;
-	scene::mdiffuse[2] = 0.0f;
-	scene::mdiffuse[3] = 0.0f;
+	scene::mdiffuse[0] = 1.0f;
+	scene::mdiffuse[1] = 1.0f;
+	scene::mdiffuse[2] = 1.0f;
+	scene::mdiffuse[3] = 1.0f;
 
-	scene::mspecular[0] = 0.0f;
-	scene::mspecular[1] = 0.0f;
-	scene::mspecular[2] = 0.0f;
-	scene::mspecular[3] = 0.0f;
+	scene::mspecular[0] = 1.0f;
+	scene::mspecular[1] = 1.0f;
+	scene::mspecular[2] = 1.0f;
+	scene::mspecular[3] = 1.0f;
 
-	scene::mshininess[0] = 0.0f;
-	scene::mshininess[1] = 0.0f;
-	scene::mshininess[2] = 0.0f;
-	scene::mshininess[3] = 0.0f;
+	scene::mshininess[0] = 1.0f;
+	scene::mshininess[1] = 1.0f;
+	scene::mshininess[2] = 1.0f;
+	scene::mshininess[3] = 1.0f;
 
 	scene::is_light = false;
 
@@ -334,4 +334,13 @@ a2eanim* scene::create_a2eanim() {
 a2emodel* scene::create_a2emodel() {
 	a2emodel* a2em = new a2emodel(e, s);
 	return a2em;
+}
+
+bool scene::is_a2eanim(char* filename) {
+	e->get_file_io()->open_file(filename, file_io::OT_READ_BINARY);
+	e->get_file_io()->seek(8);
+	char t = e->get_file_io()->get_char();
+	e->get_file_io()->close_file();
+
+	return (t & 0xFF) == 0x00 ? false : true;
 }

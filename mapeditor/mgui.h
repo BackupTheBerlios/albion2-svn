@@ -95,6 +95,12 @@ protected:
 	gui_button* mproperties;
 	gui_button* madd_obj;
 	gui_button* mdel_obj;
+	GLuint mopen_tex;
+	GLuint msave_tex;
+	GLuint mclose_tex;
+	GLuint mprop_tex;
+	GLuint madd_tex;
+	GLuint mdel_tex;
 
 	GUI_OBJ prop_wnd_id;
 	gui_window* prop_wnd;

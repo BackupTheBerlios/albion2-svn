@@ -23,7 +23,8 @@
 
 #include <iostream>
 #include <list>
-#include <math.h>
+#include <string>
+#include <cmath>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <engine.h>
@@ -98,7 +99,7 @@ protected:
 	bool new_sel;
 	bool sel;
 
-	char* cur_map_name;
+	string cur_map_name;
 
 	/*unsigned int csmodels;
 	unsigned int camodels;

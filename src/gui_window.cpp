@@ -157,10 +157,10 @@ void gui_window::set_lid(unsigned int lid) {
 /*! sets the windows caption
  *  @param caption the caption we want to set
  */
-void gui_window::set_caption(char* caption) {
+void gui_window::set_caption(const char* caption) {
 	memcpy(gui_window::caption, caption, strlen(caption));
 	gui_window::caption[strlen(caption)] = 0;
-	gui_window::text_handler->set_text(caption);
+	gui_window::text_handler->set_text(gui_window::caption);
 }
 
 /*! sets the windows border draw flag
@@ -215,4 +215,9 @@ void gui_window::change_position(int x, int y) {
  */
 void gui_window::set_exit_button_handler(gui_button* ibutton) {
 	gui_window::exit_button_handler = ibutton;
+}
+
+//! returns the exit button handler
+gui_button* gui_window::get_exit_button_handler() {
+	return gui_window::exit_button_handler;
 }

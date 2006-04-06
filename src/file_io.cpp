@@ -31,7 +31,12 @@ file_io::~file_io() {
  *  @param filename the name of the file
  *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-void file_io::open_file(char* filename, FIO_OPEN_TYPE open_type) {
+bool file_io::open_file(char* filename, FIO_OPEN_TYPE open_type) {
+	if(check_open()) {
+		m->print(msg::MERROR, "file_io.cpp", "open_file(): a file is already opened! can't open another file!");
+		return false;
+	}
+
 	switch(open_type) {
 		case file_io::OT_READ:
 			file_io::filestream.open(filename, fstream::in);
@@ -58,7 +63,10 @@ void file_io::open_file(char* filename, FIO_OPEN_TYPE open_type) {
 
 	if(!file_io::filestream.is_open()) {
 		m->print(msg::MDEBUG, "file_io.cpp", "open_file(): error while loading file %s!", filename);
+		file_io::filestream.clear();
+		return false;
 	}
+	return true;
 }
 
 /*! closes the input file stream
@@ -162,7 +170,13 @@ unsigned int file_io::get_current_offset() {
  *  @param size the size of the block
  */
 void file_io::write_block(char* data, unsigned int size) {
-	file_io::filestream.write(data, size);
+	file_io::filestream.write(data, (streamsize)strlen(data));
+	if(strlen(data) < size) {
+		unsigned int x = size - strlen(data);
+		for(unsigned int i = 0; i < x; i++) {
+			put_char(0x00);
+		}
+	}
 }
 
 /*! puts an unsigned int into the current file stream
@@ -200,4 +214,41 @@ void file_io::put_float(float flt) {
  */
 void file_io::put_bool(bool b) {
 	b ? file_io::filestream.put(0x01) : file_io::filestream.put(0x00);
+}
+
+/*! puts a char into the current file stream
+ *  @param c the char we want to write/put into the file stream
+ */
+void file_io::put_char(char c) {
+	file_io::filestream.put(c);
+}
+
+/*! returns true if the file specified by filename exists
+ *  @param filename the name of the file
+ */
+bool file_io::is_file(char* filename) {
+	if(check_open()) {
+		m->print(msg::MERROR, "file_io.cpp", "is_file(): a file is already opened! can't open another file!");
+		return false;
+	}
+
+	file_io::filestream.open(filename, fstream::in | fstream::binary);
+
+	if(!file_io::filestream.is_open()) {
+		file_io::filestream.clear();
+		return false;
+	}
+
+	file_io::filestream.close();
+	return true;
+}
+
+/*! checks if a file is already opened - if so, return true, otherwise false
+ */
+bool file_io::check_open() {
+	if(file_io::filestream.is_open()) {
+		file_io::filestream.clear();
+		return true;
+	}
+	return false;
 }

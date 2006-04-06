@@ -110,6 +110,8 @@ public:
 	void set_light_color(float* lcol);
 	void set_light_position(vertex3* lpos);
 
+	unsigned int get_object_count();
+
 protected:
 	static msg* m;
 	file_io* file;
@@ -177,8 +179,6 @@ protected:
 		unsigned int* num;
 		unsigned int count;
 	};
-
-	char file_type[9];
 
 	unsigned int joint_count;
 	unsigned int base_joint_count;

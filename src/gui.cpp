@@ -20,9 +20,14 @@
 */
 gui::gui(engine* e) {
 	p = new core::pnt();
+	p2 = new core::pnt();
 	r = new gfx::rect();
+	r2 = new gfx::rect();
 	input_text = new char[512];
 	ib_text_length = 0;
+
+	ofd_wnd_id = 0xFFFFFFFF;
+	msg_ok_wnd_id = 0xFFFFFFFF;
 
 	// get classes
 	gui::e = e;
@@ -39,7 +44,9 @@ gui::~gui() {
 	m->print(msg::MDEBUG, "gui.cpp", "freeing gui stuff");
 
 	delete p;
+	delete p2;
 	delete r;
+	delete r2;
 	delete [] input_text;
 
 	gui_buttons.clear();
@@ -48,6 +55,7 @@ gui::~gui() {
 	gui_list_boxes.clear();
 	gui_vbars.clear();
 	gui_check_boxes.clear();
+	gui_combo_boxes.clear();
 	gui_windows.clear();
 
 	m->print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
@@ -59,11 +67,11 @@ void gui::init() {
 	if(gui::e->get_screen() == NULL) { m->print(msg::MERROR, "gui.cpp", "SDL_Surface does not exist!"); }
 	else { gui::gui_surface = gui::e->get_screen(); }
 
-	gui::active_element = gui_elements.begin();
-
 	// init the main window
 	main_window = gui::add_window(g->pnt_to_rect(0, 0, e->get_screen()->w,
 		e->get_screen()->h), 0, "main window", false);
+
+	gui::active_element = gui_elements.begin();
 }
 
 /*! draws all gui elements
@@ -76,8 +84,8 @@ void gui::draw() {
 	// start 2d drawing
 	e->start_2d_draw();
 
-	// reset active gui element
-	set_active_element(gui::gui_elements.begin());
+	// flag that specifies if the active gui element is reset at the end
+	ae_reset = false;
 
 	// check if left mouse button is currently pressed (then use
 	// that point otherwise use the last pressed point)
@@ -94,7 +102,7 @@ void gui::draw() {
 	}
 
 	wnd_layers.reverse();
-	bool wnd_event = false;
+	wnd_event = false;
 	for(list<unsigned int>::iterator layer_iter = wnd_layers.begin(); layer_iter != wnd_layers.end(); layer_iter++) {
 		list<gui_window>::reference wnd_iter = *get_window(*layer_iter);
 		//if(g->is_pnt_in_rectangle(wnd_iter.get_rectangle(), p) && *layer_iter != 0) {
@@ -111,7 +119,7 @@ void gui::draw() {
 	unsigned int j = 0;
 	for(list<unsigned int>::iterator layer_iter = wnd_layers.begin(); layer_iter != wnd_layers.end(); layer_iter++) {
 		list<gui_window>::reference wnd_iter = *get_window(*layer_iter);
-		unsigned int current_id = *layer_iter;
+		current_id = *layer_iter;
 
 		// if window is being moved set window event flag to true
 		if(wnd_iter.is_moving()) {
@@ -170,185 +178,23 @@ void gui::draw() {
 		// --- global r object ---
 
 		// draw the gui elements
+		bool act_elem = false;
 		for(list<gui_element>::iterator ge_iter = gui::gui_elements.begin(); ge_iter != gui::gui_elements.end(); ge_iter++) {
 			if(ge_iter->is_drawn == true &&
-				ge_iter->wid == current_id) {
-				switch(ge_iter->type) {
-					case gui::BUTTON: {
-						p->x = evt->get_lm_pressed_x();
-						p->y = evt->get_lm_pressed_y();
+				ge_iter->wid == current_id &&
+				ge_iter != active_element) { // active element will be drawn at the end
+				draw_element(wp, ge_iter, wnd_iter);
+			}
+			// "remember" active element
+			else if(ge_iter->is_drawn == true &&
+				ge_iter->wid == current_id &&
+				ge_iter == active_element) {
+				act_elem = true;
+			}
 
-						// the window button flag - defines if the button is a window button ...
-						bool wnd_button = false;
-
-						// well, it's somehow an odd way to do this, but why
-						// should i add extra stuff that is just needed once ...
-						list<gui_button>::reference cur_button = *get_button(ge_iter->id);
-						if(cur_button.get_icon() == 3) {
-							// reposition the exit button so it fits into the windows title bar
-							// get the rectangle and add the windows x and y coordinate
-							memcpy(r, cur_button.get_rectangle(), sizeof(gfx::rect));
-							r->x1 += wnd_iter.get_rectangle()->x2 - 14;
-							r->x2 += wnd_iter.get_rectangle()->x2 - 2;
-							r->y1 += wp->y - 16;
-							r->y2 += wp->y - 16;
-
-							// set window button flag to true
-							wnd_button = true;
-						}
-						else {
-							// get the rectangle and add the windows x and y coordinate
-							memcpy(r, cur_button.get_rectangle(), sizeof(gfx::rect));
-							r->x1 += wp->x;
-							r->x2 += wp->x;
-							r->y1 += wp->y;
-							r->y2 += wp->y;
-						}
-
-						if((current_id == gui::wnd_layers.back() || !wnd_event) &&
-							g->is_pnt_in_rectangle(r, p)) {
-							if(!wnd_button) {
-								cur_button.draw(true, wp->x, wp->y);
-							}
-							else {
-								cur_button.draw(true, r->x1, r->y1);
-							}
-							cur_button.set_pressed(true);
-							set_active_element(ge_iter);
-						}
-						else {
-							if(cur_button.get_pressed() == true) {
-								cur_button.set_pressed(false);
-								evt->add_gui_event(evt->BUTTON_PRESSED,
-									cur_button.get_id());
-							}
-
-							if(!wnd_button) {
-                                cur_button.draw(false, wp->x, wp->y);
-							}
-							else {
-								cur_button.draw(false, r->x1, r->y1);
-							}
-						}
-					}
-					break;
-					case gui::TEXT:
-						gui::get_text(ge_iter->id)->draw(wp->x, wp->y);
-						break;
-					case gui::INPUT: {
-						p->x = evt->get_lm_last_pressed_x();
-						p->y = evt->get_lm_last_pressed_y();
-
-						list<gui_input>::reference cur_input = *get_input(ge_iter->id);
-
-						// get the rectangle and add the windows x and y coordinate
-						memcpy(r, cur_input.get_rectangle(), sizeof(gfx::rect));
-						r->x1 += wp->x;
-						r->x2 += wp->x;
-						r->y1 += wp->y;
-						r->y2 += wp->y;
-
-						if((current_id == gui::wnd_layers.back() || !wnd_event) &&
-							g->is_pnt_in_rectangle(r, p)) {
-							cur_input.set_active(true);
-							set_active_element(ge_iter);
-							evt->set_active(event::GUI);
-
-							evt->get_input_text(input_text);
-							gui::switch_input_text(input_text, cur_input);
-						}
-						else {
-							cur_input.set_active(false);
-						}
-
-						cur_input.draw(wp->x, wp->y);
-					}
-					break;
-					case gui::LIST: {
-						p->x = evt->get_lm_pressed_x();
-						p->y = evt->get_lm_pressed_y();
-
-						list<gui_list>::reference cur_list = *get_list(ge_iter->id);
-
-						// get the rectangle and add the windows x and y coordinate
-						memcpy(r, cur_list.get_rectangle(), sizeof(gfx::rect));
-						r->x1 += wp->x;
-						// decrease the rects x2 coord by 15, because we don't want input from the vbar
-						r->x2 += wp->x - 15;
-						r->y1 += wp->y;
-						r->y2 += wp->y;
-
-						if((current_id == gui::wnd_layers.back() || !wnd_event) && g->is_pnt_in_rectangle(r, p)) {
-							cur_list.set_active(true);
-							cur_list.select_pos(p->x - wp->x, p->y - wp->y);
-							evt->set_last_pressed(0, 0);
-						}
-						else {
-							cur_list.set_active(false);
-						}
-
-						cur_list.draw(wp->x, wp->y);
-					}
-					break;
-					case gui::VBAR: {
-						p->x = evt->get_lm_pressed_x();
-						p->y = evt->get_lm_pressed_y();
-
-						list<gui_vbar>::reference cur_vbar = *get_vbar(ge_iter->id);
-
-						// get the rectangle and add the windows x and y coordinate
-						memcpy(r, cur_vbar.get_rectangle(), sizeof(gfx::rect));
-						r->x1 += wp->x;
-						r->x2 += wp->x;
-						r->y1 += wp->y;
-						r->y2 += wp->y;
-
-						if((current_id == gui::wnd_layers.back() || !wnd_event) &&
-							cur_vbar.get_slider_active()) {
-							if(g->is_pnt_in_rectangle(r, p)) {
-								int cx;
-								int cy;
-								core::pnt* np = new core::pnt();
-								SDL_GetMouseState(&cx, &cy);
-								np->x = cx;
-								np->y = cy;
-								cur_vbar.set_active(true);
-								cur_vbar.set_new_point(np);
-								delete np;
-							}
-							else {
-								cur_vbar.set_active(false);
-							}
-						}
-
-						cur_vbar.draw(wp->x, wp->y);
-					}
-					break;
-					case gui::CHECK: {
-						p->x = evt->get_lm_last_pressed_x();
-						p->y = evt->get_lm_last_pressed_y();
-
-						list<gui_check>::reference cur_check = *get_check(ge_iter->id);
-
-						// get the rectangle and add the windows x and y coordinate
-						// and reduce the "clickable" area
-						memcpy(r, cur_check.get_rectangle(), sizeof(gfx::rect));
-						r->x1 += wp->x;
-						r->x2 = r->x1 + 14;
-						r->y1 += wp->y;
-						r->y2 = r->y1 + 14;
-
-						if((current_id == gui::wnd_layers.back() || !wnd_event) && g->is_pnt_in_rectangle(r, p)) {
-							cur_check.set_checked(cur_check.get_checked() ^ true);
-							evt->set_last_pressed(0, 0);
-						}
-
-						cur_check.draw(wp->x, wp->y);
-					}
-					break;
-					default:
-						break;
-				}
+			// if last element in this layer is drawn, draw active element (if there is one)
+			if(act_elem && ge_iter->id == gui::gui_elements.back().id) {
+				draw_element(wp, active_element, wnd_iter);
 			}
 		}
 
@@ -376,22 +222,300 @@ void gui::draw() {
 
 			gui::wnd_layers.remove(wnd_iter->get_id());
 			gui::delete_element(wnd_iter->get_id());
+
+			ae_reset = true;
 			break;
 		}
 	}
+
+	if(ae_reset) {
+		set_active_element(gui::gui_elements.begin());
+	}
+
+	// delete gui elements ...
+	/*list<unsigned int> del_ids;
+	for(list<gui_element>::iterator ge_iter = gui::gui_elements.begin(); ge_iter != gui::gui_elements.end(); ge_iter++) {
+		if(ge_iter->del && ge_iter->type != gui::OPENDIALOG && ge_iter->type != gui::MSGBOX_OK) {
+			// if del, delete element
+			del_ids.push_back(ge_iter->id);
+		}
+		else if(ge_iter->del && ge_iter->type == gui::OPENDIALOG) {
+			del_ids.push_back(ge_iter->id);
+			ofd_wnd = NULL;
+		}
+		else if(ge_iter->del && ge_iter->type == gui::MSGBOX_OK) {
+			del_ids.push_back(ge_iter->id);
+			msg_ok_wnd = NULL;
+		}
+	}*/
 
 	// stop 2d drawing
 	e->stop_2d_draw();
 }
 
+/*! draws a specific gui element at position wp
+ *  @param wp the position on the screen where we want to draw the element
+ */
+void gui::draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, list<gui_window>::reference wnd_iter) {
+	switch(ge_iter->type) {
+		case gui::BUTTON: {
+			p->x = evt->get_lm_pressed_x();
+			p->y = evt->get_lm_pressed_y();
+
+			// the window button flag - defines if the button is a window button ...
+			bool wnd_button = false;
+
+			// well, it's somehow an odd way to do this, but why
+			// should i add extra stuff that is just needed once ...
+			list<gui_button>::reference cur_button = *get_button(ge_iter->id);
+			if(cur_button.get_icon() == 3) {
+				// reposition the exit button so it fits into the windows title bar
+				// get the rectangle and add the windows x and y coordinate
+				memcpy(r, cur_button.get_rectangle(), sizeof(gfx::rect));
+				r->x1 += wnd_iter.get_rectangle()->x2 - 14;
+				r->x2 += wnd_iter.get_rectangle()->x2 - 2;
+				r->y1 += wp->y - 16;
+				r->y2 += wp->y - 16;
+
+				// set window button flag to true
+				wnd_button = true;
+			}
+			else {
+				// get the rectangle and add the windows x and y coordinate
+				memcpy(r, cur_button.get_rectangle(), sizeof(gfx::rect));
+				r->x1 += wp->x;
+				r->x2 += wp->x;
+				r->y1 += wp->y;
+				r->y2 += wp->y;
+			}
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) &&
+				g->is_pnt_in_rectangle(r, p) &&
+				active_element->type != gui::COMBO) {
+				if(!wnd_button) {
+					cur_button.draw(true, wp->x, wp->y);
+				}
+				else {
+					cur_button.draw(true, r->x1, r->y1);
+				}
+				cur_button.set_pressed(true);
+				set_active_element(ge_iter);
+			}
+			else {
+				if(cur_button.get_pressed() == true) {
+					cur_button.set_pressed(false);
+					evt->add_gui_event(evt->BUTTON_PRESSED, cur_button.get_id());
+				}
+
+				if(!wnd_button) {
+                    cur_button.draw(false, wp->x, wp->y);
+				}
+				else {
+					cur_button.draw(false, r->x1, r->y1);
+				}
+			}
+		}
+		break;
+		case gui::TEXT:
+			gui::get_text(ge_iter->id)->draw(wp->x, wp->y);
+			break;
+		case gui::INPUT: {
+			p->x = evt->get_lm_last_pressed_x();
+			p->y = evt->get_lm_last_pressed_y();
+
+			list<gui_input>::reference cur_input = *get_input(ge_iter->id);
+
+			// get the rectangle and add the windows x and y coordinate
+			memcpy(r, cur_input.get_rectangle(), sizeof(gfx::rect));
+			r->x1 += wp->x;
+			r->x2 += wp->x;
+			r->y1 += wp->y;
+			r->y2 += wp->y;
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) &&
+				g->is_pnt_in_rectangle(r, p) &&
+				active_element->type != gui::COMBO) {
+				cur_input.set_active(true);
+				set_active_element(ge_iter);
+				evt->set_active(event::GUI);
+
+				evt->get_input_text(input_text);
+				gui::switch_input_text(input_text, cur_input);
+			}
+			else {
+				cur_input.set_active(false);
+			}
+
+			cur_input.draw(wp->x, wp->y);
+		}
+		break;
+		case gui::LIST: {
+			p->x = evt->get_lm_pressed_x();
+			p->y = evt->get_lm_pressed_y();
+
+			list<gui_list>::reference cur_list = *get_list(ge_iter->id);
+
+			// get the rectangle and add the windows x and y coordinate
+			memcpy(r, cur_list.get_rectangle(), sizeof(gfx::rect));
+			r->x1 += wp->x;
+			// decrease the rects x2 coord by 15, because we don't want input from the vbar
+			r->x2 += wp->x - 15;
+			r->y1 += wp->y;
+			r->y2 += wp->y;
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) && g->is_pnt_in_rectangle(r, p) &&
+				active_element->type != gui::COMBO) {
+				cur_list.set_active(true);
+				cur_list.select_pos(p->x - wp->x, p->y - wp->y);
+				evt->set_last_pressed(0, 0);
+			}
+			else {
+				cur_list.set_active(false);
+			}
+
+			cur_list.draw(wp->x, wp->y);
+		}
+		break;
+		case gui::VBAR: {
+			p->x = evt->get_lm_pressed_x();
+			p->y = evt->get_lm_pressed_y();
+
+			list<gui_vbar>::reference cur_vbar = *get_vbar(ge_iter->id);
+
+			// get the rectangle and add the windows x and y coordinate
+			memcpy(r, cur_vbar.get_rectangle(), sizeof(gfx::rect));
+			r->x1 += wp->x;
+			r->x2 += wp->x;
+			r->y1 += wp->y;
+			r->y2 += wp->y;
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) &&
+				cur_vbar.get_slider_active() &&
+				active_element->type != gui::COMBO) {
+				if(g->is_pnt_in_rectangle(r, p)) {
+					int cx;
+					int cy;
+					core::pnt* np = new core::pnt();
+					SDL_GetMouseState(&cx, &cy);
+					np->x = cx;
+					np->y = cy;
+					cur_vbar.set_active(true);
+					cur_vbar.set_new_point(np);
+					delete np;
+				}
+				else {
+					cur_vbar.set_active(false);
+				}
+			}
+
+			cur_vbar.draw(wp->x, wp->y);
+		}
+		break;
+		case gui::CHECK: {
+			p->x = evt->get_lm_last_pressed_x();
+			p->y = evt->get_lm_last_pressed_y();
+
+			list<gui_check>::reference cur_check = *get_check(ge_iter->id);
+
+			// get the rectangle and add the windows x and y coordinate
+			// and reduce the "clickable" area
+			memcpy(r, cur_check.get_rectangle(), sizeof(gfx::rect));
+			r->x1 += wp->x;
+			r->x2 = r->x1 + 14;
+			r->y1 += wp->y;
+			r->y2 = r->y1 + 14;
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) && g->is_pnt_in_rectangle(r, p)	&&
+				active_element->type != gui::COMBO) {
+				cur_check.set_checked(cur_check.get_checked() ^ true);
+				evt->set_last_pressed(0, 0);
+			}
+
+			cur_check.draw(wp->x, wp->y);
+		}
+		break;
+		case gui::COMBO: {
+			p->x = evt->get_lm_last_pressed_x();
+			p->y = evt->get_lm_last_pressed_y();
+
+			list<gui_combo>::reference cur_combo = *get_combo(ge_iter->id);
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) &&
+				cur_combo.is_list_visible()) {
+				r->x1 = wp->x + cur_combo.get_rectangle()->x1 + 1;
+				r->x2 = wp->x + cur_combo.get_rectangle()->x2 - 1;
+				r->y1 = wp->y + cur_combo.get_rectangle()->y2 + 2;
+				r->y2 = r->y1 - 1 + cur_combo.get_item_count() * 18;
+				if(!g->is_pnt_in_rectangle(r, p)) {
+					memcpy(r2, cur_combo.get_list_button()->get_rectangle(), sizeof(gfx::rect));
+					r2->x1 += wp->x;
+					r2->x2 += wp->x;
+					r2->y1 += wp->y;
+					r2->y2 += wp->y;
+					if(!g->is_pnt_in_rectangle(r2, p)) {
+						cur_combo.set_list_visible(false);
+						evt->set_last_pressed(0, 0);
+						evt->set_pressed(0, 0);
+						ae_reset = true;
+					}
+					else {
+						evt->get_mouse_pos(p);
+						if(g->is_pnt_in_rectangle(r, p)) {
+							p->x -= wp->x;
+							p->y -= wp->y;
+							cur_combo.select_pos(p);
+						}
+						set_active_element(ge_iter);
+					}
+				}
+				else {
+					evt->get_mouse_pos(p);
+					p->x -= wp->x;
+					p->y -= wp->y;
+					cur_combo.click_pos(p);
+					cur_combo.set_list_visible(false);
+					evt->set_last_pressed(0, 0);
+					evt->set_pressed(0, 0);
+					ae_reset = true;
+
+					evt->add_gui_event(evt->COMBO_ITEM_SELECTED, cur_combo.get_id());
+				}
+			}
+
+			cur_combo.draw(wp->x, wp->y);
+			draw_element(wp, get_element_iter(cur_combo.get_list_button()->get_id()), wnd_iter);
+		}
+		break;
+		case gui::OPENDIALOG: {
+			if(exist(ofd_wnd_id)) {
+				if(ofd_cancel->get_pressed()) {
+					ofd_wnd->set_deleted(true);
+				}
+			}
+		}
+		break;
+		case gui::MSGBOX_OK: {
+			if(exist(msg_ok_wnd_id)) {
+				if(msg_ok->get_pressed()) {
+					msg_ok_wnd->set_deleted(true);
+				}
+			}
+		}
+		break;
+		default:
+			break;
+	}
+}
+
 /*! adds a gui button element and returns it
  *  @param rectangle the buttons rectangle
+ *  @param icon the icon id (0 = no icon)
  *  @param id the buttons (a2e event) id
  *  @param text the buttons text
- *  @param icon the icon id (0 = no icon)
+ *  @param image_texture the image texture we want to set/use
  *  @param wid the id of the window we want the element to be in (0 = no window)
  */
-GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, unsigned int wid) {
+GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, GLuint image_texture, unsigned int wid) {
 	gui::gui_elements.push_back(*new gui_element());
 	gui::gui_elements.back().id = id;
 	gui::gui_elements.back().type = gui::BUTTON;
@@ -407,6 +531,12 @@ GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements.back().is_drawn = false;
 
+	// set/create the image
+	if(image_texture != 0) {
+		gui::gui_buttons.back().set_image(new image(e));
+		gui::gui_buttons.back().get_image()->set_texture(image_texture);
+	}
+
 	gui::gui_buttons.back().set_id(id);
 	gui::gui_buttons.back().set_rectangle(rectangle);
 	gui::gui_buttons.back().set_text(text);
@@ -418,12 +548,23 @@ GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id
 
 /*! adds a gui button element and returns it
  *  @param rectangle the buttons rectangle
+ *  @param icon the icon id (0 = no icon)
+ *  @param id the buttons (a2e event) id
+ *  @param text the buttons text
+ *  @param wid the id of the window we want the element to be in (0 = no window)
+ */
+GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, unsigned int wid) {
+	return gui::add_button(rectangle, 0, id, text, 0, wid);
+}
+
+/*! adds a gui button element and returns it
+ *  @param rectangle the buttons rectangle
  *  @param id the buttons (a2e event) id
  *  @param text the buttons text
  *  @param wid the id of the window we want the element to be in (0 = no window)
  */
 GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid) {
-	return gui::add_button(rectangle, 0, id, text, wid);
+	return gui::add_button(rectangle, 0, id, text, 0, wid);
 }
 
 /*! adds a gui text element and returns it
@@ -511,9 +652,15 @@ GUI_OBJ gui::add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wi
 	// create class
 	gui::gui_list_boxes.push_back(*new gui_list(e));
 
+	// add text
+	gui::gui_list_boxes.back().set_list_text(get_text(add_text("vera.ttf", 12, "",
+		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
+	// don't draw our text automatically
+	gui::gui_elements.back().is_drawn = false;
+
 	// add vertical bar
 	gui::gui_list_boxes.back().set_vbar_handler(get_vbar(add_vbar(g->pnt_to_rect(rectangle->x2-14,
-		rectangle->y1+2, rectangle->x2-2, rectangle->y2-2), id+0xFFFFFF, wid)));
+		rectangle->y1+2, rectangle->x2-2, rectangle->y2-2), id+0xFFFFF, wid)));
 
 	gui::gui_list_boxes.back().set_id(id);
 	gui::gui_list_boxes.back().set_rectangle(rectangle);
@@ -540,11 +687,11 @@ GUI_OBJ gui::add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid) {
 
 	// add up button
 	gui::gui_vbars.back().set_up_button_handler(get_button(add_button(g->pnt_to_rect(0,0,1,1), 1,
-		id+0xFFFFFF, " ", wid)));
+		id+0xFFFF, " ", 0, wid)));
 
 	// add down button
 	gui::gui_vbars.back().set_down_button_handler(get_button(add_button(g->pnt_to_rect(0,0,1,1), 2,
-		id+0xFFFFFE, " ", wid)));
+		id+0xFFFFF, " ", 0, wid)));
 
 	gui::gui_vbars.back().set_id(id);
 	gui::gui_vbars.back().set_rectangle(rectangle);
@@ -583,6 +730,34 @@ GUI_OBJ gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text, un
 	return id;
 }
 
+/*! adds a gui combo box element and returns it
+ *  @param rectangle the combo boxes rectangle
+ *  @param id the combo boxes (a2e event) id
+ *  @param wid the id of the window we want the element to be in (0 = no window)
+ */
+GUI_OBJ gui::add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid) {
+	gui::gui_elements.push_back(*new gui_element());
+	gui::gui_elements.back().id = id;
+	gui::gui_elements.back().type = gui::COMBO;
+	gui::gui_elements.back().wid = wid;
+	gui::gui_elements.back().is_drawn = true;
+
+	// create class
+	gui::gui_combo_boxes.push_back(*new gui_combo(e));
+
+	gui::gui_combo_boxes.back().set_item_text(get_text(add_text("vera.ttf", 12, "",
+		e->get_gui_style()->STYLE_FONT, g->cord_to_pnt(0,0), id+0xFFFF, wid)));
+	gui::gui_elements.back().is_drawn = false; // text shouldn't be drawn automatically
+	gui::gui_combo_boxes.back().set_list_button(get_button(add_button(g->pnt_to_rect(0,0,1,1), 2,
+		id+0xFFFFF, "-", 0, wid)));
+	gui::gui_elements.back().is_drawn = false; // button shouldn't be drawn automatically
+
+	gui::gui_combo_boxes.back().set_id(id);
+	gui::gui_combo_boxes.back().set_rectangle(rectangle);
+
+	return id;
+}
+
 /*! adds a gui window element and returns it
  *  @param rectangle the windows rectangle
  *  @param id the windows (a2e event) id
@@ -602,7 +777,7 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 	// add exit button if we got a border
 	if(border) {
 		gui::gui_windows.back().set_exit_button_handler(get_button(add_button(g->pnt_to_rect(0,0,12,12), 3,
-			id+0xFFFFFF, "x", id)));
+			id+0xFFFFFF, "x", 0, id)));
 	}
 
 	gui::gui_windows.back().set_text_handler(get_text(add_text("vera.ttf", 12, caption,
@@ -852,6 +1027,19 @@ bool gui::delete_element(unsigned int id) {
 					return true;
 				}
 				break;
+				case gui::COMBO: {
+					list<gui_combo>::iterator del_combo = get_combo_iter(id);
+					if(&del_combo == NULL) {
+						m->print(msg::MERROR, "gui.cpp", "delete_element(): can not delete element (id: %u)", id);
+						return false;
+					}
+					delete_element(del_combo->get_list_button()->get_id());
+					delete_element(del_combo->get_item_text()->get_id());
+					gui_combo_boxes.erase(del_combo);
+					gui_elements.erase(elem_iter);
+					return true;
+				}
+				break;
 				case gui::INPUT: {
 					list<gui_input>::iterator del_input = get_input_iter(id);
 					if(&del_input == NULL) {
@@ -912,6 +1100,29 @@ bool gui::delete_element(unsigned int id) {
 					return true;
 				}
 				break;
+				case gui::OPENDIALOG: {
+					if(ofd_wnd == NULL) {
+						m->print(msg::MERROR, "gui.cpp", "delete_element(): can not delete element (id: %u)", id);
+						return false;
+					}
+					delete_element(ofd_open->get_id());
+					delete_element(ofd_cancel->get_id());
+					delete_element(ofd_dirlist->get_id());
+					gui_elements.erase(elem_iter);
+					return true;
+				}
+				break;
+				case gui::MSGBOX_OK: {
+					if(msg_ok_wnd == NULL) {
+						m->print(msg::MERROR, "gui.cpp", "delete_element(): can not delete element (id: %u)", id);
+						return false;
+					}
+					delete_element(msg_text->get_id());
+					delete_element(msg_ok->get_id());
+					gui_elements.erase(elem_iter);
+					return true;
+				}
+				break;
 				default:
 					m->print(msg::MERROR, "gui.cpp", "delete_element(): can not delete element (id: %u) with unknown type (%u)!", id, elem_iter->type);
 					return false;
@@ -929,7 +1140,7 @@ list<gui_button>::iterator gui::get_button_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_button(): no button with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_button_iter(): no button with such an id (%u) exists!", id);
 	return gui_buttons.end();
 }
 
@@ -939,7 +1150,7 @@ list<gui_input>::iterator gui::get_input_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_input(): no input box with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_input_iter(): no input box with such an id (%u) exists!", id);
 	return gui_input_boxes.end();
 }
 
@@ -949,7 +1160,7 @@ list<gui_text>::iterator gui::get_text_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_text(): no text with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_text_iter(): no text with such an id (%u) exists!", id);
 	return gui_texts.end();
 }
 
@@ -959,7 +1170,7 @@ list<gui_list>::iterator gui::get_list_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_list(): no list box with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_list_iter(): no list box with such an id (%u) exists!", id);
 	return gui_list_boxes.end();
 }
 
@@ -969,7 +1180,7 @@ list<gui_vbar>::iterator gui::get_vbar_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_vbar(): no vertical bar with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_vbar_iter(): no vertical bar with such an id (%u) exists!", id);
 	return gui_vbars.end();
 }
 
@@ -979,8 +1190,18 @@ list<gui_check>::iterator gui::get_check_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_check(): no check box with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_check_iter(): no check box with such an id (%u) exists!", id);
 	return gui_check_boxes.end();
+}
+
+list<gui_combo>::iterator gui::get_combo_iter(unsigned int id) {
+	for(list<gui_combo>::iterator iter = gui_combo_boxes.begin(); iter != gui_combo_boxes.end(); iter++) {
+		if(id == iter->get_id()) {
+			return iter;
+		}
+	}
+	m->print(msg::MERROR, "gui.cpp", "get_combo_iter(): no combo box with such an id (%u) exists!", id);
+	return gui_combo_boxes.end();
 }
 
 list<gui_window>::iterator gui::get_window_iter(unsigned int id) {
@@ -989,8 +1210,18 @@ list<gui_window>::iterator gui::get_window_iter(unsigned int id) {
 			return iter;
 		}
 	}
-	m->print(msg::MERROR, "gui.cpp", "get_window(): no window with such an id (%u) exists!", id);
+	m->print(msg::MERROR, "gui.cpp", "get_window_iter(): no window with such an id (%u) exists!", id);
 	return gui_windows.end();
+}
+
+list<gui::gui_element>::iterator gui::get_element_iter(unsigned int id) {
+	for(list<gui_element>::iterator iter = gui_elements.begin(); iter != gui_elements.end(); iter++) {
+		if(id == iter->id) {
+			return iter;
+		}
+	}
+	m->print(msg::MERROR, "gui.cpp", "get_element_iter(): no gui element with such an id (%u) exists!", id);
+	return gui_elements.end();
 }
 
 gui_button* gui::get_button(unsigned int id) {
@@ -1053,6 +1284,16 @@ gui_check* gui::get_check(unsigned int id) {
 	return NULL;
 }
 
+gui_combo* gui::get_combo(unsigned int id) {
+	for(list<gui_combo>::iterator iter = gui_combo_boxes.begin(); iter != gui_combo_boxes.end(); iter++) {
+		if(id == iter->get_id()) {
+			return &*iter;
+		}
+	}
+	m->print(msg::MERROR, "gui.cpp", "get_combo(): no combo box with such an id (%u) exists!", id);
+	return NULL;
+}
+
 gui_window* gui::get_window(unsigned int id) {
 	for(list<gui_window>::iterator iter = gui_windows.begin(); iter != gui_windows.end(); iter++) {
 		if(id == iter->get_id()) {
@@ -1060,6 +1301,16 @@ gui_window* gui::get_window(unsigned int id) {
 		}
 	}
 	m->print(msg::MERROR, "gui.cpp", "get_window(): no window with such an id (%u) exists!", id);
+	return NULL;
+}
+
+gui::gui_element* gui::get_element(unsigned int id) {
+	for(list<gui_element>::iterator iter = gui_elements.begin(); iter != gui_elements.end(); iter++) {
+		if(id == iter->id) {
+			return &*iter;
+		}
+	}
+	m->print(msg::MERROR, "gui.cpp", "get_element(): no gui element with such an id (%u) exists!", id);
 	return NULL;
 }
 
@@ -1073,4 +1324,141 @@ bool gui::exist(unsigned int id) {
 		}
 	}
 	return false;
+}
+
+/*! sets the visibilty of the gui element specified by id to state
+ *  @param id the id of the gui element
+ *  @param state the visibility state we want to set
+ */
+void gui::set_visibility(unsigned int id, bool state) {
+	gui::get_element(id)->is_drawn = state;
+
+	switch(gui::get_element(id)->type) {
+		case gui::LIST:
+			gui::set_visibility(gui::get_list(id)->get_list_text()->get_id(), state);
+			gui::set_visibility(gui::get_list(id)->get_vbar_handler()->get_id(), state);
+			break;
+		case gui::VBAR:
+			gui::set_visibility(gui::get_vbar(id)->get_down_button_handler()->get_id(), state);
+			gui::set_visibility(gui::get_vbar(id)->get_up_button_handler()->get_id(), state);
+			break;
+		case gui::COMBO:
+			gui::set_visibility(gui::get_combo(id)->get_list_button()->get_id(), state);
+			break;
+		case gui::WINDOW:
+			gui::set_visibility(gui::get_window(id)->get_exit_button_handler()->get_id(), state);
+			break;
+		default:
+			break;
+	}
+}
+
+/*! creates an open file dialog
+ *  @param id the id of the open file dialog
+ *  @param caption the windows caption
+ *  @param dir the directory where the file dialog should "start"
+ *  @param ext the extension of the files to be displayed
+ *  @param x the x position of the window
+ *  @param y the y position of the window
+ */
+GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x, unsigned int y) {
+	if(exist(ofd_wnd_id)) {
+		if(!ofd_wnd->get_deleted()) return 0;
+	}
+
+	gui::gui_elements.push_back(*new gui_element());
+	gui::gui_elements.back().id = id;
+	gui::gui_elements.back().type = gui::OPENDIALOG;
+	gui::gui_elements.back().wid = 0;
+	gui::gui_elements.back().is_drawn = true;
+
+	ofd_wnd_id = add_window(e->get_gfx()->pnt_to_rect(x, y, 370+x, 220+y), id, caption, true);
+	ofd_wnd = get_window(ofd_wnd_id);
+	ofd_open = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), 0, id+1, "Open", 0, id));
+	ofd_cancel = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 0, 1, "Cancel", 0, id));
+	ofd_dirlist = get_list(add_list_box(e->get_gfx()->pnt_to_rect(0, 0, 300, 198), id+2, id));
+
+#ifdef WIN32
+	struct _finddata_t c_file;
+	intptr_t hFile;
+	unsigned int i = 0;
+
+	char* fstring = new char[strlen(dir) + 2 + strlen(ext) + 1];
+	strcpy(fstring, dir);
+	strcat(fstring, "*.");
+	strcat(fstring, ext);
+	if((hFile = _findfirst(fstring, &c_file)) != -1L) {
+		do {
+			unsigned int fnlen = (unsigned int)strlen(c_file.name);
+			if(c_file.size != 0 &&
+				c_file.name[fnlen-3] == ext[strlen(ext)-3] &&
+				c_file.name[fnlen-2] == ext[strlen(ext)-2] &&
+				c_file.name[fnlen-1] == ext[strlen(ext)-1]) {
+				ofd_dirlist->add_item(c_file.name, i);
+				i++;
+			}
+		}
+		while(_findnext(hFile, &c_file) == 0);
+
+		_findclose(hFile);
+	}
+	delete [] fstring;
+#else
+	struct dirent **namelist;
+	unsigned int i = 0;
+
+	string fstring = dir;
+	fstring += ".";
+	int n = scandir(fstring.c_str(), &namelist, 0, alphasort);
+	if (n >= 0) {
+		while(n--) {
+			unsigned int fnlen = (unsigned int)strlen(namelist[n]->d_name);
+			if(namelist[n]->d_type != DT_DIR &&
+				namelist[n]->d_name[fnlen-3] == ext[strlen(ext)-3] &&
+				namelist[n]->d_name[fnlen-2] == ext[strlen(ext)-2] &&
+				namelist[n]->d_name[fnlen-1] == ext[strlen(ext)-1]) {
+				ofd_dirlist->add_item(namelist[n]->d_name, i);
+				i++;
+			}
+			free(namelist[n]);
+		}
+		free(namelist);
+	}
+#endif
+
+	return ofd_wnd_id;
+}
+
+gui_list* gui::get_open_diaolg_list() {
+	return ofd_dirlist;
+}
+
+GUI_OBJ gui::add_msgbox_ok(unsigned int id, char* caption, char* text) {
+	if(exist(msg_ok_wnd_id)) {
+		if(!msg_ok_wnd->get_deleted()) return 0;
+	}
+
+	gui::gui_elements.push_back(*new gui_element());
+	gui::gui_elements.back().id = id;
+	gui::gui_elements.back().type = gui::MSGBOX_OK;
+	gui::gui_elements.back().wid = 0;
+	gui::gui_elements.back().is_drawn = true;
+
+	unsigned int sw = (unsigned int)((float)e->get_screen()->w * 0.2f);
+	unsigned int sh = (unsigned int)((float)e->get_screen()->h * 0.4f);
+	unsigned int w = (unsigned int)((float)e->get_screen()->w * 0.6f);
+	unsigned int h = (unsigned int)((float)e->get_screen()->h * 0.2f);
+
+	msg_ok_wnd_id = add_window(e->get_gfx()->pnt_to_rect(sw, sh, sw + w, sh + h), id, caption, true);
+	msg_ok_wnd = get_window(msg_ok_wnd_id);
+	msg_ok = get_button(add_button(e->get_gfx()->pnt_to_rect((unsigned int)((float)w * 0.5f) - 32,
+		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), 0, id+1, "OK", 0, id));
+	msg_text = get_text(add_text("vera.ttf", 12, text, e->get_gui_style()->STYLE_FONT2,
+		e->get_gfx()->cord_to_pnt(0, 0), id+2, id));
+	unsigned int tw = (unsigned int)((float)(w - msg_text->get_text_width()) / 2.0f);
+	unsigned int th = (unsigned int)((float)h / 2.0f) - 30;
+	msg_text->get_point()->x = tw;
+	msg_text->get_point()->y = th;
+
+	return msg_ok_wnd_id;
 }

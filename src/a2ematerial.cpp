@@ -89,15 +89,45 @@ void a2ematerial::load_material(char* filename) {
 		}
 
 		// multi texturing stuff
+
+		// reserve memory for a maximum of 8 textures for avoiding memory (re-)allocation
+		// during runtime (if the material is change during runtime)
+		textures.back().col_type = new char[8];
+		textures.back().rgb_combine = new char[8];
+		textures.back().alpha_combine = new char[8];
+		textures.back().rgb_source = new char*[8];
+		textures.back().rgb_operand = new char*[8];
+		textures.back().alpha_source = new char*[8];
+		textures.back().alpha_operand = new char*[8];
+
+		// as above, reserve maximum of needed memory
+		for(unsigned int j = 0; j < 8; j++) {
+			textures.back().rgb_source[j] = new char[3];
+			textures.back().rgb_operand[j] = new char[3];
+			textures.back().alpha_source[j] = new char[3];
+			textures.back().alpha_operand[j] = new char[3];
+
+			// set stuff to zero
+			textures.back().col_type[j] = 0;
+			textures.back().rgb_combine[j] = (char)0xFF;
+			textures.back().alpha_combine[j] = (char)0xFF;
+			for(unsigned int k = 0; k < 3; k++) {
+				textures.back().rgb_source[j][k] = 0;
+				textures.back().rgb_operand[j][k] = 0;
+				textures.back().alpha_source[j][k] = 0;
+				textures.back().alpha_operand[j][k] = 0;
+			}
+		}
+
 		if(textures.back().mat_type == 0x04) {
 			textures.back().tex_count = file->get_uint();
-			textures.back().col_type = new char[textures.back().tex_count];
+			/*textures.back().col_type = new char[textures.back().tex_count];
 			textures.back().rgb_combine = new char[textures.back().tex_count];
 			textures.back().alpha_combine = new char[textures.back().tex_count];
 			textures.back().rgb_source = new char*[textures.back().tex_count];
 			textures.back().rgb_operand = new char*[textures.back().tex_count];
 			textures.back().alpha_source = new char*[textures.back().tex_count];
-			textures.back().alpha_operand = new char*[textures.back().tex_count];
+			textures.back().alpha_operand = new char*[textures.back().tex_count];*/
 
 			unsigned int argc_rgb = 0;
 			unsigned int argc_alpha = 0;
@@ -106,7 +136,7 @@ void a2ematerial::load_material(char* filename) {
 				textures.back().rgb_combine[j] = (file->get_char() & 0xFF);
 				textures.back().alpha_combine[j] = (file->get_char() & 0xFF);
 
-				switch(textures.back().rgb_combine[j]) {
+				switch(textures.back().rgb_combine[j] & 0xFF) {
 					case 0x00:
 						argc_rgb = 1;
 						break;
@@ -124,7 +154,7 @@ void a2ematerial::load_material(char* filename) {
 						break;
 				}
 
-				switch(textures.back().alpha_combine[j]) {
+				switch(textures.back().alpha_combine[j] & 0xFF) {
 					case 0x00:
 						argc_alpha = 1;
 						break;
@@ -142,10 +172,10 @@ void a2ematerial::load_material(char* filename) {
 						break;
 				}
 
-				textures.back().rgb_source[j] = new char[argc_rgb];
+				/*textures.back().rgb_source[j] = new char[argc_rgb];
 				textures.back().rgb_operand[j] = new char[argc_rgb];
 				textures.back().alpha_source[j] = new char[argc_alpha];
-				textures.back().alpha_operand[j] = new char[argc_alpha];
+				textures.back().alpha_operand[j] = new char[argc_alpha];*/
 
 				for(unsigned int k = 0; k < argc_rgb; k++) {
 					textures.back().rgb_source[j][k] = file->get_char();
@@ -160,7 +190,7 @@ void a2ematerial::load_material(char* filename) {
 		}
 		else {
 			// get color type
-			textures.back().col_type = new char[textures.back().tex_count];
+			//textures.back().col_type = new char[textures.back().tex_count];
 			for(unsigned int j = 0; j < textures.back().tex_count; j++) {
 				textures.back().col_type[j] = file->get_char();
 				if(textures.back().col_type[j] > 0x01) {
@@ -171,10 +201,12 @@ void a2ematerial::load_material(char* filename) {
 		}
 
 		// create tex name pointers
-		textures.back().tex_names = new string[textures.back().tex_count];
+		//textures.back().tex_names = new string[textures.back().tex_count];
+		textures.back().tex_names = new string[8];
 
 		// create textures
-		textures.back().textures = new GLuint[textures.back().tex_count];
+		//textures.back().textures = new GLuint[textures.back().tex_count];
+		textures.back().textures = new GLuint[8];
 
 		// get texture file names
 		unsigned int x = 0;
@@ -274,63 +306,80 @@ void a2ematerial::enable_texture(unsigned int obj_num) {
 				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, i));
 				glEnable(GL_TEXTURE_2D);
 
-				unsigned int argc_rgb = 0;
-				unsigned int argc_alpha = 0;
+				// since we can't set any tex env combine stuff in the first texture,
+				// we skip just skip this part ...
+				if(i != 0) {
+					unsigned int argc_rgb = 0;
+					unsigned int argc_alpha = 0;
 
-				switch(textures.back().rgb_combine[i]) {
-					case 0x00:
-						argc_rgb = 1;
-						break;
-					case 0x01:
-					case 0x02:
-					case 0x03:
-					case 0x04:
-						argc_rgb = 2;
-						break;
-					case 0x05:
-						argc_rgb = 3;
-						break;
-					case 0xFF:
-						argc_rgb = 0;
-						break;
-				}
+					switch(textures.at(obj_num).rgb_combine[i] & 0xFF) {
+						case 0x00:
+							argc_rgb = 1;
+							break;
+						case 0x01:
+						case 0x02:
+						case 0x03:
+						case 0x04:
+							argc_rgb = 2;
+							break;
+						case 0x05:
+							argc_rgb = 3;
+							break;
+						case 0xFF:
+							argc_rgb = 0;
+							break;
+					}
 
-				switch(textures.back().alpha_combine[i]) {
-					case 0x00:
-						argc_alpha = 1;
-						break;
-					case 0x01:
-					case 0x02:
-					case 0x03:
-					case 0x04:
-						argc_alpha = 2;
-						break;
-					case 0x05:
-						argc_alpha = 3;
-						break;
-					case 0xFF:
-						argc_alpha = 0;
-						break;
-				}
+					switch(textures.at(obj_num).alpha_combine[i] & 0xFF) {
+						case 0x00:
+							argc_alpha = 1;
+							break;
+						case 0x01:
+						case 0x02:
+						case 0x03:
+						case 0x04:
+							argc_alpha = 2;
+							break;
+						case 0x05:
+							argc_alpha = 3;
+							break;
+						case 0xFF:
+							argc_alpha = 0;
+							break;
+					}
 
-				if((argc_rgb | argc_alpha) != 0) { glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB); }
+					//if((argc_rgb | argc_alpha) != 0) { glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB); }
+					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
 
-				if((textures.back().rgb_combine[i] & 0xFF) != 0xFF) {
-					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, get_combine(textures.back().rgb_combine[i]));
-				}
+					if((textures.at(obj_num).rgb_combine[i] & 0xFF) != 0xFF) {
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, get_combine(textures.at(obj_num).rgb_combine[i]));
+					}
+					else {
+						// use replace as standard
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_REPLACE);
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+					}
 
-				for(unsigned int j = 0; j < argc_rgb; j++) {
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB+j, get_rgb_source(textures.back().rgb_source[i][j]));
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB+j, get_rgb_operand(textures.back().rgb_operand[i][j]));
-				}
+					for(unsigned int j = 0; j < argc_rgb; j++) {
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB+j, get_rgb_source(textures.at(obj_num).rgb_source[i][j]));
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB+j, get_rgb_operand(textures.at(obj_num).rgb_operand[i][j]));
+					}
 
-				if((textures.back().alpha_combine[i] & 0xFF) != 0xFF) {
-					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, get_combine(textures.back().alpha_combine[i]));
-				}
+					if((textures.at(obj_num).alpha_combine[i] & 0xFF) != 0xFF) {
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, get_combine(textures.at(obj_num).alpha_combine[i]));
+					}
+					else {
+						// use replace as standard
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+					}
 
-				for(unsigned int j = 0; j < argc_alpha; j++) {
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB+j, get_alpha_source(textures.back().alpha_source[i][j]));
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB+j, get_alpha_operand(textures.back().alpha_operand[i][j]));
+					for(unsigned int j = 0; j < argc_alpha; j++) {
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB+j, get_alpha_source(textures.at(obj_num).alpha_source[i][j]));
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB+j, get_alpha_operand(textures.at(obj_num).alpha_operand[i][j]));
+					}
 				}
 			}
 			//if(textures.at(obj_num).col_type[0] == 0x01) { glEnable(GL_BLEND); }
@@ -449,4 +498,8 @@ unsigned int a2ematerial::get_alpha_operand(char c) {
 	}
 	m->print(msg::MERROR, "a2ematerial.cpp", "get_alpha_operand(): unknown alpha operand %u!", (unsigned int)(c & 0xFF));
 	return 0;
+}
+
+a2ematerial::texture_elem* a2ematerial::get_tex_elem(unsigned int obj_num) {
+	return &textures[obj_num];
 }

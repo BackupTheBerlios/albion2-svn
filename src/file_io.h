@@ -48,7 +48,7 @@ public:
 		OT_WRITE_BINARY
 	};
 
-	void open_file(char* filename, FIO_OPEN_TYPE open_type);
+	bool open_file(char* filename, FIO_OPEN_TYPE open_type);
 	void close_file();
 	unsigned int get_filesize();
 	void get_line(char* finput);
@@ -64,10 +64,15 @@ public:
 	void put_swap_uint(unsigned int uint);
 	void put_float(float flt);
 	void put_bool(bool b);
+	void put_char(char c);
+
+	bool is_file(char* filename);
 
 protected:
 	msg* m;
 	fstream filestream;
+
+	bool check_open();
 
 };
 

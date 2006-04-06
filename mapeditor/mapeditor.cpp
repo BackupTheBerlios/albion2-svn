@@ -99,7 +99,7 @@ void mapeditor::save_map(char* filename) {
 	// if filename == NULL, we will just overwrite the current map file (save ...)
 	// if not, we will save it as a new map called filename (save as ...)
 	if(filename == NULL) {
-		filename = cur_map_name;
+		filename = (char*)cur_map_name.c_str();
 	}
 
 	// feed the map class with the new map data and delete old data
@@ -353,7 +353,7 @@ void mapeditor::close_map() {
 	materials.clear();
 	objects.clear();
 
-	cur_map_name = NULL;
+	cur_map_name = "";
 
 	new_sel = true;
 	sel = false;

@@ -18,6 +18,7 @@
 #define __GUI_LIST_H__
 
 #include <iostream>
+#include <vector>
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
@@ -26,7 +27,6 @@
 #include "engine.h"
 #include "gui_text.h"
 #include "gui_button.h"
-#include "gui_list_item.h"
 #include "gui_vbar.h"
 #include "gui_font.h"
 using namespace std;
@@ -46,6 +46,11 @@ class A2E_API gui_list
 public:
 	gui_list(engine* e);
 	~gui_list();
+
+	struct item {
+		string text;
+		unsigned int id;
+	};
 	
 	void draw(unsigned int x, unsigned int y);
 
@@ -54,7 +59,7 @@ public:
 
 	// gui list box element variables functions
 
-	gui_list_item* add_item(char* text, unsigned int id);
+	gui_list::item* add_item(char* text, unsigned int id);
 	void delete_item(unsigned int id);
 
 	unsigned int get_id();
@@ -62,8 +67,8 @@ public:
 	bool get_active();
 	unsigned int get_position();
 	unsigned int get_selected_id();
-	gui_list_item* get_item(unsigned int id);
-	gui_list_item* get_selected_item();
+	gui_list::item* get_item(unsigned int id);
+	gui_list::item* get_selected_item();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
@@ -75,6 +80,11 @@ public:
 
 	void select_pos(unsigned int x, unsigned int y);
 
+	void set_list_text(gui_text* text);
+	gui_text* get_list_text();
+
+	void clear();
+
 protected:
 	msg* m;
 	core* c;
@@ -83,12 +93,13 @@ protected:
 	gui_font* gf;
 
 
+	gui_text* list_text;
 	gui_vbar* vbar_handler;
 
-	gui_list_item* items[512];
-	unsigned int citems;
+	vector<item> items;
 
 	unsigned int drawable_items;
+	unsigned int top_item;
 
 	// gui list box element variables
 

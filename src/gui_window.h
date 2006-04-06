@@ -56,7 +56,7 @@ public:
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
 	void set_lid(unsigned int id);
-	void set_caption(char* caption);
+	void set_caption(const char* caption);
 	void set_border(bool state);
 
 	void change_position(int x, int y);
@@ -64,6 +64,7 @@ public:
 	bool is_moving();
 	void set_moving(bool state);
 
+	gui_button* get_exit_button_handler();
 	void set_exit_button_handler(gui_button* ibutton);
 
 	bool get_deleted();

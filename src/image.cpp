@@ -29,6 +29,8 @@ image::image(engine* e) {
 
 	alpha = false;
 
+	scale = true;
+
 	// get classes
 	image::e = e;
 	image::m = e->get_msg();
@@ -57,16 +59,32 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 	if(alpha) { glEnable(GL_BLEND); }
-	glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f);
-		glVertex2i(image::position->x, screen_heigth - image::position->y);
-		glTexCoord2f(0.0f, 1.0f);
-		glVertex2i(image::position->x, screen_heigth - (image::position->y + scale_y));
-		glTexCoord2f(1.0f, 1.0f);
-		glVertex2i(image::position->x + scale_x, screen_heigth - (image::position->y + scale_y));
-		glTexCoord2f(1.0f, 0.0f);
-		glVertex2i(image::position->x + scale_x, screen_heigth - image::position->y);
-	glEnd();
+
+	if(scale) {
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex2i(image::position->x, screen_heigth - image::position->y);
+			glTexCoord2f(0.0f, 1.0f);
+			glVertex2i(image::position->x, screen_heigth - (image::position->y + scale_y));
+			glTexCoord2f(1.0f, 1.0f);
+			glVertex2i(image::position->x + scale_x, screen_heigth - (image::position->y + scale_y));
+			glTexCoord2f(1.0f, 0.0f);
+			glVertex2i(image::position->x + scale_x, screen_heigth - image::position->y);
+		glEnd();
+	}
+	else {
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex2i(image::position->x, screen_heigth - image::position->y);
+			glTexCoord2f(0.0f, 1.0f);
+			glVertex2i(image::position->x, screen_heigth - (image::position->y + image::heigth));
+			glTexCoord2f(1.0f, 1.0f);
+			glVertex2i(image::position->x + image::width, screen_heigth - (image::position->y + image::heigth));
+			glTexCoord2f(1.0f, 0.0f);
+			glVertex2i(image::position->x + image::width, screen_heigth - image::position->y);
+		glEnd();
+	}
+
 	if(alpha) { glDisable(GL_BLEND); }
 	glDisable(GL_TEXTURE_2D);
 
@@ -115,4 +133,31 @@ void image::set_position(core::pnt* position) {
  */
 core::pnt* image::get_position() {
 	return image::position;
+}
+
+/*! sets the images texture
+ *  @param tex the texture we want to set
+ */
+void image::set_texture(GLuint tex) {
+	texture = tex;
+	image::width = t->get_texture(texture)->width;
+	image::heigth = t->get_texture(texture)->height;
+	t->get_texture(texture)->components == 4 ? alpha = true : alpha = false;
+}
+
+//! returns the images texture
+GLuint image::get_texture() {
+	return image::texture;
+}
+
+/*! sets image scaling to state
+ *  @param state the scaling state
+ */
+void image::set_scaling(bool state) {
+	image::scale = state;
+}
+
+//! returns the image scale flag
+bool image::get_scaling() {
+	return image::scale;
 }

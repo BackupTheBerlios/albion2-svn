@@ -360,7 +360,7 @@ void engine::stop_draw() {
 	SDL_GL_SwapBuffers();
 
 	// fps limiter
-	SDL_Delay(engine::fps_limit);
+	if(engine::fps_limit != 0) SDL_Delay(engine::fps_limit);
 }
 
 /*! returns the surface used by the engine
@@ -421,7 +421,7 @@ bool engine::init_gl() {
 /*! opengl drawing code
  */
 bool engine::draw_gl_scene() {
-	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
+	//glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height); // hmm...?
 	
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	
@@ -481,6 +481,8 @@ vertex3* engine::get_position() {
 /*! starts drawing the 2d elements and initializes the opengl functions for that
  */
 void engine::start_2d_draw() {
+	glPushAttrib(GL_ENABLE_BIT);
+
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_BLEND);
@@ -505,9 +507,7 @@ void engine::stop_2d_draw() {
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_BLEND);
+	glPopAttrib();
 }
 
 /*! sets the cursors visibility to state

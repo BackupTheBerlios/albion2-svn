@@ -17,6 +17,7 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
+#include <cmath>
 #include <iostream>
 #include <SDL/SDL.h>
 #include "msg.h"
@@ -26,7 +27,7 @@
 #include "a2eanim.h"
 #include "light.h"
 #include "shader.h"
-#include <cmath>
+#include "file_io.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -68,6 +69,8 @@ public:
 	float* get_mspecular();
 	float* get_mshininess();
 	bool get_light();
+
+	bool is_a2eanim(char* filename);
 
 protected:
 	msg* m;

@@ -29,7 +29,6 @@ using namespace std;
 /*! @class event
  *  @brief (sdl) event handler
  *  @author flo
- *  @version 0.3.1
  *  @todo more functions
  *  
  *  the event handling class
@@ -78,7 +77,8 @@ public:
 	// gui event stuff
 
 	enum GEVENT_TYPE {
-		BUTTON_PRESSED
+		BUTTON_PRESSED,
+		COMBO_ITEM_SELECTED
 	};
 
 	struct gevent {

@@ -172,9 +172,9 @@ void a2eanim::draw() {
 		glTranslatef(a2eanim::position->x, a2eanim::position->y, a2eanim::position->z);
 
 		// rotate the model
-		glRotatef(a2eanim::rotation->x, 1.0f, 0.0f , 0.0f);
-		glRotatef(a2eanim::rotation->y, 0.0f, 1.0f , 0.0f);
-		glRotatef(a2eanim::rotation->z, 0.0f, 0.0f , 1.0f);
+		glRotatef(360.0f - a2eanim::rotation->x, 1.0f, 0.0f , 0.0f);
+		glRotatef(360.0f - a2eanim::rotation->y, 0.0f, 1.0f , 0.0f);
+		glRotatef(360.0f - a2eanim::rotation->z, 0.0f, 0.0f , 1.0f);
 
 		// scale the model
 		glScalef(a2eanim::scale->x, a2eanim::scale->y, a2eanim::scale->z);
@@ -248,7 +248,6 @@ void a2eanim::draw() {
 
 		for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
 			if(exts->is_shader_support() && a2eanim::material->get_material_type(i) == a2ematerial::PARALLAX) {
-				glEnable(GL_LIGHTING);
 				s->use_shader(1);
 
 				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
@@ -329,15 +328,12 @@ void a2eanim::draw() {
 				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glDisable(GL_TEXTURE_2D);
-				glDisable(GL_LIGHTING);
 				s->use_shader(0);
 			}
 			else {
 				if(a2eanim::is_material) {
 					glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 0));
 				}
-
-				glEnable(GL_LIGHTING);
 
 				glColor3f(1.0f, 1.0f, 1.0f);
 				glEnable(GL_TEXTURE_2D);
@@ -379,7 +375,6 @@ void a2eanim::draw() {
 
 				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
 				glDisable(GL_TEXTURE_2D);
-				glDisable(GL_LIGHTING);
 			}
 		}
 
@@ -401,6 +396,7 @@ void a2eanim::draw_joints() {
 			glTranslatef(0.0f, 0.0f, 0.0f);
 			glDisable(GL_TEXTURE_2D);
 			glDisable(GL_DEPTH_TEST);
+			glPushAttrib(GL_LIGHTING_BIT);
 			glDisable(GL_LIGHTING);
 
 			// we have to switch the z and negative y coordinate here, b/c md5
@@ -415,7 +411,7 @@ void a2eanim::draw_joints() {
 					-a2eanim::joints[i].position.y);
 			glEnd();
 
-			glEnable(GL_LIGHTING);
+			glPopAttrib();
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_TEXTURE_2D);
 			glPopMatrix();
@@ -434,16 +430,27 @@ void a2eanim::load_model(char* filename, bool vbo) {
 		a2eanim::vbo = false;
 	}
 
-	file->open_file(filename, file_io::OT_READ_BINARY);
+	if(!file->open_file(filename, file_io::OT_READ_BINARY)) {
+		m->print(msg::MERROR, "a2eanim.cpp", "load_model(): error opening model file!");
+		return;
+	}
 
 	// get file type
-	file->get_block(a2eanim::file_type, 8);
-	a2eanim::file_type[8] = 0;
+	char* file_type = new char[9];
+	file->get_block(file_type, 8);
+	file_type[8] = 0;
+	if(strcmp(file_type, "A2EMODEL") != 0) {
+		m->print(msg::MERROR, "a2eanim.cpp", "load_model(): unknown file type: %s!", file_type);
+		file->close_file();
+		return;
+	}
+	delete [] file_type;
 
 	// get model type and abort if it's not 0x01
 	char model_type = file->get_char();
 	if(model_type != 0x01) {
-		m->print(msg::MERROR, "a2eanim.cpp", "non supported model type: %u!", (unsigned int)(model_type & 0xFF));
+		m->print(msg::MERROR, "a2eanim.cpp", "load_model(): non supported model type: %u!", (unsigned int)(model_type & 0xFF));
+		file->close_file();
 		return;
 	}
 
@@ -989,6 +996,7 @@ void a2eanim::generate_normals() {
 	mt_start_num = new unsigned int[thread_count];
 	mt_end_num = new unsigned int[thread_count];
 
+	mt_cur_tn = 0;
 	for(unsigned int i = 0; i < thread_count; i++) {
 		mt_normals[i] = new vertex3[16];
 		mt_binormals[i] = new vertex3[16];
@@ -1001,7 +1009,6 @@ void a2eanim::generate_normals() {
 
 		mt_thread_done[i] = false;
 		mt_thread_done2[i] = true;
-		mt_cur_tn = i;
 		threads[i] = SDL_CreateThread(mt_nbt, mutexes[i]);
 		if(threads[i] == NULL) {
 			m->print(msg::MERROR, "a2eanim.cpp", "generate_normals(): unable to create thread (#%u): %s!", i, SDL_GetError());
@@ -1022,12 +1029,12 @@ void a2eanim::generate_normals() {
 			if(j < remain)
 				mt_end_num[j]++;
 
-			cout << "thread #" << j << " range: " << mt_start_num[j] << " - " << mt_end_num[j] << " : " << (mt_end_num[j] - mt_start_num[j]) << endl;
+			//cout << "thread #" << j << " range: " << mt_start_num[j] << " - " << mt_end_num[j] << " : " << (mt_end_num[j] - mt_start_num[j]) << endl;
 		}
 
 		if(!a2eanim::meshes[i].nbt_computed) {
 			for(unsigned int j = 0; j < a2eanim::animations[a2eanim::current_animation]->frame_count; j++) {
-				cout << "frame " << j << "/" << a2eanim::animations[a2eanim::current_animation]->frame_count << endl;
+				//cout << "frame " << j << "/" << a2eanim::animations[a2eanim::current_animation]->frame_count << endl;
 				// build the bones for this frame ...
 				for(unsigned int k = 0; k < a2eanim::base_joint_count; k++) {
 					a2eanim::build_bone(j, base_joints[k], &base_joints[k]->position, &base_joints[k]->orientation);
@@ -1049,21 +1056,14 @@ void a2eanim::generate_normals() {
 				}
 
 				bool end = false;
-cout << "before end loop" << endl;
 				for(unsigned int k = 0; k < thread_count; k++) {
-cout << "insight 1" << endl;
 					while(!end) {
-cout << "locking mutex #" << k << " ..." << endl;
-						SDL_mutexP(mutexes[k]);
-cout << "locked mutex #" << k << " ..." << endl;
+						if(SDL_mutexP(mutexes[k]) != 0) cout << "error locking mutex ..." << endl;
 						if(mt_thread_done2[k]) {
 							end = true;
 						}
-cout << "unlocking mutex #" << k << " ..." << endl;
-						SDL_mutexV(mutexes[k]);
-cout << "unlocked mutex #" << k << " ..." << endl;
+						if(SDL_mutexV(mutexes[k]) != 0) cout << "error unlocking mutex ..." << endl;
 					}
-cout << "setting #" << k << "end to false" << endl;
 					end = false;
 				}
 			}
@@ -1253,10 +1253,11 @@ int a2eanim::mt_nbt(void* data) {
 
 	SDL_mutexP(lock);
 	unsigned int tn = mt_cur_tn; // thread number
+	mt_cur_tn++;
 	SDL_mutexV(lock);
 
 	while(!mt_thread_done[tn]) {
-		SDL_mutexP(lock);
+		if(SDL_mutexP(lock) != 0) cout << "error locking mutex ..." << endl;
 		if(!mt_thread_done2[tn]) {
 			for(unsigned int i = mt_start_num[tn]; i < mt_end_num[tn]; i++) {
 				// check if vertex is part of a triangle
@@ -1306,9 +1307,13 @@ int a2eanim::mt_nbt(void* data) {
 			}
 			mt_thread_done2[tn] = true;
 		}
-		SDL_mutexV(lock);
+		if(SDL_mutexV(lock) != 0) cout << "error unlocking mutex ..." << endl;
 	}
 
 	return 1;
+}
+
+unsigned int a2eanim::get_object_count() {
+	return a2eanim::mesh_count;
 }
 

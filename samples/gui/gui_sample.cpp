@@ -57,6 +57,16 @@ int main(int argc, char *argv[])
 	gui_text* output_text_obj = agui->get_text(output_text);
 	gui_input* i1_obj = agui->get_input(i1);
 	gui_list* l1_obj = agui->get_list(l1);
+	GUI_OBJ c1 = agui->add_combo_box(agfx->pnt_to_rect(100, 30, 220, 50), 112, 0);
+	gui_combo* c1_obj = agui->get_combo(c1);
+	c1_obj->add_item("test 1234567890 blubb", 0);
+	c1_obj->add_item("blah", 1);
+	c1_obj->add_item("blubb", 2);
+	c1_obj->add_item("hmm ...", 3);
+	c1_obj->add_item("o.o?", 4);
+	c1_obj->add_item("kkhj", 5);
+	c1_obj->add_item("fth", 6);
+	c1_obj->add_item("fghth", 7);
 
 	GUI_OBJ wnd = agui->add_window(agfx->pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
 	GUI_OBJ xpos_text = agui->add_text("../data/vera.ttf", 12, "0", 0x000000, agfx->cord_to_pnt(20, 20), 107, 110);
@@ -76,6 +86,14 @@ int main(int argc, char *argv[])
 
 	// add 32 items
 	for(unsigned int i = 1; i <= 32; i++) {
+		char tmp[16];
+		sprintf(tmp, "test %u", i);
+		l1_obj->add_item(tmp, i);
+	}
+
+	l1_obj->clear();
+
+	for(unsigned int i = 1; i <= 16; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1_obj->add_item(tmp, i);
@@ -130,6 +148,19 @@ int main(int argc, char *argv[])
 						break;
 						case 101: {
 							output_text_obj->set_text("button with the id #101 was pressed!");
+						}
+						break;
+						default:
+							break;
+					}
+					break;
+				case event::COMBO_ITEM_SELECTED:
+					switch(aevent->get_gui_event().id) {
+						case 112: {
+							char* tmp = new char[128];
+							sprintf(tmp, "you have selected item #%u!", c1_obj->get_selected_id());
+							output_text_obj->set_text(tmp);
+							delete [] tmp;
 						}
 						break;
 						default:

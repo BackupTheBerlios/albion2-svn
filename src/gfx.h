@@ -69,6 +69,11 @@ public:
 
 	unsigned int get_color(unsigned int red, unsigned int green, unsigned int blue);
 	unsigned int get_color(unsigned int rgb);
+
+	void begin_scissor();
+	void set_scissor(gfx::rect* rectangle);
+	void set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
+	void end_scissor();
 protected:
 	SDL_Surface* screen;
 };

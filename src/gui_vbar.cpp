@@ -213,7 +213,7 @@ void gui_vbar::set_position(unsigned int position) {
 		gui_vbar::position = 0;
 	}
 	else if(position > gui_vbar::max_lines) {
-		gui_vbar::position = 0;
+		gui_vbar::position = gui_vbar::max_lines;
 	}
 	else if(gui_vbar::max_lines - position < gui_vbar::shown_lines) {
 		gui_vbar::position = gui_vbar::max_lines - gui_vbar::shown_lines;

@@ -44,7 +44,7 @@ texman::~texman() {
 unsigned int texman::add_texture(const char* filename, GLint components, GLenum format) {
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
-	if(!tex_surface) {
+	if(tex_surface == NULL) {
 		m->print(msg::MERROR, "texman.cpp", "add_texture(): error loading texture file \"%s\"!", filename);
 		return 0;
 	}
@@ -53,7 +53,9 @@ unsigned int texman::add_texture(const char* filename, GLint components, GLenum 
 	for(unsigned int i = 0; i < ctextures; i++) {
 		if(strcmp(textures[i].filename, filename) == 0 &&
 			textures[i].height == (unsigned int)tex_surface->h &&
-			textures[i].width == (unsigned int)tex_surface->w) {
+			textures[i].width == (unsigned int)tex_surface->w &&
+			components == textures[i].components &&
+			format == textures[i].format) {
 			// we already loaded the texture, so just return its number
 			SDL_FreeSurface(tex_surface);
 			return textures[i].tex;
@@ -69,6 +71,8 @@ unsigned int texman::add_texture(const char* filename, GLint components, GLenum 
 	new_textures[ctextures].height = tex_surface->h;
 	new_textures[ctextures].width = tex_surface->w;
 	new_textures[ctextures].tex = 0;
+	new_textures[ctextures].components = components;
+	new_textures[ctextures].format = format;
 	delete [] textures;
 	textures = new_textures;
 

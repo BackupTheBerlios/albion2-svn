@@ -25,6 +25,7 @@
 #include "event.h"
 #include "engine.h"
 #include "gui_text.h"
+#include "image.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -32,7 +33,6 @@ using namespace std;
 /*! @class gui_button
  *  @brief gui button element functions
  *  @author flo
- *  @version 0.3.1
  *  @todo more functions
  *  
  *  the gui_button class
@@ -55,20 +55,26 @@ public:
 	gfx::rect* get_rectangle();
 	char* get_text();
 	unsigned int get_icon();
+	image* get_image();
 
 	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
 	void set_text(char* text);
 	void set_icon(unsigned int icon);
+	void set_image(image* img);
 
 	void set_pressed(bool pressed);
 	bool get_pressed();
+
+	void set_image_scaling(bool state);
+	bool get_image_scaling();
 
 protected:
 	msg* m;
 	core* c;
 	engine* e;
 	gfx* g;
+	image* img;
 
 	gui_text* text_handler;
 
@@ -82,6 +88,8 @@ protected:
 	char* text;
 	//! button icon id
 	unsigned int icon;
+
+	bool img_scale;
 
 	// event handle stuff
 

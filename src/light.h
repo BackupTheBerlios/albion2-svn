@@ -18,11 +18,11 @@
 #define __LIGHT_H__
 
 #include <iostream>
+#include <cmath>
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"
-#include <math.h>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -30,7 +30,6 @@ using namespace std;
 /*! @class light
  *  @brief lighting routines
  *  @author flo
- *  @version 0.1
  *  @todo nothing atm
  *  
  *  the lighting class

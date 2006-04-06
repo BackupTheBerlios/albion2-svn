@@ -31,7 +31,6 @@ using namespace std;
 /*! @class gui_vbar
  *  @brief gui vertical bar element functions
  *  @author flo
- *  @version 0.1.3
  *  @todo more functions
  *  
  *  the gui_vbar class

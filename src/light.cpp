@@ -15,8 +15,6 @@
  */
 
 #include "light.h"
-#include "msg.h"
-#include <math.h>
 
 /*! creates a new light object
  *  @param e pointer to the engine class

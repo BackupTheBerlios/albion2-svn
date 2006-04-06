@@ -15,21 +15,14 @@
  */
 
 #include "gui_list.h"
-#include "gui_list_item.h"
-#include "gui_vbar.h"
-#include "gfx.h"
-#include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
 gui_list::gui_list(engine* e) {
 	is_active = false;
 
-	citems = 0;
-
 	drawable_items = 0;
+	top_item = 0;
 
 	rectangle = new gfx::rect();
 	rectangle->x1 = 0;
@@ -83,75 +76,28 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 		e->get_gui_style()->STYLE_DARK2);
 
 	// draw items
-	// we need a height of 18px for each item
-	unsigned int list_box_heigth = gui_list::rectangle->y2 - gui_list::rectangle->y1;
-	gui_list::drawable_items = (list_box_heigth - (list_box_heigth % 18)) / 18;
-	gui_list::vbar_handler->set_shown_lines(gui_list::drawable_items);
-	unsigned int* ids = new unsigned int[citems];
-	unsigned int* new_ids = new unsigned int[citems];
-	for(unsigned int i = 0; i < citems; i++) {
-		ids[i] = items[i]->get_id();
-	}
-	unsigned int c = citems;
-	while(c != 0) {
-		unsigned int highest = 0;
-		unsigned int tmp_id = 0;
-		for(unsigned int i = 0; i < citems; i++) {
-			if(ids[i] > highest) {
-				tmp_id = i;
-				highest = ids[i];
-			}
+	for(unsigned int i = top_item;
+		i < (top_item + drawable_items > items.size() ? items.size() : top_item + drawable_items); i++) {
+		if(items[i].id != sid) {
+			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 		}
-		ids[tmp_id] = 0;
-		new_ids[c-1] = highest;
-		c--;
-	}
+		else {
+			list_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
 
-	core::pnt* p1 = new core::pnt();
-	// just loop for as many items as we have
-	unsigned int loop = 0;
-	if(drawable_items > citems) {
-		loop = citems;
-	}
-	else {
-		loop = drawable_items;
-	}
+			g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18,
+				gui_list::rectangle->x2 + x - 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18 + 17);
+			g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_SELECTED);
 
+			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 
-	// reset points
-	for(unsigned int i = 0; i < citems; i++) {
-		items[i]->set_point(0, 0);
-	}
-
-	for(unsigned int i = 0; i < loop; i++) {
-		for(unsigned int j = 0; j < citems; j++) {
-			if(items[j]->get_id() == new_ids[i + position]) {
-				g->cord_to_pnt(p1, gui_list::rectangle->x1 + 3,
-					gui_list::rectangle->y1 + 6 + i*18);
-				items[j]->set_point(p1->x, p1->y);
-
-				// is item selected?
-				if(sid == items[j]->get_id()) {
-					r1->x1 = p1->x - 1 + x;
-					r1->y1 = p1->y - 4 + y;
-					r1->x2 = gui_list::rectangle->x2 - 15 + x;
-					r1->y2 = p1->y + 13 + y;
-					g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_SELECTED);
-					g->draw_rectangle(r1, e->get_gui_style()->STYLE_DARK);
-				}
-
-				items[j]->draw(x, y);
-			}
+			list_text->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
 		}
 	}
-	delete p1;
-	delete r1;
-
-	delete [] ids;
-	delete [] new_ids;
 
 	// vbar handling
 	gui_list::set_position(vbar_handler->get_position());
+
+	delete r1;
 }
 
 /*! creates a vbar -> a pointer to the vbar class
@@ -198,6 +144,8 @@ void gui_list::set_id(unsigned int id) {
  */
 void gui_list::set_rectangle(gfx::rect* rectangle) {
 	gui_list::rectangle = rectangle;
+	drawable_items = (unsigned int)(gui_list::rectangle->y2 - gui_list::rectangle->y1) / 18;
+	vbar_handler->set_shown_lines(drawable_items);
 }
 
 /*! sets the is_active bool
@@ -211,78 +159,41 @@ void gui_list::set_active(bool is_active) {
  *  @param position the position (the number of the item that is shown in the first line)
  */
 void gui_list::set_position(unsigned int position) {
-	// 0xFFFFFFFF, because position is a uint and we decrease it by 0
-	if(position == 0xFFFFFFFF) {
-		gui_list::position = 0;
-		vbar_handler->set_position(gui_list::position);
-	}
-	else if(position > gui_list::citems) {
-		gui_list::position = 0;
-		vbar_handler->set_position(gui_list::position);
-	}
-	else if(gui_list::citems - position < gui_list::drawable_items) {
-		if(gui_list::citems < gui_list::drawable_items) {
-			gui_list::position = 0;
-		}
-		else {
-			gui_list::position = gui_list::citems - gui_list::drawable_items;
-		}
-		vbar_handler->set_position(gui_list::position);
-	}
-	else {
-        gui_list::position = position;
-		vbar_handler->set_position(gui_list::position);
-	}
+	gui_list::position = position;
+	gui_list::top_item = (position > (unsigned int)items.size() - drawable_items) ? ((unsigned int)items.size() - drawable_items) : position;
 }
 
 /*! adds an item to the list
  *  @param text the text of the item
  *  @param id the id of the added item
  */
-gui_list_item* gui_list::add_item(char* text, unsigned int id) {
-	for(unsigned int i = 0; i < citems; i++) {
-		if(items[i]->get_id() == id) {
+gui_list::item* gui_list::add_item(char* text, unsigned int id) {
+	for(unsigned int i = 0; i < items.size(); i++) {
+		if(items[i].id == id) {
 			m->print(msg::MERROR, "gui_list.cpp", "gui list item with such an id already exists!");
 			return 0;
 		}
 	}
 
-	gui_text* gtext = new gui_text(e);
-
-	gtext->set_init(false);
-	gtext->set_id(id);
-
-	// add 2 fonts with 2 different colors
-	gtext->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
-	gtext->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
-	gtext->set_point(g->cord_to_pnt(0,0));
-	gtext->set_text(text);
-	gtext->set_init(true);
-
-	items[citems] = new gui_list_item(e);
-	items[citems]->set_text_handler(gtext);
-	items[citems]->set_text(text);
-	items[citems]->set_id(id);
-	items[citems]->set_point(0, 0);
+	items.push_back(*new gui_list::item());
+	items.back().text = text;
+	items.back().id = id;
 
 	// set position, so that we see the last line
 	gui_list::set_position(gui_list::get_position() + 1);
 
-	citems++;
+	gui_list::vbar_handler->set_max_lines((unsigned int)items.size());
 
-	gui_list::vbar_handler->set_max_lines(citems);
-
-	return items[citems-1];
+	return &items.back();
 }
 
 /*! deletes an item of the list
  *  @param id the id of the item
  */
 void gui_list::delete_item(unsigned int id) {
-	for(unsigned int i = 0; i < citems; i++) {
-		if(items[i]->get_id() == id) {
-			delete items[i]->get_text_handler();
-			items[i]->clear();
+	for(unsigned int i = 0; i < items.size(); i++) {
+		if(items[i].id == id) {
+			items.erase(items.begin()+i);
 		}
 	}
 }
@@ -290,7 +201,7 @@ void gui_list::delete_item(unsigned int id) {
 /*! returns the amount of list items
  */
 unsigned int gui_list::get_citems() {
-	return gui_list::citems;
+	return (unsigned int)gui_list::items.size();
 }
 
 /*! selects an element of the list box
@@ -298,32 +209,13 @@ unsigned int gui_list::get_citems() {
  *  @param y the y pos
  */
 void gui_list::select_pos(unsigned int x, unsigned int y) {
-	for(unsigned int i = 0; i < citems; i++) {
-		if(items[i]->get_id() == sid) {
-			items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
-		}
+	y = y - rectangle->y1 - 2;
+	unsigned int sel_item = (unsigned int)(y / 18) + top_item;
+	if(sel_item < items.size()) { sid = items[sel_item].id; }
+	else {
+		// item out of range ...
+		//m->print(msg::MERROR, "gui_list.cpp", "select_pos(): selected item (%u) out of range!", sel_item);
 	}
-
-	gfx::rect* r = new gfx::rect();
-	core::pnt* pos = new core::pnt();
-	pos->x = x;
-	pos->y = y;
-	r->x2 = gui_list::rectangle->x2 - 15;
-
-	for(unsigned int i = 0; i < gui_list::citems; i++) {
-			r->x1 = items[i]->get_point()->x - 1;
-			r->y1 = items[i]->get_point()->y - 4;
-			r->y2 = items[i]->get_point()->y + 13;
-
-			if(g->is_pnt_in_rectangle(r, pos)) {
-				sid = items[i]->get_id();
-				items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
-				i = citems;
-			}
-	}
-
-	delete r;
-	delete pos;
 }
 
 /*! returns the id of the selected element
@@ -336,32 +228,42 @@ unsigned int gui_list::get_selected_id() {
  *  @param sid the elements id
  */
 void gui_list::set_selected_id(unsigned int sid) {
-	for(unsigned int i = 0; i < citems; i++) {
-		if(items[i]->get_id() == gui_list::sid) {
-            items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT));
-		}
-		else if(items[i]->get_id() == sid) {
-			items[i]->get_text_handler()->set_font(gf->add_font("vera.ttf", 12, e->get_gui_style()->STYLE_FONT2));
-		}
-	}
-
 	gui_list::sid = sid;
 }
 
 /*! returns the selected list box item
  */
-gui_list_item* gui_list::get_selected_item() {
+gui_list::item* gui_list::get_selected_item() {
 	return gui_list::get_item(gui_list::sid);
 }
 
 /*! returns the list box item with the id specified by 'id'
  *  @param id the items id
  */
-gui_list_item* gui_list::get_item(unsigned int id) {
-	for(unsigned int i = 0; i < citems; i++) {
-		if(items[i]->get_id() == id) {
-			return items[i];
+gui_list::item* gui_list::get_item(unsigned int id) {
+	for(unsigned int i = 0; i < items.size(); i++) {
+		if(items[i].id == id) {
+			return &items[i];
 		}
 	}
 	return NULL;
+}
+
+void gui_list::set_list_text(gui_text* text) {
+	gui_list::list_text = text;
+}
+
+gui_text* gui_list::get_list_text() {
+	return gui_list::list_text;
+}
+
+//! clears the list, deletes all items
+void gui_list::clear() {
+	if(items.size() == 0) return;
+
+	items.clear();
+	top_item = 0;
+	sid = 0;
+	position = 0;
+	vbar_handler->set_max_lines(0);
 }

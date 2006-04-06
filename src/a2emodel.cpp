@@ -113,16 +113,15 @@ void a2emodel::draw() {
 		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
 
 		// rotate the model
-		glRotatef(rotation->x, 1.0f, 0.0f , 0.0f);
-		glRotatef(rotation->y, 0.0f, 1.0f , 0.0f);
-		glRotatef(rotation->z, 0.0f, 0.0f , 1.0f);
+		glRotatef(360.0f - rotation->x, 1.0f, 0.0f , 0.0f);
+		glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
+		glRotatef(360.0f - rotation->z, 0.0f, 0.0f , 1.0f);
 
 		// scale the model
 		glScalef(a2emodel::scale->x, a2emodel::scale->y, a2emodel::scale->z);
 
 		for(unsigned int i = 0; i < object_count; i++) {
 			if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::PARALLAX) {
-				glEnable(GL_LIGHTING);
 				s->use_shader(1);
 
 				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
@@ -209,11 +208,9 @@ void a2emodel::draw() {
 				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glDisable(GL_TEXTURE_2D);
-				glDisable(GL_LIGHTING);
 				s->use_shader(0);
 			}
 			else {
-				glEnable(GL_LIGHTING);
 				// if the wireframe flag is set, draw the model in wireframe mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -286,7 +283,6 @@ void a2emodel::draw() {
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
-				glDisable(GL_LIGHTING);
 			}
 		}
 
@@ -315,6 +311,7 @@ void a2emodel::load_model(char* filename, bool vbo) {
 	if(strcmp(file_type, "A2EMODEL") != 0) {
 		m->print(msg::MERROR, "a2emodel.cpp", "non supported file type: %s!", file_type);
 		delete [] file_type;
+		file->close_file();
 		return;
 	}
 	delete [] file_type;
@@ -323,6 +320,7 @@ void a2emodel::load_model(char* filename, bool vbo) {
 	char mtype = file->get_char();
 	if(mtype != 0x00) {
 		m->print(msg::MERROR, "a2emodel.cpp", "non supported model type: %u!", (unsigned int)(mtype & 0xFF));
+		file->close_file();
 		return;
 	}
 
@@ -761,4 +759,8 @@ void a2emodel::scale_tex_coords(float su, float sv) {
 		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float),
 			tex_coords, GL_STATIC_DRAW_ARB);
 	}
+}
+
+unsigned int a2emodel::get_object_count() {
+	return a2emodel::object_count;
 }

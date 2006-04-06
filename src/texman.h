@@ -59,6 +59,8 @@ protected:
 		GLuint tex;
 		unsigned int width;
 		unsigned int height;
+		GLint components;
+		GLenum format;
 	};
 
 	unsigned int ctextures;

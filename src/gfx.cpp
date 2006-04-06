@@ -76,39 +76,21 @@ void gfx::draw_3d_line(vertex3* v1, vertex3* v2, unsigned int color) {
  *  @param color the color of the rectangle
  */
 void gfx::draw_rectangle(gfx::rect* rectangle, unsigned int color) {
-	int dist_x1_x2 = rectangle->x2 - rectangle->x1;
-	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
-	int tmp;
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
+	glBegin(GL_LINES);
+		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y1 - 1);
 
-	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
-	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
+		glVertex2i(rectangle->x1, screen->h - rectangle->y2);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
 
-	if(dist_x1_x2 < dist_y1_y2) {
-	    tmp = dist_x1_x2;
-	    dist_x1_x2 = dist_y1_y2;
-	    dist_y1_y2 = tmp;
-	}
+		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x1, screen->h - rectangle->y2 - 1);
 
-	core::pnt* p1 = new core::pnt();
-	core::pnt* p2 = new core::pnt();
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
-	gfx::draw_line(p1, p2, color);
-
-	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color);
-
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color);
-
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color);
-
-	delete p1;
-	delete p2;
+		glVertex2i(rectangle->x2, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
+	glEnd();
 }
 
 /*! draws a two colored rectangle
@@ -120,32 +102,22 @@ void gfx::draw_rectangle(gfx::rect* rectangle, unsigned int color) {
  */
 void gfx::draw_2colored_rectangle(gfx::rect* rectangle,
 					unsigned int color1, unsigned int color2) {
-	int dist_x1_x2 = rectangle->x2 - rectangle->x1;
-	int dist_y1_y2 = rectangle->y2 - rectangle->y1;
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glBegin(GL_LINES);
+		glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
+		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y1 - 1);
 
-	if(dist_x1_x2 < 0) { dist_x1_x2 = (dist_x1_x2 * -1) + 1; }
-	if(dist_y1_y2 < 0) { dist_y1_y2 = (dist_y1_y2 * -1) + 1; }
+		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x1, screen->h - rectangle->y2 - 1);
 
-	core::pnt* p1 = new core::pnt();
-	core::pnt* p2 = new core::pnt();
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1);
-	gfx::draw_line(p1, p2, color1);
+		glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
+		glVertex2i(rectangle->x1, screen->h - rectangle->y2);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
 
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color2);
-
-	gfx::cord_to_pnt(p1, rectangle->x1, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color1);
-
-	gfx::cord_to_pnt(p1, rectangle->x1 + dist_x1_x2, rectangle->y1);
-	gfx::cord_to_pnt(p2, rectangle->x1 + dist_x1_x2, rectangle->y1 + dist_y1_y2);
-	gfx::draw_line(p1, p2, color2);
-
-	delete p1;
-	delete p2;
+		glVertex2i(rectangle->x2, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
+	glEnd();
 }
 
 /*! draws a filled rectangle
@@ -242,9 +214,7 @@ bool gfx::is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point) {
 		&& point->y >= rectangle->y1 && point->y <= rectangle->y2) {
 		return true;
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 /*! sets the screen surface
@@ -252,4 +222,31 @@ bool gfx::is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point) {
  */
 void gfx::set_surface(SDL_Surface* surface) {
 	gfx::screen = surface;
+}
+
+//! begins/enables the scissor
+void gfx::begin_scissor() {
+	glEnable(GL_SCISSOR_TEST);
+}
+
+/*! sets the scissor
+ *  @param rectangle the scissor box
+ */
+void gfx::set_scissor(gfx::rect* rectangle) {
+	gfx::set_scissor(rectangle->x1, rectangle->y1, rectangle->x2, rectangle->y2);
+}
+
+/*! sets the scissor
+ *  @param x1 x1 value of the scissor box
+ *  @param y1 y1 value of the scissor box
+ *  @param x2 x2 value of the scissor box
+ *  @param y2 y2 value of the scissor box
+ */
+void gfx::set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
+	glScissor(x1, screen->h - y2, x2-x1, (y2 - y1));
+}
+
+//! ends/disables scissor test
+void gfx::end_scissor() {
+	glDisable(GL_SCISSOR_TEST);
 }

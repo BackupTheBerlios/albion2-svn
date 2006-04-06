@@ -65,13 +65,6 @@ public:
 		MULTITEXTURE = 0x04
 	};
 
-protected:
-	msg* m;
-	core* c;
-	file_io* file;
-	engine* e;
-	texman* t;
-
 	unsigned int get_combine(char c);
 	unsigned int get_rgb_source(char c);
 	unsigned int get_rgb_operand(char c);
@@ -94,6 +87,15 @@ protected:
 		char** alpha_source;
 		char** alpha_operand;
 	};
+
+	texture_elem* get_tex_elem(unsigned int obj_num);
+
+protected:
+	msg* m;
+	core* c;
+	file_io* file;
+	engine* e;
+	texman* t;
 
 	vector<texture_elem> textures;
 

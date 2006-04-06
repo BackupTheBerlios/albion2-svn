@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	delete ground_mat;
 	delete cc_mat;
 	delete l1;
-	delete l2;
+//	delete l2;
 	delete s;
 	delete cam;
 	delete e;

@@ -4,5 +4,5 @@
 	<gui scheme="WINDOWS" color_scheme="BLUE"/>
 	<key_repeat time="200"/>
 	<sleep time="0"/>
-	<thread count="0"/> // number of additional threads besides the main thread
+	<thread count="2"/> // number of additional threads besides the main thread
 </engine>
