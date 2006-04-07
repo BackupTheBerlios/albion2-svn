@@ -102,7 +102,7 @@ public:
 
 	void set_data_path(const char* data_path = "../data/");
 	string get_data_path();
-	char* data_path(char* str);
+	char* data_path(const char* str);
 
 	// class return functions
 	core* get_core();

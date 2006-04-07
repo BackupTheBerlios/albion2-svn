@@ -89,7 +89,7 @@ void mgui::run() {
 					}
 					break;
 					case 201: {
-						me->open_map((char*)string(e->get_data_path() + agui->get_open_diaolg_list()->get_selected_item()->text).c_str());
+						me->open_map(e->data_path(agui->get_open_diaolg_list()->get_selected_item()->text.c_str()));
 						od_wnd->set_deleted(true);
 					}
 					break;
@@ -99,19 +99,19 @@ void mgui::run() {
 					break;
 					case 407: {
 						if(me->is_map_opened()) {
-							od_wnd = agui->get_window(agui->add_open_dialog(420, "Add Model File", (char*)string(e->get_data_path() + "./").c_str(), "a2m", 50, 50));
+							od_wnd = agui->get_window(agui->add_open_dialog(420, "Add Model File", e->data_path(NULL), "a2m", 50, 50));
 						}
 					}
 					break;
 					case 408: {
 						if(me->is_map_opened()) {
-							od_wnd = agui->get_window(agui->add_open_dialog(430, "Add Animation File", (char*)string(e->get_data_path() + "./").c_str(), "a2a", 50, 50));
+							od_wnd = agui->get_window(agui->add_open_dialog(430, "Add Animation File", e->data_path(NULL), "a2a", 50, 50));
 						}
 					}
 					break;
 					case 409: {
 						if(me->is_map_opened()) {
-							od_wnd = agui->get_window(agui->add_open_dialog(440, "Add Material File", (char*)string(e->get_data_path() + "./").c_str(), "a2mtl", 50, 50));
+							od_wnd = agui->get_window(agui->add_open_dialog(440, "Add Material File", e->data_path(NULL), "a2mtl", 50, 50));
 						}
 					}
 					break;
@@ -125,7 +125,7 @@ void mgui::run() {
 							break;
 						}
 
-						bool ani = sce->is_a2eanim((char*)string(e->get_data_path() + ao_e_model->get_text()).c_str());
+						bool ani = sce->is_a2eanim(e->data_path(ao_e_model->get_text()));
 
 						if(ani && strlen(ao_e_ani->get_text()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a animation filename!");
@@ -247,7 +247,7 @@ void mgui::save_map() {
 }
 
 void mgui::open_map_dialog() {
-	od_wnd = agui->get_window(agui->add_open_dialog(200, "Open Map File", (char*)string(e->get_data_path() + "./").c_str(), "a2map"));
+	od_wnd = agui->get_window(agui->add_open_dialog(200, "Open Map File", e->data_path(NULL), "a2map"));
 }
 
 void mgui::add_obj_dialog() {

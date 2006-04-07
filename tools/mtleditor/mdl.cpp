@@ -130,7 +130,7 @@ a2ematerial* mdl::get_material() {
 }
 
 void mdl::save_material(const char* filename) {
-	mdl::f->open_file(e->data_path((char*)filename), file_io::OT_WRITE_BINARY);
+	mdl::f->open_file(e->data_path(filename), file_io::OT_WRITE_BINARY);
 
 	mdl::f->write_block("A2EMATERIAL", 11);
 

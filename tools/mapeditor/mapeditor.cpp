@@ -164,7 +164,7 @@ void mapeditor::open_map(char* filename) {
 			models.push_back(*sce->create_a2emodel());
 			sce->add_model(&models.back());
 
-			models.back().load_model((char*)string(e->get_data_path() + objects.back().model_filename).c_str());
+			models.back().load_model(e->data_path(objects.back().model_filename));
 			models.back().set_position(memap->map_objects[i].position.x,
 											memap->map_objects[i].position.y,
 											memap->map_objects[i].position.z);
@@ -176,7 +176,7 @@ void mapeditor::open_map(char* filename) {
 											memap->map_objects[i].scale.z);
 
 			materials.push_back(*new a2ematerial(e));
-			materials.back().load_material((char*)string(e->get_data_path() + objects.back().mat_filename).c_str());
+			materials.back().load_material(e->data_path(objects.back().mat_filename));
 			models.back().set_material(&materials.back());
 
 			objects.back().model = --models.end();
@@ -188,7 +188,7 @@ void mapeditor::open_map(char* filename) {
 			amodels.push_back(*sce->create_a2eanim());
 			sce->add_model(&amodels.back());
 
-			amodels.back().load_model((char*)string(e->get_data_path() + objects.back().model_filename).c_str());
+			amodels.back().load_model(e->data_path(objects.back().model_filename));
 			amodels.back().set_position(memap->map_objects[i].position.x,
 											memap->map_objects[i].position.y,
 											memap->map_objects[i].position.z);
@@ -198,11 +198,11 @@ void mapeditor::open_map(char* filename) {
 			amodels.back().set_scale(memap->map_objects[i].scale.x,
 											memap->map_objects[i].scale.y,
 											memap->map_objects[i].scale.z);
-			amodels.back().add_animation((char*)string(e->get_data_path() + objects.back().ani_filename).c_str());
+			amodels.back().add_animation(e->data_path(objects.back().ani_filename));
 			amodels.back().play_frames(0, 0); // don't play frames
 
 			materials.push_back(*new a2ematerial(e));
-			materials.back().load_material((char*)string(e->get_data_path() + objects.back().mat_filename).c_str());
+			materials.back().load_material(e->data_path(objects.back().mat_filename));
 			amodels.back().set_material(&materials.back());
 
 			objects.back().amodel = --amodels.end();
@@ -374,10 +374,10 @@ void mapeditor::add_object(char* model_filename, char* mat_filename) {
 	models.push_back(*sce->create_a2emodel());
 	sce->add_model(&models.back());
 
-	models.back().load_model((char*)string(e->get_data_path() + objects.back().model_filename).c_str());
+	models.back().load_model(e->data_path(objects.back().model_filename));
 
 	materials.push_back(*new a2ematerial(e));
-	materials.back().load_material((char*)string(e->get_data_path() + objects.back().mat_filename).c_str());
+	materials.back().load_material(e->data_path(objects.back().mat_filename));
 	models.back().set_material(&materials.back());
 
 	objects.back().model = --models.end();
@@ -396,12 +396,12 @@ void mapeditor::add_object(char* model_filename, char* ani_filename, char* mat_f
 	amodels.push_back(*sce->create_a2eanim());
 	sce->add_model(&amodels.back());
 
-	amodels.back().load_model((char*)string(e->get_data_path() + objects.back().model_filename).c_str());
-	amodels.back().add_animation((char*)string(e->get_data_path() + ani_filename).c_str());
+	amodels.back().load_model(e->data_path(objects.back().model_filename));
+	amodels.back().add_animation(e->data_path(ani_filename));
 	amodels.back().play_frames(0, 0); // don't play frames
 
 	materials.push_back(*new a2ematerial(e));
-	materials.back().load_material((char*)string(e->get_data_path() + objects.back().mat_filename).c_str());
+	materials.back().load_material(e->data_path(objects.back().mat_filename));
 	amodels.back().set_material(&materials.back());
 
 	objects.back().amodel = --amodels.end();

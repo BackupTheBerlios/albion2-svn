@@ -1371,6 +1371,7 @@ GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ex
 		if(!ofd_wnd->get_deleted()) return 0;
 	}
 
+	string path = dir;
 	gui::gui_elements.push_back(*new gui_element());
 	gui::gui_elements.back().id = id;
 	gui::gui_elements.back().type = gui::OPENDIALOG;
@@ -1388,8 +1389,8 @@ GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ex
 	intptr_t hFile;
 	unsigned int i = 0;
 
-	char* fstring = new char[strlen(dir) + 2 + strlen(ext) + 1];
-	strcpy(fstring, dir);
+	char* fstring = new char[strlen(path.c_str()) + 2 + strlen(ext) + 1];
+	strcpy(fstring, path.c_str());
 	strcat(fstring, "*.");
 	strcat(fstring, ext);
 	if((hFile = _findfirst(fstring, &c_file)) != -1L) {
@@ -1412,7 +1413,7 @@ GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ex
 	struct dirent **namelist;
 	unsigned int i = 0;
 
-	string fstring = dir;
+	string fstring = path;
 	fstring += ".";
 	int n = scandir(fstring.c_str(), &namelist, 0, alphasort);
 	if (n >= 0) {

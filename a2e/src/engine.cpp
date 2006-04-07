@@ -627,7 +627,8 @@ string engine::get_data_path() {
 /*! returns the data path + str
  *  @param str str we want to "add" to the data path
  */
-char* engine::data_path(char* str) {
-	tmp_str = engine::datapath + str;
+char* engine::data_path(const char* str) {
+	if(str == NULL || strcmp(str, "") == 0) tmp_str = engine::datapath;
+	else tmp_str = engine::datapath + str;
 	return (char*)tmp_str.c_str();
 }

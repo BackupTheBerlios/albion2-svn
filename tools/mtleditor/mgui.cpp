@@ -161,7 +161,7 @@ void mgui::run() {
 					break;
 					// open texture file dialog
 					case 403: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(450, "choose a texture file", e->data_path("./"), "png"));
+						ofd_wnd = agui->get_window(agui->add_open_dialog(450, "choose a texture file", e->data_path(NULL), "png"));
 					}
 					break;
 					// apply button of the open texture file dialog
@@ -186,17 +186,17 @@ void mgui::run() {
 					break;
 					// open model file dialog
 					case 505: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(520, "choose a model file", e->data_path("./"), "a2m"));
+						ofd_wnd = agui->get_window(agui->add_open_dialog(520, "choose a model file", e->data_path(NULL), "a2m"));
 					}
 					break;
 					// open animation file dialog
 					case 506: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(530, "choose an animation file", e->data_path("./"), "a2a"));
+						ofd_wnd = agui->get_window(agui->add_open_dialog(530, "choose an animation file", e->data_path(NULL), "a2a"));
 					}
 					break;
 					// open material file dialog
 					case 507: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(540, "choose a material file", e->data_path("./"), "a2mtl"));
+						ofd_wnd = agui->get_window(agui->add_open_dialog(540, "choose a material file", e->data_path(NULL), "a2mtl"));
 					}
 					break;
 					// open model + ani + mat
