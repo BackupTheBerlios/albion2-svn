@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->set_keyboard_layout(event::DE);
+	aevent->load_keyset("DE");
 
 	// initialize the gui
 	agui->init();
@@ -86,14 +86,6 @@ int main(int argc, char *argv[])
 
 	// add 32 items
 	for(unsigned int i = 1; i <= 32; i++) {
-		char tmp[16];
-		sprintf(tmp, "test %u", i);
-		l1_obj->add_item(tmp, i);
-	}
-
-	l1_obj->clear();
-
-	for(unsigned int i = 1; i <= 16; i++) {
 		char tmp[16];
 		sprintf(tmp, "test %u", i);
 		l1_obj->add_item(tmp, i);

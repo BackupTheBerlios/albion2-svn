@@ -13,71 +13,74 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-#ifndef __ODE_H__
-#define __ODE_H__
+ 
+#ifndef __A2EMAP_H__
+#define __A2EMAP_H__
 
 #include <iostream>
-#include <SDL/SDL.h>
-#include <ode/ode.h>
+#include <vector>
+#include <string>
 #include <cmath>
-#include <list>
 #include "msg.h"
 #include "core.h"
+#include "file_io.h"
 #include "engine.h"
 #include "a2emodel.h"
+#include "a2eanim.h"
+#include "a2ematerial.h"
+#include "vertex3.h"
+#include "scene.h"
+#include "ode.h"
 #include "ode_object.h"
 using namespace std;
 
-#define MAX_CONTACTS 64
-#define MAX_OBJECTS 4096
-
 #include "win_dll_export.h"
 
-/*! @class ode
- *  @brief open dynamic engine bindings/functions
+/*! @class a2emap
+ *  @brief a2e map routines
  *  @author flo
- *  @todo more functions
+ *  @todo -
  *  
- *  bindings and functions for using the open dynamic engine
+ *  the a2emap class
  */
 
-class A2E_API ode
+class A2E_API a2emap
 {
 public:
-	ode(engine* e);
-	~ode();
+	a2emap(engine* e, scene* sce, ode* o = NULL);
+	~a2emap();
 
-	void init();
-	void close();
-	void run(unsigned int last_frame = 0);
+	struct map_object {
+		bool model_type; // (false/0 = static, true/1 = dynamic/animated)
+		string name;
+		string model_filename;
+		string ani_filename;
+		string mat_filename;
+		a2emodel* model;
+		a2eanim* amodel;
+		a2ematerial* mat;
+		vertex3 position;
+		vertex3 orientation;
+		vertex3 scale;
+		unsigned int phys_type; // (0 = box, 1 = sphere, 2 = cylinder, 3 = trimesh)
+		ode_object* ode_obj;
+	};
 
-	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
+	bool load_map(const char* filename, bool vbo = false);
+	void close_map();
 
-	ode_object* add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
-	void delete_object(unsigned int num);
-	void update_objects();
-
-	ode_object* get_ode_object(unsigned int num);
-
-	unsigned int get_object_count();
+	map_object* get_object(const char* name);
 
 protected:
+	engine* e;
+	scene* sce;
 	msg* m;
 	core* c;
-	engine* e;
-
-	unsigned int timer;
+	file_io* f;
+	ode* o;
 
 	unsigned int object_count;
-	ode_object* ode_objects[MAX_OBJECTS];
-
-	static dWorldID world;
-	static dSpaceID space;
-	static dJointGroupID joint_group;
-	static float gravity;
-	static float cfm;
-	static float erp;
+	vector<map_object> objects;
 
 };
 

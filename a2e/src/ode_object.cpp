@@ -22,6 +22,12 @@ float ode_object::density = 5.0f;
 /*! there is no function currently
  */
 ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
+	// get classes
+	ode_object::e = e;
+	ode_object::c = e->get_core();
+	ode_object::m = e->get_msg();
+
+
 	ode_object::world = world;
 	ode_object::space = space;
 	ode_object::dvertices = NULL;
@@ -30,11 +36,12 @@ ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* mo
 	ode_object::set_geom(ode_object::get_model(), type);
 	ode_object::body = 0;
 
-	if(!fixed) {
+	if(!fixed && type != ode_object::TRIMESH) {
 		ode_object::mass = new dMass();
 		ode_object::set_body(type);
 	}
 	else {
+		fixed = true;
 		ode_object::body = NULL;
 		ode_object::mass = NULL;
 	}
@@ -44,11 +51,6 @@ ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* mo
 	}
 
 	max_force = 10.0f;
-
-	// get classes
-	ode_object::e = e;
-	ode_object::c = e->get_core();
-	ode_object::m = e->get_msg();
 }
 
 /*! there is no function currently

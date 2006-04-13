@@ -335,12 +335,3 @@ a2emodel* scene::create_a2emodel() {
 	a2emodel* a2em = new a2emodel(e, s);
 	return a2em;
 }
-
-bool scene::is_a2eanim(char* filename) {
-	e->get_file_io()->open_file(filename, file_io::OT_READ_BINARY);
-	e->get_file_io()->seek(8);
-	char t = e->get_file_io()->get_char();
-	e->get_file_io()->close_file();
-
-	return (t & 0xFF) == 0x00 ? false : true;
-}

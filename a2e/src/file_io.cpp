@@ -31,7 +31,7 @@ file_io::~file_io() {
  *  @param filename the name of the file
  *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-bool file_io::open_file(char* filename, FIO_OPEN_TYPE open_type) {
+bool file_io::open_file(const char* filename, FIO_OPEN_TYPE open_type) {
 	if(check_open()) {
 		m->print(msg::MERROR, "file_io.cpp", "open_file(): a file is already opened! can't open another file!");
 		return false;

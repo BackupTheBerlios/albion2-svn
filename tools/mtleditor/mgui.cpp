@@ -207,7 +207,7 @@ void mgui::run() {
 							m->print(msg::MERROR, "mgui.cpp", "The model file \"%s\" does not exist!", om_imdl_fname->get_text());
 							break;
 						}
-						if(sce->is_a2eanim(e->data_path(om_imdl_fname->get_text())) && !f->is_file(e->data_path(om_iani_fname->get_text()))) {
+						if(e->get_core()->is_a2eanim(e->data_path(om_imdl_fname->get_text())) && !f->is_file(e->data_path(om_iani_fname->get_text()))) {
 							agui->add_msgbox_ok(60, "File does not exist!", "The animation file does not exist!");
 							m->print(msg::MERROR, "mgui.cpp", "The animation file \"%s\" does not exist!", om_iani_fname->get_text());
 							break;

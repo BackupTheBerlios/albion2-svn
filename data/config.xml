@@ -5,4 +5,6 @@
 	<key_repeat time="200"/>
 	<sleep time="0"/>
 	<thread count="2"/> // number of additional threads besides the main thread
+	<server port="1337" max_clients="32"/>
+	<client server="localhost" port="1337" lis_port="1338" name="Flo"/>
 </engine>

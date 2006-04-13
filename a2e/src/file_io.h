@@ -48,7 +48,7 @@ public:
 		OT_WRITE_BINARY
 	};
 
-	bool open_file(char* filename, FIO_OPEN_TYPE open_type);
+	bool open_file(const char* filename, FIO_OPEN_TYPE open_type);
 	void close_file();
 	unsigned int get_filesize();
 	void get_line(char* finput);

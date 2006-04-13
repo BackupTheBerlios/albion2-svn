@@ -339,7 +339,7 @@ void gui::draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, 
 				set_active_element(ge_iter);
 				evt->set_active(event::GUI);
 
-				evt->get_input_text(input_text);
+				evt->get_buffer(input_text);
 				gui::switch_input_text(input_text, cur_input);
 			}
 			else {
@@ -845,13 +845,13 @@ void gui::set_active_element(unsigned int id) {
 void gui::switch_input_text(char* input_text, list<gui_input>::reference input_box) {
 	for(unsigned int i = 0; i < strlen(input_text); i++) {
 		switch(input_text[i]) {
-			case event::LEFT:
+			case event::IT_LEFT:
 				input_box.set_text_position(input_box.get_text_position() - 1);
 				break;
-			case event::RIGHT:
+			case event::IT_RIGHT:
 				input_box.set_text_position(input_box.get_text_position() + 1);
 				break;
-			case event::BACK: {
+			case event::IT_BACK: {
 				ib_text_length = (unsigned int)strlen(input_box.get_text());
 				ib_text = input_box.get_text();
 
@@ -905,7 +905,7 @@ void gui::switch_input_text(char* input_text, list<gui_input>::reference input_b
 				delete tok2;
 			}
 			break;
-			case event::DEL: {
+			case event::IT_DEL: {
 				ib_text_length = (unsigned int)strlen(input_box.get_text());
 				ib_text = input_box.get_text();
 
@@ -947,10 +947,10 @@ void gui::switch_input_text(char* input_text, list<gui_input>::reference input_b
 				delete tok2;
 			}
 			break;
-			case event::HOME:
+			case event::IT_HOME:
 				input_box.set_text_position(0);
 				break;
-			case event::END:
+			case event::IT_END:
 				input_box.set_text_position((unsigned int)strlen(input_box.get_text()));
 				break;
 			default: {
@@ -1336,6 +1336,7 @@ bool gui::exist(unsigned int id) {
  *  @param state the visibility state we want to set
  */
 void gui::set_visibility(unsigned int id, bool state) {
+	if(id >= 0xFFFF) return; // exit routine for every gui element that has an id bigger than 0xFFFF (-> all non automatically drawn elements)
 	gui::get_element(id)->is_drawn = state;
 
 	switch(gui::get_element(id)->type) {
@@ -1350,9 +1351,19 @@ void gui::set_visibility(unsigned int id, bool state) {
 		case gui::COMBO:
 			gui::set_visibility(gui::get_combo(id)->get_list_button()->get_id(), state);
 			break;
-		case gui::WINDOW:
-			gui::set_visibility(gui::get_window(id)->get_exit_button_handler()->get_id(), state);
-			break;
+		case gui::WINDOW: {
+			gui_window* wnd = gui::get_window(id);
+			if(wnd->get_border()) {
+				gui::set_visibility(wnd->get_exit_button_handler()->get_id(), state);
+			}
+			// set the visibility of all window elements to state
+			for(list<gui_element>::iterator iter = gui_elements.begin(); iter != gui_elements.end(); iter++) {
+				if(iter->wid == wnd->get_id()) {
+					set_visibility(iter->id, state);
+				}
+			}
+		}
+		break;
 		default:
 			break;
 	}

@@ -80,7 +80,7 @@ void mdl::load_model(char* filename, char* ani_filename) {
 		amodel = NULL;
 	}
 
-	ani = sce->is_a2eanim(e->data_path(filename));
+	ani = e->get_core()->is_a2eanim(e->data_path(filename));
 
 	if(!ani) {
 		model = sce->create_a2emodel();

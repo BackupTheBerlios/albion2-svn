@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->set_keyboard_layout(event::DE);
+	aevent->load_keyset("DE");
 
 	// initialize gui and chat sutff
 	agui->init();

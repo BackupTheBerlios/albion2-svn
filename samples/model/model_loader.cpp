@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->set_keyboard_layout(event::DE);
+	aevent->load_keyset("DE");
 
 	// initialize the camera
 	cam->set_position(-5.0f, -30.0f, -55.0f);

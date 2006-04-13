@@ -18,10 +18,14 @@
 #define __EVENT_H__
 
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <SDL/SDL.h>
 #include <cstring>
 #include "msg.h"
 #include "core.h"
+#include "xml.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -37,7 +41,7 @@ using namespace std;
 class A2E_API event
 {
 public:
-	event();
+	event(const char* datapath, msg* m, xml* x);
 	~event();
 
 	void init(SDL_Event ievent);
@@ -63,15 +67,15 @@ public:
 
 	void set_active_type(unsigned int type);
 
-	void get_input_text(char* tmp_text);
+	void get_buffer(char* tmp_text);
 	//! input types
-	enum ITYPE {
-		LEFT = 1,	//!< enum left arrow key
-		RIGHT,		//!< enum right arrow key
-		BACK,		//!< enum backspace key
-		DEL,		//!< enum delete key
-		HOME,		//!< enum home key
-		END			//!< enum end key
+	enum INPUT_TYPE {
+		IT_LEFT,	//!< enum left arrow key
+		IT_RIGHT,	//!< enum right arrow key
+		IT_BACK,	//!< enum backspace key
+		IT_DEL,		//!< enum delete key
+		IT_HOME,	//!< enum home key
+		IT_END		//!< enum end key
 	};
 
 	// gui event stuff
@@ -102,12 +106,15 @@ public:
 	void set_last_pressed(unsigned int x, unsigned int y);
 	void set_pressed(unsigned int x, unsigned int y);
 
-	//! the keyboard input layout
-	enum IKEY_LAYOUT {
-		US,	//!< enum us keyboard layout
-		DE	//!< enum de keyboard layout
+	struct a2e_key {
+		unsigned int id;
+		bool ignore;
+		char key;
+		char shift;
+		char alt;
 	};
-	void set_keyboard_layout(IKEY_LAYOUT layout);
+	vector<a2e_key> keyset;
+	void load_keyset(const char* language); // currently supports US and DE
 
 	bool is_key_up();
 	bool is_key_down();
@@ -119,6 +126,10 @@ public:
 
 protected:
 	SDL_Event event_handle;
+	msg* m;
+	xml* x;
+
+	string datapath;
 
 	//! left mouse button pressed (x coordinate)
 	unsigned int lm_pressed_x;
@@ -141,18 +152,15 @@ protected:
 	//gui_element* active_element;
 	unsigned int active_type;
 
-	//! the input text of a input box
-	char input_text[512];
+	//! the input text buffer of a input box
+	stringstream* buffer;
 
 	bool shift;
 	bool alt;
 
-	IKEY_LAYOUT keyboard_layout;
-
 
 	char key;
 	Uint8 *keys;
-	char tmp_text[4];
 
 	ACTIVE_CLASS act_class;
 };

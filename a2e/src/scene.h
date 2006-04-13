@@ -70,8 +70,6 @@ public:
 	float* get_mshininess();
 	bool get_light();
 
-	bool is_a2eanim(char* filename);
-
 protected:
 	msg* m;
 	core* c;

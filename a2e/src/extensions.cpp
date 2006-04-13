@@ -56,14 +56,14 @@ ext::ext(unsigned int imode, msg* m) {
 		multitexture_support = true;
 	}
 	else {
-		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_multitexture'!");
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_multitexture'!");
 	}
 
 	if(is_ext_supported("GL_ARB_texture_env_combine")) {
 		texenv_combine_support = true;
 	}
 	else {
-		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_texture_env_combine'!");
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_texture_env_combine'!");
 	}
 
 	if(is_ext_supported("GL_ARB_fragment_shader") &&
@@ -75,7 +75,7 @@ ext::ext(unsigned int imode, msg* m) {
 		shader_support = true;
 	}
 	else {
-		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_fragment_shader', 'GL_ARB_vertex_shader', 'GL_ARB_shader_objects' and/or 'GL_ARB_shading_language_100'!");
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_fragment_shader', 'GL_ARB_vertex_shader', 'GL_ARB_shader_objects' and/or 'GL_ARB_shading_language_100'!");
 	}
 
 	if(is_ext_supported("GL_ARB_vertex_buffer_object")) {
@@ -90,7 +90,7 @@ ext::ext(unsigned int imode, msg* m) {
 		vbo_support = true;
 	}
 	else {
-		m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!");
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!");
 	}
 }
 

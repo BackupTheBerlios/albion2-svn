@@ -22,6 +22,7 @@ gui_list::gui_list(engine* e) {
 	is_active = false;
 
 	drawable_items = 0;
+	position = 0;
 	top_item = 0;
 
 	rectangle = new gfx::rect();
@@ -160,7 +161,16 @@ void gui_list::set_active(bool is_active) {
  */
 void gui_list::set_position(unsigned int position) {
 	gui_list::position = position;
-	gui_list::top_item = (position > (unsigned int)items.size() - drawable_items) ? ((unsigned int)items.size() - drawable_items) : position;
+	if(position > (unsigned int)items.size() - drawable_items) {
+		gui_list::top_item = (unsigned int)items.size() - drawable_items;
+	}
+	else if((unsigned int)items.size() > drawable_items) {
+		gui_list::top_item = position;
+	}
+	else {
+		gui_list::top_item = 0;
+	}
+	vbar_handler->set_position(position);
 }
 
 /*! adds an item to the list
@@ -180,7 +190,7 @@ gui_list::item* gui_list::add_item(char* text, unsigned int id) {
 	items.back().id = id;
 
 	// set position, so that we see the last line
-	gui_list::set_position(gui_list::get_position() + 1);
+	//gui_list::set_position(gui_list::get_position() + 1);
 
 	gui_list::vbar_handler->set_max_lines((unsigned int)items.size());
 

@@ -19,10 +19,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
+#include <cmath>
 #include <SDL/SDL.h>
 #include <SDL/SDL_net.h>
 #include <time.h>
-#include <math.h>
 #include "msg.h"
 #include "engine.h"
 using namespace std;
@@ -34,8 +36,6 @@ using namespace std;
 /*! @class net
  *  @brief networking class
  *  @author flo
- *  @author laxity
- *  @version 0.2.3
  *  @todo more functions
  *
  *  This is the network class
@@ -47,45 +47,53 @@ public:
 	net(engine* e);
 	~net();
 
+	struct client {
+		TCPsocket sock;
+		IPaddress ip;
+		string name;
+		unsigned int status;
+		unsigned int login_time;
+		unsigned int last_time;
+		unsigned int id;
+		bool quit;
+	};
+
+	enum CLIENT_STATUS {
+		CS_OFFLINE,
+		CS_ONLINE
+	};
+
+	enum HEADER_TYPE {
+		HT_A2EN,
+		HT_HTTP
+	};
+
+
 	bool init();
 	void exit();
 
-	bool create_server(unsigned int type, unsigned short int port, const unsigned int num_clients = 2);
-	bool create_client(char* server, unsigned int type, unsigned short int port, char* client_name);
+	bool create_server(unsigned short int port, const unsigned int max_clients = 16);
+	bool create_client(char* server_name, unsigned short int port, unsigned short int lis_port);
+
+	client* get_client(const char* name);
+	vector<client>* get_clients();
+
 	void handle_server();
-	void handle_client(unsigned int cur_client);
-	void send_new_client(unsigned int snd_client, unsigned int rcv_client);
-	void check_events();
-	void send_activation(char* client_name);
+	bool add_client();
 
 	void close_socket(TCPsocket &sock);
-	void close_socket(UDPsocket &sock);
 
-	void delete_client(unsigned int num);
-
-	void send_packet(TCPsocket* sock, char* data, int len, unsigned int client_num);
+	void send_packet(TCPsocket* sock, const char* data, int len, unsigned int client_num, bool a2en = true);
 	int recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int client_num);
-
-	// for debug purposes
-	void set_netlog(bool state);
-	bool get_netlog();
-
-	//! protocol type
-	enum PTYPE
-	{
-		TCP,	//!< enum tcp
-		UDP		//!< enum udp - isn't supported atm
-	};
+	bool check_header(char* data, HEADER_TYPE htype);
 
 	IPaddress server_ip;
 	IPaddress local_ip;
-	TCPsocket tcp_ssock;
-	TCPsocket tcp_csock;
-	UDPsocket udp_ssock;
-	UDPsocket udp_csock;
+	TCPsocket tcp_server_sock;
+	TCPsocket tcp_client_sock;
 	SDLNet_SocketSet socketset;
 
-	//! server <-> client commands
+	/*//! server <-> client commands
 	enum CMD {
 		ADD,	//!< enum adds a client
 		NEW,	//!< enum new client data
@@ -93,30 +101,30 @@ public:
 		KICK,	//!< enum kicks a client
 		DAT,	//!< enum data - can be used for "normal" data transfer
 		CDAT	//!< enum client data
-	};
+	};*/
 
-	struct client {
-		TCPsocket sock;
-		unsigned short int port;
-		IPaddress ip;
-		char name[32];
-		bool is_active;
-	};
-
-	client* clients;
+	// for debug purposes
+	void set_netlog(bool state);
+	bool get_netlog();
 	
 protected:
 	msg* m;
 	engine* e;
-
+	core* c;
 	fstream* logfile;
+	unsigned int header;
+	unsigned int rheader; // reverse header
+	bool netlog;
 
 	unsigned int max_clients;
 	unsigned short int port;
+	vector<client> clients;
+	vector<vector<client>::iterator> del_cls;
+	unsigned int client_counter;
 
-	unsigned int header;
+	stringstream* buffer;
 
-	bool netlog;
+
 };
 
 #endif

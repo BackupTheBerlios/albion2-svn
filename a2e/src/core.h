@@ -22,12 +22,15 @@
 #endif
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "msg.h"
 #include "vertex3.h"
 #include "line3.h"
+#include "file_io.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -45,7 +48,7 @@ using namespace std;
 class A2E_API core
 {
 public:
-	core(msg* m);
+	core(msg* m, file_io* f);
 	~core();
 
 	struct pnt {
@@ -131,9 +134,28 @@ public:
 
 	void ftoa(float f, char* str);
 
+	bool is_a2eanim(char* filename);
+
+	unsigned int swap_uint(unsigned int u);
+	unsigned short int swap_suint(unsigned short int su);
+
+	void put_int(stringstream* sstr, int i);
+	void put_sint(stringstream* sstr, short int si);
+	void put_uint(stringstream* sstr, unsigned int u);
+	void put_suint(stringstream* sstr, unsigned short int su);
+	void put_block(stringstream* sstr, const char* data, unsigned int size);
+
+	int get_int(stringstream* sstr);
+	short int get_sint(stringstream* sstr);
+	unsigned int get_uint(stringstream* sstr);
+	unsigned short int get_suint(stringstream* sstr);
+	void get_block(stringstream* sstr, char* data, unsigned int size);
+	void get_block(stringstream* sstr, string* data, unsigned int size);
+
 protected:
 	unsigned int value, bit, num;
 	msg* m;
+	file_io* f;
 
 };
 

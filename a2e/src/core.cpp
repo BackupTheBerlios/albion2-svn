@@ -18,8 +18,9 @@
 
 /*! there is no function currently
  */
-core::core(msg* m) {
+core::core(msg* m, file_io* f) {
 	core::m = m;
+	core::f = f;
 }
 
 /*! there is no function currently
@@ -429,4 +430,97 @@ bool core::is_line_in_bbox(aabbox* bbox, line3* l1) {
  */
 void core::ftoa(float f, char* str) {
 	sprintf(str, "%f%c", f, 0x00);
+}
+
+bool core::is_a2eanim(char* filename) {
+	f->open_file(filename, file_io::OT_READ_BINARY);
+	f->seek(8);
+	char t = f->get_char();
+	f->close_file();
+
+	return (t & 0xFF) == 0x00 ? false : true;
+}
+
+unsigned int core::swap_uint(unsigned int u) {
+	unsigned int ru = ((u >> 24) & 0xFF) + (((u >> 16) & 0xFF) * 0x100) + (((u >> 8) & 0xFF) * 0x10000) + ((u & 0xFF) * 0x1000000);
+	return ru;
+}
+
+unsigned short int core::swap_suint(unsigned short int su) {
+	unsigned int rsu = ((su >> 8) & 0xFF) + ((su & 0xFF) * 0x100);
+	return rsu;
+}
+
+void core::put_int(stringstream* sstr, int i) {
+	sstr->put((i >> 24) & 0xFF);
+	sstr->put((i >> 16) & 0xFF);
+	sstr->put((i >> 8) & 0xFF);
+	sstr->put(i & 0xFF);
+}
+
+void core::put_sint(stringstream* sstr, short int si) {
+	sstr->put((si >> 8) & 0xFF);
+	sstr->put(si & 0xFF);
+}
+
+void core::put_uint(stringstream* sstr, unsigned int u) {
+	sstr->put((u >> 24) & 0xFF);
+	sstr->put((u >> 16) & 0xFF);
+	sstr->put((u >> 8) & 0xFF);
+	sstr->put(u & 0xFF);
+}
+
+void core::put_suint(stringstream* sstr, unsigned short int su) {
+	sstr->put((su >> 8) & 0xFF);
+	sstr->put(su & 0xFF);
+}
+
+int core::get_int(stringstream* sstr) {
+	int i = 0;
+	char* tmp = new char[4];
+	sstr->read(tmp, 4);
+	i = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
+	delete [] tmp;
+	return i;
+}
+
+short int core::get_sint(stringstream* sstr) {
+	short int si = 0;
+	char* tmp = new char[2];
+	sstr->read(tmp, 2);
+	si = ((tmp[0] & 0xFF) << 8) + (tmp[1] & 0xFF);
+	delete [] tmp;
+	return si;
+}
+
+unsigned int core::get_uint(stringstream* sstr) {
+	unsigned int ui = 0;
+	char* tmp = new char[4];
+	sstr->read(tmp, 4);
+	ui = ((tmp[0] & 0xFF) << 24) + ((tmp[1] & 0xFF) << 16) + ((tmp[2] & 0xFF) << 8) + (tmp[3] & 0xFF);
+	delete [] tmp;
+	return ui;
+}
+
+unsigned short int core::get_suint(stringstream* sstr) {
+	unsigned short int usi = 0;
+	char* tmp = new char[2];
+	sstr->read(tmp, 2);
+	usi = ((tmp[0] & 0xFF) << 8) + (tmp[1] & 0xFF);
+	delete [] tmp;
+	return usi;
+}
+
+void core::put_block(stringstream* sstr, const char* data, unsigned int size) {
+	sstr->write(data, size);
+}
+
+void core::get_block(stringstream* sstr, char* data, unsigned int size) {
+	sstr->read(data, size);
+}
+
+void core::get_block(stringstream* sstr, string* data, unsigned int size) {
+	for(unsigned int i = 0; i < size; i++) {
+		*data += sstr->get();
+	}
 }

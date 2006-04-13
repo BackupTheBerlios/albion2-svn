@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<keyset>
+	<set language="US">
+		<key ignore="282"/>
+		<key ignore="283"/>
+		<key ignore="284"/>
+		<key ignore="285"/>
+		<key ignore="286"/>
+		<key ignore="287"/>
+		<key ignore="288"/>
+		<key ignore="289"/>
+		<key ignore="290"/>
+		<key ignore="291"/>
+		<key ignore="292"/>
+		<key ignore="293"/>
+		<key ignore="316"/>
+		<key ignore="302"/>
+		<key ignore="19"/>
+		<key ignore="27"/>
+		<key ignore="9"/>
+		<key ignore="301"/>
+		<key ignore="304"/>
+		<key ignore="306"/>
+		<key ignore="308"/>
+		<key ignore="311"/>
+		<key ignore="307"/>
+		<key ignore="312"/>
+		<key ignore="319"/>
+		<key ignore="305"/>
+		<key ignore="303"/>
+		<key ignore="13"/>
+		<key ignore="8"/>
+		<key ignore="127"/>
+		<key ignore="277"/>
+		<key ignore="278"/>
+		<key ignore="279"/>
+		<key ignore="280"/>
+		<key ignore="281"/>
+		<key ignore="273"/>
+		<key ignore="274"/>
+		<key ignore="275"/>
+		<key ignore="276"/>
+		<key ignore="300"/>
+		<key id="96" tokey="`" shift="~" alt=""/>
+		<key id="49" tokey="1" shift="!" alt=""/>
+		<key id="50" tokey="2" shift="@" alt=""/>
+		<key id="51" tokey="3" shift="#" alt=""/>
+		<key id="52" tokey="4" shift="$" alt=""/>
+		<key id="53" tokey="5" shift="%" alt=""/>
+		<key id="54" tokey="6" shift="^" alt=""/>
+		<key id="55" tokey="7" shift="&amp;" alt=""/>
+		<key id="56" tokey="8" shift="*" alt=""/>
+		<key id="57" tokey="9" shift="(" alt=""/>
+		<key id="48" tokey="0" shift=")" alt=""/>
+		<key id="45" tokey="-" shift="_" alt=""/>
+		<key id="61" tokey="=" shift="+" alt=""/>
+		<key id="113" tokey="q" shift="Q" alt=""/>
+		<key id="119" tokey="w" shift="W" alt=""/>
+		<key id="101" tokey="e" shift="E" alt=""/>
+		<key id="114" tokey="r" shift="R" alt=""/>
+		<key id="116" tokey="t" shift="T" alt=""/>
+		<key id="121" tokey="y" shift="Y" alt=""/>
+		<key id="117" tokey="u" shift="U" alt=""/>
+		<key id="105" tokey="i" shift="I" alt=""/>
+		<key id="111" tokey="o" shift="O" alt=""/>
+		<key id="112" tokey="p" shift="P" alt=""/>
+		<key id="91" tokey="[" shift="{" alt=""/>
+		<key id="93" tokey="]" shift="}" alt=""/>
+		<key id="97" tokey="a" shift="A" alt=""/>
+		<key id="115" tokey="s" shift="S" alt=""/>
+		<key id="100" tokey="d" shift="D" alt=""/>
+		<key id="102" tokey="f" shift="F" alt=""/>
+		<key id="103" tokey="g" shift="G" alt=""/>
+		<key id="104" tokey="h" shift="H" alt=""/>
+		<key id="106" tokey="j" shift="J" alt=""/>
+		<key id="107" tokey="k" shift="K" alt=""/>
+		<key id="108" tokey="l" shift="L" alt=""/>
+		<key id="59" tokey=";" shift=":" alt=""/>
+		<key id="39" tokey="'" shift="&quot;" alt=""/>
+		<key id="92" tokey="\" shift="|" alt=""/>
+		<key id="60" tokey="\" shift="|" alt=""/>
+		<key id="122" tokey="z" shift="Z" alt=""/>
+		<key id="120" tokey="x" shift="X" alt=""/>
+		<key id="99" tokey="c" shift="C" alt=""/>
+		<key id="118" tokey="v" shift="V" alt=""/>
+		<key id="98" tokey="b" shift="B" alt=""/>
+		<key id="110" tokey="n" shift="N" alt=""/>
+		<key id="109" tokey="m" shift="M" alt=""/>
+		<key id="44" tokey="," shift="&lt;" alt=""/>
+		<key id="46" tokey="." shift="&gt;" alt=""/>
+		<key id="47" tokey="/" shift="?" alt=""/>
+		<key id="32" tokey=" " shift=" " alt=""/>
+		<key id="267" tokey="/" shift="/" alt=""/>
+		<key id="268" tokey="*" shift="*" alt=""/>
+		<key id="269" tokey="-" shift="-" alt=""/>
+		<key id="270" tokey="+" shift="+" alt=""/>
+		<key id="266" tokey="." shift="." alt=""/>
+		<key id="256" tokey="0" shift="0" alt=""/>
+		<key id="257" tokey="1" shift="1" alt=""/>
+		<key id="258" tokey="2" shift="2" alt=""/>
+		<key id="259" tokey="3" shift="3" alt=""/>
+		<key id="260" tokey="4" shift="4" alt=""/>
+		<key id="261" tokey="5" shift="5" alt=""/>
+		<key id="262" tokey="6" shift="6" alt=""/>
+		<key id="263" tokey="7" shift="7" alt=""/>
+		<key id="264" tokey="8" shift="8" alt=""/>
+		<key id="265" tokey="9" shift="9" alt=""/>
+	</set>
+	<set language="DE">
+		<key ignore="282"/>
+		<key ignore="283"/>
+		<key ignore="284"/>
+		<key ignore="285"/>
+		<key ignore="286"/>
+		<key ignore="287"/>
+		<key ignore="288"/>
+		<key ignore="289"/>
+		<key ignore="290"/>
+		<key ignore="291"/>
+		<key ignore="292"/>
+		<key ignore="293"/>
+		<key ignore="316"/>
+		<key ignore="302"/>
+		<key ignore="19"/>
+		<key ignore="27"/>
+		<key ignore="9"/>
+		<key ignore="301"/>
+		<key ignore="304"/>
+		<key ignore="306"/>
+		<key ignore="308"/>
+		<key ignore="311"/>
+		<key ignore="307"/>
+		<key ignore="312"/>
+		<key ignore="319"/>
+		<key ignore="305"/>
+		<key ignore="303"/>
+		<key ignore="13"/>
+		<key ignore="8"/>
+		<key ignore="127"/>
+		<key ignore="277"/>
+		<key ignore="278"/>
+		<key ignore="279"/>
+		<key ignore="280"/>
+		<key ignore="281"/>
+		<key ignore="273"/>
+		<key ignore="274"/>
+		<key ignore="275"/>
+		<key ignore="276"/>
+		<key ignore="300"/>
+		<key id="49" tokey="1" shift="!" alt=""/>
+		<key id="50" tokey="2" shift="&quot;" alt="178"/>
+		<key id="51" tokey="3" shift="167" alt="179"/>
+		<key id="52" tokey="4" shift="$" alt=""/>
+		<key id="53" tokey="5" shift="%" alt=""/>
+		<key id="54" tokey="6" shift="&amp;" alt=""/>
+		<key id="55" tokey="7" shift="/" alt="{"/>
+		<key id="56" tokey="8" shift="(" alt="["/>
+		<key id="57" tokey="9" shift=")" alt="]"/>
+		<key id="48" tokey="0" shift="=" alt="}"/>
+		<key id="113" tokey="q" shift="Q" alt="@"/>
+		<key id="119" tokey="w" shift="W" alt=""/>
+		<key id="101" tokey="e" shift="E" alt="128"/>
+		<key id="114" tokey="r" shift="R" alt=""/>
+		<key id="116" tokey="t" shift="T" alt=""/>
+		<key id="121" tokey="y" shift="Y" alt=""/>
+		<key id="117" tokey="u" shift="U" alt=""/>
+		<key id="105" tokey="i" shift="I" alt=""/>
+		<key id="111" tokey="o" shift="O" alt=""/>
+		<key id="112" tokey="p" shift="P" alt=""/>
+		<key id="97" tokey="a" shift="A" alt=""/>
+		<key id="115" tokey="s" shift="S" alt=""/>
+		<key id="100" tokey="d" shift="D" alt=""/>
+		<key id="102" tokey="f" shift="F" alt=""/>
+		<key id="103" tokey="g" shift="G" alt=""/>
+		<key id="104" tokey="h" shift="H" alt=""/>
+		<key id="106" tokey="j" shift="J" alt=""/>
+		<key id="107" tokey="k" shift="K" alt=""/>
+		<key id="108" tokey="l" shift="L" alt=""/>
+		<key id="122" tokey="z" shift="Z" alt=""/>
+		<key id="120" tokey="x" shift="X" alt=""/>
+		<key id="99" tokey="c" shift="C" alt=""/>
+		<key id="118" tokey="v" shift="V" alt=""/>
+		<key id="98" tokey="b" shift="B" alt=""/>
+		<key id="110" tokey="n" shift="N" alt=""/>
+		<key id="109" tokey="m" shift="M" alt="181"/>
+		<key id="267" tokey="/" shift="/" alt=""/>
+		<key id="268" tokey="*" shift="*" alt=""/>
+		<key id="269" tokey="-" shift="-" alt=""/>
+		<key id="270" tokey="+" shift="+" alt=""/>
+		<key id="266" tokey="." shift="." alt=""/>
+		<key id="256" tokey="0" shift="0" alt=""/>
+		<key id="257" tokey="1" shift="1" alt=""/>
+		<key id="258" tokey="2" shift="2" alt=""/>
+		<key id="259" tokey="3" shift="3" alt=""/>
+		<key id="260" tokey="4" shift="4" alt=""/>
+		<key id="261" tokey="5" shift="5" alt=""/>
+		<key id="262" tokey="6" shift="6" alt=""/>
+		<key id="263" tokey="7" shift="7" alt=""/>
+		<key id="264" tokey="8" shift="8" alt=""/>
+		<key id="265" tokey="9" shift="9" alt=""/>
+		<key id="92" tokey="^" shift="176" alt=""/>
+		<key id="91" tokey="223" shift="?" alt="\"/>
+		<key id="93" tokey="180" shift="`" alt=""/>
+		<key id="59" tokey="252" shift="220" alt=""/>
+		<key id="61" tokey="+" shift="*" alt="~"/>
+		<key id="96" tokey="246" shift="214" alt=""/>
+		<key id="39" tokey="228" shift="196" alt=""/>
+		<key id="47" tokey="#" shift="'" alt=""/>
+		<key id="44" tokey="," shift=";" alt=""/>
+		<key id="46" tokey="." shift=":" alt=""/>
+		<key id="45" tokey="-" shift="_" alt=""/>
+		<key id="60" tokey="&lt;" shift="&gt;" alt="|"/>
+		<key id="32" tokey=" " shift=" " alt=""/>
+	</set>	
+</keyset>

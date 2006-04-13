@@ -125,7 +125,7 @@ void mgui::run() {
 							break;
 						}
 
-						bool ani = sce->is_a2eanim(e->data_path(ao_e_model->get_text()));
+						bool ani = e->get_core()->is_a2eanim(e->data_path(ao_e_model->get_text()));
 
 						if(ani && strlen(ao_e_ani->get_text()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a animation filename!");

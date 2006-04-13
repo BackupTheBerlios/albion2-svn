@@ -123,6 +123,21 @@ public:
 	    CONSOLE
 	};
 
+	struct server_data {
+		unsigned short int port;
+		unsigned int max_clients;
+	};
+
+	struct client_data {
+		string server_name;
+		unsigned short int port;
+		unsigned short int lis_port;
+		string client_name;
+	};
+
+	server_data* get_server_data();
+	client_data* get_client_data();
+
 protected:
 	core* c;
 	msg* m;
@@ -157,6 +172,9 @@ protected:
 	unsigned int thread_count;
 
 	gui_style::COLOR_SCHEME color_scheme;
+
+	server_data* server;
+	client_data* client;
 };
 
 #endif

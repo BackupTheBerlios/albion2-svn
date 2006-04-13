@@ -321,6 +321,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\a2emap.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\a2emap.h"
+			>
+		</File>
+		<File
 			RelativePath="a2ematerial.cpp"
 			>
 		</File>

@@ -29,6 +29,7 @@ float ode::erp = 0.2f;
  */
 ode::ode(engine* e) {
 	object_count = 0;
+	timer = SDL_GetTicks();
 
 	// get classes
 	ode::e = e;
@@ -112,6 +113,11 @@ void ode::close() {
  *  @param last_frame time that has elapsed since the last ode run
  */
 void ode::run(unsigned int last_frame) {
+	if(last_frame == 0) {
+		last_frame = SDL_GetTicks() - timer;
+		timer = SDL_GetTicks();
+	}
+
 	// execute a space collision
 	dSpaceCollide(ode::space, 0, &ode::collision_callback);
 
@@ -172,6 +178,11 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.slip2 = 0.1f;
 		contact[i].surface.soft_erp = 0.5f;
 		contact[i].surface.soft_cfm = 0.3f;*/
+
+		/*contact[i].surface.mode = dContactSoftERP | dContactSoftCFM;
+		contact[i].surface.mu = dInfinity;
+		contact[i].surface.soft_erp = 0.2f;
+		contact[i].surface.soft_cfm = 1e-5f;*/
 	}
 
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));

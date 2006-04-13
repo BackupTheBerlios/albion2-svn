@@ -52,15 +52,18 @@ engine::engine(const char* datapath) {
 	color_scheme = gui_style::BLUE;
 
 	m = new msg();
-	c = new core(m);
 	f = new file_io(m);
-	e = new event();
+	c = new core(m, f);
+	x = new xml(m);
+	e = new event(datapath, m, x);
 	g = new gfx();
 	gstyle = new gui_style(g, m);
 	t = new texman(m);
 	l = new lua(m);
-	x = new xml(m);
 	gf = new gui_font(m);
+
+	server = new server_data();
+	client = new client_data();
 
 	// load config
 	if(!x->open(data_path("config.xml"))) {
@@ -115,6 +118,32 @@ engine::engine(const char* datapath) {
 					thread_count = (unsigned int)atoi(x->get_attribute("count"));
 				}
 			}
+			else if(strcmp(x->get_node_name(), "server") == 0) {
+				if(x->get_attribute("port") != NULL) {
+					server->port = (unsigned short int)atoi(x->get_attribute("port"));
+				}
+				
+				if(x->get_attribute("max_clients") != NULL) {
+					server->max_clients = (unsigned int)atoi(x->get_attribute("max_clients"));
+				}
+			}
+			else if(strcmp(x->get_node_name(), "client") == 0) {
+				if(x->get_attribute("server") != NULL) {
+					client->server_name = x->get_attribute("server");
+				}
+				
+				if(x->get_attribute("port") != NULL) {
+					client->port = (unsigned short int)atoi(x->get_attribute("port"));
+				}
+				
+				if(x->get_attribute("lis_port") != NULL) {
+					client->lis_port = (unsigned short int)atoi(x->get_attribute("lis_port"));
+				}
+
+				if(x->get_attribute("name") != NULL) {
+					client->client_name = x->get_attribute("name");
+				}
+			}
 		}
 
 		x->close();
@@ -140,6 +169,9 @@ engine::~engine() {
 	delete l;
 	delete x;
 	delete gf;
+
+	delete server;
+	delete client;
 
 	m->print(msg::MDEBUG, "engine.cpp", "engine stuff freed");
 
@@ -631,4 +663,12 @@ char* engine::data_path(const char* str) {
 	if(str == NULL || strcmp(str, "") == 0) tmp_str = engine::datapath;
 	else tmp_str = engine::datapath + str;
 	return (char*)tmp_str.c_str();
+}
+
+engine::server_data* engine::get_server_data() {
+	return engine::server;
+}
+
+engine::client_data* engine::get_client_data() {
+	return engine::client;
 }
