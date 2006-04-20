@@ -92,11 +92,14 @@ int main(int argc, char *argv[])
 
 		// ode ...
 		if(SDL_GetTicks() - ode_timer >= ode_timestep) {
-			// if ode_timer would be updated after ode->run(), we would lose the time needed
+			/*// if ode_timer would be updated after ode->run(), we would lose the time needed
 			// by ode->run() (-> unequal time steps / "pausing/halting" of time during ode->run())
 			ode_timer2 = ode_timer;
 			ode_timer = SDL_GetTicks();
-			o->run(SDL_GetTicks() - ode_timer2);
+			o->run(SDL_GetTicks() - ode_timer2);*/
+
+			// use a fixed value of 40 updates per second
+			o->run(ode_timestep);
 		}
 	}
 

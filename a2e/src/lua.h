@@ -81,7 +81,7 @@ public:
 		FLOAT_NUMBER,
 		STRING
 	};
-	static bool check_args(lua_State* l, int carg, LARG_TYPE* arg_types);
+	static bool check_args(lua_State* l, int carg, LARG_TYPE* arg_types, char* func_name);
 	static bool check_type(lua_State* l, int num, LARG_TYPE type);
 	//static bool get_args(lua_State* l, int carg, LARG_TYPE* arg_types, void* args);
 

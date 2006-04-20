@@ -19,8 +19,8 @@
 
 #include <iostream>
 #include <fstream>
-#include "msg.h"
 #include <SDL/SDL.h>
+#include "msg.h"
 using namespace std;
 
 #include "win_dll_export.h"

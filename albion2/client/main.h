@@ -44,6 +44,7 @@
 #include "csystem.h"
 #include "cnet.h"
 #include "cgui.h"
+#include "cmap.h"
 using namespace std;
 
 engine* e;
@@ -58,6 +59,7 @@ gui* agui;
 csystem* cs;
 cnet* cn;
 cgui* cg;
+cmap* cm;
 SDL_Event ievent;
 
 

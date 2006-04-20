@@ -87,7 +87,7 @@ public:
 	GUI_OBJ add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
 	GUI_OBJ add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true);
 
-	void switch_input_text(char* input_text, list<gui_input>::reference input_box);
+	void handle_input(list<gui_input>::reference input_box);
 
 	SDL_Surface* get_gui_surface();
 
@@ -117,7 +117,7 @@ public:
 
 	bool exist(unsigned int id);
 
-	void set_visibility(unsigned int id, bool state);
+	void set_visibility(unsigned int id, bool state, bool force = false);
 
 	// dialogs
 	GUI_OBJ add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30);
@@ -187,10 +187,6 @@ protected:
 	core::pnt* p2;
 	gfx::rect* r;
 	gfx::rect* r2;
-	char* input_text;
-	char* ib_text;
-	unsigned int ib_text_length;
-	char set_text[1028];
 	GUI_OBJ main_window;
 
 	bool ae_reset;

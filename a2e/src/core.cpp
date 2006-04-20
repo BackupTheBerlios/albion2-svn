@@ -475,6 +475,10 @@ void core::put_suint(stringstream* sstr, unsigned short int su) {
 	sstr->put(su & 0xFF);
 }
 
+char core::get_char(stringstream* sstr) {
+	return sstr->get();
+}
+
 int core::get_int(stringstream* sstr) {
 	int i = 0;
 	char* tmp = new char[4];

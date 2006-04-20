@@ -131,13 +131,14 @@ void lua::load_core() {
  *  @param carg amount of arguments
  *  @param arg_types the type of the arguments
  */
-bool lua::check_args(lua_State* l, int carg, LARG_TYPE* arg_types) {
+bool lua::check_args(lua_State* l, int carg, LARG_TYPE* arg_types, char* func_name) {
 	// get number of arguments
 	int n = lua_gettop(l);
 
 	// if we don't have the sufficient amount of arguments, return false
 	if(n < carg) {
 		m->print(msg::MERROR, "lua.cpp", "check_args(): not sufficient amount of arguments!");
+		m->print(msg::MERROR, "lua.cpp", "%s(): encountered argument problem!", func_name);
 		return false;
 	}
 
@@ -145,6 +146,7 @@ bool lua::check_args(lua_State* l, int carg, LARG_TYPE* arg_types) {
 		// i+1, b/c lua argument indexing starts at 1
 		if(!check_type(l, (i+1), arg_types[i])) {
 			m->print(msg::MERROR, "lua.cpp", "check_args(): encountered a wrong arg type - aborting function!");
+			m->print(msg::MERROR, "lua.cpp", "%s(): encountered argument problem!", func_name);
 			return false;
 		}
 	}
@@ -241,8 +243,7 @@ bool lua::check_type(lua_State* l, int num, LARG_TYPE type) {
 
 int lua::draw_point(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 3, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_point(): encountered argument problem!");
+	if(!check_args(l, 3, types, "draw_point")) {
 		return 0;
 	}
 
@@ -260,8 +261,7 @@ int lua::draw_point(lua_State* l) {
 
 int lua::draw_line(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_point(): encountered argument problem!");
+	if(!check_args(l, 5, types, "draw_line")) {
 		return 0;
 	}
 
@@ -282,8 +282,7 @@ int lua::draw_line(lua_State* l) {
 int lua::draw_3d_line(lua_State* l) {
 	LARG_TYPE types[] = { lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER,
 							lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER };
-	if(!check_args(l, 7, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_3d_line(): encountered argument problem!");
+	if(!check_args(l, 7, types, "draw_3d_line")) {
 		return 0;
 	}
 
@@ -305,8 +304,7 @@ int lua::draw_3d_line(lua_State* l) {
 
 int lua::draw_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_rectangle(): encountered argument problem!");
+	if(!check_args(l, 5, types, "draw_rectangle")) {
 		return 0;
 	}
 
@@ -326,8 +324,7 @@ int lua::draw_rectangle(lua_State* l) {
 
 int lua::draw_filled_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_filled_rectangle(): encountered argument problem!");
+	if(!check_args(l, 5, types, "draw_filled_rectangle")) {
 		return 0;
 	}
 
@@ -348,8 +345,7 @@ int lua::draw_filled_rectangle(lua_State* l) {
 int lua::draw_2colored_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER,
 							lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 6, types)) {
-		m->print(msg::MERROR, "lua.cpp", "draw_2colored_rectangle(): encountered argument problem!");
+	if(!check_args(l, 6, types, "draw_2colored_rectangle")) {
 		return 0;
 	}
 

@@ -26,8 +26,7 @@ gui_input::gui_input(engine* e) {
 	blink_time = SDL_GetTicks();
 	is_active = false;
 
-	// 1024 chars
-	gui_input::text = new char[1024];
+	gui_input::text.reserve(128);
 
 	gui_input::is_in_rectangle = false;
 
@@ -43,7 +42,7 @@ gui_input::gui_input(engine* e) {
 gui_input::~gui_input() {
 	m->print(msg::MDEBUG, "gui_input.cpp", "freeing gui_input stuff");
 
-	delete [] gui_input::text;
+	gui_input::text.clear();
 
 	m->print(msg::MDEBUG, "gui_input.cpp", "gui_input stuff freed");
 }
@@ -353,8 +352,8 @@ gfx::rect* gui_input::get_rectangle() {
 }
 
 //! returns the input boxes text
-char* gui_input::get_text() {
-	return gui_input::text;
+string* gui_input::get_text() {
+	return &(gui_input::text);
 }
 
 //! returns the input boxes is_active bool
@@ -384,10 +383,13 @@ void gui_input::set_rectangle(gfx::rect* rectangle) {
  *  @param text the text we want to set
  */
 void gui_input::set_text(char* text) {
-	memcpy(gui_input::text, text, strlen(text));
-	gui_input::text[strlen(text)] = 0;
+	gui_input::text = text;
 	gui_input::text_handler->set_text(text);
-	gui_input::text_length = (unsigned int)strlen(text);
+	gui_input::text_length = (unsigned int)gui_input::text.size();
+
+	if(text_pos > gui_input::text.length()) {
+		text_pos = (unsigned int)gui_input::text.length();
+	}
 }
 
 /*! sets the is_active bool
@@ -411,12 +413,4 @@ void gui_input::set_text_position(unsigned int position) {
 	else {
         gui_input::text_pos = position;
 	}
-}
-
-/*! sets "no" text - text length equals zero
- */
-void gui_input::set_notext() {
-	gui_input::text_handler->set_notext();
-	gui_input::text[0] = 0;
-	gui_input::text_length = 0;
 }

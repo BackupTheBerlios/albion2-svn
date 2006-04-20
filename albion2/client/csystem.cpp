@@ -24,6 +24,7 @@ csystem::csystem(engine* e) {
 	done = false;
 	netinit = false;
 	new_client = false;
+	disconnected = false;
 	server = (char*)e->get_client_data()->server_name.c_str();
 	port = e->get_client_data()->port;
 	lis_port = e->get_client_data()->lis_port;
@@ -61,6 +62,7 @@ bool csystem::connect_client(const char* name) {
 			netinit = true;
 			ret = true;
 			new_client = true;
+			disconnected = false;
 		}
 		else {
 			m->print(msg::MERROR, "csystem.cpp", "connect_client(): couldn't create client!");

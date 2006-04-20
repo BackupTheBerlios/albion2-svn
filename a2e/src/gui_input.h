@@ -18,6 +18,7 @@
 #define __GUI_INPUT_H__
 
 #include <iostream>
+#include <string>
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
@@ -32,7 +33,6 @@ using namespace std;
 /*! @class gui_input
  *  @brief gui input box element functions
  *  @author flo
- *  @version 0.3.2
  *  @todo more functions
  *  
  *  the gui_input class
@@ -55,7 +55,7 @@ public:
 
 	unsigned int get_id();
 	gfx::rect* get_rectangle();
-	char* get_text();
+	string* get_text();
 	unsigned int get_text_position();
 
 	void set_id(unsigned int id);
@@ -65,8 +65,6 @@ public:
 
 	void set_active(bool is_active);
 	bool get_active();
-
-	void set_notext();
 
 protected:
 	msg* m;
@@ -87,7 +85,7 @@ protected:
 	//! input box rectangle
 	gfx::rect* rectangle;
 	//! input box text
-	char* text;
+	string text;
 	//! the current text position (of the blink symbol)
 	unsigned int text_pos;
 

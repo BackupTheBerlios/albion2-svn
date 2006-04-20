@@ -81,10 +81,10 @@ protected:
 	cnet* cn;
 
 	GUI_STATE gui_state;
-
 	unsigned int font_size;
-
 	image* bg_img;
+	stringstream* buffer;
+	gui_text* txt;
 
 	/***********
 	GUI ID Chart

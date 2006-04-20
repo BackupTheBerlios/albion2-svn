@@ -286,10 +286,8 @@ void event::set_active_type(unsigned int type) {
 /*! gets the current input text (for any input box) and writes it to tmp_text
  *  @param tmp_text pointer to text where the new text should be written to
  */
-void event::get_buffer(char* tmp_text) {
-	strcpy(tmp_text, buffer->str().c_str());
-	buffer->clear();
-	buffer->str("");
+stringstream* event::get_buffer() {
+	return buffer;
 }
 
 /*! sets the position of where clicked the last time

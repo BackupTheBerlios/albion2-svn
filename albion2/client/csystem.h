@@ -72,6 +72,7 @@ public:
 	bool done;
 	bool netinit;
 	bool new_client;
+	bool disconnected;
 	char* server;
 	unsigned short int port;
 	unsigned short int lis_port;

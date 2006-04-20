@@ -24,7 +24,7 @@ camera::camera(engine* e) {
 	camera::position = new vertex3();
 	camera::rotation = new vertex3();
 
-	// 2 pi / 360° = pi / 180
+	// 2 pi / 360° = pi / 180°
 	piover180 = (float)PI / 180.0f;
 
 	up_down = 0.0f;

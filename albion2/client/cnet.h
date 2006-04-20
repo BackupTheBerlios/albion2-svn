@@ -65,9 +65,18 @@ public:
 	void send_packet(PACKET_TYPE type);
 	void handle_server();
 
+	void close();
+
 	// used for setting packet data from other classes
 	stringstream* get_data();
 	void clear_data();
+
+	struct client {
+		string name;
+		unsigned int status;
+		unsigned int id;
+	};
+	vector<client> clients;
 
 protected:
 	engine* e;
@@ -77,13 +86,6 @@ protected:
 	csystem* cs;
 
 	unsigned int max_packet_size;
-
-	struct client {
-		string name;
-		unsigned int status;
-		unsigned int id;
-	};
-	vector<client> clients;
 
 	stringstream* buffer;
 	stringstream* data;

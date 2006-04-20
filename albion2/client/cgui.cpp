@@ -25,6 +25,8 @@ cgui::cgui(engine* e, gui* agui, csystem* cs, cnet* cn) {
 	cgui::cs = cs;
 	cgui::cn = cn;
 
+	txt = agui->get_text(agui->add_text("STANDARD", 12, "", 0x000000, e->get_gfx()->cord_to_pnt(0, 0), 40, 0));
+
 	mmenu = NULL;
 
 	gui_state = cgui::GS_MAIN;
@@ -34,14 +36,19 @@ cgui::cgui(engine* e, gui* agui, csystem* cs, cnet* cn) {
 	bg_img = new image(e);
 	bg_img->open_image(e->data_path("menu_bg.png"), 3, GL_RGB);
 
+	buffer = new stringstream(stringstream::in | stringstream::out);
+
 	mmenu_id = 0xFFFFFFFF; // there is no gui object with the id 0xFFFFFFFF
 	mlogin_id = 0xFFFFFFFF;
 	moptions_id = 0xFFFFFFFF;
 	mcredits_id = 0xFFFFFFFF;
+	gchat_id = 0xFFFFFFFF;
 }
 
 cgui::~cgui() {
 	delete bg_img;
+
+	delete buffer;
 }
 
 void cgui::init() {
@@ -96,7 +103,7 @@ void cgui::run() {
 					}
 					break;
 					case 202: {
-						if(!cs->connect_client(ml_iname->get_text())) {
+						if(!cs->connect_client(ml_iname->get_text()->c_str())) {
 							agui->add_msgbox_ok(60, "client login failed", "login failed - can't connect to server!");
 							break;
 						}
@@ -106,8 +113,22 @@ void cgui::run() {
 					break;
 					///////////// game stuff ////////////
 					case 1101: {
-						char* chat_msg = gc_imsg->get_text();
+						const char* chat_msg = gc_imsg->get_text()->c_str();
 						unsigned int msg_len = (unsigned int)strlen(chat_msg);
+
+						if(msg_len == 0) break;
+						if(strcmp(chat_msg, "/who") == 0) {
+							string who = "";
+							for(vector<cnet::client>::iterator cl_iter = cn->clients.begin(); cl_iter != cn->clients.end(); cl_iter++) {
+								who += cl_iter->name;
+								if(cl_iter != cn->clients.end()-1) {
+									who += ", ";
+								}
+							}
+							if(who != "") cgui::add_chat_msg(cnet::CT_WORLD, "System", who.c_str());
+							gc_imsg->set_text("");
+							break;
+						}
 
 						// put chat stuff into data buffer and send packet
 						cn->clear_data();
@@ -118,6 +139,9 @@ void cgui::run() {
 
 						// add msg to "local" client msg box
 						cgui::add_chat_msg(cnet::CT_WORLD, cs->client_name.c_str(), chat_msg);
+
+						// reset input box
+						gc_imsg->set_text("");
 					}
 					break;
 					default:
@@ -127,6 +151,15 @@ void cgui::run() {
 			default:
 			break;
 		}
+	}
+
+	if(cs->disconnected) {
+		agui->add_msgbox_ok(60, "disconnection", "lost connection to the server (server down or network disconnection)!");
+
+		gui_state = cgui::GS_MAIN;
+		load_main_gui();
+
+		cs->disconnected = false;
 	}
 
 	if(gui_state == cgui::GS_MAIN) {
@@ -147,6 +180,12 @@ void cgui::run() {
 }
 
 void cgui::load_main_gui() {
+	if(agui->exist(mmenu_id)) agui->set_visibility(100, true);
+	if(agui->exist(mlogin_id)) agui->set_visibility(200, false);
+	if(agui->exist(moptions_id)) agui->set_visibility(300, false);
+	if(agui->exist(mcredits_id)) agui->set_visibility(400, false);
+	if(agui->exist(gchat_id)) agui->set_visibility(1100, false);
+
 	if(agui->exist(mmenu_id)) {
 		if(!mmenu->get_deleted()) return;
 	}
@@ -197,10 +236,11 @@ void cgui::load_credits_wnd() {
 
 ////////////////// game gui //////////////////
 void cgui::load_game_gui() {
-	agui->set_visibility(100, false);
-	agui->set_visibility(200, false);
-	agui->set_visibility(300, false);
-	agui->set_visibility(400, false);
+	if(agui->exist(mmenu_id)) agui->set_visibility(100, false);
+	if(agui->exist(mlogin_id)) agui->set_visibility(200, false);
+	if(agui->exist(moptions_id)) agui->set_visibility(300, false);
+	if(agui->exist(mcredits_id)) agui->set_visibility(400, false);
+	if(agui->exist(gchat_id)) agui->set_visibility(1100, true);
 
 	load_chat_wnd();
 }
@@ -222,11 +262,55 @@ void cgui::load_chat_wnd() {
 }
 
 void cgui::add_chat_msg(cnet::CHAT_TYPE type, const char* name, const char* msg) {
-	string chat_msg = string(name) + ": " + string(msg);
-	cout << "msg: " << chat_msg.c_str() << endl;
-	//chat_msg.
-	gc_msg_box->add_item((char*)chat_msg.c_str(), gc_msg_box->get_citems());
-	//gc_msg_box->set_selected_id(gc_msg_box->get_citems()-1);
-	//gc_msg_box->set_position(gc_msg_box->get_citems()-1);
-	gc_imsg->set_notext();
+	buffer->clear();
+	buffer->str("");
+	*buffer << name << ": " << msg;
+	string tmp = "";
+	string last_text = "";
+	unsigned int lb_width = gc_msg_box->get_rectangle()->x2 - gc_msg_box->get_rectangle()->x1 - 19;
+	unsigned int buffer_len = (unsigned int)buffer->str().length();
+	txt->set_text((char*)buffer->str().c_str());
+
+	// word wrapper ... pretty tricky ;)
+	if(txt->get_text_width() <= lb_width) {
+		gc_msg_box->add_item((char*)buffer->str().c_str(), gc_msg_box->get_citems());
+	}
+	else {
+		while((unsigned int)buffer->tellg() < buffer_len) {
+			txt->set_text("");
+			buffer->seekg((unsigned int)((unsigned int)buffer->tellg() - tmp.length()), ios::beg);
+			while(txt->get_text_width() <= lb_width && (unsigned int)buffer->tellg() < buffer_len) {
+				last_text = txt->get_text();
+				*buffer >> tmp;
+				txt->set_text((char*)string(last_text + tmp + string(" ")).c_str());
+			}
+
+			txt->set_text((char*)tmp.c_str());
+			// if a single word is larger than the allowed width, split the word
+			if(txt->get_text_width() > lb_width) {
+				string tmp2 = "";
+				for(unsigned int i = 0; i < tmp.length(); i++) {
+					tmp2 += tmp[i];
+					txt->set_text((char*)string(last_text + tmp2).c_str());
+					if(txt->get_text_width() > lb_width) {
+						tmp2.erase(tmp2.length()-1, 1);
+						gc_msg_box->add_item((char*)string(last_text + tmp2).c_str(), gc_msg_box->get_citems());
+
+						last_text = tmp[i];
+						tmp2 = "";
+					}
+				}
+				tmp = last_text + tmp2;
+				if((unsigned int)buffer->tellg() == buffer_len) gc_msg_box->add_item((char*)txt->get_text(), gc_msg_box->get_citems());
+			}
+			else {
+				if(last_text != "") gc_msg_box->add_item((char*)last_text.c_str(), gc_msg_box->get_citems());
+				else if((unsigned int)buffer->tellg() == buffer_len) gc_msg_box->add_item((char*)txt->get_text(), gc_msg_box->get_citems());
+			}
+		}
+	}
+
+	gc_msg_box->set_selected_id(gc_msg_box->get_citems()-1);
+	gc_msg_box->set_position(gc_msg_box->get_citems()-1);
+	txt->set_text("");
 }

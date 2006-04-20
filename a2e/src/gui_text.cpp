@@ -19,8 +19,6 @@
 /*! there is no function currently
  */
 gui_text::gui_text(engine* e) {
-	is_notext = false;
-
 	// reserve 32 bytes ...
 	gui_text::text.reserve(32);
 
@@ -111,7 +109,6 @@ void gui_text::set_point(core::pnt* point) {
  *  @param text the text we want to set
  */
 void gui_text::set_text(char* text) {
-	is_notext = false;
 	gui_text::text = text;
 }
 
@@ -120,13 +117,6 @@ void gui_text::set_text(char* text) {
  */
 void gui_text::set_init(bool state) {
 	gui_text::is_init = state;
-}
-
-/*! sets the notext bool to true and the text to ""
- */
-void gui_text::set_notext() {
-	gui_text::is_notext = true;
-	gui_text::text = "";
 }
 
 /*! returns the text's width

@@ -19,7 +19,7 @@
 /*! there is no function currently
  */
 net::net(engine* e) {
-	max_clients = MAX_CLIENTS;
+	max_clients = 0;
 	header = 0x4132454E;
 	rheader = 0x4E453241;
 
@@ -78,7 +78,7 @@ bool net::create_server(unsigned short int port, const unsigned int max_clients)
 	net::port = port;
 
 	if(SDLNet_ResolveHost(&local_ip, NULL, port) == -1) {
-		m->print(msg::MERROR, "net.cpp", "SDLNet_ResolveHost() (local server): %s", SDLNet_GetError());
+		m->print(msg::MERROR, "net.cpp", "create_server(): SDLNet_ResolveHost(): %s", SDLNet_GetError());
 		return false;
 	}
 
@@ -88,14 +88,14 @@ bool net::create_server(unsigned short int port, const unsigned int max_clients)
 	// initialize socketset
 	socketset = SDLNet_AllocSocketSet(net::max_clients);
 	if(socketset == NULL) {
-		m->print(msg::MERROR, "net.cpp", "create_server(): couldn't create socket set: %s", SDLNet_GetError());
+		m->print(msg::MERROR, "net.cpp", "create_server(): SDLNet_AllocSocketSet(): couldn't create socket set: %s", SDLNet_GetError());
 		return false;
 	}
 
 	// listening socket @localhost
 	tcp_server_sock = SDLNet_TCP_Open(&local_ip);
 	if(!tcp_server_sock) {
-		m->print(msg::MERROR, "net.cpp", "create_server(): SDLNet_TCP_Open() (local server): %s", SDLNet_GetError());
+		m->print(msg::MERROR, "net.cpp", "create_server(): SDLNet_TCP_Open(): %s", SDLNet_GetError());
 		return false;
 	}
 	SDLNet_TCP_AddSocket(socketset, tcp_server_sock);
@@ -260,7 +260,7 @@ void net::send_packet(TCPsocket* sock, const char* data, int len, unsigned int c
 		c->put_block(buffer, &data[0], (unsigned int)len);
 
 		// send the packet
-		SDLNet_TCP_Send(*sock, buffer->str().data(), len+8);
+		SDLNet_TCP_Send(*sock, (void*)buffer->str().c_str(), len+8);
 
 		if(net::netlog) {
 			char* dbg = new char[(len-8)*3+20];
@@ -330,7 +330,7 @@ void net::send_packet(TCPsocket* sock, const char* data, int len, unsigned int c
 	}
 	else {
 		// send the packet
-		SDLNet_TCP_Send(*sock, data, len);
+		SDLNet_TCP_Send(*sock, (void*)data, len);
 	}
 }
 

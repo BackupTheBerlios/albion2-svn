@@ -18,12 +18,12 @@
 #define __CAMERA_H__
 
 #include <iostream>
+#include <cmath>
 #include <SDL/SDL.h>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"
 #include "event.h"
-#include <math.h>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -31,7 +31,6 @@ using namespace std;
 /*! @class camera
  *  @brief a2e camera functions
  *  @author flo
- *  @version 0.2
  *  @todo more functions
  *  
  *  the camera class

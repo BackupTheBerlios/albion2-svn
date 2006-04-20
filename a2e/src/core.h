@@ -145,6 +145,7 @@ public:
 	void put_suint(stringstream* sstr, unsigned short int su);
 	void put_block(stringstream* sstr, const char* data, unsigned int size);
 
+	char get_char(stringstream* sstr);
 	int get_int(stringstream* sstr);
 	short int get_sint(stringstream* sstr);
 	unsigned int get_uint(stringstream* sstr);

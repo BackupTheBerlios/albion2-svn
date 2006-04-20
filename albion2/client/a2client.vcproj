@@ -65,7 +65,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalOptions=""
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_image.lib ftgl_dynamic_MTD.lib ode.lib a2ed.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib SDL.lib SDLmain.lib SDL_net.lib SDL_imaged.lib ftgl_dynamic_MTD.lib ode.lib a2ed.lib"
 				OutputFile="$(OutDir)\a2client.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\lib"
@@ -204,6 +204,14 @@
 		</File>
 		<File
 			RelativePath=".\cgui.h"
+			>
+		</File>
+		<File
+			RelativePath=".\cmap.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cmap.h"
 			>
 		</File>
 		<File

@@ -18,9 +18,9 @@
 #define __IMAGE_H__
 
 #include <iostream>
+#include <SDL/SDL_image.h>
 #include "msg.h"
 #include "engine.h"
-#include <SDL/SDL_image.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 using namespace std;

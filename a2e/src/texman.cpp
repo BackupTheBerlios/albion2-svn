@@ -43,7 +43,11 @@ texman::~texman() {
  */
 unsigned int texman::add_texture(const char* filename, GLint components, GLenum format) {
 	// create a sdl surface and load the texture
-	SDL_Surface* tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
+	// INFO 2006/04/18: there seems to be a "bug" in libpng when using a libpng/zlib release build in
+	// the function png_create_read_struct which results into an access violation. i absolutely don't
+	// know why ... currently using a libpng/zlib debug build, b/c that's the only that helps.
+	SDL_Surface* tex_surface = IMG_Load(filename);
+	//SDL_Surface* tex_surface = IMG_LoadPNG_RW(SDL_RWFromFile(filename, "rb"));
 	if(tex_surface == NULL) {
 		m->print(msg::MERROR, "texman.cpp", "add_texture(): error loading texture file \"%s\"!", filename);
 		return 0;

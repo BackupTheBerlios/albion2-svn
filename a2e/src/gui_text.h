@@ -88,9 +88,6 @@ protected:
 	//! bool if everything was initialized
 	bool is_init;
 
-	//! bool if there is text in the input box
-	bool is_notext;
-
 	GLuint texture;
 	float texmaxx;
 	float texmaxy;

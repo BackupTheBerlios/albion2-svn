@@ -67,7 +67,6 @@ public:
 
 	void set_active_type(unsigned int type);
 
-	void get_buffer(char* tmp_text);
 	//! input types
 	enum INPUT_TYPE {
 		IT_LEFT,	//!< enum left arrow key
@@ -77,6 +76,7 @@ public:
 		IT_HOME,	//!< enum home key
 		IT_END		//!< enum end key
 	};
+	stringstream* get_buffer();
 
 	// gui event stuff
 

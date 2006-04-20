@@ -49,8 +49,8 @@ using namespace std;
  *  
  *  the a2e skeletal animation class
  *  
- *  thx to bozo for the .md5 format specification and julien rebetez
- *  for that very useful .md5 tutorial (and code)
+ *  thx to bozo for the .md5 format specification and
+ *  julien rebetez for that very useful .md5 tutorial (and code)
  */
 
 class A2E_API a2eanim

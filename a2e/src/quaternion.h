@@ -18,9 +18,9 @@
 #define __QUATERNION_H__
 
 #include <iostream>
+#include <cmath>
 #include "core.h"
 #include "vertex3.h"
-#include <cmath>
 using namespace std;
 
 #include "win_dll_export.h"
@@ -28,7 +28,6 @@ using namespace std;
 /*! @class quaternion
  *  @brief quaternion routines
  *  @author flo
- *  @version 0.1
  *  @todo nothing atm
  *  
  *  the quaternion class

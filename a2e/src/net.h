@@ -29,8 +29,6 @@
 #include "engine.h"
 using namespace std;
 
-#define MAX_CLIENTS 32
-
 #include "win_dll_export.h"
 
 /*! @class net

@@ -228,7 +228,7 @@ int snet::process_http_packet(unsigned int cnum, char* data, unsigned int max_le
 		if(cl_iter->status == net::CS_ONLINE) {
 			*buffer << "#" << i << ": " << cl_iter->name << " (ID: " << cl_iter->id << ", IP: " <<
 				((cl_iter->ip.host & 0xFF) & 0xFF) << "." << ((cl_iter->ip.host >> 8) & 0xFF) << "." <<
-				((cl_iter->ip.host >> 16) & 0xFF) << "." << ((cl_iter->ip.host >> 24) & 0xFF) << ")<br>" << endl;
+				((cl_iter->ip.host >> 16) & 0xFF) << "." << ((cl_iter->ip.host >> 24) & 0xFF) << ")</br>" << endl;
 		}
 		i++;
 	}

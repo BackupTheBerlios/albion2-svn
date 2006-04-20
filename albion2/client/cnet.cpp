@@ -186,3 +186,8 @@ void cnet::clear_data() {
 	data->str("");
 	data->clear();
 }
+
+void cnet::close() {
+	if(n->tcp_server_sock != NULL) n->close_socket(n->tcp_server_sock);
+	if(n->tcp_client_sock != NULL) n->close_socket(n->tcp_client_sock);
+}

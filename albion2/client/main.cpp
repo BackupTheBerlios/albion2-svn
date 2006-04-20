@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 	cn = new cnet(e, cs);
 	cg = new cgui(e, agui, cs, cn);
 	cg->init();
+	cm = new cmap(e, sce);
 
 	// set a color scheme (blue)
 	e->set_color_scheme(gui_style::BLUE);
@@ -130,14 +131,20 @@ int main(int argc, char *argv[])
 			act_skts = SDLNet_CheckSockets(cs->n->socketset, 0);
 			if(act_skts == -1 || act_skts > 2) {
 				m->print(msg::MDEBUG, "main.cpp", "main(): server/client socket error (%d) (-> program termination)!", act_skts);
-				cs->done = true;
+				//cs->done = true;
+				cs->netinit = false;
+				cs->disconnected = true;
+				cn->close();
 			}
 			if(SDLNet_SocketReady(cs->n->tcp_server_sock)) {
 				cn->handle_server();
 			}
 			if(cs->n->tcp_server_sock == NULL) {
 				m->print(msg::MDEBUG, "main.cpp", "main(): server socket has been set to NULL (-> program termination)!");
-				cs->done = true;
+				//cs->done = true;
+				cs->netinit = false;
+				cs->disconnected = true;
+				cn->close();
 			}
 
 			// send test package every 25 seconds to preven disconnection
@@ -157,7 +164,7 @@ int main(int argc, char *argv[])
 
 		e->stop_draw();
 
-		if(cs->done && cs->netinit) {
+		if(cs->done && cs->netinit && cs->n->tcp_server_sock != NULL) {
 			cn->send_packet(cnet::PT_QUIT_CLIENT);
 		}
 	}

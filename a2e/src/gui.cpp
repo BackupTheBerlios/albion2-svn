@@ -23,8 +23,6 @@ gui::gui(engine* e) {
 	p2 = new core::pnt();
 	r = new gfx::rect();
 	r2 = new gfx::rect();
-	input_text = new char[512];
-	ib_text_length = 0;
 
 	ofd_wnd_id = 0xFFFFFFFF;
 	msg_ok_wnd_id = 0xFFFFFFFF;
@@ -47,7 +45,6 @@ gui::~gui() {
 	delete p2;
 	delete r;
 	delete r2;
-	delete [] input_text;
 
 	gui_buttons.clear();
 	gui_texts.clear();
@@ -105,8 +102,8 @@ void gui::draw() {
 	wnd_event = false;
 	for(list<unsigned int>::iterator layer_iter = wnd_layers.begin(); layer_iter != wnd_layers.end(); layer_iter++) {
 		list<gui_window>::reference wnd_iter = *get_window(*layer_iter);
-		//if(g->is_pnt_in_rectangle(wnd_iter.get_rectangle(), p) && *layer_iter != 0) {
-		if(g->is_pnt_in_rectangle(wnd_iter.get_rectangle(), p) && wnd_iter.get_border()) {
+		if(g->is_pnt_in_rectangle(wnd_iter.get_rectangle(), p) && wnd_iter.get_border()
+			&& get_element(wnd_iter.get_id())->is_drawn) {
 			unsigned int id = *layer_iter;
 			wnd_layers.erase(layer_iter);
 			wnd_layers.push_front(id);
@@ -158,7 +155,7 @@ void gui::draw() {
 		}
 
 		// draw the window
-		wnd_iter.draw();
+		if(get_element(wnd_iter.get_id())->is_drawn) wnd_iter.draw();
 
 		// set the "window point" that defines how much the
 		// gui elements have to be moved on the x and y axis
@@ -339,8 +336,7 @@ void gui::draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, 
 				set_active_element(ge_iter);
 				evt->set_active(event::GUI);
 
-				evt->get_buffer(input_text);
-				gui::switch_input_text(input_text, cur_input);
+				gui::handle_input(cur_input);
 			}
 			else {
 				cur_input.set_active(false);
@@ -842,9 +838,13 @@ void gui::set_active_element(unsigned int id) {
  *  @param input_text chars written to the input box
  *  @param input_box pointer to the input box
  */
-void gui::switch_input_text(char* input_text, list<gui_input>::reference input_box) {
-	for(unsigned int i = 0; i < strlen(input_text); i++) {
-		switch(input_text[i]) {
+void gui::handle_input(list<gui_input>::reference input_box) {
+	stringstream* buffer = evt->get_buffer();
+	char x;
+
+	for(unsigned int i = 0; i < (unsigned int)buffer->str().size(); i++) {
+		x = c->get_char(buffer);
+		switch(x) {
 			case event::IT_LEFT:
 				input_box.set_text_position(input_box.get_text_position() - 1);
 				break;
@@ -852,145 +852,45 @@ void gui::switch_input_text(char* input_text, list<gui_input>::reference input_b
 				input_box.set_text_position(input_box.get_text_position() + 1);
 				break;
 			case event::IT_BACK: {
-				ib_text_length = (unsigned int)strlen(input_box.get_text());
-				ib_text = input_box.get_text();
+				unsigned int pos = input_box.get_text_position();
+				string* text = input_box.get_text();
 
-				char* tok1 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok1[a] = 0;
-				}
-
-				char* tok2 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok2[a] = 0;
-				}
-
-				if(ib_text_length != input_box.get_text_position() && input_box.get_text_position() > 0) {
-					unsigned int j;
-					for(j = 0; j < input_box.get_text_position(); j++) {
-						tok1[j] = ib_text[j];
-					}
-					tok1[j-1] = 0;
-					unsigned int k = 0;
-					for(j = input_box.get_text_position(); j < ib_text_length; j++) {
-						tok2[k] = ib_text[j];
-						k++;
-					}
-					sprintf(set_text, "%s%s", tok1, tok2);
-				}
-				else {
-					// no text exception
-					if(ib_text_length != 0) {
-						sprintf(tok1, "%s", ib_text);
-						//tok1[ib_text_length - 1] = 0;
-						tok1[ib_text_length] = 0;
-						sprintf(set_text, "%s", tok1);
-					}
-					else {
-						sprintf(set_text, "%s", tok1);
-					}
-				}
-
-				// no text exception
-				if(strlen(set_text) != 0) {
-					input_box.set_text(set_text);
-					input_box.set_text_position(input_box.get_text_position() - 1);
-				}
-				else {
-					input_box.set_notext();
-					input_box.set_text_position(0);
-				}
-
-				delete tok1;
-				delete tok2;
+				if(pos == 0) break;
+				text->erase(pos-1, 1);
+				input_box.set_text((char*)text->c_str());
+				input_box.set_text_position(pos - 1);
 			}
 			break;
 			case event::IT_DEL: {
-				ib_text_length = (unsigned int)strlen(input_box.get_text());
-				ib_text = input_box.get_text();
+				unsigned int pos = input_box.get_text_position();
+				string* text = input_box.get_text();
 
-				char* tok1 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok1[a] = 0;
-				}
-
-				char* tok2 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok2[a] = 0;
-				}
-
-				if(ib_text_length != input_box.get_text_position()) {
-					unsigned int j;
-					for(j = 0; j < input_box.get_text_position(); j++) {
-						tok1[j] = ib_text[j];
-					}
-					unsigned int k = 0;
-					for(j = input_box.get_text_position(); j < ib_text_length; j++) {
-						tok2[k] = ib_text[j+1];
-						k++;
-					}
-					sprintf(set_text, "%s%s", tok1, tok2);
-				}
-				else {
-                    sprintf(set_text, "%s", ib_text);
-				}
-
-				// no text exception
-				if(strlen(set_text) != 0) {
-					input_box.set_text(set_text);
-				}
-				else {
-					input_box.set_notext();
-				}
-
-				delete tok1;
-				delete tok2;
+				if(pos == text->length()) break;
+				text->erase(pos, 1);
+				input_box.set_text((char*)text->c_str());
 			}
 			break;
 			case event::IT_HOME:
 				input_box.set_text_position(0);
 				break;
 			case event::IT_END:
-				input_box.set_text_position((unsigned int)strlen(input_box.get_text()));
+				input_box.set_text_position((unsigned int)input_box.get_text()->length());
 				break;
 			default: {
-				ib_text_length = (unsigned int)strlen(input_box.get_text());
-				ib_text = input_box.get_text();
+				// add char to input text
+				unsigned int pos = input_box.get_text_position();
+				string* text = input_box.get_text();
 
-				char* tok1 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok1[a] = 0;
-				}
-
-				char* tok2 = new char[ib_text_length+4];
-				for(unsigned int a = 0; a < ib_text_length+4; a++) {
-					tok2[a] = 0;
-				}
-
-				if(ib_text_length != input_box.get_text_position()) {
-					for(unsigned int j = 0; j < input_box.get_text_position(); j++) {
-						tok1[j] = ib_text[j];
-					}
-					unsigned int k = 0;
-					for(unsigned int j = input_box.get_text_position(); j < ib_text_length; j++) {
-						tok2[k] = ib_text[j];
-						k++;
-					}
-					sprintf(set_text, "%s%c%s", tok1, input_text[i], tok2);
-				}
-				else {
-                    sprintf(set_text, "%s%c", ib_text, input_text[i]);
-				}
-
-				input_box.set_text(set_text);
-				input_box.set_text_position(input_box.get_text_position() + 1);
-
-				delete tok1;
-				delete tok2;
+				text->insert(text->begin()+pos, x);
+				input_box.set_text((char*)text->c_str());
+				input_box.set_text_position(pos+1);
 			}
 			break;
 		}
 	}
+
+	buffer->str("");
+	buffer->clear();
 }
 
 /*! deletes a gui element
@@ -1335,18 +1235,18 @@ bool gui::exist(unsigned int id) {
  *  @param id the id of the gui element
  *  @param state the visibility state we want to set
  */
-void gui::set_visibility(unsigned int id, bool state) {
-	if(id >= 0xFFFF) return; // exit routine for every gui element that has an id bigger than 0xFFFF (-> all non automatically drawn elements)
+void gui::set_visibility(unsigned int id, bool state, bool force) {
+	if(id >= 0xFFFF && !force) return; // exit routine for every gui element that has an id bigger than 0xFFFF (-> all non automatically drawn elements)
 	gui::get_element(id)->is_drawn = state;
 
 	switch(gui::get_element(id)->type) {
 		case gui::LIST:
 			gui::set_visibility(gui::get_list(id)->get_list_text()->get_id(), state);
-			gui::set_visibility(gui::get_list(id)->get_vbar_handler()->get_id(), state);
+			gui::set_visibility(gui::get_list(id)->get_vbar_handler()->get_id(), state, true);
 			break;
 		case gui::VBAR:
-			gui::set_visibility(gui::get_vbar(id)->get_down_button_handler()->get_id(), state);
-			gui::set_visibility(gui::get_vbar(id)->get_up_button_handler()->get_id(), state);
+			gui::set_visibility(gui::get_vbar(id)->get_down_button_handler()->get_id(), state, true);
+			gui::set_visibility(gui::get_vbar(id)->get_up_button_handler()->get_id(), state, true);
 			break;
 		case gui::COMBO:
 			gui::set_visibility(gui::get_combo(id)->get_list_button()->get_id(), state);
@@ -1354,7 +1254,7 @@ void gui::set_visibility(unsigned int id, bool state) {
 		case gui::WINDOW: {
 			gui_window* wnd = gui::get_window(id);
 			if(wnd->get_border()) {
-				gui::set_visibility(wnd->get_exit_button_handler()->get_id(), state);
+				gui::set_visibility(wnd->get_exit_button_handler()->get_id(), state, true);
 			}
 			// set the visibility of all window elements to state
 			for(list<gui_element>::iterator iter = gui_elements.begin(); iter != gui_elements.end(); iter++) {
@@ -1362,6 +1262,16 @@ void gui::set_visibility(unsigned int id, bool state) {
 					set_visibility(iter->id, state);
 				}
 			}
+		}
+		break;
+		case gui::MSGBOX_OK: {
+			if(!exist(msg_ok_wnd_id)) break;
+			gui::set_visibility(msg_ok_wnd_id, state);
+		}
+		break;
+		case gui::OPENDIALOG: {
+			if(!exist(ofd_wnd_id)) break;
+			gui::set_visibility(ofd_wnd_id, state);
 		}
 		break;
 		default:
@@ -1389,11 +1299,11 @@ GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ex
 	gui::gui_elements.back().wid = 0;
 	gui::gui_elements.back().is_drawn = true;
 
-	ofd_wnd_id = add_window(e->get_gfx()->pnt_to_rect(x, y, 370+x, 220+y), id, caption, true);
+	ofd_wnd_id = add_window(e->get_gfx()->pnt_to_rect(x, y, 370+x, 220+y), id+1, caption, true);
 	ofd_wnd = get_window(ofd_wnd_id);
-	ofd_open = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), 0, id+1, "Open", 0, id));
-	ofd_cancel = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 0, 1, "Cancel", 0, id));
-	ofd_dirlist = get_list(add_list_box(e->get_gfx()->pnt_to_rect(0, 0, 300, 198), id+2, id));
+	ofd_open = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), 0, id+2, "Open", 0, id+1));
+	ofd_cancel = get_button(add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 0, 1, "Cancel", 0, id+1));
+	ofd_dirlist = get_list(add_list_box(e->get_gfx()->pnt_to_rect(0, 0, 300, 198), id+3, id+1));
 
 #ifdef WIN32
 	struct _finddata_t c_file;
@@ -1466,12 +1376,12 @@ GUI_OBJ gui::add_msgbox_ok(unsigned int id, char* caption, char* text) {
 	unsigned int w = (unsigned int)((float)e->get_screen()->w * 0.6f);
 	unsigned int h = (unsigned int)((float)e->get_screen()->h * 0.2f);
 
-	msg_ok_wnd_id = add_window(e->get_gfx()->pnt_to_rect(sw, sh, sw + w, sh + h), id, caption, true);
+	msg_ok_wnd_id = add_window(e->get_gfx()->pnt_to_rect(sw, sh, sw + w, sh + h), id+1, caption, true);
 	msg_ok_wnd = get_window(msg_ok_wnd_id);
 	msg_ok = get_button(add_button(e->get_gfx()->pnt_to_rect((unsigned int)((float)w * 0.5f) - 32,
-		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), 0, id+1, "OK", 0, id));
+		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), 0, id+2, "OK", 0, id+1));
 	msg_text = get_text(add_text("STANDARD", 12, text, e->get_gui_style()->STYLE_FONT2,
-		e->get_gfx()->cord_to_pnt(0, 0), id+2, id));
+		e->get_gfx()->cord_to_pnt(0, 0), id+3, id+1));
 	unsigned int tw = (unsigned int)((float)(w - msg_text->get_text_width()) / 2.0f);
 	unsigned int th = (unsigned int)((float)h / 2.0f) - 30;
 	msg_text->get_point()->x = tw;
