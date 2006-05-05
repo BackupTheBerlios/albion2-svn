@@ -76,13 +76,13 @@ void camera::run() {
 			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * cam_speed;
 			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * cam_speed;
 		}
-		
+
 		if(evt->is_key_up()) {
 			position->x += (float)sin(rotation->y * piover180) * cam_speed;
 			position->y -= (float)sin(rotation->x * piover180) * cam_speed;
 			position->z += (float)cos(rotation->y * piover180) * cam_speed;
 		}
-		
+
 		if(evt->is_key_down()) {
 			position->x -= (float)sin(rotation->y * piover180) * cam_speed;
 			position->y += (float)sin(rotation->x * piover180) * cam_speed;

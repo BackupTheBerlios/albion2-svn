@@ -15,26 +15,27 @@
  */
 
 #include "gui_input.h"
-#include "gfx.h"
-#include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
-gui_input::gui_input(engine* e) {
+gui_input::gui_input(engine* e, gui_style* gs) : gui_object(e, gs) {
+	gui_input::type = "inputbox";
+
 	blink_time = SDL_GetTicks();
 	is_active = false;
 
 	gui_input::text.reserve(128);
 
 	gui_input::is_in_rectangle = false;
+	
+	text_pos = 0;
 
 	// get classes
 	gui_input::e = e;
 	gui_input::c = e->get_core();
 	gui_input::m = e->get_msg();
 	gui_input::g = e->get_gfx();
+	gui_input::gs = gs;
 }
 
 /*! there is no function currently
@@ -52,25 +53,7 @@ gui_input::~gui_input() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_input::draw(unsigned int x, unsigned int y) {
-	gfx::rect* r1 = new gfx::rect();
-
-	g->pnt_to_rect(r1, gui_input::rectangle->x1 + x, gui_input::rectangle->y1 + y,
-		gui_input::rectangle->x2 + x, gui_input::rectangle->y2 + y);
-
-	// draw bg
-	g->draw_filled_rectangle(r1,
-		e->get_gui_style()->STYLE_BG2);
-
-	// draw 2 colored border
-	g->draw_2colored_rectangle(r1,
-		e->get_gui_style()->STYLE_INDARK,
-		e->get_gui_style()->STYLE_LIGHT);
-
-	// draw 2 colored border
-	g->pnt_to_rect(r1, gui_input::rectangle->x1 + x + 1, gui_input::rectangle->y1 + y + 1,
-		gui_input::rectangle->x2 + x - 1, gui_input::rectangle->y2 + y - 1);
-	g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_DARK,
-		e->get_gui_style()->STYLE_DARK2);
+	draw_object(x, y);
 
 	// width chart:
 	// text_width specifies the texts width -before- the marker
@@ -150,10 +133,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			// and now render the text
 			g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-			/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
-				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 			text_handler->set_point(p1);
-			text_handler->draw(new_text, x, y);
+			text_handler->draw(new_text, x+1, y+1);
 
 			delete [] new_text;
 			delete [] tmp_text;
@@ -201,10 +182,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				// and now render the text
 				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
-					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 				text_handler->set_point(p1);
-				text_handler->draw(new_text, x, y);
+				text_handler->draw(new_text, x+1, y+1);
 
 				delete [] new_text;
 				delete [] tmp_text;
@@ -239,10 +218,8 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				// and now render the text
 				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
-				/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2,
-					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);*/
 				text_handler->set_point(p1);
-				text_handler->draw(new_text, x, y);
+				text_handler->draw(new_text, x+1, y+1);
 
 				delete [] new_text;
 			}
@@ -258,13 +235,10 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		// +4, because we want the text be drawn a bit more right
 
 		// just draw the text surface
-		/*g->cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
-			gui_input::rectangle->y1 + (height_input_box/2 - height/2));*/
-		//text_handler->set_blit(false);
 		g->cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 		text_handler->set_point(p1);
-		text_handler->draw(x, y);
+		text_handler->draw(x+1, y+1);
 	}
 	delete p1;
 
@@ -298,30 +272,17 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 	// -1, because we want the text be drawn a bit more on top
 	core::pnt* p2 = new core::pnt();
 	if(is_in_rectangle) {
-		/*g->cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width,
-			gui_input::rectangle->y1 + (height_input_box/2 - height/2) - 2);*/
 		g->cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2));
 	}
 	else {
-		/*g->cord_to_pnt(p2, gui_input::rectangle->x1 + 1 + (unsigned int)text_width - width_diff,
-			gui_input::rectangle->y1 + (height_input_box/2 - height/2) - 2);*/
 		g->cord_to_pnt(p2, gui_input::rectangle->x1 + 2 + (unsigned int)text_width - width_diff,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2));
 	}
 	blink_text_handler->set_point(p2);
-	blink_text_handler->draw(x, y);
+	blink_text_handler->draw(x+1, y+1);
 	delete p2;
 	is_in_rectangle = true;
-
-	delete r1;
-}
-
-/*! creates a text_handler -> a pointer to the gui_text class
- *  @param itext the gui_text we want to handle
- */
-void gui_input::set_text_handler(gui_text* itext) {
-	gui_input::text_handler = itext;
 }
 
 /*! creates a blink_text_handler -> a pointer to the gui_text class
@@ -331,29 +292,9 @@ void gui_input::set_blink_text_handler(gui_text* itext) {
 	gui_input::blink_text_handler = itext;
 }
 
-//! returns the text_handler
-gui_text* gui_input::get_text_handler() {
-	return gui_input::text_handler;
-}
-
 //! returns the blink_text_handler
 gui_text* gui_input::get_blink_text_handler() {
 	return gui_input::blink_text_handler;
-}
-
-//! returns the input boxes id
-unsigned int gui_input::get_id() {
-	return gui_input::id;
-}
-
-//! returns the input boxes rectangle
-gfx::rect* gui_input::get_rectangle() {
-	return gui_input::rectangle;
-}
-
-//! returns the input boxes text
-string* gui_input::get_text() {
-	return &(gui_input::text);
 }
 
 //! returns the input boxes is_active bool
@@ -365,27 +306,12 @@ unsigned int gui_input::get_text_position() {
 	return gui_input::text_pos;
 }
 
-/*! sets the text id
- *  @param id the id we want to set
- */
-void gui_input::set_id(unsigned int id) {
-	gui_input::id = id;
-}
-
-/*! sets the input boxes rectangle
- *  @param rectangle the rectangle we want to set
- */
-void gui_input::set_rectangle(gfx::rect* rectangle) {
-	gui_input::rectangle = rectangle;
-}
-
 /*! sets the input boxes text
  *  @param text the text we want to set
  */
-void gui_input::set_text(char* text) {
+void gui_input::set_text(const char* text) {
 	gui_input::text = text;
-	gui_input::text_handler->set_text(text);
-	gui_input::text_length = (unsigned int)gui_input::text.size();
+	gui_input::text_handler->set_text((char*)text);
 
 	if(text_pos > gui_input::text.length()) {
 		text_pos = (unsigned int)gui_input::text.length();
@@ -397,6 +323,8 @@ void gui_input::set_text(char* text) {
  */
 void gui_input::set_active(bool is_active) {
 	gui_input::is_active = is_active;
+
+	gui_input::is_active ? set_state("CLICKED") : set_state("NORMAL");
 }
 
 /*! sets the text position (of the blink symbol)
@@ -407,10 +335,10 @@ void gui_input::set_text_position(unsigned int position) {
 	if(position == 0xFFFFFFFF) {
 		gui_input::text_pos = 0;
 	}
-	else if(position > gui_input::text_length) {
-		gui_input::text_pos = gui_input::text_length;
+	else if(position > gui_input::text.length()) {
+		gui_input::text_pos = (unsigned int)gui_input::text.length();
 	}
 	else {
-        gui_input::text_pos = position;
+		gui_input::text_pos = position;
 	}
 }

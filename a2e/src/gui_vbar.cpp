@@ -15,14 +15,12 @@
  */
 
 #include "gui_vbar.h"
-#include "gfx.h"
-#include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
-gui_vbar::gui_vbar(engine* e) {
+gui_vbar::gui_vbar(engine* e, gui_style* gs) : gui_object(e, gs) {
+	gui_vbar::type = "vbar";
+
 	gui_vbar::last_point = new core::pnt();
 	gui_vbar::last_point->x = 0;
 	gui_vbar::last_point->y = 0;
@@ -36,11 +34,14 @@ gui_vbar::gui_vbar(engine* e) {
 
 	gui_vbar::slider_active = false;
 
+	r1 = new gfx::rect();
+
 	// get classes
 	gui_vbar::e = e;
 	gui_vbar::c = e->get_core();
 	gui_vbar::m = e->get_msg();
 	gui_vbar::g = e->get_gfx();
+	gui_vbar::gs = gs;
 }
 
 /*! there is no function currently
@@ -48,6 +49,7 @@ gui_vbar::gui_vbar(engine* e) {
 gui_vbar::~gui_vbar() {
 	m->print(msg::MDEBUG, "gui_vbar.cpp", "freeing gui_vbar stuff");
 
+	delete r1;
 
 	m->print(msg::MDEBUG, "gui_vbar.cpp", "gui_vbar stuff freed");
 }
@@ -57,6 +59,9 @@ gui_vbar::~gui_vbar() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_vbar::draw(unsigned int x, unsigned int y) {
+	draw_object(x, y);
+
+	// event handling
 	if(gui_vbar::max_lines > gui_vbar::shown_lines) {
 		slider_active = true;
 	}
@@ -64,86 +69,30 @@ void gui_vbar::draw(unsigned int x, unsigned int y) {
 		slider_active = false;
 	}
 
-
-	gfx::rect* r1 = new gfx::rect();
-
-	g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + x, gui_vbar::rectangle->y1 + y,
-		gui_vbar::rectangle->x2 + x, gui_vbar::rectangle->y2 + y);
-
-	// draw bar bg
-	g->draw_filled_rectangle(r1,
-		e->get_gui_style()->STYLE_BARBG);
-
-	// draw up button
-	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
-	g->pnt_to_rect(ubrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y1,
-		gui_vbar::rectangle->x1 + 12, gui_vbar::rectangle->y1 + 12);
-	gui_vbar::up_button_handler->set_rectangle(ubrect);
-
-	// draw down button
-	gfx::rect* dbrect = gui_vbar::down_button_handler->get_rectangle();
-	g->pnt_to_rect(dbrect, gui_vbar::rectangle->x1, gui_vbar::rectangle->y2 - 12,
-		gui_vbar::rectangle->x1 + 12, gui_vbar::rectangle->y2);
-	gui_vbar::down_button_handler->set_rectangle(dbrect);
-
-	// checks if there are enough items to draw a slider
 	if(slider_active) {
-		// draw slider
-		unsigned int heigth_barbg = gui_vbar::rectangle->y2 - gui_vbar::rectangle->y1 - 28;
-		unsigned int overflow = heigth_barbg % max_lines;
-		gui_vbar::px_per_item = (heigth_barbg - overflow) / max_lines;
+		unsigned int height_barbg = gui_vbar::rectangle->y2 - gui_vbar::rectangle->y1 - 30;
+		unsigned int overflow = height_barbg % max_lines;
+		gui_vbar::px_per_item = (height_barbg - overflow) / max_lines;
 		if(gui_vbar::px_per_item < 1) {
 			gui_vbar::px_per_item = 1;
 		}
-		unsigned int slider_heigth = px_per_item * shown_lines + overflow;
-		unsigned int heigth_position = position * px_per_item;
+		unsigned int slider_height = px_per_item * shown_lines + overflow;
+		unsigned int height_position = position * px_per_item;
 
-		// draw bg
-		g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + x,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + y, gui_vbar::rectangle->x2 + x,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth + y);
-		g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_BG);
-
-		// draw 2 colored border
-		g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_LIGHT,
-			e->get_gui_style()->STYLE_DARK);
-
-		// draw 2 colored border
-		g->pnt_to_rect(r1, gui_vbar::rectangle->x1 + 1 + x,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + 1 + y,
-			gui_vbar::rectangle->x2 - 1 + x,
-			gui_vbar::rectangle->y1 + 14 + heigth_position + slider_heigth - 1 + y);
-		g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_BG,
-			e->get_gui_style()->STYLE_INDARK);
-
-
-		// button event handling
-		if(gui_vbar::up_button_handler->get_pressed() == true) {
+		if(gui_vbar::up_button_handler->get_state() == "CLICKED") {
 			gui_vbar::set_position(gui_vbar::get_position() - 1);
 		}
 
-		if(gui_vbar::down_button_handler->get_pressed() == true) {
+		if(gui_vbar::down_button_handler->get_state() == "CLICKED") {
 			gui_vbar::set_position(gui_vbar::get_position() + 1);
 		}
+
+		// draw slider
+		g->pnt_to_rect(r1, gui_vbar::rectangle->x1,
+			gui_vbar::rectangle->y1 + 16 + height_position - 1, gui_vbar::rectangle->x2,
+			gui_vbar::rectangle->y1 + 16 + height_position + slider_height - 1);
+		gs->render_gui_element("vbar_slider", "NORMAL", r1, x, y);
 	}
-
-	delete r1;
-}
-
-/*! draws the vertical bar box
- */
-void gui_vbar::draw() {
-	gui_vbar::draw(0, 0);
-}
-
-//! returns the vertical bars id
-unsigned int gui_vbar::get_id() {
-	return gui_vbar::id;
-}
-
-//! returns the vertical bars rectangle
-gfx::rect* gui_vbar::get_rectangle() {
-	return gui_vbar::rectangle;
 }
 
 //! returns the vertical bars max lines
@@ -174,20 +123,6 @@ core::pnt* gui_vbar::get_new_point() {
 //! returns the slider active bool
 bool gui_vbar::get_slider_active() {
 	return gui_vbar::slider_active;
-}
-
-/*! sets the vertical bars id
- *  @param id the id we want to set
- */
-void gui_vbar::set_id(unsigned int id) {
-	gui_vbar::id = id;
-}
-
-/*! sets the vertical bars rectangle
- *  @param rectangle the rectangle we want to set
- */
-void gui_vbar::set_rectangle(gfx::rect* rectangle) {
-	gui_vbar::rectangle = rectangle;
 }
 
 /*! sets the vertical bars max lines
@@ -294,4 +229,21 @@ void gui_vbar::set_new_point(core::pnt* new_point) {
  */
 void gui_vbar::set_slider_active(bool state) {
 	gui_vbar::slider_active = state;
+}
+
+/*! sets the objects rectangle
+ *  @param rectangle the rectangle we want to set
+ */
+void gui_vbar::set_rectangle(gfx::rect* rectangle) {
+	gui_vbar::rectangle = rectangle;
+
+	gfx::rect* ubrect = gui_vbar::up_button_handler->get_rectangle();
+	g->pnt_to_rect(ubrect, gui_vbar::rectangle->x1 + 3, gui_vbar::rectangle->y1,
+		gui_vbar::rectangle->x1 + 18, gui_vbar::rectangle->y1 + 15);
+	gui_vbar::up_button_handler->set_rectangle(ubrect);
+
+	gfx::rect* dbrect = gui_vbar::down_button_handler->get_rectangle();
+	g->pnt_to_rect(dbrect, gui_vbar::rectangle->x1 + 3, gui_vbar::rectangle->y2 - 15,
+		gui_vbar::rectangle->x1 + 18, gui_vbar::rectangle->y2);
+	gui_vbar::down_button_handler->set_rectangle(dbrect);
 }

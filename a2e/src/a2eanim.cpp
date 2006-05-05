@@ -335,9 +335,10 @@ void a2eanim::draw() {
 					glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 0));
 				}
 
-				glColor3f(1.0f, 1.0f, 1.0f);
-				glEnable(GL_TEXTURE_2D);
-				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
+				//glColor3f(1.0f, 1.0f, 1.0f);
+				//glEnable(GL_TEXTURE_2D);
+				//if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
+				a2eanim::material->enable_texture(i);
 
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
@@ -373,8 +374,9 @@ void a2eanim::draw() {
 					glFrontFace(GL_CCW);
 				}
 
-				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
-				glDisable(GL_TEXTURE_2D);
+				a2eanim::material->disable_texture(i);
+				//if(a2eanim::material->get_color_type(i, 0) == 0x01) { glDisable(GL_BLEND); }
+				//glDisable(GL_TEXTURE_2D);
 			}
 		}
 

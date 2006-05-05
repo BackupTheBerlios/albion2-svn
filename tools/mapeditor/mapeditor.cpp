@@ -21,7 +21,7 @@ mapeditor::mapeditor(engine* e, scene* sce) {
 	mapeditor::sce = sce;
 	mapeditor::m = e->get_msg();
 
-	memap = new map(e);
+	memap = new cmap(e);
 
 	cur_bbox = new core::aabbox();
 	cur_bbox->vmin.x = 0.0f;
@@ -105,7 +105,7 @@ void mapeditor::save_map(char* filename) {
 	// feed the map class with the new map data and delete old data
 	delete [] memap->map_objects;
 	memap->object_count = 0;
-	memap->map_objects = new map::map_object[objects.size()];
+	memap->map_objects = new cmap::map_object[objects.size()];
 	memap->object_count = (unsigned int)objects.size();
 	unsigned int i = 0;
 	for(list<map_object>::iterator obj_iter = objects.begin(); obj_iter != objects.end(); obj_iter++) {

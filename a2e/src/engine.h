@@ -39,7 +39,6 @@
 #include <string>
 #include "msg.h"
 #include "core.h"
-#include "gui_style.h"
 #include "file_io.h"
 #include "event.h"
 #include "gfx.h"
@@ -69,7 +68,7 @@ public:
 
 	// graphic control functions
 	void init();
-	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, bool fullscreen = false);
+	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, unsigned int zbuffer = 16, unsigned int stencil = 16, bool fullscreen = false);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
 	void start_draw();
@@ -84,8 +83,6 @@ public:
 	// miscellaneous control functions
 	void set_caption(char* caption);
 	char* get_caption();
-
-	void set_color_scheme(gui_style::COLOR_SCHEME scheme);
 
 	void set_position(float xpos, float ypos, float zpos);
 	vertex3* get_position();
@@ -109,12 +106,12 @@ public:
 	msg* get_msg();
 	file_io* get_file_io();
 	event* get_event();
-	gui_style* get_gui_style();
 	gfx* get_gfx();
 	texman* get_texman();
 	ext* get_ext();
 	lua* get_lua();
 	gui_font* get_gui_font();
+	xml* get_xml();
 
     // the initialization mode is used to determine if we should load
     // or compute graphical stuff like textures or shaders
@@ -138,10 +135,11 @@ public:
 	server_data* get_server_data();
 	client_data* get_client_data();
 
+	string* get_color_scheme();
+
 protected:
 	core* c;
 	msg* m;
-	gui_style* gstyle;
 	file_io* f;
 	event* e;
 	gfx* g;
@@ -154,7 +152,7 @@ protected:
 	string datapath;
 	string tmp_str;
 
-	unsigned int width, height, depth, flags;
+	unsigned int width, height, depth, zbuffer, stencil, flags;
 	bool fullscreen;
 	SDL_Surface* screen;
 	const SDL_VideoInfo* video_info;
@@ -171,10 +169,10 @@ protected:
 
 	unsigned int thread_count;
 
-	gui_style::COLOR_SCHEME color_scheme;
-
 	server_data* server;
 	client_data* client;
+
+	string color_scheme;
 };
 
 #endif

@@ -19,6 +19,7 @@
 mgui::mgui(engine* e, gui* agui, mapeditor* me, scene* sce) {
 	mgui::e = e;
 	mgui::agui = agui;
+	mgui::gs = agui->get_gui_style();
 	mgui::m = e->get_msg();
 	mgui::me = me;
 	mgui::sce = sce;
@@ -36,7 +37,7 @@ mgui::mgui(engine* e, gui* agui, mapeditor* me, scene* sce) {
 
 	font_size = 11;
 
-	menu_id = 0xFFFFFFFF; // there is no gui object with the id 0xFFFFFFFF
+	menu_id = 0xFFFFFFFF; // there is no gui object with the id gs->get_color("FONT")FF
 	prop_wnd_id = 0xFFFFFFFF;
 	ao_wnd_id = 0xFFFFFFFF;
 }
@@ -88,7 +89,7 @@ void mgui::run() {
 						}
 					}
 					break;
-					case 201: {
+					case 202: {
 						me->open_map(e->data_path(agui->get_open_diaolg_list()->get_selected_item()->text.c_str()));
 						od_wnd->set_deleted(true);
 					}
@@ -116,43 +117,43 @@ void mgui::run() {
 					}
 					break;
 					case 410: {
-						if(strlen(ao_e_model->get_text()) == 0) {
+						if(strlen(ao_e_model->get_text()->c_str()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a model filename!");
 							break;
 						}
-						if(strlen(ao_e_mat->get_text()) == 0) {
+						if(strlen(ao_e_mat->get_text()->c_str()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a material filename!");
 							break;
 						}
 
-						bool ani = e->get_core()->is_a2eanim(e->data_path(ao_e_model->get_text()));
+						bool ani = e->get_core()->is_a2eanim(e->data_path(ao_e_model->get_text()->c_str()));
 
-						if(ani && strlen(ao_e_ani->get_text()) == 0) {
+						if(ani && strlen(ao_e_ani->get_text()->c_str()) == 0) {
 							m->print(msg::MERROR, "mgui.cpp", "add_object(): please specify a animation filename!");
 							break;
 						}
 
 						if(!ani) {
-							me->add_object(ao_e_model->get_text(), ao_e_mat->get_text());
+							me->add_object((char*)ao_e_model->get_text()->c_str(), (char*)ao_e_mat->get_text()->c_str());
 						}
 						else {
-							me->add_object(ao_e_model->get_text(), ao_e_ani->get_text(), ao_e_mat->get_text());
+							me->add_object((char*)ao_e_model->get_text()->c_str(), (char*)ao_e_ani->get_text()->c_str(), (char*)ao_e_mat->get_text()->c_str());
 						}
 
 						ao_wnd->set_deleted(true);
 					}
 					break;
-					case 421: {
+					case 422: {
 						ao_e_model->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
-					case 431: {
+					case 432: {
 						ao_e_ani->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
 					break;
-					case 441: {
+					case 442: {
 						ao_e_mat->set_text((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
 						od_wnd->set_deleted(true);
 					}
@@ -170,19 +171,19 @@ void mgui::run() {
 	if(agui->exist(prop_wnd_id) && me->get_new_sel()) {
 		if(!me->is_sel()) {
 			// reset property window
-			pemod_name->set_notext();
-			pemod_fname->set_notext();
-			peani_fname->set_notext();
-			pemat_fname->set_notext();
-			peposx->set_notext();
-			peposy->set_notext();
-			peposz->set_notext();
-			peorientx->set_notext();
-			peorienty->set_notext();
-			peorientz->set_notext();
-			pescalex->set_notext();
-			pescaley->set_notext();
-			pescalez->set_notext();
+			pemod_name->set_text("");
+			pemod_fname->set_text("");
+			peani_fname->set_text("");
+			pemat_fname->set_text("");
+			peposx->set_text("");
+			peposy->set_text("");
+			peposz->set_text("");
+			peorientx->set_text("");
+			peorienty->set_text("");
+			peorientz->set_text("");
+			pescalex->set_text("");
+			pescaley->set_text("");
+			pescalez->set_text("");
 			plphys_prop->set_selected_id(0xFFFFFFFF);
 		}
 		else {
@@ -257,16 +258,16 @@ void mgui::add_obj_dialog() {
 
 	ao_wnd_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 410, 150), 400, "Add Object", true);
 	ao_wnd = agui->get_window(ao_wnd_id);
-	ao_model_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 14), 401, 400));
-	ao_ani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 34), 402, 400));
-	ao_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 54), 403, 400));
+	ao_model_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 14), 401, 400));
+	ao_ani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filename", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 34), 402, 400));
+	ao_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 54), 403, 400));
 	ao_e_model = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 10, 295, 28), 404, "", 400));
 	ao_e_ani = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 30, 295, 48), 405, "", 400));
 	ao_e_mat = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(115, 50, 295, 68), 406, "", 400));
-	ao_model_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 10, 365, 28), 407, "Browse", 400));
-	ao_ani_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 30, 365, 48), 408, "Browse", 400));
-	ao_mat_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 50, 365, 68), 409, "Browse", 400));
-	ao_add = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 72, 365, 90), 410, "Add", 400));
+	ao_model_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 10, 365, 28), 407, "Browse", 0, 400));
+	ao_ani_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 30, 365, 48), 408, "Browse", 0, 400));
+	ao_mat_browse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(302, 50, 365, 68), 409, "Browse", 0, 400));
+	ao_add = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 72, 365, 90), 410, "Add", 0, 400));
 }
 
 void mgui::load_main_gui() {
@@ -281,14 +282,14 @@ void mgui::load_main_gui() {
 	madd_tex = e->get_texman()->add_texture(e->data_path("icons/add.png"), 4, GL_RGBA);
 	mdel_tex = e->get_texman()->add_texture(e->data_path("icons/del.png"), 4, GL_RGBA);
 
-	menu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 100, "main gui", false);
+	menu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 24), 100, "main gui", false);
 	menu = agui->get_window(menu_id);
-	mopen_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(1, 1, 19, 19), 0, 101, "", mopen_tex, 100));
-	msave_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(20, 1, 38, 19), 0, 102, "", msave_tex, 100));
-	mclose_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(39, 1, 57, 19), 0, 103, "", mclose_tex, 100));
-	mproperties = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(58, 1, 76, 19), 0, 104, "", mprop_tex, 100));
-	madd_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(77, 1, 95, 19), 0, 105, "", madd_tex, 100));
-	mdel_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(96, 1, 114, 19), 0, 106, "", mdel_tex, 100));
+	mopen_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(3, 3, 21, 21), 101, "", mopen_tex, 100));
+	msave_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(24, 3, 42, 21), 102, "", msave_tex, 100));
+	mclose_map = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(45, 3, 63, 21), 103, "", mclose_tex, 100));
+	mproperties = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(66, 3, 84, 21), 104, "", mprop_tex, 100));
+	madd_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(87, 3, 105, 21), 105, "", madd_tex, 100));
+	mdel_obj = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(108, 3, 126, 21), 106, "", mdel_tex, 100));
 
 	mopen_map->set_image_scaling(false);
 	msave_map->set_image_scaling(false);
@@ -306,23 +307,23 @@ void mgui::open_property_wnd() {
 	prop_wnd_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 285, 516), 300, "Properties", true);
 	prop_wnd = agui->get_window(prop_wnd_id);
 
-	pmod_name = agui->get_text(agui->add_text("STANDARD", font_size, "Model Name", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 10), 301, 300));
-	pmod_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 30), 302, 300));
-	pani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 50), 303, 300));
-	pmat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 70), 304, 300));
-	ppos = agui->get_text(agui->add_text("STANDARD", font_size, "Position", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 90), 305, 300));
-	pposx = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 110), 306, 300));
-	pposy = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 130), 307, 300));
-	pposz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 150), 308, 300));
-	porient = agui->get_text(agui->add_text("STANDARD", font_size, "Orientation", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 170), 309, 300));
-	porientx = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 190), 310, 300));
-	porienty = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 210), 311, 300));
-	porientz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 230), 312, 300));
-	pscale = agui->get_text(agui->add_text("STANDARD", font_size, "Scale", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 250), 313, 300));
-	pscalex = agui->get_text(agui->add_text("STANDARD", font_size, "X", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 270), 314, 300));
-	pscaley = agui->get_text(agui->add_text("STANDARD", font_size, "Y", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 290), 315, 300));
-	pscalez = agui->get_text(agui->add_text("STANDARD", font_size, "Z", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 310), 316, 300));
-	pphys_prop = agui->get_text(agui->add_text("STANDARD", font_size, "Physical Type", 0xFFFFFF, e->get_gfx()->cord_to_pnt(10, 330), 317, 300));
+	pmod_name = agui->get_text(agui->add_text("STANDARD", font_size, "Model Name", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 10), 301, 300));
+	pmod_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Model Filename", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 30), 302, 300));
+	pani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Animation Filenm.", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 50), 303, 300));
+	pmat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "Material Filename", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 70), 304, 300));
+	ppos = agui->get_text(agui->add_text("STANDARD", font_size, "Position", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 90), 305, 300));
+	pposx = agui->get_text(agui->add_text("STANDARD", font_size, "X", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 110), 306, 300));
+	pposy = agui->get_text(agui->add_text("STANDARD", font_size, "Y", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 130), 307, 300));
+	pposz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 150), 308, 300));
+	porient = agui->get_text(agui->add_text("STANDARD", font_size, "Orientation", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 170), 309, 300));
+	porientx = agui->get_text(agui->add_text("STANDARD", font_size, "X", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 190), 310, 300));
+	porienty = agui->get_text(agui->add_text("STANDARD", font_size, "Y", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 210), 311, 300));
+	porientz = agui->get_text(agui->add_text("STANDARD", font_size, "Z", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 230), 312, 300));
+	pscale = agui->get_text(agui->add_text("STANDARD", font_size, "Scale", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 250), 313, 300));
+	pscalex = agui->get_text(agui->add_text("STANDARD", font_size, "X", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 270), 314, 300));
+	pscaley = agui->get_text(agui->add_text("STANDARD", font_size, "Y", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 290), 315, 300));
+	pscalez = agui->get_text(agui->add_text("STANDARD", font_size, "Z", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 310), 316, 300));
+	pphys_prop = agui->get_text(agui->add_text("STANDARD", font_size, "Physical Type", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(10, 330), 317, 300));
 
 	pemod_name = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 6, 241, 24), 318, "", 300));
 	pemod_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 26, 241, 44), 319, "", 300));
@@ -345,7 +346,7 @@ void mgui::open_property_wnd() {
 	plphys_prop->add_item("Trimesh", 3);
 	plphys_prop->set_selected_id(0xFFFFFFFF);
 
-	papply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 436, 241, 456), 0, 332, "Apply", 0, 300));
+	papply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(10, 436, 241, 456), 332, "Apply", 0, 300));
 
 	prop_wnd_opened = true;
 }
@@ -356,10 +357,10 @@ void mgui::apply_changes() {
 		return;
 	}
 
-	memcpy(smo->model_name,	pemod_name->get_text(), 32);
+	memcpy(smo->model_name,	pemod_name->get_text()->c_str(), 32);
 
-	if(strcmp(smo->ani_filename, peani_fname->get_text()) != 0) {
-		memcpy(smo->ani_filename, peani_fname->get_text(), 32);
+	if(strcmp(smo->ani_filename, peani_fname->get_text()->c_str()) != 0) {
+		memcpy(smo->ani_filename, peani_fname->get_text()->c_str(), 32);
 		// animation filename has changed - delete old animation and load the new one
 		if(smo->type) {
 			smo->amodel->delete_animations();
@@ -367,7 +368,7 @@ void mgui::apply_changes() {
 		}
 	}
 
-	if(strcmp(smo->model_filename, pemod_fname->get_text()) != 0) {
+	if(strcmp(smo->model_filename, pemod_fname->get_text()->c_str()) != 0) {
 		// model filename has been change - delete old model and load new model
 		if(!smo->type) {
 			sce->delete_model(&*smo->model);
@@ -400,11 +401,11 @@ void mgui::apply_changes() {
 		}
 	}
 
-	if(strcmp(smo->mat_filename, pemat_fname->get_text()) != 0) {
+	if(strcmp(smo->mat_filename, pemat_fname->get_text()->c_str()) != 0) {
 		// material filename has changed - delete old material and load new one
 		//delete smo->mat;
 		me->get_materials()->erase(smo->mat);
-		memcpy(smo->mat_filename, pemat_fname->get_text(), 32);
+		memcpy(smo->mat_filename, pemat_fname->get_text()->c_str(), 32);
 
 		me->get_materials()->push_back(*new a2ematerial(e));
 		smo->mat = --me->get_materials()->end();
@@ -414,14 +415,14 @@ void mgui::apply_changes() {
 	}
 
 	if(!smo->type) {
-		smo->model->set_position((float)atof(peposx->get_text()), (float)atof(peposy->get_text()), (float)atof(peposz->get_text()));
-		smo->model->set_rotation((float)atof(peorientx->get_text()), (float)atof(peorienty->get_text()), (float)atof(peorientz->get_text()));
-		smo->model->set_scale((float)atof(pescalex->get_text()), (float)atof(pescaley->get_text()), (float)atof(pescalez->get_text()));
+		smo->model->set_position((float)atof(peposx->get_text()->c_str()), (float)atof(peposy->get_text()->c_str()), (float)atof(peposz->get_text()->c_str()));
+		smo->model->set_rotation((float)atof(peorientx->get_text()->c_str()), (float)atof(peorienty->get_text()->c_str()), (float)atof(peorientz->get_text()->c_str()));
+		smo->model->set_scale((float)atof(pescalex->get_text()->c_str()), (float)atof(pescaley->get_text()->c_str()), (float)atof(pescalez->get_text()->c_str()));
 	}
 	else {
-		smo->amodel->set_position((float)atof(peposx->get_text()), (float)atof(peposy->get_text()), (float)atof(peposz->get_text()));
-		smo->amodel->set_rotation((float)atof(peorientx->get_text()), (float)atof(peorienty->get_text()), (float)atof(peorientz->get_text()));
-		smo->amodel->set_scale((float)atof(pescalex->get_text()), (float)atof(pescaley->get_text()), (float)atof(pescalez->get_text()));
+		smo->amodel->set_position((float)atof(peposx->get_text()->c_str()), (float)atof(peposy->get_text()->c_str()), (float)atof(peposz->get_text()->c_str()));
+		smo->amodel->set_rotation((float)atof(peorientx->get_text()->c_str()), (float)atof(peorienty->get_text()->c_str()), (float)atof(peorientz->get_text()->c_str()));
+		smo->amodel->set_scale((float)atof(pescalex->get_text()->c_str()), (float)atof(pescaley->get_text()->c_str()), (float)atof(pescalez->get_text()->c_str()));
 	}
 
 	smo->phys_type = plphys_prop->get_selected_id();

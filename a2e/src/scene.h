@@ -27,7 +27,6 @@
 #include "a2eanim.h"
 #include "light.h"
 #include "shader.h"
-#include "file_io.h"
 using namespace std;
 
 #include "win_dll_export.h"

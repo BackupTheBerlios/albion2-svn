@@ -51,6 +51,12 @@ public:
 		unsigned int y2;
 	};
 
+	enum FADE_TYPE {
+		FT_HORIZONTAL,
+		FT_VERTICAL,
+		FT_DIAGONAL
+	};
+
 	void set_surface(SDL_Surface* surface);
 
 	void cord_to_pnt(core::pnt* point, unsigned int x, unsigned int y);
@@ -60,15 +66,18 @@ public:
 
 	void draw_point(core::pnt* point, unsigned int color);
 	void draw_line(core::pnt* point1, core::pnt* point2, unsigned int color);
+	void draw_line(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color);
 	void draw_3d_line(vertex3* v1, vertex3* v2, unsigned int color);
 	void draw_rectangle(gfx::rect* rectangle, unsigned int color);
 	void draw_2colored_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2);
 	void draw_filled_rectangle(gfx::rect* rectangle, unsigned int color);
+	void draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2, FADE_TYPE ft);
 
 	bool is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point);
 
 	unsigned int get_color(unsigned int red, unsigned int green, unsigned int blue);
 	unsigned int get_color(unsigned int rgb);
+	unsigned int get_average_color(unsigned int color1, unsigned int color2);
 
 	void begin_scissor();
 	void set_scissor(gfx::rect* rectangle);

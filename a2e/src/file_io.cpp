@@ -73,6 +73,7 @@ bool file_io::open_file(const char* filename, FIO_OPEN_TYPE open_type) {
  */
 void file_io::close_file() {
 	file_io::filestream.close();
+	file_io::filestream.clear();
 }
 
 /*! reads a line from the current input stream (senseless if we have a binary file)
@@ -240,6 +241,7 @@ bool file_io::is_file(char* filename) {
 	}
 
 	file_io::filestream.close();
+	file_io::filestream.clear();
 	return true;
 }
 
@@ -251,4 +253,11 @@ bool file_io::check_open() {
 		return true;
 	}
 	return false;
+}
+
+
+/*! checks if we reached the end of file ...
+ */
+bool file_io::eof() {
+	return file_io::filestream.eof();
 }

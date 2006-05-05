@@ -24,16 +24,15 @@ xml::xml(msg* m) {
 
 	reader = NULL;
 	fname = NULL;
-
-	tmp = NULL;
 }
 
 /*! delete everything
  */
 xml::~xml() {
-    if(tmp != NULL) {
+	/*if(tmp != NULL) {
 		//delete tmp; // ???
-	}
+	}*/
+	tmp.clear();
 }
 
 bool xml::open(char* filename) {
@@ -44,8 +43,8 @@ bool xml::open(char* filename) {
 
 	fname = filename;
 	reader = new xmlTextReaderPtr();
-    *reader = xmlReaderForFile(filename, NULL, 0);
-    if(reader == NULL) {
+	*reader = xmlReaderForFile(filename, NULL, 0);
+	if(reader == NULL) {
 		m->print(msg::MERROR, "xml.cpp", "open(): unable to open %s!", fname);
 		return false;
 	}
@@ -71,9 +70,9 @@ bool xml::process() {
 
 void xml::end(int ret) {
 	xmlFreeTextReader(*reader);
-    if(ret != 0) {
-		m->print(msg::MERROR, "xml.cpp", "open(): failure while parsing %s!", fname);
-    }
+	if(ret != 0) {
+		m->print(msg::MERROR, "xml.cpp", "end(): failure while parsing %s!", fname);
+	}
 }
 
 char* xml::get_node_name() {
@@ -85,12 +84,15 @@ int xml::get_attribute_count() {
 	return xmlTextReaderAttributeCount(*reader);
 }
 
-char* xml::get_attribute(char* att_name) {
-    if(tmp != NULL) {
-		//free(tmp); // hm?
-	}
-    tmp = (char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
-	return tmp;
+const char* xml::get_attribute(char* att_name) {
+	//if(tmp != NULL) {
+	//	delete [] tmp; // hm?
+	//}
+	//tmpc = (char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
+	//tmp = tmpc;
+	//delete [] tmpc;
+	//return tmp.c_str();
+	return (const char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
 }
 
 char* xml::get_nattribute(unsigned int num) {

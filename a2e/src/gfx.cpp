@@ -34,7 +34,7 @@ void gfx::draw_point(core::pnt* point, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
 	glBegin(GL_POINTS);
-		glVertex2d(point->x, screen->h - point->y - 1);
+		glVertex2i(point->x, point->y+1);
 	glEnd();
 }
 
@@ -43,13 +43,58 @@ void gfx::draw_point(core::pnt* point, unsigned int color) {
  *  @param point2 the position of the second point
  *  @param color the color of the line
  */
-void gfx::draw_line(core::pnt* point1,
-					core::pnt* point2, unsigned int color) {
+void gfx::draw_line(core::pnt* point1, core::pnt* point2, unsigned int color) {
+	draw_line(point1->x, point1->y, point2->x, point2->y, color);
+}
+
+void gfx::draw_line(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
-	glBegin(GL_LINES);
-	glVertex2i(point1->x, screen->h - point1->y);
-	glVertex2i(point2->x, screen->h - point2->y - 1);
+
+	/*glBegin(GL_LINES);
+		glVertex2i(point1->x, point1->y);
+		glVertex2i(point2->x, point2->y);
+	glEnd();*/
+	// since GL_LINES is totally inaccurate in 2d mode, i decided to use a self implemented function
+	// again to draw lines (it's the same version as the old sdl function, but it uses opengl to draw points)
+	unsigned int dx = x1;
+	unsigned int dy = y1;
+
+	int x = 0, y = 0, sign_x, sign_y, cpx = 1, cpy = 1;
+
+	int dist_x1_x2 = x2 - x1;
+	int dist_y1_y2 = y2 - y1;
+
+	if(dist_x1_x2 < 0) { dist_x1_x2 = dist_x1_x2 * -1 + 1; sign_x = -1; }
+	else { dist_x1_x2++; sign_x = 1; }
+
+	if(dist_y1_y2 < 0) { dist_y1_y2 = dist_y1_y2 * -1 + 1; sign_y = -1; }
+	else { dist_y1_y2++; sign_y = 1; }
+
+	cpx *= sign_x;
+	cpy *= sign_y;
+
+	glBegin(GL_POINTS);
+	if(dist_x1_x2 < dist_y1_y2) {
+	    for(; x < dist_y1_y2; x++, dy += cpy) {
+			glVertex2i(dx, dy+1);
+			y += dist_x1_x2;
+			if(y >= dist_y1_y2) {
+				y -= dist_y1_y2;
+				dx += cpx;
+			}
+		}
+	}
+	else {
+		for(; x < dist_x1_x2; x++, dx += cpx) {
+			glVertex2i(dx, dy+1);
+			y += dist_y1_y2;
+			if(y >= dist_x1_x2) {
+				y -= dist_x1_x2;
+				dy += cpy;
+			}
+		}
+	}
 	glEnd();
 }
 
@@ -76,21 +121,25 @@ void gfx::draw_3d_line(vertex3* v1, vertex3* v2, unsigned int color) {
  *  @param color the color of the rectangle
  */
 void gfx::draw_rectangle(gfx::rect* rectangle, unsigned int color) {
-	glTranslatef(0.0f, 0.0f, 0.0f);
+	/*glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
 	glBegin(GL_LINES);
-		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y1 - 1);
+		glVertex2i(rectangle->x1, rectangle->y1);
+		glVertex2i(rectangle->x2, rectangle->y1 - 1);
 
-		glVertex2i(rectangle->x1, screen->h - rectangle->y2);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
+		glVertex2i(rectangle->x1, rectangle->y2);
+		glVertex2i(rectangle->x2, rectangle->y2 - 1);
 
-		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x1, screen->h - rectangle->y2 - 1);
+		glVertex2i(rectangle->x1, rectangle->y1);
+		glVertex2i(rectangle->x1, rectangle->y2 - 1);
 
-		glVertex2i(rectangle->x2, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
-	glEnd();
+		glVertex2i(rectangle->x2, rectangle->y1);
+		glVertex2i(rectangle->x2, rectangle->y2 - 1);
+	glEnd();*/
+	draw_line(rectangle->x1, rectangle->y1, rectangle->x2, rectangle->y1, color);
+	draw_line(rectangle->x1, rectangle->y2, rectangle->x2, rectangle->y2, color);
+	draw_line(rectangle->x1, rectangle->y1, rectangle->x1, rectangle->y2, color);
+	draw_line(rectangle->x2, rectangle->y1, rectangle->x2, rectangle->y2, color);
 }
 
 /*! draws a two colored rectangle
@@ -102,22 +151,26 @@ void gfx::draw_rectangle(gfx::rect* rectangle, unsigned int color) {
  */
 void gfx::draw_2colored_rectangle(gfx::rect* rectangle,
 					unsigned int color1, unsigned int color2) {
-	glTranslatef(0.0f, 0.0f, 0.0f);
+	/*glTranslatef(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 		glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
-		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y1 - 1);
+		glVertex2i(rectangle->x1, rectangle->y1);
+		glVertex2i(rectangle->x2, rectangle->y1 - 1);
 
-		glVertex2i(rectangle->x1, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x1, screen->h - rectangle->y2 - 1);
+		glVertex2i(rectangle->x1, rectangle->y1);
+		glVertex2i(rectangle->x1, rectangle->y2 - 1);
 
 		glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
-		glVertex2i(rectangle->x1, screen->h - rectangle->y2);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
+		glVertex2i(rectangle->x1, rectangle->y2);
+		glVertex2i(rectangle->x2, rectangle->y2 - 1);
 
-		glVertex2i(rectangle->x2, screen->h - rectangle->y1);
-		glVertex2i(rectangle->x2, screen->h - rectangle->y2 - 1);
-	glEnd();
+		glVertex2i(rectangle->x2, rectangle->y1);
+		glVertex2i(rectangle->x2, rectangle->y2 - 1);
+	glEnd();*/
+	draw_line(rectangle->x1, rectangle->y1, rectangle->x2, rectangle->y1, color1);
+	draw_line(rectangle->x1, rectangle->y1, rectangle->x1, rectangle->y2, color1);
+	draw_line(rectangle->x1, rectangle->y2, rectangle->x2, rectangle->y2, color2);
+	draw_line(rectangle->x2, rectangle->y1, rectangle->x2, rectangle->y2, color2);
 }
 
 /*! draws a filled rectangle
@@ -129,11 +182,66 @@ void gfx::draw_filled_rectangle(gfx::rect* rectangle,
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
 	glBegin(GL_QUADS);
-	glVertex2i(rectangle->x1, screen->h - rectangle->y2 - 1);
-	glVertex2i(rectangle->x2 + 1, screen->h - rectangle->y2 - 1);
-	glVertex2i(rectangle->x2 + 1, screen->h - rectangle->y1);
-	glVertex2i(rectangle->x1, screen->h - rectangle->y1);
+		glVertex2i(rectangle->x1, rectangle->y2+1);
+		glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+		glVertex2i(rectangle->x2 + 1, rectangle->y1);
+		glVertex2i(rectangle->x1, rectangle->y1);
 	glEnd();
+}
+
+void gfx::draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2, FADE_TYPE ft) {
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glBegin(GL_QUADS);
+	switch(ft) {
+		case gfx::FT_HORIZONTAL:
+			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			glVertex2i(rectangle->x1, rectangle->y1);
+			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x1, rectangle->y2+1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			break;
+		case gfx::FT_VERTICAL:
+			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x1, rectangle->y1);
+			glVertex2i(rectangle->x1, rectangle->y2+1);
+			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			break;
+		case gfx::FT_DIAGONAL: {
+			unsigned int avg = get_average_color(color1, color2);
+			glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x1, rectangle->y1);
+			glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x1, rectangle->y2+1);
+			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
+			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			}
+			break;
+		default:
+			break;
+	}
+	glEnd();
+}
+
+unsigned int gfx::get_average_color(unsigned int color1, unsigned int color2) {
+	unsigned int tmp = 0, ret = 0;
+	tmp = ((color2>>16) & 0xFF) > ((color1>>16) & 0xFF)?
+		((color1>>16) & 0xFF) + ((((color2>>16) & 0xFF) - ((color1>>16) & 0xFF)) / 2) :
+		((color2>>16) & 0xFF) + ((((color1>>16) & 0xFF) - ((color2>>16) & 0xFF)) / 2);
+	ret += tmp << 16;
+	tmp = ((color2>>8) & 0xFF) > ((color1>>8) & 0xFF)?
+		((color1>>8) & 0xFF) + ((((color2>>8) & 0xFF) - ((color1>>8) & 0xFF)) / 2) :
+		((color2>>8) & 0xFF) + ((((color1>>8) & 0xFF) - ((color2>>8) & 0xFF)) / 2);
+	ret += tmp << 8;
+	tmp = (color2 & 0xFF) > (color1 & 0xFF)?
+		(color1 & 0xFF) + (((color2 & 0xFF) - (color1 & 0xFF)) / 2) :
+		(color2 & 0xFF) + (((color1 & 0xFF) - (color2 & 0xFF)) / 2);
+	ret += tmp;
+	return ret;
 }
 
 /*! returns the sdl_color that we get from the function arguments and the screen surface
@@ -145,7 +253,7 @@ unsigned int gfx::get_color(unsigned int red, unsigned int green, unsigned int b
 	return (unsigned int)SDL_MapRGBA(screen->format, (Uint8)red, (Uint8)green, (Uint8)blue, 255);
 }
 
-/*! returns the sdl_color that we get from the function arguments and the screen surface
+/*! returns the sdl_color that we get from the function arguments and the screen surface - DEPRECATED?
  *  @param rgb red, green and blue in one value
  */
 unsigned int gfx::get_color(unsigned int rgb) {
@@ -243,7 +351,8 @@ void gfx::set_scissor(gfx::rect* rectangle) {
  *  @param y2 y2 value of the scissor box
  */
 void gfx::set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
-	glScissor(x1, screen->h - y2, x2-x1, (y2 - y1));
+	glScissor(x1, screen->h - y2, x2-x1, y2 - y1);
+	//glScissor(x1, y2, x2-x1, y2-y1);
 }
 
 //! ends/disables scissor test

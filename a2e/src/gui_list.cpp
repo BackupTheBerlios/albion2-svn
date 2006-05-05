@@ -18,20 +18,18 @@
 
 /*! there is no function currently
  */
-gui_list::gui_list(engine* e) {
+gui_list::gui_list(engine* e, gui_style* gs) : gui_object(e, gs) {
+	gui_list::type = "listbox";
+
 	is_active = false;
 
 	drawable_items = 0;
 	position = 0;
 	top_item = 0;
 
-	rectangle = new gfx::rect();
-	rectangle->x1 = 0;
-	rectangle->y1 = 0;
-	rectangle->x2 = 0;
-	rectangle->y2 = 0;
-
 	sid = 0;
+
+	r1 = new gfx::rect();
 
 	// get classes
 	gui_list::e = e;
@@ -39,6 +37,7 @@ gui_list::gui_list(engine* e) {
 	gui_list::m = e->get_msg();
 	gui_list::g = e->get_gfx();
 	gui_list::gf = e->get_gui_font();
+	gui_list::gs = gs;
 }
 
 /*! there is no function currently
@@ -46,7 +45,7 @@ gui_list::gui_list(engine* e) {
 gui_list::~gui_list() {
 	m->print(msg::MDEBUG, "gui_list.cpp", "freeing gui_list stuff");
 
-	delete rectangle;
+	delete r1;
 
 	m->print(msg::MDEBUG, "gui_list.cpp", "gui_list stuff freed");
 }
@@ -56,49 +55,28 @@ gui_list::~gui_list() {
  *  @param y specifies how much the element is moved on the y axis
  */
 void gui_list::draw(unsigned int x, unsigned int y) {
-	gfx::rect* r1 = new gfx::rect();
-
-	g->pnt_to_rect(r1, gui_list::rectangle->x1 + x, gui_list::rectangle->y1 + y,
-		gui_list::rectangle->x2 + x, gui_list::rectangle->y2 + y);
-
-	// draw bg
-	g->draw_filled_rectangle(r1,
-		e->get_gui_style()->STYLE_BG2);
-
-	// draw 2 colored border
-	g->draw_2colored_rectangle(r1,
-		e->get_gui_style()->STYLE_INDARK,
-		e->get_gui_style()->STYLE_LIGHT);
-
-	// draw 2 colored border
-	g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1,
-		gui_list::rectangle->x2 + x - 1, gui_list::rectangle->y2 + y - 1);
-	g->draw_2colored_rectangle(r1, e->get_gui_style()->STYLE_DARK,
-		e->get_gui_style()->STYLE_DARK2);
+	draw_object(x, y);
 
 	// draw items
-	for(unsigned int i = top_item;
-		i < (top_item + drawable_items > items.size() ? items.size() : top_item + drawable_items); i++) {
+	for(unsigned int i = top_item; i < (top_item + drawable_items > items.size() ? items.size() : top_item + drawable_items); i++) {
 		if(items[i].id != sid) {
-			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
+			text_handler->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 		}
 		else {
-			list_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT2));
+			text_handler->set_color(gs->get_color("FONT2"));
 
-			g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18,
-				gui_list::rectangle->x2 + x - 2, gui_list::rectangle->y1 + y + 2 + (i-top_item)*18 + 17);
-			g->draw_filled_rectangle(r1, e->get_gui_style()->STYLE_SELECTED);
+			g->pnt_to_rect(r1, gui_list::rectangle->x1 + x + 1, gui_list::rectangle->y1 + y + 1 + (i-top_item)*18,
+				gui_list::rectangle->x2 + x - 20, gui_list::rectangle->y1 + y + 1 + (i-top_item)*18 + 17);
+			g->draw_filled_rectangle(r1, gs->get_color("SELECTED1"));
 
-			list_text->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
+			text_handler->draw(items[i].text.c_str(), x + gui_list::rectangle->x1 + 4, y + gui_list::rectangle->y1 + 5 + (i-top_item)*18);
 
-			list_text->set_font(gf->add_font(e->data_path("vera.ttf"), 12, e->get_gui_style()->STYLE_FONT));
+			text_handler->set_color(gs->get_color("FONT"));
 		}
 	}
 
 	// vbar handling
 	gui_list::set_position(vbar_handler->get_position());
-
-	delete r1;
 }
 
 /*! creates a vbar -> a pointer to the vbar class
@@ -113,16 +91,6 @@ gui_vbar* gui_list::get_vbar_handler() {
 	return gui_list::vbar_handler;
 }
 
-//! returns the list boxes id
-unsigned int gui_list::get_id() {
-	return gui_list::id;
-}
-
-//! returns the list boxes rectangle
-gfx::rect* gui_list::get_rectangle() {
-	return gui_list::rectangle;
-}
-
 //! returns the list boxes is_active bool
 bool gui_list::get_active() {
 	return gui_list::is_active;
@@ -131,13 +99,6 @@ bool gui_list::get_active() {
 //! returns the list position
 unsigned int gui_list::get_position() {
 	return gui_list::position;
-}
-
-/*! sets the list boxes id
- *  @param id the id we want to set
- */
-void gui_list::set_id(unsigned int id) {
-	gui_list::id = id;
 }
 
 /*! sets the list boxes rectangle
@@ -257,14 +218,6 @@ gui_list::item* gui_list::get_item(unsigned int id) {
 		}
 	}
 	return NULL;
-}
-
-void gui_list::set_list_text(gui_text* text) {
-	gui_list::list_text = text;
-}
-
-gui_text* gui_list::get_list_text() {
-	return gui_list::list_text;
 }
 
 //! clears the list, deletes all items

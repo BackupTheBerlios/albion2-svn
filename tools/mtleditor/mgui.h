@@ -37,6 +37,7 @@
 #include <net.h>
 #include <gfx.h>
 #include <gui.h>
+#include <gui_style.h>
 #include <event.h>
 #include <camera.h>
 #include <a2emodel.h>
@@ -78,6 +79,7 @@ public:
 protected:
 	engine* e;
 	gui* agui;
+	gui_style* gs;
 	msg* m;
 	scene* sce;
 	mdl* model;

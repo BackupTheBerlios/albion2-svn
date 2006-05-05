@@ -29,6 +29,8 @@
 #include "gui_button.h"
 #include "gui_vbar.h"
 #include "gui_font.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -41,10 +43,10 @@ using namespace std;
  *  the gui_list class
  */
 
-class A2E_API gui_list
+class A2E_API gui_list : public gui_object
 {
 public:
-	gui_list(engine* e);
+	gui_list(engine* e, gui_style* gs);
 	~gui_list();
 
 	struct item {
@@ -62,27 +64,18 @@ public:
 	gui_list::item* add_item(char* text, unsigned int id);
 	void delete_item(unsigned int id);
 
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
 	bool get_active();
 	unsigned int get_position();
 	unsigned int get_selected_id();
 	gui_list::item* get_item(unsigned int id);
 	gui_list::item* get_selected_item();
 
-	void set_id(unsigned int id);
 	void set_rectangle(gfx::rect* rectangle);
 	void set_active(bool is_active);
 	void set_position(unsigned int position);
 	void set_selected_id(unsigned int sid);
-
 	unsigned int get_citems();
-
 	void select_pos(unsigned int x, unsigned int y);
-
-	void set_list_text(gui_text* text);
-	gui_text* get_list_text();
-
 	void clear();
 
 protected:
@@ -92,9 +85,9 @@ protected:
 	gfx* g;
 	gui_font* gf;
 
-
-	gui_text* list_text;
 	gui_vbar* vbar_handler;
+
+	gfx::rect* r1;
 
 	vector<item> items;
 
@@ -102,11 +95,6 @@ protected:
 	unsigned int top_item;
 
 	// gui list box element variables
-
-	//! list box id
-	unsigned int id;
-	//! list box rectangle
-	gfx::rect* rectangle;
 	//! list position
 	unsigned int position;
 	//! list selected id

@@ -22,10 +22,11 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
-#include "gui_text.h"
 #include "image.h"
+#include "gui_text.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -38,34 +39,13 @@ using namespace std;
  *  the gui_button class
  */
 
-class A2E_API gui_button
+class A2E_API gui_button : public gui_object
 {
 public:
-	gui_button(engine* e);
+	gui_button(engine* e, gui_style* gs);
 	~gui_button();
-	
-	void draw(bool is_pressed, unsigned int x, unsigned int y);
-	void set_text_handler(gui_text* itext);
-	gui_text* get_text_handler();
-
 
 	// gui button element variables functions
-
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
-	char* get_text();
-	unsigned int get_icon();
-	image* get_image();
-
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
-	void set_text(char* text);
-	void set_icon(unsigned int icon);
-	void set_image(image* img);
-
-	void set_pressed(bool pressed);
-	bool get_pressed();
-
 	void set_image_scaling(bool state);
 	bool get_image_scaling();
 
@@ -74,26 +54,9 @@ protected:
 	core* c;
 	engine* e;
 	gfx* g;
-	image* img;
-
-	gui_text* text_handler;
-
-	// gui button element variables
-
-	//! button id
-	unsigned int id;
-	//! button rectangle
-	gfx::rect* rectangle;
-	//! button text
-	char* text;
-	//! button icon id
-	unsigned int icon;
 
 	bool img_scale;
 
-	// event handle stuff
-
-	bool pressed;
 };
 
 #endif

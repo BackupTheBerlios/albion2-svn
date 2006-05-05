@@ -18,9 +18,17 @@
 #define __GUI_STYLE_H__
 
 #include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <sstream>
 #include <SDL/SDL.h>
+#include "engine.h"
 #include "msg.h"
 #include "gfx.h"
+#include "file_io.h"
+#include "gui_text.h"
+#include "image.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -28,7 +36,6 @@ using namespace std;
 /*! @class gui_style
  *  @brief gui style stuff
  *  @author flo
- *  @version 0.3.1
  *  @todo more functions
  *  
  *  the gui_style class
@@ -37,7 +44,7 @@ using namespace std;
 class A2E_API gui_style
 {
 public:
-	gui_style(gfx* g, msg* m);
+	gui_style(engine* e);
 	~gui_style();
 
 	//! the style color scheme
@@ -47,54 +54,72 @@ public:
 		BLACKWHITE	//!< enum black/white colors
 	};
 
-	enum COLOR_TYPE {
-		ARROW,
-		BARBG,
-		BG,
-		BG2,
-		DARK,
-		DARK2,
-		FONT,
-		FONT2,
-		INDARK,
-		LIGHT,
-		SELECTED,
-		WINDOW_BG
-	};
+	void load_gui_elements(const char* list);
+	void render_gui_element(const char* name, const char* state_name, gfx::rect* rectangle, unsigned int x, unsigned int y);
+	void set_gui_text(gui_text* text);
+	void set_image(image* img);
 
-	void init(SDL_Surface* screen);
-	void set_color_scheme(COLOR_SCHEME scheme);
-	unsigned int get_color(COLOR_TYPE type);
-
-	//! gui style color - arrow color
-	unsigned int STYLE_ARROW;
-	//! gui style color - bar bg color (used for i.g. vertical bar)
-	unsigned int STYLE_BARBG;
-	//! gui style color - bg color (used for i.g. buttons)
-	unsigned int STYLE_BG;
-	//! gui style color - bg color 2 (used for i.g. input boxes)
-	unsigned int STYLE_BG2;
-	//! gui style color - dark color
-	unsigned int STYLE_DARK;
-	//! gui style color - dark color 2
-	unsigned int STYLE_DARK2;
-	//! gui style color - normal font color
-	unsigned int STYLE_FONT;
-	//! gui style color - normal font color 2
-	unsigned int STYLE_FONT2;
-	//! gui style color - inside dark color
-	unsigned int STYLE_INDARK;
-	//! gui style color - light color
-	unsigned int STYLE_LIGHT;
-	//! gui style color - selected color
-	unsigned int STYLE_SELECTED;
-	//! gui style color - window bg color (used for i.g. start_draw() in the engine class)
-	unsigned int STYLE_WINDOW_BG;
+	//! if you want set the color scheme from the outside, use the gui function
+	bool set_color_scheme(const char* scheme);
+	void load_color_schemes(const char* cs_file);
+	unsigned int get_color(const char* name);
 
 protected:
-    gfx* g;
+	engine* e;
+	core* c;
+	gfx* g;
 	msg* m;
+	xml* x;
+	file_io* f;
 	SDL_Surface* screen;
+
+	map<string, map<string, unsigned int> > color_schemes;
+	string cur_scheme;
+
+	enum GFXTYPE {
+		GT_POINT,
+		GT_LINE,
+		GT_RECT,
+		GT_RECT_FILLED,
+		GT_RECT_2COL,
+		GT_TEXT,
+		GT_IMG,
+		GT_HFADE,
+		GT_VFADE,
+		GT_DFADE
+	};
+
+	struct gfx_type {
+		GFXTYPE type;
+		unsigned int bbox[4];
+		int correct[4];
+		string primary_color;
+		string secondary_color;
+	};
+
+	struct state {
+		string state_name;
+	};
+
+	struct gui_element {
+		string filename;
+		vector< vector<gfx_type> > gfx_types;
+		vector<state> states;
+	};
+
+	map<string, gui_element> gui_elements;
+
+	vector<string> state_types;
+
+	stringstream* buffer;
+	string tmp;
+
+	gfx::rect* r1;
+	core::pnt* p1;
+	core::pnt* p2;
+
+	gui_text* text;
+	image* img;
 
 };
 

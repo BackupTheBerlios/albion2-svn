@@ -23,9 +23,10 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 #include "gui_text.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -38,33 +39,24 @@ using namespace std;
  *  the gui_input class
  */
 
-class A2E_API gui_input
+class A2E_API gui_input : public gui_object
 {
 public:
-	gui_input(engine* e);
+	gui_input(engine* e, gui_style* gs);
 	~gui_input();
 	
 	void draw(unsigned int x, unsigned int y);
-	void set_text_handler(gui_text* itext);
 	void set_blink_text_handler(gui_text* itext);
-	gui_text* get_text_handler();
 	gui_text* get_blink_text_handler();
 
-
 	// gui input box element variables functions
-
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
-	string* get_text();
 	unsigned int get_text_position();
-
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
-	void set_text(char* text);
 	void set_text_position(unsigned int position);
 
 	void set_active(bool is_active);
 	bool get_active();
+
+	void set_text(const char* text);
 
 protected:
 	msg* m;
@@ -72,28 +64,15 @@ protected:
 	engine* e;
 	gfx* g;
 
-	gui_text* text_handler;
-
 	gui_text* blink_text_handler;
 	unsigned int blink_time;
 	bool is_in_rectangle;
 
 	// gui input box element variables
-
-	//! input box id
-	unsigned int id;
-	//! input box rectangle
-	gfx::rect* rectangle;
-	//! input box text
-	string text;
 	//! the current text position (of the blink symbol)
 	unsigned int text_pos;
 
-	//! the current text length
-	unsigned int text_length;
-
 	// event handle stuff
-
 	bool is_active;
 };
 

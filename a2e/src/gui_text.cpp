@@ -64,11 +64,11 @@ void gui_text::draw(const char* text, unsigned int x, unsigned int y) {
 
 	// i dunno why, but we have to substract 10 from our y coord (maybe the title bar ...)
 	glTranslatef((GLfloat)(gui_text::point->x + x),
-		(GLfloat)(gui_text::e->get_screen()->h - gui_text::point->y - 10.0f - y),
+		(GLfloat)(gui_text::point->y + y + gui_text::font->font_size + gui_text::font->ttf_font->Descender()),
 		0.0f);
-	glColor3f((GLfloat)((gui_text::font->color & 0xFF0000) >> 16) / 255,
-		(GLfloat)((gui_text::font->color & 0xFF00) >> 8) / 255,
-		(GLfloat)(gui_text::font->color & 0xFF) / 255);
+	glColor3f((GLfloat)((color & 0xFF0000) >> 16) / 255,
+		(GLfloat)((color & 0xFF00) >> 8) / 255,
+		(GLfloat)(color & 0xFF) / 255);
 	gui_text::font->ttf_font->Render(text);
 
 	glPopMatrix();
@@ -145,4 +145,16 @@ void gui_text::set_font(gui_font::font* font) {
  */
 gui_font::font* gui_text::get_font() {
 	return gui_text::font;
+}
+
+/*! returns the fonts color
+ */
+unsigned int gui_text::get_color() {
+	return gui_text::color;
+}
+
+/*! sets the fonts color
+ */
+void gui_text::set_color(unsigned int color) {
+	gui_text::color = color;
 }

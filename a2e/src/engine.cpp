@@ -48,8 +48,9 @@ engine::engine(const char* datapath) {
 	width = 640;
 	height = 480;
 	depth = 16;
+	zbuffer = 16;
+	stencil = 8;
 	fullscreen = false;
-	color_scheme = gui_style::BLUE;
 
 	m = new msg();
 	f = new file_io(m);
@@ -57,7 +58,6 @@ engine::engine(const char* datapath) {
 	x = new xml(m);
 	e = new event(datapath, m, x);
 	g = new gfx();
-	gstyle = new gui_style(g, m);
 	t = new texman(m);
 	l = new lua(m);
 	gf = new gui_font(m);
@@ -84,6 +84,14 @@ engine::engine(const char* datapath) {
 					depth = (unsigned int)atoi(x->get_attribute("depth"));
 				}
 
+				if(x->get_attribute("zbuffer") != NULL) {
+					zbuffer = (unsigned int)atoi(x->get_attribute("zbuffer"));
+				}
+
+				if(x->get_attribute("stencil") != NULL) {
+					stencil = (unsigned int)atoi(x->get_attribute("stencil"));
+				}
+
 				if(x->get_attribute("fullscreen") != NULL) {
 					if(atoi(x->get_attribute("fullscreen")) != 0) {
 						engine::fullscreen = true;
@@ -92,15 +100,7 @@ engine::engine(const char* datapath) {
 			}
 			else if(strcmp(x->get_node_name(), "gui") == 0) {
 				if(x->get_attribute("color_scheme") != NULL) {
-					if(strcmp(x->get_attribute("color_scheme"), "BLACKWHITE") == 0) {
-						color_scheme = gui_style::BLACKWHITE;
-					}
-					else if(strcmp(x->get_attribute("color_scheme"), "BLUE") == 0) {
-						color_scheme = gui_style::BLUE;
-					}
-					else if(strcmp(x->get_attribute("color_scheme"), "WINDOWS") == 0) {
-						color_scheme = gui_style::WINDOWS;
-					}
+					color_scheme = x->get_attribute("color_scheme");
 				}
 			}
 			else if(strcmp(x->get_node_name(), "key_repeat") == 0) {
@@ -160,7 +160,6 @@ engine::~engine() {
 	}
 
 	delete c;
-	delete gstyle;
 	delete f;
 	delete e;
 	delete g;
@@ -184,10 +183,10 @@ engine::~engine() {
  *  @param console the initialization mode (false = gfx/console, true = console only)
  *  @param width the window width
  *  @param height the window height
- *  @param depth the depth of the window (16, 24 or 32)
+ *  @param depth the color depth of the window (16, 24 or 32)
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
-void engine::init(bool console, unsigned int width, unsigned int height, unsigned int depth, bool fullscreen) {
+void engine::init(bool console, unsigned int width, unsigned int height, unsigned int depth, unsigned int zbuffer, unsigned int stencil, bool fullscreen) {
 	if(console == true) {
 	    engine::mode = engine::CONSOLE;
 		// create extension class object
@@ -198,6 +197,8 @@ void engine::init(bool console, unsigned int width, unsigned int height, unsigne
 		engine::width = width;
 		engine::height = height;
 		engine::depth = depth;
+		engine::zbuffer = zbuffer;
+		engine::stencil = stencil;
 		engine::fullscreen = fullscreen;
 
 		engine::init();
@@ -230,28 +231,22 @@ void engine::init() {
 		m->print(msg::MDEBUG, "engine.cpp", "successfully received video info");
 	}
 
-	m->print(msg::MDEBUG, "engine.cpp",
-		"amount of available video memory: %u kb", video_info->video_mem);
+	m->print(msg::MDEBUG, "engine.cpp", "amount of available video memory: %u kb", video_info->video_mem);
 
 	// set some flags
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
-	engine::flags |= SDL_GL_DOUBLEBUFFER;
+	engine::flags |= SDL_DOUBLEBUF;
 	if(video_info->hw_available) {
-		engine::flags |= SDL_HWSURFACE;
+		//engine::flags |= SDL_HWSURFACE;
 		m->print(msg::MDEBUG, "engine.cpp", "using hardware surface");
 	}
 	else {
-		engine::flags |= SDL_SWSURFACE;
+		//engine::flags |= SDL_SWSURFACE;
 		m->print(msg::MDEBUG, "engine.cpp", "using software surface");
 	}
-	if(video_info->blit_hw) {
-		//engine::flags |= SDL_HWACCEL;
-		m->print(msg::MDEBUG, "engine.cpp", "hardware acceleration enabled");
-	}
-	else {
-		m->print(msg::MDEBUG, "engine.cpp", "hardware acceleration disabled");
-	}
+	engine::flags |= SDL_HWSURFACE;
+
 	if(fullscreen) {
 		engine::flags |= SDL_FULLSCREEN;
 		m->print(msg::MDEBUG, "engine.cpp", "fullscreen enabled");
@@ -293,10 +288,10 @@ void engine::init() {
 			break;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
-	m->print(msg::MDEBUG, "engine.cpp", "depth set to %u bit", depth);
+	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, depth);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, zbuffer);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	m->print(msg::MDEBUG, "engine.cpp", "double buffer enabled");
 
 	// create screen
 	engine::height = height;
@@ -311,6 +306,16 @@ void engine::init() {
 		m->print(msg::MDEBUG, "engine.cpp", "video mode set: w%u h%u d%u", width,
 			height, depth);
 	}
+
+	int tmp = 0;
+	SDL_GL_GetAttribute(SDL_GL_BUFFER_SIZE, &tmp);
+	m->print(msg::MDEBUG, "engine.cpp", "color depth set to %d bits", tmp);
+	SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &tmp);
+	m->print(msg::MDEBUG, "engine.cpp", "z buffer set to %d bits", tmp);
+	SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &tmp);
+	m->print(msg::MDEBUG, "engine.cpp", "stencil buffer set to %d bits", tmp);
+	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
+	m->print(msg::MDEBUG, "engine.cpp", "double buffering %s", tmp == 1 ? "enabled" : "disabled");
 
 	g->set_surface(screen);
 
@@ -328,11 +333,6 @@ void engine::init() {
 	else {
 		m->print(msg::MDEBUG, "engine.cpp", "keyboard repeat set");
 	}
-
-	gstyle->init(screen);
-	m->print(msg::MDEBUG, "engine.cpp", "gui style initialized");
-	gstyle->set_color_scheme(color_scheme);
-	m->print(msg::MDEBUG, "engine.cpp", "color scheme set to windows like");
 
 	// initialize ogl
 	init_gl();
@@ -417,13 +417,6 @@ char* engine::get_caption() {
 	return caption;
 }
 
-/*! sets the window color scheme
- *  @param scheme the window color scheme we want to set
- */
-void engine::set_color_scheme(gui_style::COLOR_SCHEME scheme) {
-	gstyle->set_color_scheme(scheme);
-}
-
 /*! opengl initialization function
  */
 bool engine::init_gl() {
@@ -480,8 +473,8 @@ bool engine::resize_window() {
 	glLoadIdentity();
 	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
 
-	// set perspective with fov = 60 and far value = 1500.0f
-	gluPerspective(60.0f, (float)engine::width / (float)engine::height, 0.01f, 1500.0f);
+	// set perspective with fov = 72 and far value = 1000.0f
+	gluPerspective(72.0f, (float)engine::width / (float)engine::height, 0.1f, 1000.0f);
 	m->print(msg::MDEBUG, "engine.cpp", "glu perspective set");
 
 	// model view matrix
@@ -520,12 +513,14 @@ void engine::start_2d_draw() {
 	glDisable(GL_LIGHTING);
 	glDisable(GL_BLEND);
 
+	glViewport(0, 0, screen->w, screen->h);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 
 	// we need an orthogonal view (2d) for drawing 2d elements
-	glOrtho(0.0, screen->w, 0.0, screen->h, -1.0, 1.0);
+	glOrtho(0, screen->w, screen->h, 0, -1.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -601,12 +596,6 @@ event* engine::get_event() {
 	return engine::e;
 }
 
-/*! returns the gstyle class
- */
-gui_style* engine::get_gui_style() {
-	return engine::gstyle;
-}
-
 /*! returns the gfx class
  */
 gfx* engine::get_gfx() {
@@ -635,6 +624,18 @@ lua* engine::get_lua() {
  */
 gui_font* engine::get_gui_font() {
 	return engine::gf;
+}
+
+/*! returns the xml class
+ */
+xml* engine::get_xml() {
+	return engine::x;
+}
+
+/*! returns the xml class
+ */
+string* engine::get_color_scheme() {
+	return &(engine::color_scheme);
 }
 
 /*! returns the number/amount of additional threads (besides the main thread)

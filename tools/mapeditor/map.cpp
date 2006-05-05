@@ -16,18 +16,18 @@
 
 #include "map.h"
 
-map::map(engine* e) {
-	map::e = e;
-	map::m = e->get_msg();
-	map::f = e->get_file_io();
+cmap::cmap(engine* e) {
+	cmap::e = e;
+	cmap::m = e->get_msg();
+	cmap::f = e->get_file_io();
 
 	map_opened = false;
 }
 
-map::~map() {
+cmap::~cmap() {
 }
 
-bool map::open_map(char* filename) {
+bool cmap::open_map(char* filename) {
 	if(map_opened) {
 		// TODO: close and save old map
 	}
@@ -86,7 +86,7 @@ bool map::open_map(char* filename) {
 	return true;
 }
 
-bool map::save_map(char* filename) {
+bool cmap::save_map(char* filename) {
 	f->open_file(filename, file_io::OT_WRITE_BINARY);
 
 	f->write_block("A2EMAP", 6);
@@ -119,7 +119,7 @@ bool map::save_map(char* filename) {
 	return true;
 }
 
-bool map::close_map() {
+bool cmap::close_map() {
 	map_opened = false;
 
 	delete [] map_objects;

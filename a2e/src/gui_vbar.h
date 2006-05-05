@@ -24,6 +24,8 @@
 #include "gfx.h"
 #include "engine.h"
 #include "gui_button.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -36,37 +38,29 @@ using namespace std;
  *  the gui_vbar class
  */
 
-class A2E_API gui_vbar
+class A2E_API gui_vbar : public gui_object
 {
 public:
-	gui_vbar(engine* e);
+	gui_vbar(engine* e, gui_style* gs);
 	~gui_vbar();
 	
-	void draw();
 	void draw(unsigned int x, unsigned int y);
 
-
 	// gui vertical bar element variables functions
-
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
 	unsigned int get_max_lines();
 	unsigned int get_shown_lines();
 	unsigned int get_position();
 	bool get_active();
-	//core::pnt* get_last_point();
 	core::pnt* get_new_point();
 	bool get_slider_active();
 
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
 	void set_max_lines(unsigned int max_lines);
 	void set_shown_lines(unsigned int shown_lines);
 	void set_position(unsigned int position);
 	void set_active(bool is_active);
-	//void set_last_point(core::pnt* last_point);
 	void set_new_point(core::pnt* new_point);
 	void set_slider_active(bool state);
+	void set_rectangle(gfx::rect* rectangle);
 
 	void set_up_button_handler(gui_button* ibutton);
 	void set_down_button_handler(gui_button* ibutton);
@@ -82,14 +76,12 @@ protected:
 	gui_button* up_button_handler;
 	gui_button* down_button_handler;
 
+	gfx::rect* r1;
+
 	unsigned int px_per_item;
 
 	// gui vertical bar element variables
 
-	//! vertical bar id
-	unsigned int id;
-	//! vertical bars rectangle
-	gfx::rect* rectangle;
 	//! vertical bar max lines
 	unsigned int max_lines;
 	//! vertical bar shown lines

@@ -528,3 +528,10 @@ void core::get_block(stringstream* sstr, string* data, unsigned int size) {
 		*data += sstr->get();
 	}
 }
+
+void core::reset(stringstream* sstr) {
+	sstr->seekp(0);
+	sstr->seekg(0);
+	sstr->str("");
+	sstr->clear();
+}

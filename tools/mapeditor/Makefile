@@ -6,29 +6,29 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-  BINDIR = ../bin
-  LIBDIR = ../lib
+  BINDIR = ../..
+  LIBDIR = ../..
   OBJDIR = obj/Debug
-  OUTDIR = ../bin/../mapeditor
-  CPPFLAGS = -MD -I "../src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  OUTDIR = ../../tools/bin
+  CPPFLAGS = -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
   CFLAGS += $(CPPFLAGS) -g -Os -c `sdl-config --cflags`
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/X11R6/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
-  LDDEPS = ../lib/liba2e.a
-  TARGET = editor
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
+  LDDEPS = ../../a2e/lib/liba2e.a
+  TARGET = mapeditor
 endif
 
 ifeq ($(CONFIG),Release)
-  BINDIR = ../bin
-  LIBDIR = ../lib
+  BINDIR = ../..
+  LIBDIR = ../..
   OBJDIR = obj/Release
-  OUTDIR = ../bin/../mapeditor
-  CPPFLAGS = -MD -I "../src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  OUTDIR = ../../tools/bin
+  CPPFLAGS = -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
   CFLAGS += $(CPPFLAGS) -O2 -Os -c `sdl-config --cflags`
   CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/X11R6/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
-  LDDEPS = ../lib/liba2e.a
-  TARGET = editor
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
+  LDDEPS = ../../a2e/lib/liba2e.a
+  TARGET = mapeditor
 endif
 
 OBJECTS = \

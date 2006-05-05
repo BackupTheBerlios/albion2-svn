@@ -31,6 +31,8 @@ image::image(engine* e) {
 
 	scale = true;
 
+	color = 0xFFFFFF;
+
 	// get classes
 	image::e = e;
 	image::m = e->get_msg();
@@ -51,37 +53,36 @@ image::~image() {
  */
 void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	image::e->start_2d_draw();
-	unsigned int screen_heigth = image::e->get_screen()->h;
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, image::texture);
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
-	glColor3f(1.0f, 1.0f, 1.0f);
+	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	if(alpha) { glEnable(GL_BLEND); }
 
 	if(scale) {
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 0.0f);
-			glVertex2i(image::position->x, screen_heigth - image::position->y);
+			glVertex2i(image::position->x, image::position->y);
 			glTexCoord2f(0.0f, 1.0f);
-			glVertex2i(image::position->x, screen_heigth - (image::position->y + scale_y));
+			glVertex2i(image::position->x, image::position->y + scale_y);
 			glTexCoord2f(1.0f, 1.0f);
-			glVertex2i(image::position->x + scale_x, screen_heigth - (image::position->y + scale_y));
+			glVertex2i(image::position->x + scale_x, image::position->y + scale_y);
 			glTexCoord2f(1.0f, 0.0f);
-			glVertex2i(image::position->x + scale_x, screen_heigth - image::position->y);
+			glVertex2i(image::position->x + scale_x, image::position->y);
 		glEnd();
 	}
 	else {
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 0.0f);
-			glVertex2i(image::position->x, screen_heigth - image::position->y);
+			glVertex2i(image::position->x, image::position->y);
 			glTexCoord2f(0.0f, 1.0f);
-			glVertex2i(image::position->x, screen_heigth - (image::position->y + image::heigth));
+			glVertex2i(image::position->x, image::position->y + image::heigth);
 			glTexCoord2f(1.0f, 1.0f);
-			glVertex2i(image::position->x + image::width, screen_heigth - (image::position->y + image::heigth));
+			glVertex2i(image::position->x + image::width, image::position->y + image::heigth);
 			glTexCoord2f(1.0f, 0.0f);
-			glVertex2i(image::position->x + image::width, screen_heigth - image::position->y);
+			glVertex2i(image::position->x + image::width, image::position->y);
 		glEnd();
 	}
 
@@ -160,4 +161,16 @@ void image::set_scaling(bool state) {
 //! returns the image scale flag
 bool image::get_scaling() {
 	return image::scale;
+}
+
+unsigned int image::get_width() {
+	return image::width;
+}
+
+unsigned int image::get_height() {
+	return image::heigth;
+}
+
+void image::set_color(unsigned int color) {
+	image::color = color;
 }

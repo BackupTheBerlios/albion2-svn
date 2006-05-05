@@ -50,7 +50,7 @@ public:
 
 	void init();
 	void close();
-	void run(unsigned int last_frame = 0);
+	void run(unsigned int el_time = 0);
 
 	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 

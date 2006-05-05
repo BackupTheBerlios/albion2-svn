@@ -27,6 +27,7 @@
 #include <string>
 #include <core.h>
 #include <msg.h>
+#include <file_io.h>
 #include <vertex3.h>
 using namespace std;
 

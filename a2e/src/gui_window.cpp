@@ -15,39 +15,31 @@
  */
 
 #include "gui_window.h"
-#include "gfx.h"
-#include "msg.h"
-#include "core.h"
-#include "engine.h"
 
 /*! there is no function currently
  */
-gui_window::gui_window(engine* e) {
+gui_window::gui_window(engine* e, gui_style* gs) : gui_object(e, gs) {
+	gui_window::type = "window";
+
 	gui_window::lid = 0;
 
 	gui_window::border = true;
 	gui_window::moving = false;
 	gui_window::deleted = false;
-
-	// 1024 chars
-	gui_window::caption = new char[64];
-
-	gui_window::rectangle = NULL;
+	gui_window::bg = false;
 
 	// get classes
 	gui_window::e = e;
 	gui_window::c = e->get_core();
 	gui_window::m = e->get_msg();
 	gui_window::g = e->get_gfx();
+	gui_window::gs = gs;
 }
 
 /*! there is no function currently
  */
 gui_window::~gui_window() {
 	m->print(msg::MDEBUG, "gui_window.cpp", "freeing gui_window stuff");
-
-	delete [] gui_window::caption;
-	if(gui_window::rectangle != NULL) {	delete gui_window::rectangle; }
 
 	m->print(msg::MDEBUG, "gui_window.cpp", "gui_window stuff freed");
 }
@@ -56,61 +48,17 @@ gui_window::~gui_window() {
  */
 void gui_window::draw() {
 	if(gui_window::border) {
-		// draw bg
-		g->draw_filled_rectangle(gui_window::rectangle,
-			e->get_gui_style()->STYLE_BG);
-
-		// draw 2 colored border
-		g->draw_2colored_rectangle(gui_window::rectangle,
-			e->get_gui_style()->STYLE_LIGHT,
-			e->get_gui_style()->STYLE_DARK);
-
-		gfx::rect* r = new gfx::rect();
-		memcpy(r, gui_window::rectangle, sizeof(gfx::rect));
-
-		r->x1 += 1;
-		r->x2 -= 1;
-		r->y2 = r->y1 + 17;
-		r->y1 += 1;
-		g->draw_filled_rectangle(r,	e->get_gui_style()->STYLE_DARK);
-
-		r->y1 = r->y2 + 1;
-		r->y2 = gui_window::rectangle->y2 - 1;
-		g->draw_2colored_rectangle(r,
-			e->get_gui_style()->STYLE_LIGHT,
-			e->get_gui_style()->STYLE_DARK);
-
-		delete r;
-
-		core::pnt* p = new core::pnt();
-		p->x = gui_window::rectangle->x1 + 2;
-		p->y = gui_window::rectangle->y1 + 3;
-		gui_window::text_handler->set_point(p);
-		gui_window::text_handler->draw(0, 0);
-		delete p;
+		draw_object(0, 0);
 
 		// button event handling
-		if(gui_window::exit_button_handler->get_pressed() == true) {
+		if(gui_window::exit_button_handler->get_state() == "CLICKED") {
 			gui_window::deleted = true;
 		}
 	}
-}
 
-/*! creates a text_handler -> a pointer to the gui_text class
- *  @param itext the gui_text we want to handle
- */
-void gui_window::set_text_handler(gui_text* itext) {
-	gui_window::text_handler = itext;
-}
-
-//! returns the windows id
-unsigned int gui_window::get_id() {
-	return gui_window::id;
-}
-
-//! returns the windows rectangle
-gfx::rect* gui_window::get_rectangle() {
-	return gui_window::rectangle;
+	if(!gui_window::border && bg) {
+		draw_object(0, 0);
+	}
 }
 
 //! returns the windows layer id
@@ -133,18 +81,9 @@ bool gui_window::get_deleted() {
 	return gui_window::deleted;
 }
 
-/*! sets the windows id
- *  @param id the id we want to set
- */
-void gui_window::set_id(unsigned int id) {
-	gui_window::id = id;
-}
-
-/*! sets the windows rectangle
- *  @param rectangle the rectangle we want to set
- */
-void gui_window::set_rectangle(gfx::rect* rectangle) {
-	gui_window::rectangle = rectangle;
+//! returns true if the window bg flag is set
+bool gui_window::get_bg() {
+	return gui_window::bg;
 }
 
 /*! sets the windows layer id
@@ -158,9 +97,7 @@ void gui_window::set_lid(unsigned int lid) {
  *  @param caption the caption we want to set
  */
 void gui_window::set_caption(const char* caption) {
-	memcpy(gui_window::caption, caption, strlen(caption));
-	gui_window::caption[strlen(caption)] = 0;
-	gui_window::text_handler->set_text(gui_window::caption);
+	text = caption;
 }
 
 /*! sets the windows border draw flag
@@ -182,6 +119,15 @@ void gui_window::set_moving(bool state) {
  */
 void gui_window::set_deleted(bool state) {
 	gui_window::deleted = state;
+}
+
+/*! sets the windows background draw flag
+ *  @param state the state of the background draw flag we want to set
+ */
+void gui_window::set_bg(bool state) {
+	gui_window::bg = state;
+	if(!border) state ? set_state("BACKGROUND") : set_state("NORMAL");
+	else set_state("NORMAL");
 }
 
 /*! changes the position of the window

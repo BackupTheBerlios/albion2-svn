@@ -22,6 +22,7 @@
 #endif
 
 #include <iostream>
+#include <sstream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <engine.h>
@@ -31,6 +32,7 @@
 #include <event.h>
 #include <camera.h>
 #include <a2emodel.h>
+#include <a2emap.h>
 #include <scene.h>
 #include <ode.h>
 #include <ode_object.h>
@@ -48,18 +50,25 @@ ode* o;
 shader* s;
 scene* sce;
 
+a2emap* mdl_map;
+
+a2ematerial* ground_mat;
+a2ematerial* cc_mat;
+a2ematerial* scale_mat;
 a2emodel* plane;
 a2emodel* cottage;
 a2emodel* sphere;
 
-SDL_Surface* sf;
-
-bool done = false;
-
-SDL_Event ievent;
-
+ode_object* osphere;
 unsigned int refresh_time;
 
+SDL_Event sevent;
+
+bool done = false;
 bool wireframe = false;
+bool use_a2map = true;
+
+stringstream caption;
+stringstream tmp;
 
 #endif

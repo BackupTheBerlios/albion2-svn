@@ -56,6 +56,11 @@ public:
 
 	core::pnt* get_position();
 
+	unsigned int get_width();
+	unsigned int get_height();
+
+	void set_color(unsigned int color);
+
 protected:
 	msg* m;
 	engine* e;
@@ -70,6 +75,8 @@ protected:
 	unsigned int heigth;
 
 	bool scale;
+
+	unsigned int color;
 
 };
 

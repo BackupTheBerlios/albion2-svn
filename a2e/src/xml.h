@@ -23,6 +23,7 @@
 #endif
 
 #include <iostream>
+#include <string>
 #include <cmath>
 #include <libxml/xmlreader.h>
 #include "msg.h"
@@ -51,7 +52,7 @@ public:
 
 	char* get_node_name();
 	int get_attribute_count();
-	char* get_attribute(char* att_name);
+	const char* get_attribute(char* att_name);
 	char* get_nattribute(unsigned int num);
 
 protected:
@@ -61,7 +62,8 @@ protected:
 	xmlTextReaderPtr* reader;
 	char* fname;
 
-	char* tmp;
+	char* tmpc;
+	string tmp;
 
 };
 

@@ -24,11 +24,12 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 #include "gui_text.h"
 #include "gui_button.h"
 #include "gui_font.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -41,31 +42,21 @@ using namespace std;
  *  the gui_combo class
  */
 
-class A2E_API gui_combo
+class A2E_API gui_combo : public gui_object
 {
 protected:
 	struct item;
 public:
-	gui_combo(engine* e);
+	gui_combo(engine* e, gui_style* gs);
 	~gui_combo();
 	
 	void draw(unsigned int x, unsigned int y);
 
 	// gui combo box element variables functions
-
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
-
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
-
 	void set_list_visible(bool visible);
 	bool is_list_visible();
 
-	void set_item_text(gui_text* text);
 	void set_list_button(gui_button* button);
-
-	gui_text* get_item_text();
 	gui_button* get_list_button();
 
 	void add_item(char* text, unsigned int id);
@@ -88,17 +79,10 @@ protected:
 
 
 	// gui combo box element variables
-
-	//! combo box id
-	unsigned int id;
-	//! combo box rectangle
-	gfx::rect* rectangle;
-
 	unsigned int selected_id;
 	unsigned int selected_item;
 	unsigned int marked_item;
 
-	gui_text* item_text;
 	gui_button* list_button;
 	bool list_button_pressed;
 
@@ -107,6 +91,9 @@ protected:
 		unsigned int id;
 	};
 	vector<item> items;
+
+	gfx::rect* r1;
+	gfx::rect* r2;
 
 	// event handle stuff
 	bool list_visible;

@@ -188,7 +188,6 @@ void net::handle_server() {
  */
 bool net::add_client() {
 	TCPsocket tmp_sock;
-	char* data = new char[1];
 
 	// handle new client
 	tmp_sock = SDLNet_TCP_Accept(tcp_server_sock);
@@ -315,10 +314,10 @@ void net::send_packet(TCPsocket* sock, const char* data, int len, unsigned int c
 
 			char* cnum = new char[64];
 			if(client_num != 0xFFFFFFFF) {
-				sprintf(cnum, "%s(%u)%c", clients[client_num].name, client_num, 0x00);
+				sprintf(cnum, "%s(%u)%c", clients[client_num].name.c_str(), client_num, (char)0x00);
 			}
 			else {
-				sprintf(cnum, "server%c", 0x00);
+				sprintf(cnum, "server%c", (char)0x00);
 			}
 
 			*(net::logfile) << "> send packet (len: " << (len-4) << " / client: " << cnum << "): " << dbg << endl;
@@ -416,7 +415,7 @@ int net::recv_packet(TCPsocket* sock, char* data, int maxlen, unsigned int clien
 
 		char* cnum = new char[64];
 		if(client_num != 0xFFFFFFFF) {
-			sprintf(cnum, "%s(%u)%c", clients[client_num].name, client_num, 0x00);
+			sprintf(cnum, "%s(%u)%c", clients[client_num].name.c_str(), client_num, 0x00);
 		}
 		else {
 			sprintf(cnum, "server%c", 0x00);

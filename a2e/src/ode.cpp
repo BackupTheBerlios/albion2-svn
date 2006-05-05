@@ -110,11 +110,11 @@ void ode::close() {
 }
 
 /*! runs the open dynamics engine
- *  @param last_frame time that has elapsed since the last ode run
+ *  @param el_time time that has elapsed since the last ode run
  */
-void ode::run(unsigned int last_frame) {
-	if(last_frame == 0) {
-		last_frame = SDL_GetTicks() - timer;
+void ode::run(unsigned int el_time) {
+	if(el_time == 0) {
+		el_time = SDL_GetTicks() - timer;
 		timer = SDL_GetTicks();
 	}
 
@@ -122,7 +122,7 @@ void ode::run(unsigned int last_frame) {
 	dSpaceCollide(ode::space, 0, &ode::collision_callback);
 
 	// execute a 0.05f world step
-	dWorldStep(ode::world, 1.0f / last_frame);
+	dWorldStep(ode::world, (float)el_time / 1000.0f);
 
 	// clean the joint group for the next step
 	dJointGroupEmpty(ode::joint_group);

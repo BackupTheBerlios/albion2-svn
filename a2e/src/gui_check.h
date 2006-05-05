@@ -22,9 +22,10 @@
 #include "msg.h"
 #include "core.h"
 #include "gfx.h"
-#include "event.h"
 #include "engine.h"
 #include "gui_text.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -32,34 +33,19 @@ using namespace std;
 /*! @class gui_check
  *  @brief gui check box element functions
  *  @author flo
- *  @version 0.1.1
  *  @todo more functions
  *  
  *  the gui_check class
  */
 
-class A2E_API gui_check
+class A2E_API gui_check : public gui_object
 {
 public:
-	gui_check(engine* e);
+	gui_check(engine* e, gui_style* gs);
 	~gui_check();
-	
-	void draw();
-	void draw(unsigned int x, unsigned int y);
-	void set_text_handler(gui_text* itext);
-	gui_text* get_text_handler();
-
 
 	// gui button element variables functions
-
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
-	char* get_text();
 	bool get_checked();
-
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
-	void set_text(char* text);
 	void set_checked(bool state);
 
 protected:
@@ -68,17 +54,7 @@ protected:
 	engine* e;
 	gfx* g;
 
-
-	gui_text* text_handler;
-
 	// gui check box element variables
-
-	//! check box id
-	unsigned int id;
-	//! check box rectangle
-	gfx::rect* rectangle;
-	//! check box text
-	char* text;
 	//! is check box set/checked?
 	bool checked;
 

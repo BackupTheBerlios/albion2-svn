@@ -105,7 +105,6 @@ int main(int argc, char *argv[])
 	o = new ode(e);
 
 	// set a color scheme (blue)
-	e->set_color_scheme(gui_style::BLUE);
 	sf = e->get_screen();
 
 	// initialize the a2e events

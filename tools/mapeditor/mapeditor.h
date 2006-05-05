@@ -94,7 +94,7 @@ protected:
 	msg* m;
 	scene* sce;
 
-	map* memap;
+	cmap* memap;
 
 	bool new_sel;
 	bool sel;

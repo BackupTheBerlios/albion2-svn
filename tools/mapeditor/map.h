@@ -45,10 +45,10 @@
 #include <file_io.h>
 using namespace std;
 
-class map {
+class cmap { // arg, i was called map before, but thanks to stl map that doesn't work any more ...
 public:
-	map(engine* e);
-	~map();
+	cmap(engine* e);
+	~cmap();
 
 	bool open_map(char* filename);
 	bool save_map(char* filename);

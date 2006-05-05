@@ -67,6 +67,7 @@ public:
 	void put_char(char c);
 
 	bool is_file(char* filename);
+	bool eof();
 
 protected:
 	msg* m;

@@ -223,7 +223,7 @@ void event::handle_events(unsigned int event_type) {
 					}
 
 					for(vector<a2e_key>::iterator iter = keyset.begin(); iter != keyset.end(); iter++) {
-						if(iter->id == event::get_event().key.keysym.sym && !iter->ignore) {
+						if(iter->id == (unsigned int)event::get_event().key.keysym.sym && !iter->ignore) {
 							if(shift) {
 								*buffer << iter->shift;
 							}
@@ -377,17 +377,17 @@ void event::load_keyset(const char* language) {
 			}
 
 			if(x->get_attribute("tokey") != NULL) {
-				char* c = x->get_attribute("tokey");
+				const char* c = x->get_attribute("tokey");
 				keyset.back().key = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("tokey"));
 			}
 
 			if(x->get_attribute("shift") != NULL) {
-				char* c = x->get_attribute("shift");
+				const char* c = x->get_attribute("shift");
 				keyset.back().shift = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("shift"));
 			}
 
 			if(x->get_attribute("alt") != NULL) {
-				char* c = x->get_attribute("alt");
+				const char* c = x->get_attribute("alt");
 				keyset.back().alt = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("alt"));
 			}
 		}

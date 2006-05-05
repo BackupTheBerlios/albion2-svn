@@ -44,15 +44,13 @@ public:
 	struct font {
 		//! the font object
 		FTFont* ttf_font;
-		//! the fonts color
-		unsigned int color;
 		//! the font name
 		string font_name;
 		//! the font size
 		unsigned int font_size;
 	};
 
-	font* add_font(char* filename, unsigned int size, unsigned int color);
+	font* add_font(char* filename, unsigned int size);
 
 
 protected:

@@ -153,6 +153,8 @@ public:
 	void get_block(stringstream* sstr, char* data, unsigned int size);
 	void get_block(stringstream* sstr, string* data, unsigned int size);
 
+	void reset(stringstream* sstr);
+
 protected:
 	unsigned int value, bit, num;
 	msg* m;

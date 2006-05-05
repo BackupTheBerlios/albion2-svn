@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<color_schemes>
+	<scheme name="WINDOWS">
+		<color name="BARBG" value="E9E7E3"/>
+		<color name="BG" value="FFFFFF"/>
+		<color name="BG2" value="D4D0C8"/>
+		<color name="DARK" value="404040"/>
+		<color name="DARK2" value="808080"/>
+		<color name="FONT" value="000000"/>
+		<color name="FONT2" value="FFFFFF"/>
+		<color name="ICON" value="000000"/>
+		<color name="ICON2" value="000000"/>
+		<color name="LIGHT" value="FFFFFF"/>
+		<color name="LIGHT2" value="D4D0C8"/>
+		<color name="SELECTED" value="0A246A"/>
+		<color name="WINDOW_BG" value="D4D0C8"/>
+	</scheme>
+	<scheme name="BLUE">
+		<color name="BARBG" value="E9E7E3"/>
+		<color name="BG" value="FFFFFF"/>
+		<color name="BG2" value="D4D0C8"/>
+		<color name="DARK" value="404040"/>
+		<color name="DARK2" value="808080"/>
+		<color name="FONT" value="000000"/>
+		<color name="FONT2" value="FFFFFF"/>
+		<color name="ICON" value="000000"/>
+		<color name="ICON2" value="000000"/>
+		<color name="LIGHT" value="FFFFFF"/>
+		<color name="LIGHT2" value="D4D0C8"/>
+		<color name="SELECTED" value="0A246A"/>
+		<color name="WINDOW_BG" value="D4D0C8"/>
+	</scheme>
+	<scheme name="CLEARLOOKS">
+		<color name="BG1" value="D4D0C8"/>
+		<color name="BG2" value="C8C3BA"/>
+		<color name="BG3" value="DDDDCF"/>
+		<color name="BG4" value="D1D1BF"/>
+		<color name="BG5" value="FFFFFF"/>
+		<color name="BG6" value="EDEDDE"/>
+		<color name="BG7" value="DFDFC7"/>
+		<color name="BG8" value="D3D3B6"/>
+		<color name="BG9" value="DDDDCE"/>
+		<color name="BG10" value="DCDCC5"/>
+		<color name="DARK1" value="6D6961"/>
+		<color name="DARK2" value="898376"/>
+		<color name="DARK3" value="C7C2B9"/>
+		<color name="DARK4" value="A7A195"/>
+		<color name="DARK5" value="848463"/>
+		<color name="DARK6" value="A4A47B"/>
+		<color name="DARK7" value="A7A79D"/>
+		<color name="DARK8" value="000000"/>
+		<color name="DARK9" value="56544E"/>
+		<color name="DARK10" value="374F7B"/>
+		<color name="DARK11" value="ADAD86"/>
+		<color name="FONT" value="000000"/>
+		<color name="FONT2" value="FFFFFF"/>
+		<color name="ICON1" value="FFFFFF"/>
+		<color name="ICON2" value="000000"/>
+		<color name="ICON3" value="3A69BD"/>
+		<color name="LIGHT1" value="FFFFFF"/>
+		<color name="LIGHT2" value="C8C6BA"/>
+		<color name="LIGHT3" value="D0CEC0"/>
+		<color name="LIGHT4" value="DBDBDA"/>
+		<color name="LIGHT5" value="F9F9F4"/>
+		<color name="LIGHT6" value="DCDCC3"/>
+		<color name="LIGHT7" value="CFCFBB"/>
+		<color name="LIGHT8" value="C3C3A0"/>
+		<color name="LIGHT9" value="D8D8C2"/>
+		<color name="LIGHT10" value="3C6EC8"/>
+		<color name="LIGHT11" value="B7BFC2"/>
+		<color name="LIGHT12" value="CACABA"/>
+		<color name="SELECTED1" value="3A69BD"/>
+		<color name="SELECTED2" value="EEEEE0"/>
+		<color name="WINDOW_BG1" value="EEEEE0"/>
+		<color name="WINDOW_BG2" value="7F9CB0"/>
+		<color name="WINDOW_BG3" value="627D8F"/>
+		<color name="WINDOW_BG4" value="678599"/>
+		<color name="WINDOW_BORDER1" value="232527"/>
+		<color name="WINDOW_BORDER2" value="414C53"/>
+		<color name="WINDOW_BORDER3" value="9DB6C8"/>
+		<color name="WINDOW_BORDER4" value="5C7383"/>
+		<color name="WINDOW_BORDER5" value="3D3A38"/>
+		<color name="WINDOW_BORDER6" value="D8CFC7"/>
+		<color name="WINDOW_BORDER7" value="47535C"/>
+		<color name="WINDOW_BORDER8" value="617B8D"/>
+		<color name="WINDOW_BORDER9" value="7C99AD"/>
+		<color name="WINDOW_BORDER10" value="84A0B4"/>
+		<color name="WINDOW_BORDER11" value="394D5A"/>
+		<color name="WINDOW_BORDER12" value="52718c"/>
+		<color name="WINDOW_BORDER13" value="4a6984"/>
+		<color name="WINDOW_BORDER14" value="527594"/>
+		<color name="WINDOW_BORDER15" value="52718c"/>
+		<color name="WINDOW_BORDER16" value="84aace"/>
+		<color name="WINDOW_BORDER17" value="638eb5"/>
+	</scheme>
+</color_schemes>

@@ -117,7 +117,8 @@ int main(int argc, char *argv[]) {
 	ifile.clear();
 	ifile.seekg(0, ios::beg);
 	msg* m = new msg();
-	core* c = new core(m);
+	file_io* fio = new file_io(m);
+	core* c = new core(m, fio);
 	obj = false;
 	while(!ifile.eof()) {
 		ifile >> buffer;
@@ -255,7 +256,15 @@ int main(int argc, char *argv[]) {
 
 	cout << "successfully converted " << obj_filename << " to " << a2m_filename << "!" << endl;
 
+	delete c;
+	delete fio;
+	delete m;
+
+#ifdef WIN32
 	Sleep(1000);
+#else
+	usleep(1000000);
+#endif
 
 	return 0;
 }

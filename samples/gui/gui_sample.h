@@ -22,31 +22,35 @@
 #endif
 
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <map>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <engine.h>
 #include <msg.h>
+#include <core.h>
 #include <gfx.h>
 #include <gui.h>
 #include <event.h>
-#include <camera.h>
-#include <a2emodel.h>
-#include <scene.h>
 #include <image.h>
 using namespace std;
 
 engine* e;
 msg* m;
+core* c;
 gfx* agfx;
 gui* agui;
 event* aevent;
-
-SDL_Surface* sf;
+image* img;
 
 bool done = false;
 
-SDL_Event ievent;
+SDL_Event sevent;
 
-unsigned int refresh_time;
+stringstream xpos;
+stringstream ypos;
+stringstream caption;
+stringstream tmp;
 
 #endif

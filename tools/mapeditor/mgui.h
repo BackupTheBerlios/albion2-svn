@@ -68,6 +68,7 @@ public:
 protected:
 	engine* e;
 	gui* agui;
+	gui_style* gs;
 	msg* m;
 	mapeditor* me;
 	scene* sce;

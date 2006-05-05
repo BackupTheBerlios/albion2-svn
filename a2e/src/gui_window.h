@@ -25,6 +25,8 @@
 #include "engine.h"
 #include "gui_text.h"
 #include "gui_button.h"
+#include "gui_object.h"
+#include "gui_style.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -32,29 +34,22 @@ using namespace std;
 /*! @class gui_window
  *  @brief gui window element functions
  *  @author flo
- *  @version 0.1
  *  @todo more functions
  *  
  *  the gui_window class
  */
 
-class A2E_API gui_window
+class A2E_API gui_window : public gui_object
 {
 public:
-	gui_window(engine* e);
+	gui_window(engine* e, gui_style* gs);
 	~gui_window();
 	
 	void draw();
-	void set_text_handler(gui_text* itext);
 
-	unsigned int get_id();
-	gfx::rect* get_rectangle();
 	unsigned int get_lid();
-	char* get_caption();
 	bool get_border();
 
-	void set_id(unsigned int id);
-	void set_rectangle(gfx::rect* rectangle);
 	void set_lid(unsigned int id);
 	void set_caption(const char* caption);
 	void set_border(bool state);
@@ -70,26 +65,23 @@ public:
 	bool get_deleted();
 	void set_deleted(bool state);
 
+	bool get_bg();
+	void set_bg(bool state);
+
 protected:
 	msg* m;
 	core* c;
 	engine* e;
 	gfx* g;
-
-	gui_text* text_handler;
 	
 	gui_button* exit_button_handler;
 
-	//! window id
-	unsigned int id;
-	//! window rectangle
-	gfx::rect* rectangle;
 	//! window layer id
 	unsigned int lid;
-	//! window caption
-	char* caption;
 	//! window border draw flag
 	bool border;
+
+	bool bg;
 
 	bool moving;
 

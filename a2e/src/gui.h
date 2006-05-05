@@ -42,6 +42,7 @@
 #include "gui_window.h"
 #include "gui_font.h"
 #include "gui_combo.h"
+#include "gui_style.h"
 using namespace std;
 typedef unsigned int GUI_OBJ;
 
@@ -75,9 +76,7 @@ public:
 
 	bool delete_element(unsigned int id);
 
-	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, GLuint image_texture, unsigned int wid = 0);
-	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int icon, unsigned int id, char* text, unsigned int wid = 0);
-	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int id, char* text, GLuint image_texture, unsigned int wid);
 	GUI_OBJ add_text(char* font_name, unsigned int font_size, char* text,
 				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid = 0);	
 	GUI_OBJ add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
@@ -85,7 +84,7 @@ public:
 	GUI_OBJ add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
 	GUI_OBJ add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	GUI_OBJ add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
-	GUI_OBJ add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true);
+	GUI_OBJ add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true, bool bg = true);
 
 	void handle_input(list<gui_input>::reference input_box);
 
@@ -94,6 +93,8 @@ public:
 	list<gui_element>::iterator get_active_element();
 	void set_active_element(list<gui_element>::iterator active_element);
 	void set_active_element(unsigned int id);
+
+	gui_style* get_gui_style();
 
 	list<gui_button>::iterator get_button_iter(unsigned int id);
 	list<gui_input>::iterator get_input_iter(unsigned int id);
@@ -119,6 +120,10 @@ public:
 
 	void set_visibility(unsigned int id, bool state, bool force = false);
 
+	void set_color_scheme(const char* scheme);
+
+	void set_focus(unsigned int id);
+
 	// dialogs
 	GUI_OBJ add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30);
 	gui_list* get_open_diaolg_list();
@@ -131,6 +136,7 @@ protected:
 	engine* e;
 	gfx* g;
 	gui_font* gf;
+	gui_style* gs;
 
 	SDL_Surface* gui_surface;
 
@@ -193,8 +199,13 @@ protected:
 	bool wnd_event;
 	unsigned int current_id;
 
+	GLuint icon_cross;
+	GLuint icon_arrow_up;
+	GLuint icon_arrow_down;
+	GLuint icon_checked;
 
-	// dailog stuff ...
+
+	// dialog stuff ...
 	GUI_OBJ ofd_wnd_id;
 	gui_window* ofd_wnd;
 	gui_button* ofd_open;

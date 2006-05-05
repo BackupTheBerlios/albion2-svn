@@ -19,7 +19,6 @@
 /*! there is no function currently
  */
 gui_font::gui_font(msg* m) {
-
 	// get classes
 	gui_font::m = m;
 }
@@ -34,12 +33,11 @@ gui_font::~gui_font() {
 	m->print(msg::MDEBUG, "gui_text.cpp", "gui_font stuff freed");
 }
 
-gui_font::font* gui_font::add_font(char* filename, unsigned int size, unsigned int color) {
+gui_font::font* gui_font::add_font(char* filename, unsigned int size) {
 	// check if we already loaded that font
 	for(list<gui_font::font>::iterator fiter = fonts.begin(); fiter != fonts.end(); fiter++) {
 		if(strcmp(fiter->font_name.c_str(), filename) == 0 &&
-			fiter->font_size == size &&
-			fiter->color == color) {
+			fiter->font_size == size) {
 			return &*fiter;
 		}
 	}
@@ -49,7 +47,6 @@ gui_font::font* gui_font::add_font(char* filename, unsigned int size, unsigned i
 	fonts.back().ttf_font = new FTGLTextureFont(filename);
 	fonts.back().font_size = size;
 	fonts.back().ttf_font->FaceSize(size);
-	fonts.back().color = color;
 
 	return &fonts.back();
 }

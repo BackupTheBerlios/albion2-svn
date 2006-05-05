@@ -301,6 +301,24 @@ void a2ematerial::enable_texture(unsigned int obj_num) {
 			glBindTexture(GL_TEXTURE_2D, textures.at(obj_num).textures[0]);
 			if(textures.at(obj_num).col_type[0] == 0x01) { glEnable(GL_BLEND); }
 			break;
+		case a2ematerial::BUMP: {
+				e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB);
+				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 0));
+				glEnable(GL_TEXTURE_2D);
+
+				e->get_ext()->glActiveTextureARB(GL_TEXTURE1_ARB);
+				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 1));
+				glEnable(GL_TEXTURE_2D);
+
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+				glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_DOT3_RGB_ARB);
+
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_DOT3_RGB_ARB);
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PREVIOUS);
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_DOT3_RGB_ARB);
+			}
+			break;
 		case a2ematerial::MULTITEXTURE: {
 			for(unsigned int i = 0; i < textures.at(obj_num).tex_count; i++) {
 				e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB+i);
@@ -394,6 +412,12 @@ void a2ematerial::disable_texture(unsigned int obj_num) {
 	switch(textures.at(obj_num).mat_type) {
 		case a2ematerial::DIFFUSE:
 			if(textures.at(obj_num).col_type[0] == 0x01) { glDisable(GL_BLEND); }
+			glDisable(GL_TEXTURE_2D);
+			break;
+		case a2ematerial::BUMP:
+			e->get_ext()->glActiveTextureARB(GL_TEXTURE1_ARB);
+			glDisable(GL_TEXTURE_2D);
+			e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB);
 			glDisable(GL_TEXTURE_2D);
 			break;
 		case a2ematerial::MULTITEXTURE:

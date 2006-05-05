@@ -457,6 +457,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\gui_object.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_object.h"
+			>
+		</File>
+		<File
 			RelativePath="gui_style.cpp"
 			>
 		</File>

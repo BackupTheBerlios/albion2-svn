@@ -58,14 +58,15 @@ public:
 	unsigned int get_id();
 	core::pnt* get_point();
 	const char* get_text();
+	unsigned int get_color();
 
 	void set_font(gui_font::font* font);
 	void set_id(unsigned int id);
 	void set_point(core::pnt* point);
 	void set_text(char* text);
 	void set_init(bool state);
+	void set_color(unsigned int color);
 
-	void set_notext();
 	unsigned int get_text_width();
 	unsigned int get_text_height();
 
@@ -87,6 +88,8 @@ protected:
 	string text;
 	//! bool if everything was initialized
 	bool is_init;
+	//! text color
+	unsigned int color;
 
 	GLuint texture;
 	float texmaxx;
