@@ -54,7 +54,6 @@ using namespace std;
 /*! @class engine
  *  @brief main engine
  *  @author flo
- *  @author laxity
  *  @todo more functions
  *
  *  the main engine
@@ -67,8 +66,8 @@ public:
 	~engine();
 
 	// graphic control functions
-	void init();
-	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, unsigned int zbuffer = 16, unsigned int stencil = 16, bool fullscreen = false);
+	void init(const char* ico = NULL);
+	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, unsigned int zbuffer = 16, unsigned int stencil = 16, bool fullscreen = false, const char* ico = NULL);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
 	void start_draw();
@@ -173,6 +172,10 @@ protected:
 	client_data* client;
 
 	string color_scheme;
+
+	string keyset;
+
+	void load_ico(const char* ico);
 };
 
 #endif

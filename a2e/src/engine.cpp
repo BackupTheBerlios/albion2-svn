@@ -144,10 +144,18 @@ engine::engine(const char* datapath) {
 					client->client_name = x->get_attribute("name");
 				}
 			}
+			else if(strcmp(x->get_node_name(), "keyset") == 0) {
+				if(x->get_attribute("set") != NULL) {
+					keyset = x->get_attribute("set");
+				}
+			}
 		}
 
 		x->close();
 	}
+
+	// load keyset
+	e->load_keyset((char*)keyset.c_str());
 }
 
 /*! there is no function currently
@@ -186,7 +194,7 @@ engine::~engine() {
  *  @param depth the color depth of the window (16, 24 or 32)
  *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
-void engine::init(bool console, unsigned int width, unsigned int height, unsigned int depth, unsigned int zbuffer, unsigned int stencil, bool fullscreen) {
+void engine::init(bool console, unsigned int width, unsigned int height, unsigned int depth, unsigned int zbuffer, unsigned int stencil, bool fullscreen, const char* ico) {
 	if(console == true) {
 	    engine::mode = engine::CONSOLE;
 		// create extension class object
@@ -201,13 +209,13 @@ void engine::init(bool console, unsigned int width, unsigned int height, unsigne
 		engine::stencil = stencil;
 		engine::fullscreen = fullscreen;
 
-		engine::init();
+		engine::init(ico);
 	}
 }
 
 /*! initializes the engine in console + graphical mode
  */
-void engine::init() {
+void engine::init(const char* ico) {
     engine::mode = engine::GRAPHICAL;
 	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console + graphical mode");
 
@@ -220,6 +228,9 @@ void engine::init() {
 	else {
 		m->print(msg::MDEBUG, "engine.cpp", "sdl initialized");
 	}
+
+	// load opengl library
+	SDL_GL_LoadLibrary(NULL);
 
 	// get video info
 	video_info = SDL_GetVideoInfo();
@@ -237,14 +248,14 @@ void engine::init() {
 	engine::flags |= SDL_HWPALETTE;
 	engine::flags |= SDL_OPENGL;
 	engine::flags |= SDL_DOUBLEBUF;
-	if(video_info->hw_available) {
+	/*if(video_info->hw_available) {
 		//engine::flags |= SDL_HWSURFACE;
 		m->print(msg::MDEBUG, "engine.cpp", "using hardware surface");
 	}
 	else {
 		//engine::flags |= SDL_SWSURFACE;
 		m->print(msg::MDEBUG, "engine.cpp", "using software surface");
-	}
+	}*/
 	engine::flags |= SDL_HWSURFACE;
 
 	if(fullscreen) {
@@ -292,6 +303,10 @@ void engine::init() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, zbuffer);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
+	// ... load icon before SDL_SetVideoMode
+	if(ico != NULL) load_ico(ico);
 
 	// create screen
 	engine::height = height;
@@ -406,7 +421,7 @@ SDL_Surface* engine::get_screen() {
  *  @param caption the window caption
  */
 void engine::set_caption(char* caption) {
-	SDL_WM_SetCaption(caption, NULL);
+	SDL_WM_SetCaption(caption, caption);
 }
 
 /*! returns the window caption
@@ -672,4 +687,8 @@ engine::server_data* engine::get_server_data() {
 
 engine::client_data* engine::get_client_data() {
 	return engine::client;
+}
+
+void engine::load_ico(const char* ico) {
+	SDL_WM_SetIcon(IMG_Load(data_path(ico)), NULL);
 }

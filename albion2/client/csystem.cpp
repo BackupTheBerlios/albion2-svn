@@ -51,7 +51,7 @@ bool csystem::init_net() {
 	return ret;
 }
 
-bool csystem::connect_client(const char* name) {
+bool csystem::connect_client(const char* name, const char* pw) {
 	bool ret = false;
 
 	if(!netinit) {
@@ -59,6 +59,7 @@ bool csystem::connect_client(const char* name) {
 		if(n->create_client(server, port, lis_port)) { // TODO: put port number into config file
 			m->print(msg::MDEBUG, "csystem.cpp", "connect_client(): successfully created client!");
 			client_name = name;
+			client_pw = pw;
 			netinit = true;
 			ret = true;
 			new_client = true;

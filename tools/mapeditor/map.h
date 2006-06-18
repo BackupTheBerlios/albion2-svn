@@ -53,6 +53,7 @@ public:
 	bool open_map(char* filename);
 	bool save_map(char* filename);
 	bool close_map();
+	void new_map(char* filename);
 
 	struct map_object {
 		char model_name[32];

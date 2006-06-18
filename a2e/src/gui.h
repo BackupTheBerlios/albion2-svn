@@ -43,6 +43,7 @@
 #include "gui_font.h"
 #include "gui_combo.h"
 #include "gui_style.h"
+#include "gui_mltext.h"
 using namespace std;
 typedef unsigned int GUI_OBJ;
 
@@ -70,6 +71,13 @@ public:
 		bool is_drawn;
 	};
 
+	struct msg_ok_wnd {
+		GUI_OBJ id;
+		gui_window* wnd;
+		gui_text* text;
+		gui_button* ok;
+	};
+
 	void init();
 	void draw();
 	void draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, list<gui_window>::reference wnd_iter);
@@ -85,6 +93,7 @@ public:
 	GUI_OBJ add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 	GUI_OBJ add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
 	GUI_OBJ add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true, bool bg = true);
+	GUI_OBJ add_mltext(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
 
 	void handle_input(list<gui_input>::reference input_box);
 
@@ -104,7 +113,9 @@ public:
 	list<gui_check>::iterator get_check_iter(unsigned int id);
 	list<gui_combo>::iterator get_combo_iter(unsigned int id);
 	list<gui_window>::iterator get_window_iter(unsigned int id);
+	vector<msg_ok_wnd>::iterator get_msgbox_iter(unsigned int id);
 	list<gui_element>::iterator get_element_iter(unsigned int id);
+	list<gui_mltext>::iterator get_mltext_iter(unsigned int id);
 
 	gui_button* get_button(unsigned int id);
 	gui_input* get_input(unsigned int id);
@@ -114,7 +125,9 @@ public:
 	gui_check* get_check(unsigned int id);
 	gui_combo* get_combo(unsigned int id);
 	gui_window* get_window(unsigned int id);
+	msg_ok_wnd* get_msgbox(unsigned int id);
 	gui_element* get_element(unsigned int id);
+	gui_mltext* get_mltext(unsigned int id);
 
 	bool exist(unsigned int id);
 
@@ -124,10 +137,12 @@ public:
 
 	void set_focus(unsigned int id);
 
+	unsigned int get_free_id();
+
 	// dialogs
 	GUI_OBJ add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30);
 	gui_list* get_open_diaolg_list();
-	GUI_OBJ add_msgbox_ok(unsigned int id, char* caption, char* text);
+	GUI_OBJ add_msgbox_ok(char* caption, char* text);
 
 protected:
 	msg* m;
@@ -151,6 +166,7 @@ protected:
 		CHECK,	//!< enum check box type
 		COMBO,	//!< enum combo box type
 		WINDOW,	//!< enum window type
+		MLTEXT,	//!< enum multi line text type
 		OPENDIALOG,	//!< enum open file dialog type
 		MSGBOX_OK	//!< enum message box type
 	};
@@ -185,6 +201,9 @@ protected:
 	//! gui windows
 	list<gui_window> gui_windows;
 
+	//! gui multi line texts
+	list<gui_mltext> gui_mltexts;
+
 	//! list of all window ids (the id at the end is the id of the "most"
 	//! front window and the one in the beginning the "most" far window)
 	list<unsigned int> wnd_layers;
@@ -204,6 +223,9 @@ protected:
 	GLuint icon_arrow_down;
 	GLuint icon_checked;
 
+	//! used by get_free_id
+	unsigned int start_id;
+
 
 	// dialog stuff ...
 	GUI_OBJ ofd_wnd_id;
@@ -212,10 +234,7 @@ protected:
 	gui_button* ofd_cancel;
 	gui_list* ofd_dirlist;
 
-	GUI_OBJ msg_ok_wnd_id;
-	gui_window* msg_ok_wnd;
-	gui_text* msg_text;
-	gui_button* msg_ok;
+	vector<msg_ok_wnd> msg_boxes;
 };
 
 #endif

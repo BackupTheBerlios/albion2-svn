@@ -99,6 +99,11 @@ int cnet::process_packet(char* data, unsigned int max_len) {
 			delete [] chat_msg;
 		}
 		break;
+		case cnet::PT_FLAG: {
+			unsigned int flag = c->get_uint(buffer);
+			cs->flags.push_back(*new unsigned int(flag));
+		}
+		break;
 		default: {
 			m->print(msg::MERROR, "main.cpp", "process_packet(): unknown packet type (%u)!", packet_type);
 		}
@@ -127,6 +132,8 @@ void cnet::send_packet(cnet::PACKET_TYPE type) {
 			c->put_uint(buffer, cnet::PT_NEW_CLIENT);
 			c->put_uint(buffer, (unsigned int)cs->client_name.size());
 			c->put_block(buffer, cs->client_name.c_str(), (unsigned int)cs->client_name.size());
+			c->put_uint(buffer, (unsigned int)cs->client_pw.size());
+			c->put_block(buffer, cs->client_pw.c_str(), (unsigned int)cs->client_pw.size());
 		}
 		break;
 		case cnet::PT_QUIT_CLIENT: {

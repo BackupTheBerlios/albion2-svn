@@ -23,16 +23,16 @@ xml::xml(msg* m) {
 	xml::m = m;
 
 	reader = NULL;
+	writer = NULL;
 	fname = NULL;
+	fname_write = NULL;
+
+	inner_loop = 0;
 }
 
 /*! delete everything
  */
 xml::~xml() {
-	/*if(tmp != NULL) {
-		//delete tmp; // ???
-	}*/
-	tmp.clear();
 }
 
 bool xml::open(char* filename) {
@@ -76,8 +76,7 @@ void xml::end(int ret) {
 }
 
 char* xml::get_node_name() {
-	xmlNodePtr node = xmlTextReaderExpand(*reader);
-	return (char*)node->name;
+	return (char*)xmlTextReaderExpand(*reader)->name;
 }
 
 int xml::get_attribute_count() {
@@ -85,16 +84,78 @@ int xml::get_attribute_count() {
 }
 
 const char* xml::get_attribute(char* att_name) {
-	//if(tmp != NULL) {
-	//	delete [] tmp; // hm?
-	//}
-	//tmpc = (char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
-	//tmp = tmpc;
-	//delete [] tmpc;
-	//return tmp.c_str();
 	return (const char*)xmlTextReaderGetAttribute(*reader, (const xmlChar*)att_name);
 }
 
 char* xml::get_nattribute(unsigned int num) {
 	return (char*)xmlTextReaderGetAttributeNo(*reader, num);
+}
+
+
+bool xml::open_write(char* filename) {
+	if(writer != NULL) {
+		m->print(msg::MERROR, "xml.cpp", "open_write(): can't write two files at the same time!");
+		return false;
+	}
+
+	fname_write = filename;
+	writer = new xmlTextWriterPtr();
+	*writer = xmlNewTextWriterFilename(filename, 0);
+	if(writer == NULL) {
+		m->print(msg::MERROR, "xml.cpp", "open_write(): unable to open %s!", fname_write);
+		return false;
+	}
+
+	/*if(xmlTextWriterStartDocument(*writer, NULL, "UTF-8", NULL) < 0) {
+		m->print(msg::MERROR, "xml.cpp", "open_write(): unable to start document %s!", fname_write);
+		close_write();
+		return false;
+	}*/
+	xmlTextWriterWriteRaw(*writer, (const xmlChar*)"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
+
+	inner_loop = 0;
+
+	return true;
+}
+
+void xml::close_write() {
+	xmlMemoryDump();
+    xmlFreeTextWriter(*writer);
+	delete writer;
+	writer = NULL;
+}
+
+void xml::start_element(const char* name) {
+	if(inner_loop % 2 == 1) {
+		xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\r\n");
+		inner_loop++;
+	}
+	for(unsigned int i = 0; i < inner_loop / 2; i++) {
+		xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\t");
+	}
+	if(xmlTextWriterStartElement(*writer, BAD_CAST name) < 0) {
+		m->print(msg::MERROR, "xml.cpp", "start_element(): unable to start element in file %s!", fname_write);
+	}
+	if(inner_loop % 2 == 0) inner_loop++;
+}
+
+void xml::end_element() {
+	if(inner_loop % 2 == 0) {
+		for(unsigned int i = 0; i < (inner_loop / 2)-1; i++) {
+			xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\t");
+		}
+	}
+	if(xmlTextWriterEndElement(*writer) < 0) {
+		m->print(msg::MERROR, "xml.cpp", "start_element(): unable to end element in file %s!", fname_write);
+	}
+	xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\r\n");
+
+	inner_loop -= inner_loop % 2 == 0 ? 2 : 1;
+}
+
+void xml::write_attribute(const char* attribute, const char* value) {
+	if(xmlTextWriterWriteAttribute(*writer, BAD_CAST attribute, BAD_CAST value) < 0) {
+		m->print(msg::MERROR, "xml.cpp", "start_element(): error while writing attribute %s in file %s!",
+			attribute, fname_write);
+	}
 }

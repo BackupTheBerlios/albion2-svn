@@ -28,6 +28,23 @@
  * Albion 2 Engine Sample - GUI Sample
  */
 
+void open_info_wnd() {
+	unsigned int width = e->get_screen()->w;
+	unsigned int height = e->get_screen()->h;
+
+	info_wnd_id = agui->add_window(agfx->pnt_to_rect(width/2 - 138, height/2 - 68, width/2 + 138, height/2 + 68), 200, "Info Window");
+	info_wnd = agui->get_window(info_wnd_id);
+	cinfo_type = agui->get_combo(agui->add_combo_box(agfx->pnt_to_rect(12, 12, 256, 33), 201, 200));
+	tinfo1 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 47), 202, 200));
+	tinfo2 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 64), 203, 200));
+	tinfo3 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 81), 204, 200));
+
+	cinfo_type->add_item("Cursor-Position", 0);
+	cinfo_type->add_item("Time", 1);
+
+	cur_info_id = 0;
+}
+
 int main(int argc, char *argv[])
 {
 	// initialize the engine
@@ -41,61 +58,37 @@ int main(int argc, char *argv[])
 	aevent = e->get_event();
 	agfx = e->get_gfx();
 	agui = new gui(e);
-	gui_style* gs = agui->get_gui_style();
+	gs = agui->get_gui_style();
 
 	// initialize the a2e events
 	aevent->init(sevent);
-	aevent->load_keyset("DE");
 
 	// initialize the gui
 	agui->init();
-
-	GUI_OBJ output_text = agui->add_text("STANDARD", 12, "-", 0x000000, agfx->cord_to_pnt(10, 580), 103, 0);
-	gui_text* output_text_obj = agui->get_text(output_text);
-
-	GUI_OBJ t1 = agui->add_text("STANDARD", 14, "test text", 0xFFFFFF, agfx->cord_to_pnt(100, 5), 102, 0);
-	GUI_OBJ i1 = agui->add_input_box(agfx->pnt_to_rect(10, 300, 100, 320), 105, "input text", 0);
-	GUI_OBJ l1 = agui->add_list_box(agfx->pnt_to_rect(400, 200, 750, 440), 106, 0);
-	gui_text* t1_obj = agui->get_text(t1);
-	gui_input* i1_obj = agui->get_input(i1);
-	gui_list* l1_obj = agui->get_list(l1);
-	GUI_OBJ c1 = agui->add_combo_box(agfx->pnt_to_rect(100, 30, 220, 50), 112, 0);
-	gui_combo* c1_obj = agui->get_combo(c1);
-	c1_obj->add_item("item #1", 0);
-	c1_obj->add_item("another item", 1);
-	c1_obj->add_item("one more", 2);
-	c1_obj->add_item("and so on ...", 3);
-	c1_obj->add_item("and on ...", 4);
-	c1_obj->add_item("item #6", 5);
-	c1_obj->add_item("test", 6);
-	c1_obj->add_item("last one", 7);
-
-	GUI_OBJ wnd = agui->add_window(agfx->pnt_to_rect(150, 100, 370, 450), 110, "test window", true);
-	GUI_OBJ xpos_text = agui->add_text("STANDARD", 12, "0", 0x000000, agfx->cord_to_pnt(20, 20), 107, 110);
-	GUI_OBJ ypos_text = agui->add_text("STANDARD", 12, "0", 0x000000, agfx->cord_to_pnt(20, 40), 108, 110);
-	GUI_OBJ cbox = agui->add_check_box(agfx->pnt_to_rect(10, 70, 200, 90), 109, "Test Check Box", 110);
-	gui_window* wnd_obj = agui->get_window(wnd);
-	gui_text* xpos_text_obj = agui->get_text(xpos_text);
-	gui_text* ypos_text_obj = agui->get_text(ypos_text);
-	gui_check* cbox_obj = agui->get_check(cbox);
-
-	GUI_OBJ wnd2 = agui->add_window(agfx->pnt_to_rect(560, 100, 780, 450), 111, "test window 2", true);
-	GUI_OBJ b1 = agui->add_button(agfx->pnt_to_rect(10, 10, 200, 40), 100, "test button", 0, 111);
-	GUI_OBJ b2 = agui->add_button(agfx->pnt_to_rect(10, 50, 200, 80), 101, "test button 2", 0, 111);
-	gui_window* wnd2_obj = agui->get_window(wnd2);
-	gui_button* b1_obj = agui->get_button(b1);
-	gui_button* b2_obj = agui->get_button(b2);
-
-	// add 32 items
-	for(unsigned int i = 1; i <= 32; i++) {
-		tmp << "test " << i;
-		l1_obj->add_item((char*)tmp.str().c_str(), i);
-		c->reset(&tmp);
-	}
+	unsigned int width = e->get_screen()->w;
+	unsigned int height = e->get_screen()->h;
 
 	img = new image(e);
 	img->open_image(e->data_path("engine_logo.png"));
-	img->set_position(800 - 446, 600 - 130);
+	img->set_position(width - img->get_width(), height - img->get_height());
+
+	bedit = agui->get_button(agui->add_button(agfx->pnt_to_rect(12, 152, 109, 173), 100, "edit", 0, 0));
+	badd = agui->get_button(agui->add_button(agfx->pnt_to_rect(121, 152, 218, 173), 101, "add", 0, 0));
+	bset = agui->get_button(agui->add_button(agfx->pnt_to_rect(169, 179, 218, 199), 102, "set", 0, 0));
+	bopen_msg = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 12, width - 12, 35), 103, "open msg box", 0, 0));
+	bopen_fd = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 41, width - 12, 64), 104, "open file dialog", 0, 0));
+	bopen_wnd = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 70, width - 12, 93), 105, "open window", 0, 0));
+	llist = agui->get_list(agui->add_list_box(agfx->pnt_to_rect(12, 12, 218, 146), 106, 0));
+	ilitem = agui->get_input(agui->add_input_box(agfx->pnt_to_rect(12, 179, 163, 199), 107, "", 0));
+	tstatus = agui->get_text(agui->add_text("STANDARD", 12, "...", gs->get_color("FONT"), agfx->cord_to_pnt(9, height - 20), 108, 0));
+	clogo = agui->get_check(agui->add_check_box(agfx->pnt_to_rect(width - 112, height - img->get_height() - 22, width - 12, height - img->get_height() - 2), 109, "logo visible?", 0));
+	clogo->set_checked(img_visible);
+
+	// fill list box with data
+	llist->add_item("test item", 0);
+	llist->add_item("another item", 1);
+	llist->add_item("one more ...", 2);
+	llist->add_item("blah", 3);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -132,20 +125,76 @@ int main(int argc, char *argv[])
 
 		while(aevent->is_gui_event()) {
 			switch(aevent->get_gui_event().type) {
-				case event::BUTTON_PRESSED: {
-						tmp << "you pressed the button with the id #" << aevent->get_gui_event().id << "!";
-						output_text_obj->set_text((char*)tmp.str().c_str());
-						c->reset(&tmp);
+				case event::BUTTON_PRESSED:
+					tmp << "you pressed a button with the id #" << aevent->get_gui_event().id << "!";
+					tstatus->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
+					switch(aevent->get_gui_event().id) {
+						case 52:
+							file_dialog->set_deleted(true);
+							break;
+						case 100:
+							cur_ed_id = llist->get_selected_id();
+							ilitem->set_text(llist->get_item(cur_ed_id)->text.c_str());
+							ilitem->set_text_position((unsigned int)strlen(ilitem->get_text()->c_str()));
+							break;
+						case 101: {
+							unsigned int nid = llist->get_citems();
+							llist->add_item("", nid);
+							llist->set_selected_id(nid);
+							llist->set_position(nid);
+							cur_ed_id = nid;
+							ilitem->set_text(llist->get_item(cur_ed_id)->text.c_str());
+							ilitem->set_text_position((unsigned int)strlen(ilitem->get_text()->c_str()));
+							}
+							break;
+						case 102:
+							if(cur_ed_id == -1) break;
+							llist->get_item(cur_ed_id)->text = ilitem->get_text()->c_str();
+							break;
+						case 103:
+							agui->add_msgbox_ok("test message box", "test message box text ...");
+							break;
+						case 104:
+							file_dialog = agui->get_window(agui->add_open_dialog(file_dialog_id, "open file dialog ... (png files)", (char*)e->get_data_path().c_str(), "png"));
+							break;
+						case 105:
+							if(agui->exist(info_wnd_id)) break;
+							open_info_wnd();
+							break;
+						default:
+							break;
 					}
 					break;
 				case event::COMBO_ITEM_SELECTED:
+					tmp << "you selected a combo box (id #" << aevent->get_gui_event().id << ") item with the id #"
+						<< cinfo_type->get_selected_id() << "!";
+					tstatus->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
 					switch(aevent->get_gui_event().id) {
-						case 112: {
-							tmp << "you have selected item #" << c1_obj->get_selected_id() << "!";
-							output_text_obj->set_text((char*)tmp.str().c_str());
-							c->reset(&tmp);
-						}
-						break;
+						case 201:
+							cur_info_id = cinfo_type->get_selected_id();
+							tinfo1->set_text("");
+							tinfo2->set_text("");
+							tinfo3->set_text("");
+							break;
+						default:
+							break;
+					}
+					break;
+				case event::CHECKBOX_CHECKED:
+					tmp << "you set the check box with the id #" << aevent->get_gui_event().id << " to "
+						<< (clogo->get_checked() ? "checked" : "unchecked") << "!";
+					tstatus->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
+					switch(aevent->get_gui_event().id) {
+						case 109: {
+							img_visible = clogo->get_checked();
+						  }
+						  break;
 						default:
 							break;
 					}
@@ -155,14 +204,47 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if(agui->exist(xpos_text) && agui->exist(ypos_text)) {
-			aevent->get_mouse_pos(mpos);
-			xpos << mpos->x;
-			ypos << mpos->y;
-			xpos_text_obj->set_text((char*)xpos.str().c_str());
-			ypos_text_obj->set_text((char*)ypos.str().c_str());
-			c->reset(&xpos);
-			c->reset(&ypos);
+		if(agui->exist(info_wnd_id)) {
+			switch(cur_info_id) {
+				case 0:
+					aevent->get_mouse_pos(mpos);
+
+					tmp << "X: " << mpos->x;
+					tinfo1->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
+					tmp << "Y: " << mpos->y;
+					tinfo2->set_text((char*)tmp.str().c_str());
+
+					c->reset(&tmp);
+					break;
+				case 1:
+					time(&rawtime);
+					tinfo = localtime(&rawtime);
+
+					tmp << (1900+tinfo->tm_year) << "/" << tinfo->tm_mon << "/" << tinfo->tm_mday << ", ";
+					if(tinfo->tm_hour < 10) tmp << "0";
+					tmp << tinfo->tm_hour;
+					tmp << ":";
+					if(tinfo->tm_min < 10) tmp << "0";
+					tmp << tinfo->tm_min;
+					tmp << ":";
+					if(tinfo->tm_sec < 10) tmp << "0";
+					tmp << tinfo->tm_sec;
+					tinfo1->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
+					tmp << "time since program start: ";
+					tinfo2->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+
+					tmp << SDL_GetTicks() << " ms, " << (SDL_GetTicks() / 1000) << " sec";
+					tinfo3->set_text((char*)tmp.str().c_str());
+					c->reset(&tmp);
+					break;
+				default:
+					break;
+			}
 		}
 
 		// print out the fps count
@@ -181,7 +263,7 @@ int main(int argc, char *argv[])
 		e->start_2d_draw();
 		agfx->draw_filled_rectangle(r1, gs->get_color("WINDOW_BG1"));
 		e->stop_2d_draw();
-		img->draw();
+		if(img_visible) img->draw();
 		agui->draw();
 
 		e->stop_draw();

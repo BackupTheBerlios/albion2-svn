@@ -14,30 +14,25 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __OBJ2A2M_H__
-#define __OBJ2A2M_H__
+#include "cmap.h"
 
-#ifdef WIN32
-#include <windows.h>
-#endif
+cmap::cmap(engine* e, scene* sce) {
+	cmap::e = e;
+	cmap::sce = sce;
+	cmap::c = e->get_core();
+	cmap::m = e->get_msg();
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <core.h>
-#include <msg.h>
-#include <file_io.h>
-#include <vertex3.h>
-using namespace std;
+	map = new a2emap(e, sce, NULL);
+}
 
-vector<vertex3> vertices;
-vector<vertex3> ivertices;
-vector<core::coord> tex_coords;
-vector<core::index>* indices;
-unsigned int object_count = 0;
-unsigned int cur_object = 0;
-bool ginit = false;
-bool blender = false;
+cmap::~cmap() {
+	delete map;
+}
 
-#endif
+void cmap::load_map(const char* name) {
+	map->load_map(name, true);
+}
+
+void cmap::close_map() {
+	map->close_map();
+}

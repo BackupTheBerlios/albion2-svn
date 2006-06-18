@@ -50,7 +50,7 @@ public:
 	~csystem();
 
 	bool init_net();
-	bool connect_client(const char* name);
+	bool connect_client(const char* name, const char* pw);
 
 	struct chat_msg {
 		unsigned int type;
@@ -60,6 +60,8 @@ public:
 	vector<chat_msg> chat_msgs;
 	void add_chat_msg(unsigned int type, char* name, char* msg);
 	chat_msg* get_msg();
+
+	vector<unsigned int> flags;
 
 
 	engine* e;
@@ -77,6 +79,7 @@ public:
 	unsigned short int port;
 	unsigned short int lis_port;
 	string client_name;
+	string client_pw;
 
 };
 

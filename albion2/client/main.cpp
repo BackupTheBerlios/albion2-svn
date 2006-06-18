@@ -49,14 +49,10 @@ int main(int argc, char *argv[])
 	cg = new cgui(e, agui, cs, cn);
 	cg->init();
 	cm = new cmap(e, sce);
-
-	// set a color scheme (blue)
 	cs->sf = e->get_screen();
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->load_keyset("DE");
-
 
 	// initialize the camera
 	cam->set_position(-5.0f, -30.0f, -55.0f);

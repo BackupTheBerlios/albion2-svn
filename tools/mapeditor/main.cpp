@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date December 2005
+ * \date December 2005 - June 2006
  *
  * Albion 2 Engine - Mapeditor
  */
@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->load_keyset("DE");
 
 	// initialize gui and chat sutff
 	agui->init();
@@ -71,12 +70,13 @@ int main(int argc, char *argv[])
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
 	sce->add_light(l1);
+	sce->set_light(false);
 
 	// needed for fps counting
 	unsigned int fps = 0;
 	unsigned int fps_time = 0;
 	char* tmp = new char[512];
-	sprintf(tmp, "A2E Mapeditor - v0.03");
+	sprintf(tmp, "A2E Mapeditor - v0.1");
 
 	// main loop
 	while(!done)
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
-			sprintf(tmp, "A2E Mapeditor - v0.03 | FPS: %u | Pos: %f %f %f", fps,
+			sprintf(tmp, "A2E Mapeditor - v0.1 | FPS: %u | Pos: %f %f %f", fps,
 				-cam->get_position()->x, -cam->get_position()->y, -cam->get_position()->z);
 			fps = 0;
 			fps_time = SDL_GetTicks();

@@ -108,7 +108,7 @@ protected:
 	400 - texture window
 	500 - open model window
 	600 - save model window
-	700 - open material window
+	700 - open material window (ofd)
 	***********/
 
 	gui_window* ofd_wnd;
@@ -184,12 +184,6 @@ protected:
 	gui_text* sm_mat_fname;
 	gui_button* sm_save;
 	gui_input* sm_imat_fname;
-
-	GUI_OBJ omat_id;
-	gui_window* omat_wnd;
-	gui_text* omat_mat_fname;
-	gui_button* omat_open;
-	gui_input* omat_imat_fname;
 };
 
 #endif

@@ -53,7 +53,6 @@ mgui::mgui(engine* e, gui* agui, mdl* model, scene* sce) {
 	tex_id = 0xFFFFFFFF;
 	om_id = 0xFFFFFFFF;
 	sm_id = 0xFFFFFFFF;
-	omat_id = 0xFFFFFFFF;
 }
 
 mgui::~mgui() {
@@ -74,7 +73,7 @@ void mgui::run() {
 					// open existing material file
 					case 102: {
 						if(model->is_model()) {
-							load_omat_wnd();
+							ofd_wnd = agui->get_window(agui->add_open_dialog(700, "open material", e->data_path(NULL), "a2mtl"));
 						}
 					}
 					break;
@@ -204,17 +203,17 @@ void mgui::run() {
 					case 508: {
 						// check if files exist
 						if(!f->is_file(e->data_path(om_imdl_fname->get_text()->c_str()))) {
-							agui->add_msgbox_ok(60, "File does not exist!", "The model file does not exist!");
+							agui->add_msgbox_ok("File does not exist!", "The model file does not exist!");
 							m->print(msg::MERROR, "mgui.cpp", "The model file \"%s\" does not exist!", om_imdl_fname->get_text()->c_str());
 							break;
 						}
 						if(e->get_core()->is_a2eanim(e->data_path(om_imdl_fname->get_text()->c_str())) && !f->is_file(e->data_path(om_iani_fname->get_text()->c_str()))) {
-							agui->add_msgbox_ok(60, "File does not exist!", "The animation file does not exist!");
+							agui->add_msgbox_ok("File does not exist!", "The animation file does not exist!");
 							m->print(msg::MERROR, "mgui.cpp", "The animation file \"%s\" does not exist!", om_iani_fname->get_text()->c_str());
 							break;
 						}
 						if(strcmp(om_imat_fname->get_text()->c_str(), "") != 0 && !f->is_file(e->data_path(om_imat_fname->get_text()->c_str()))) {
-							agui->add_msgbox_ok(60, "File does not exist!", "The material file does not exist!");
+							agui->add_msgbox_ok("File does not exist!", "The material file does not exist!");
 							m->print(msg::MERROR, "mgui.cpp", "The material file \"%s\" does not exist!", om_imat_fname->get_text()->c_str());
 							break;
 						}
@@ -249,15 +248,9 @@ void mgui::run() {
 					break;
 					// open material ...
 					case 702: {
-						// check if files exist
-						if(!f->is_file(e->data_path(omat_imat_fname->get_text()->c_str()))) {
-							agui->add_msgbox_ok(60, "File does not exist!", "The material file does not exist!");
-							m->print(msg::MERROR, "mgui.cpp", "The material file \"%s\" does not exist!", omat_imat_fname->get_text());
-							break;
-						}
-
-						open_mtl();
-						omat_wnd->set_deleted(true);
+						ofd_wnd->set_deleted(true);
+						model->set_material((char*)agui->get_open_diaolg_list()->get_selected_item()->text.c_str());
+						update_mat(model->get_material(), 0, 0);
 					}
 					break;
 					default:
@@ -323,10 +316,10 @@ void mgui::run() {
 											te->rgb_combine[i] = (char)0xFF;
 											te->alpha_combine[i] = (char)0xFF;
 											for(unsigned int j = 0; j < 3; j++) {
-												te->rgb_source[i] = 0;
-												te->rgb_operand[i] = 0;
-												te->alpha_source[i] = 0;
-												te->alpha_operand[i] = 0;
+												te->rgb_source[i][j] = 0;
+												te->rgb_operand[i][j] = 0;
+												te->alpha_source[i][j] = 0;
+												te->alpha_operand[i][j] = 0;
 											}
 										}
 									}
@@ -447,7 +440,7 @@ void mgui::load_obj_wnd() {
 		if(!obj_wnd->get_deleted()) return;
 	}
 
-	obj_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 255, 375), 200, "sub-objects", true);
+	obj_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 255, 375), 200, "Sub-Objects", true);
 	obj_wnd = agui->get_window(obj_id);
 	oobj_list = agui->get_list(agui->add_list_box(e->get_gfx()->pnt_to_rect(4, 4, 216, 296), 201, 200));
 	ochange = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(4, 300, 216, 320), 202, "change", 0, 200));
@@ -542,7 +535,7 @@ void mgui::load_tex_wnd() {
 		if(!tex_wnd->get_deleted()) return;
 	}
 
-	tex_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 656, 145), 400, "load texure ...", true);
+	tex_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 656, 145), 400, "load texure", true);
 	tex_wnd = agui->get_window(tex_id);
 
 	ttex_fname = agui->get_text(agui->add_text("STANDARD", font_size, "texture filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 12), 401, 400));
@@ -564,7 +557,7 @@ void mgui::load_om_wnd() {
 		if(!om_wnd->get_deleted()) return;
 	}
 
-	om_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 652, 180), 500, "load model/animation/material ...", true);
+	om_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 652, 180), 500, "load model/animation/material", true);
 	om_wnd = agui->get_window(om_id);
 
 	om_mdl_fname = agui->get_text(agui->add_text("STANDARD", font_size, "model filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 9), 501, 500));
@@ -587,7 +580,7 @@ void mgui::load_sm_wnd() {
 		if(!sm_wnd->get_deleted()) return;
 	}
 
-	sm_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 653, 119), 600, "save material ...", true);
+	sm_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 653, 119), 600, "save material", true);
 	sm_wnd = agui->get_window(sm_id);
 
 	sm_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "material filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(9, 12), 601, 600));
@@ -595,21 +588,6 @@ void mgui::load_sm_wnd() {
 	sm_save = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(12, 35, 368, 56), 602, "save", 0, 600));
 
 	sm_imat_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(120, 9, 369, 29), 603, (char*)model->mat_fname.c_str(), 600));
-}
-
-void mgui::load_omat_wnd() {
-	if(agui->exist(omat_id)) {
-		if(!omat_wnd->get_deleted()) return;
-	}
-
-	omat_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 653, 119), 700, "open material ...", true);
-	omat_wnd = agui->get_window(omat_id);
-
-	omat_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "material filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(9, 12), 701, 700));
-
-	omat_open = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(12, 35, 368, 56), 702, "open", 0, 700));
-
-	omat_imat_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(120, 9, 369, 29), 703, (char*)model->mat_fname.c_str(), 700));
 }
 
 void mgui::update_obj_list() {
@@ -836,9 +814,4 @@ void mgui::close_mtl() {
 
 	obj_wnd->set_deleted(true);
 	mat_wnd->set_deleted(true);
-}
-
-void mgui::open_mtl() {
-	model->set_material((char*)omat_imat_fname->get_text()->c_str());
-	update_mat(model->get_material(), 0, 0);
 }

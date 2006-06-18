@@ -68,6 +68,7 @@ public:
 	void open_map(char* filename);
 	void save_map(char* filename = NULL);
 	void close_map();
+	void new_map(char* filename);
 	void run();
 
 	void select_object(vertex3* look_at);
@@ -88,6 +89,8 @@ public:
 	list<a2emodel>* get_models();
 	list<a2eanim>* get_amodels();
 	list<a2ematerial>* get_materials();
+
+	list<map_object>* get_objects();
 
 protected:
 	engine* e;

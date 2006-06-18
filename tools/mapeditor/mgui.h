@@ -31,6 +31,7 @@
 #include <cmath>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_thread.h>
 #include <engine.h>
 #include <msg.h>
 #include <core.h>
@@ -60,10 +61,14 @@ public:
 	void open_map_dialog();
 	void open_property_wnd();
 	void add_obj_dialog();
+	void new_map_dialog();
 
 	void apply_changes();
 	void save_map();
 	void close_map();
+
+	static int mtleditor_thread(void* data);
+	void update_materials(const char* mat_fname);
 
 protected:
 	engine* e;
@@ -77,6 +82,12 @@ protected:
 
 	unsigned int font_size;
 
+	SDL_Thread* mtleditor_th;
+	static SDL_semaphore* mtleditor_se;
+	static string sys_call;
+	string mat_name;
+	bool is_thread;
+
 	/***********
 	GUI ID Chart
 	0 - system
@@ -84,16 +95,19 @@ protected:
 	200 - open file dialog
 	300 - properties window
 	400 - add object window
+	500 - new map dialog
 	***********/
 
 	GUI_OBJ menu_id;
 	gui_window* menu;
+	gui_button* mnew_map;
 	gui_button* mopen_map;
 	gui_button* msave_map;
 	gui_button* mclose_map;
 	gui_button* mproperties;
 	gui_button* madd_obj;
 	gui_button* mdel_obj;
+	GLuint mnew_tex;
 	GLuint mopen_tex;
 	GLuint msave_tex;
 	GLuint mclose_tex;
@@ -135,6 +149,7 @@ protected:
 	gui_input* pescalez;
 	gui_list* plphys_prop;
 	gui_button* papply;
+	gui_button* pedit_mat;
 
 	GUI_OBJ ao_wnd_id;
 	gui_window* ao_wnd;
@@ -150,6 +165,12 @@ protected:
 	gui_button* ao_add;
 
 	gui_window* od_wnd;
+
+	GUI_OBJ nm_wnd_id;
+	gui_window* nm_wnd;
+	gui_text* nm_mapfname;
+	gui_input* nm_e_mapfname;
+	gui_button* nm_open;
 
 };
 

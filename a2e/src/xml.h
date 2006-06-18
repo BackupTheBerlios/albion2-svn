@@ -25,7 +25,9 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <libxml/encoding.h>
 #include <libxml/xmlreader.h>
+#include <libxml/xmlwriter.h>
 #include "msg.h"
 #include "core.h"
 
@@ -45,6 +47,7 @@ public:
 	xml(msg* m);
 	~xml();
 
+	// for reading
 	bool open(char* filename);
 	void close();
 	bool process();
@@ -55,15 +58,23 @@ public:
 	const char* get_attribute(char* att_name);
 	char* get_nattribute(unsigned int num);
 
+	// for writing
+	bool open_write(char* filename);
+	void close_write();
+	void start_element(const char* name);
+	void end_element();
+	void write_attribute(const char* attribute, const char* value);
+
 protected:
 	msg* m;
 	core* c;
 
 	xmlTextReaderPtr* reader;
+	xmlTextWriterPtr* writer;
 	char* fname;
+	char* fname_write;
 
-	char* tmpc;
-	string tmp;
+	unsigned int inner_loop;
 
 };
 

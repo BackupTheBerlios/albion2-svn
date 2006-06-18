@@ -457,6 +457,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\gui_mltext.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_mltext.h"
+			>
+		</File>
+		<File
 			RelativePath=".\gui_object.cpp"
 			>
 		</File>

@@ -127,3 +127,12 @@ bool cmap::close_map() {
 
 	return true;
 }
+
+void cmap::new_map(char* filename) {
+	f->open_file(filename, file_io::OT_WRITE_BINARY);
+
+	f->write_block("A2EMAP", 6);
+	f->put_uint(0);
+
+	f->close_file();
+}

@@ -103,12 +103,10 @@ void cgui::run() {
 					}
 					break;
 					case 202: {
-						if(!cs->connect_client(ml_iname->get_text()->c_str())) {
-							agui->add_msgbox_ok(60, "client login failed", "login failed - can't connect to server!");
+						if(!cs->connect_client(ml_iname->get_text()->c_str(), ml_ipw->get_text()->c_str())) {
+							agui->add_msgbox_ok("client login failed", "login failed - can't connect to server!");
 							break;
 						}
-						gui_state = cgui::GS_GAME;
-						load_game_gui();
 					}
 					break;
 					///////////// game stuff ////////////
@@ -154,7 +152,8 @@ void cgui::run() {
 	}
 
 	if(cs->disconnected) {
-		agui->add_msgbox_ok(60, "disconnection", "lost connection to the server (server down or network disconnection)!");
+		//agui->add_msgbox_ok("disconnection", "lost connection to the server (server down or network disconnection)!");
+		agui->add_msgbox_ok("disconnection", "you have been disconnected from the server!");
 
 		gui_state = cgui::GS_MAIN;
 		load_main_gui();
@@ -177,6 +176,31 @@ void cgui::run() {
 			cs->chat_msgs.clear();
 		}
 	}
+
+	// check if we received any new flags
+	if(cs->flags.size() != 0) {
+		unsigned int flag = cs->flags.front();
+
+		switch(flag) {
+			case cnet::F_SUCCESS_LOGIN:
+				if(cgui::gui_state != cgui::GS_GAME) {
+					gui_state = cgui::GS_GAME;
+					load_game_gui();
+				}
+				break;
+			case cnet::F_WRONG_UNAME:
+				agui->add_msgbox_ok("system message", "you entered a user name that doesn't exist!");
+				break;
+			case cnet::F_WRONG_PW:
+				agui->add_msgbox_ok("system message", "you entered a wrong password!");
+				break;
+			default:
+				//m->print(msg::MERROR, "cgui.cpp", "run(): unknown flag type %u!", flag);
+				break;
+		}
+
+		cs->flags.erase(cs->flags.begin());
+	}
 }
 
 void cgui::load_main_gui() {
@@ -190,7 +214,7 @@ void cgui::load_main_gui() {
 		if(!mmenu->get_deleted()) return;
 	}
 
-	mmenu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 100, "main gui", false);
+	mmenu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 100, "main gui", false, false);
 	mmenu = agui->get_window(mmenu_id);
 	mm_login = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 101, "login", 0, 100));
 	mm_options = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(70, 236, 252, 268), 102, "options", 0, 100));
@@ -203,7 +227,7 @@ void cgui::load_login_wnd() {
 		if(!mlogin->get_deleted()) return;
 	}
 
-	mlogin_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 200, "login", false);
+	mlogin_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 200, "login", false, false);
 	mlogin = agui->get_window(mlogin_id);
 	ml_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 201, "back", 0, 200));
 	ml_login = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(780, 165, 962, 187), 202, "login", 0, 200));
@@ -218,7 +242,7 @@ void cgui::load_options_wnd() {
 		if(!moptions->get_deleted()) return;
 	}
 
-	moptions_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 300, "options", false);
+	moptions_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 300, "options", false, false);
 	moptions = agui->get_window(moptions_id);
 	mo_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 301, "back", 0, 300));
 	mo_save = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(780, 330, 962, 362), 302, "save", 0, 300));
@@ -229,7 +253,7 @@ void cgui::load_credits_wnd() {
 		if(!mcredits->get_deleted()) return;
 	}
 
-	mcredits_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 20), 400, "credits", false);
+	mcredits_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 400, "credits", false, false);
 	mcredits = agui->get_window(moptions_id);
 	mc_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 401, "back", 0, 400));
 }

@@ -52,13 +52,20 @@ public:
 		PT_TEST,
 		PT_NEW_CLIENT,
 		PT_QUIT_CLIENT,
-		PT_CHAT_MSG
+		PT_CHAT_MSG,
+		PT_FLAG
 	};
 
 	enum CHAT_TYPE {
 		CT_WORLD,
 		CT_REGION,
 		CT_PARTY
+	};
+
+	enum FLAGS {
+		F_SUCCESS_LOGIN,
+		F_WRONG_UNAME,
+		F_WRONG_PW
 	};
 
 	int process_packet(char* data, unsigned int max_len);

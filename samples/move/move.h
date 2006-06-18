@@ -65,8 +65,6 @@ a2emodel** spheres;
 unsigned int cspheres = 9; // should be a quadratic number
 ode_object* sphere_obj;
 
-SDL_Surface* sf;
-
 bool done = false;
 
 SDL_Event ievent;

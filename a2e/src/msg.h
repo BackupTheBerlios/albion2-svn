@@ -23,7 +23,6 @@ using namespace std;
 
 /*! @class msg
  *  @brief msg handling
- *  @author laxity
  *  @author flo
  *  @todo logfile support
  *

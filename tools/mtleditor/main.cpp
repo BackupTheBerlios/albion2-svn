@@ -21,7 +21,7 @@
  *
  * \author flo
  *
- * \date December 2005
+ * \date March 2006 - June 2006
  *
  * Albion 2 Engine - Mapeditor
  */
@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->load_keyset("DE");
 
 	// initialize gui and chat sutff
 	agui->init();
@@ -79,9 +78,34 @@ int main(int argc, char *argv[])
 	unsigned int fps = 0;
 	unsigned int fps_time = 0;
 	char* tmp = new char[512];
-	sprintf(tmp, "A2E Material Editor - v0.01");
+	sprintf(tmp, "A2E Material Editor - v0.1");
 
 	mg->load_main_gui();
+
+	// check if arguments were overgiven to the application
+	if(argc > 1) {
+		bool end = false;
+		bool ani = false;
+		string fmdl = "";
+		string fani = "";
+		string fmat = "";
+		if(argc == 3) {
+			fmdl = argv[1];
+			fmat = argv[2];
+		}
+		else if(argc == 4) {
+			fmdl = argv[1];
+			fani = argv[2];
+			fmat = argv[3];
+		}
+
+		mg->load_om_wnd();
+		// kinda tricky, but it works ;P
+		agui->get_input(509)->set_text(fmdl.c_str());
+		agui->get_input(510)->set_text(fani.c_str());
+		agui->get_input(511)->set_text(fmat.c_str());
+		aevent->add_gui_event(event::BUTTON_PRESSED, 508);
+	}
 
 	// main loop
 	while(!done)
@@ -120,7 +144,7 @@ int main(int argc, char *argv[])
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
-			sprintf(tmp, "A2E Material Editor - v0.01 | FPS: %u | Pos: %f %f %f | Rot: %f %f %f", fps,
+			sprintf(tmp, "A2E Material Editor - v0.1 | FPS: %u | Pos: %f %f %f | Rot: %f %f %f", fps,
 				-cam->get_position()->x, -cam->get_position()->y, -cam->get_position()->z,
 				cam->get_rotation()->x, cam->get_rotation()->y, cam->get_rotation()->z);
 			fps = 0;

@@ -40,18 +40,21 @@
 #include <shader.h>
 #include <a2emap.h>
 #include <net.h>
+#include "userman.h"
+#include "web.h"
 using namespace std;
 
 class snet {
 public:
-	snet(engine* e, net* n);
+	snet(engine* e, net* n, userman* um, web* w);
 	~snet();
 
 	enum PACKET_TYPE {
 		PT_TEST,
 		PT_NEW_CLIENT,
 		PT_QUIT_CLIENT,
-		PT_CHAT_MSG
+		PT_CHAT_MSG,
+		PT_FLAG
 	};
 
 	enum CHAT_TYPE {
@@ -60,27 +63,38 @@ public:
 		CT_PARTY
 	};
 
+	enum FLAGS {
+		F_SUCCESS_LOGIN,
+		F_WRONG_UNAME,
+		F_WRONG_PW
+	};
+
 	int process_packet(unsigned int cnum, char* pdata, unsigned int max_len);
 	void send_packet(unsigned int cnum, unsigned int inum, PACKET_TYPE type);
 	void handle_client(unsigned int cnum);
 	void manage_clients();
-	int process_http_packet(unsigned int cnum, char* data, unsigned int max_len);
+
+	int process_http_packet(unsigned int cnum, char* pdata, unsigned int max_len);
+	void write_http_header(stringstream* stream, const char* status);
 
 	// used for setting packet data from other classes
 	stringstream* get_data();
-	void clear_data();
 
 protected:
 	engine* e;
 	msg* m;
 	core* c;
 	net* n;
+	userman* um;
+	web* w;
 
 	unsigned int max_packet_size;
 
+	string tmp;
 	stringstream* buffer;
 	stringstream* data;
 	char* packet_data;
+	char* line;
 
 };
 

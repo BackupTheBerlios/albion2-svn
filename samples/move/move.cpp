@@ -36,7 +36,7 @@ void update_cam(cam_type ctype) {
 
 	cam->set_position(-xpos - sinf(xrot) * 15.0f, -ypos - 10.0f, -zpos - cosf(zrot) * 15.0f);
 	player->set_position(xpos, ypos - 2.0f, zpos);
-	player->set_rotation(0.0f, cam->get_rotation()->y, 0.0f);
+	player->set_rotation(0.0f, 360.0f - cam->get_rotation()->y, 0.0f);
 
 	if(SDL_GetTicks() - walk_time >= min_walk_time) {
 		const dReal* clvel = dBodyGetLinearVel(sphere_obj->get_body());
@@ -104,12 +104,8 @@ int main(int argc, char *argv[])
 	cam = new camera(e);
 	o = new ode(e);
 
-	// set a color scheme (blue)
-	sf = e->get_screen();
-
 	// initialize the a2e events
 	aevent->init(ievent);
-	aevent->load_keyset("DE");
 
 	// initialize the camera
 	cam->set_position(-5.0f, 30.0f, -55.0f);

@@ -214,6 +214,22 @@
 			RelativePath=".\snet.h"
 			>
 		</File>
+		<File
+			RelativePath=".\userman.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\userman.h"
+			>
+		</File>
+		<File
+			RelativePath=".\web.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\web.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

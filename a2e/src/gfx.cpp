@@ -253,7 +253,7 @@ unsigned int gfx::get_color(unsigned int red, unsigned int green, unsigned int b
 	return (unsigned int)SDL_MapRGBA(screen->format, (Uint8)red, (Uint8)green, (Uint8)blue, 255);
 }
 
-/*! returns the sdl_color that we get from the function arguments and the screen surface - DEPRECATED?
+/*! returns the sdl_color that we get from the function arguments and the screen surface - OBSOLETE?
  *  @param rgb red, green and blue in one value
  */
 unsigned int gfx::get_color(unsigned int rgb) {
@@ -351,7 +351,7 @@ void gfx::set_scissor(gfx::rect* rectangle) {
  *  @param y2 y2 value of the scissor box
  */
 void gfx::set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
-	glScissor(x1, screen->h - y2, x2-x1, y2 - y1);
+	glScissor(x1, screen->h - y2, x2 - x1, y2 - y1);
 	//glScissor(x1, y2, x2-x1, y2-y1);
 }
 

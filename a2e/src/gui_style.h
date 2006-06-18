@@ -47,13 +47,6 @@ public:
 	gui_style(engine* e);
 	~gui_style();
 
-	//! the style color scheme
-	enum COLOR_SCHEME {
-		WINDOWS,	//!< enum windows like colors
-		BLUE,		//!< enum blue colors
-		BLACKWHITE	//!< enum black/white colors
-	};
-
 	void load_gui_elements(const char* list);
 	void render_gui_element(const char* name, const char* state_name, gfx::rect* rectangle, unsigned int x, unsigned int y);
 	void set_gui_text(gui_text* text);

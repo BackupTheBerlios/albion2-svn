@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+	<user name="Flo" password="123" id="0"/>
+	<user name="cipher" password="a2%25" id="1"/>
+	<user name="cipherthesecond" password="test" id="2"/>
+	<user name="laxity" password="tuttesten" id="3"/>
+</users>

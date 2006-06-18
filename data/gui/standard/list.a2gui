@@ -3,6 +3,7 @@ checkbox gui_check.xml
 combobox gui_combo.xml
 inputbox gui_input.xml
 listbox gui_list.xml
+mltext gui_mltext.xml
 vbar gui_vbar.xml
 vbar_up_button gui_vbar_up_button.xml
 vbar_down_button gui_vbar_down_button.xml

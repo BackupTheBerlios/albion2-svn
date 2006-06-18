@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 
 	// initialize the a2e events
 	aevent->init(sevent);
-	aevent->load_keyset("DE");
 
 	// initialize the camera
 	cam->set_position(-5.0f, -30.0f, -55.0f);
@@ -209,8 +208,6 @@ int main(int argc, char *argv[])
 	o->close();
 
 	// delete everything
-	delete o;
-	delete sce;
 	if(!use_a2map) {
 		delete scale_mat;
 		delete ground_mat;
@@ -220,6 +217,8 @@ int main(int argc, char *argv[])
 		mdl_map->close_map();
 		delete mdl_map;
 	}
+	delete o;
+	delete sce;
 	delete l1;
 	delete l2;
 	delete s;

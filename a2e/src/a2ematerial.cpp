@@ -32,10 +32,11 @@ a2ematerial::a2ematerial(engine* e) {
 a2ematerial::~a2ematerial() {
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
 
-    for(vector<texture_elem>::iterator titer = textures.begin(); titer != textures.end(); titer++) {
+	// needed?
+    /*for(vector<texture_elem>::iterator titer = textures.begin(); titer != textures.end(); titer++) {
         delete [] titer->tex_names;
         delete [] titer->textures;
-    }
+    }*/
 	textures.clear();
 
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "a2ematerial stuff freed");
@@ -45,6 +46,8 @@ a2ematerial::~a2ematerial() {
  *  @param filename the materials filename
  */
 void a2ematerial::load_material(char* filename) {
+	textures.clear();
+
 	file->open_file(filename, file_io::OT_READ_BINARY);
 
 	// get file type

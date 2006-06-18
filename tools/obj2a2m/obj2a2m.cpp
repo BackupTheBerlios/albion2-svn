@@ -64,12 +64,21 @@ int main(int argc, char *argv[]) {
 		cout << "no .obj or .a2m file specified!" << endl << usage << endl;
 		return 0;
 	}
+
+	char* obj_filename;
+	char* a2m_filename;
+	if(argc == 4 && strcmp(argv[1], "-blender") == 0) {
+		blender = true;
+
+		obj_filename = argv[2];
+		a2m_filename = argv[3];
+	}
 	else {
-		cout << "converting " << argv[1] << " to " << argv[2] << " ..." << endl;
+		obj_filename = argv[1];
+		a2m_filename = argv[2];
 	}
 
-	char* obj_filename = argv[1];
-	char* a2m_filename = argv[2];
+	cout << "converting " << obj_filename << " to " << a2m_filename << " ..." << endl;
 
 	fstream ifile;
 	ifile.open(obj_filename, fstream::in | fstream::binary);
@@ -103,6 +112,12 @@ int main(int argc, char *argv[]) {
 		}
 
 		buffer.clear();
+	}
+
+	// for blender
+	if(blender) {
+		object_count *= 2;
+		object_count++;
 	}
 
 	indices = new vector<core::index>[object_count];
@@ -225,8 +240,8 @@ int main(int argc, char *argv[]) {
 	for(unsigned int i = 0; i < tex_coords.size(); i++) {
 		if(ivertices[i] != vui) {
 			put_float(&ofile, ivertices[i].x);
-			put_float(&ofile, ivertices[i].y);
 			put_float(&ofile, ivertices[i].z);
+			put_float(&ofile, ivertices[i].y);
 		}
 		else {
 			cout << "unassigned vertex #" << i << "! (seems like the vertex is specified, but not used by any triangle - putting three 0.0f instead)" << endl;
@@ -247,14 +262,15 @@ int main(int argc, char *argv[]) {
 		put_uint(&ofile, (unsigned int)indices[i].size());
 		for(vector<core::index>::iterator ind_iter = indices[i].begin(); ind_iter != indices[i].end(); ind_iter++) {
 			put_uint(&ofile, ind_iter->i1);
-			put_uint(&ofile, ind_iter->i2);
 			put_uint(&ofile, ind_iter->i3);
+			put_uint(&ofile, ind_iter->i2);
 		}
 	}
 
 	ofile.close();
 
 	cout << "successfully converted " << obj_filename << " to " << a2m_filename << "!" << endl;
+	cout << "object count: " << object_count << endl;
 
 	delete c;
 	delete fio;

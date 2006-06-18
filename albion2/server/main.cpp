@@ -42,7 +42,11 @@ int main(int argc, char *argv[])
 	n = new net(e);
 	o = new ode(e);
 	o->init();
-	sn = new snet(e, n);
+	w = new web(e);
+	um = new userman(e);
+	sn = new snet(e, n, um, w);
+
+	um->load_list(e->data_path("users.xml"));
 
 	// open map
 	a2emap* map = new a2emap(e, sce, o);
@@ -71,6 +75,7 @@ int main(int argc, char *argv[])
 	unsigned int ode_timer2 = 0;
 	ode_timestep = 1000 / 40; // 1000 / updates per second
 
+	unsigned int save_timer = SDL_GetTicks();
 	while(!done)
 	{
 		while(aevent->is_event())
@@ -100,6 +105,11 @@ int main(int argc, char *argv[])
 
 			// use a fixed value of 40 updates per second
 			o->run(ode_timestep);
+		}
+
+		if(SDL_GetTicks() - save_timer >= 60000) {
+			um->save_user_list();
+			save_timer = SDL_GetTicks();
 		}
 	}
 

@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef __CMAP_H__
+#define __CMAP_H__
 
 #ifdef WIN32
 #include <windows.h>
@@ -24,6 +24,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <engine.h>
@@ -39,33 +40,26 @@
 #include <light.h>
 #include <shader.h>
 #include <a2emap.h>
+#include <image.h>
 #include <net.h>
-#include "snet.h"
-#include "userman.h"
-#include "web.h"
 using namespace std;
 
-engine* e;
-msg* m;
-core* c;
-event* aevent;
-shader* s;
-scene* sce;
-ode* o;
-net* n;
-snet* sn;
-userman* um;
-web* w;
+class cmap {
+public:
+	cmap(engine* e, scene* sce);
+	~cmap();
 
-void handle_clients();
+	void load_map(const char* name);
+	void close_map();
 
-unsigned int ode_timestep;
+protected:
+	engine* e;
+	core* c;
+	msg* m;
+	scene* sce;
 
-SDL_Surface* sf;
+	a2emap* map;
 
-bool done = false;
-bool netinit = false;
-
-SDL_Event ievent;
+};
 
 #endif

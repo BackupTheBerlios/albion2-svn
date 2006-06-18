@@ -366,10 +366,10 @@ void mapeditor::close_map() {
 
 void mapeditor::add_object(char* model_filename, char* mat_filename) {
 	objects.push_back(*new map_object());
-	memcpy(objects.back().model_name, "Model", 32);
-	memcpy(objects.back().model_filename, model_filename, 32);
-	memcpy(objects.back().ani_filename, "\0", 32);
-	memcpy(objects.back().mat_filename, mat_filename, 32);
+	memcpy(objects.back().model_name, "Model", 64);
+	memcpy(objects.back().model_filename, model_filename, 64);
+	memcpy(objects.back().ani_filename, "\0", 64);
+	memcpy(objects.back().mat_filename, mat_filename, 64);
 
 	models.push_back(*sce->create_a2emodel());
 	sce->add_model(&models.back());
@@ -445,4 +445,12 @@ list<a2ematerial>* mapeditor::get_materials() {
 
 bool mapeditor::is_sel() {
 	return sel;
+}
+
+void mapeditor::new_map(char* filename) {
+	memap->new_map(filename);
+}
+
+list<mapeditor::map_object>* mapeditor::get_objects() {
+	return &objects;
 }
