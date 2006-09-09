@@ -22,17 +22,31 @@ cmap::cmap(engine* e, scene* sce) {
 	cmap::c = e->get_core();
 	cmap::m = e->get_msg();
 
-	map = new a2emap(e, sce, NULL);
+	map_open = false;
+	amap = new a2emap(e, sce, NULL);
+
+	map_names[0] = "klouta.a2map";
 }
 
 cmap::~cmap() {
-	delete map;
+	delete amap;
 }
 
-void cmap::load_map(const char* name) {
-	map->load_map(name, true);
+void cmap::load_map(unsigned int id) {
+	if(map_open) {
+		m->print(msg::MERROR, "cmap.cpp", "load_map(): a map is already opened!");
+		return;
+	}
+
+	amap->load_map(e->data_path(map_names[id].c_str()), true);
+	map_open = true;
+
+	m->print(msg::MDEBUG, "cmap.cpp", "load_map(): successfully load map \"%s\"!", map_names[id].c_str());
 }
 
 void cmap::close_map() {
-	map->close_map();
+	if(!map_open) return;
+
+	amap->close_map();
+	map_open = false;
 }

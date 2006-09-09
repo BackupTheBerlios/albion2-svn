@@ -43,6 +43,7 @@ gui_button::~gui_button() {
  *  @param state the scaling state
  */
 void gui_button::set_image_scaling(bool state) {
+	if(gui_button::img_scale != state) gui_button::redraw = true;
 	gui_button::img_scale = state;
 	if(img != NULL) {
 		img->set_scaling(state);

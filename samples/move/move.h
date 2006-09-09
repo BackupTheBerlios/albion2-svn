@@ -64,6 +64,7 @@ a2emodel* player;
 a2emodel** spheres;
 unsigned int cspheres = 9; // should be a quadratic number
 ode_object* sphere_obj;
+ode_object** spheres_obj;
 
 bool done = false;
 

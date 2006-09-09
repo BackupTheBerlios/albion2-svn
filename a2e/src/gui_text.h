@@ -45,8 +45,8 @@ public:
 	gui_text(engine* e);
 	~gui_text();
 
-	void draw(unsigned int x, unsigned int y);
-	void draw(const char* text, unsigned int x, unsigned int y);
+	void draw(unsigned int x, unsigned int y, bool draw_bg = true);
+	void draw(const char* text, unsigned int x, unsigned int y, bool draw_bg = false);
 	void new_text(char* font_name, unsigned int font_size);
 
 
@@ -70,11 +70,23 @@ public:
 	unsigned int get_text_width();
 	unsigned int get_text_height();
 
+	void set_redraw(bool state);
+	bool get_redraw();
+
+	void set_background_color(unsigned int color);
+
+	void set_type(const char* type);
+	string* get_type();
+
+	void set_tab(unsigned int id);
+	unsigned int get_tab();
+
 protected:
 	msg* m;
 	core* c;
 	engine* e;
 	gfx* g;
+	ext* exts;
 
 	// gui text element variables
 
@@ -90,11 +102,25 @@ protected:
 	bool is_init;
 	//! text color
 	unsigned int color;
+	//! redraw flag
+	bool redraw;
+	//! background color
+	unsigned int background_color;
+	//! the object's type (name)
+	string type;
+	//! the object's tab
+	unsigned int tab;
+
+	unsigned int advance;
+	unsigned int last_advance;
+	unsigned int height;
+	unsigned int last_height;
+
+	unsigned int font_height;
 
 	GLuint texture;
 	float texmaxx;
 	float texmaxy;
-
 
 };
 

@@ -48,17 +48,40 @@ public:
 	~userman();
 
 	struct user_data {
+		string name;
 		string password;
-		vertex3 position;
 		unsigned int id;
+		unsigned int nid;
+		bool active;
+
+		unsigned int map;
+		vertex3 position;
+		vertex3 rotation;
+		bool new_rot;
+
+		unsigned int vis_user_timer;
+		vector<unsigned int> vis_user;
+
+		a2emodel* obj;
+		ode_object* phys_obj;
 	};
 
-	void load_list(const char* file);
+	void run();
+
+	void load_user_list(const char* file);
+	void load_user_db(const char* file);
+
+	void save_user_list();
+	void save_user_db();
+
 	user_data* get_user(const char* name);
+	user_data* get_user(unsigned int id);
 	void add_user(const char* name, const char* pw);
+
 	bool check_user(const char* name);
 	bool check_pw(const char* name, const char* pw);
-	void save_user_list();
+
+	map<string, user_data>* get_user_list();
 
 protected:
 	engine* e;

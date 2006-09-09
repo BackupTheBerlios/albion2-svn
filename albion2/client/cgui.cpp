@@ -16,16 +16,15 @@
 
 #include "cgui.h"
 
-cgui::cgui(engine* e, gui* agui, csystem* cs, cnet* cn) {
+cgui::cgui(engine* e, csystem* cs) {
 	cgui::e = e;
-	cgui::agui = agui;
 	cgui::m = e->get_msg();
 	cgui::c = e->get_core();
 	cgui::f = e->get_file_io();
 	cgui::cs = cs;
-	cgui::cn = cn;
+	cgui::agui = cs->agui;
 
-	txt = agui->get_text(agui->add_text("STANDARD", 12, "", 0x000000, e->get_gfx()->cord_to_pnt(0, 0), 40, 0));
+	txt = agui->get_object<gui_text>(agui->add_text("STANDARD", 12, "", 0x000000, e->get_gfx()->cord_to_pnt(0, 0), 40, 0));
 
 	mmenu = NULL;
 
@@ -117,26 +116,22 @@ void cgui::run() {
 						if(msg_len == 0) break;
 						if(strcmp(chat_msg, "/who") == 0) {
 							string who = "";
-							for(vector<cnet::client>::iterator cl_iter = cn->clients.begin(); cl_iter != cn->clients.end(); cl_iter++) {
+							for(vector<csystem::client>::iterator cl_iter = cs->clients.begin(); cl_iter != cs->clients.end(); cl_iter++) {
 								who += cl_iter->name;
-								if(cl_iter != cn->clients.end()-1) {
+								if(cl_iter != cs->clients.end()-1) {
 									who += ", ";
 								}
 							}
-							if(who != "") cgui::add_chat_msg(cnet::CT_WORLD, "System", who.c_str());
+							if(who != "") cgui::add_chat_msg(cgui::CT_WORLD, "System", who.c_str());
 							gc_imsg->set_text("");
 							break;
 						}
 
 						// put chat stuff into data buffer and send packet
-						cn->clear_data();
-						c->put_uint(cn->get_data(), cnet::CT_WORLD);
-						c->put_uint(cn->get_data(), msg_len);
-						c->put_block(cn->get_data(), chat_msg, msg_len);
-						cn->send_packet(cnet::PT_CHAT_MSG);
+						cs->send_chat_msg(cgui::CT_WORLD, (char*)chat_msg);
 
 						// add msg to "local" client msg box
-						cgui::add_chat_msg(cnet::CT_WORLD, cs->client_name.c_str(), chat_msg);
+						cgui::add_chat_msg(cgui::CT_WORLD, cs->client_name.c_str(), chat_msg);
 
 						// reset input box
 						gc_imsg->set_text("");
@@ -170,15 +165,16 @@ void cgui::run() {
 		if(cs->chat_msgs.size() != 0) {
 			// if so, add msg to the chat msg box
 			for(vector<csystem::chat_msg>::iterator cm_iter = cs->chat_msgs.begin(); cm_iter != cs->chat_msgs.end(); cm_iter++) {
-				add_chat_msg((cnet::CHAT_TYPE)cm_iter->type, cm_iter->name.c_str(), cm_iter->msg.c_str());
+				add_chat_msg((cgui::CHAT_TYPE)cm_iter->type, cm_iter->name.c_str(), cm_iter->msg.c_str());
 			}
 			// all messages added, clear msg buffer
 			cs->chat_msgs.clear();
 		}
 	}
 
+	//TODO: move to cnet class ...
 	// check if we received any new flags
-	if(cs->flags.size() != 0) {
+	/*if(cs->flags.size() != 0) {
 		unsigned int flag = cs->flags.front();
 
 		switch(flag) {
@@ -200,7 +196,7 @@ void cgui::run() {
 		}
 
 		cs->flags.erase(cs->flags.begin());
-	}
+	}*/
 }
 
 void cgui::load_main_gui() {
@@ -215,11 +211,11 @@ void cgui::load_main_gui() {
 	}
 
 	mmenu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 100, "main gui", false, false);
-	mmenu = agui->get_window(mmenu_id);
-	mm_login = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 101, "login", 0, 100));
-	mm_options = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(70, 236, 252, 268), 102, "options", 0, 100));
-	mm_credits = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(50, 380, 232, 412), 103, "credits", 0, 100));
-	mm_exit = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(124, 522, 306, 554), 104, "exit", 0, 100));
+	mmenu = agui->get_object<gui_window>(mmenu_id);
+	mm_login = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 101, "login", 0, 100));
+	mm_options = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(70, 236, 252, 268), 102, "options", 0, 100));
+	mm_credits = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(50, 380, 232, 412), 103, "credits", 0, 100));
+	mm_exit = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(124, 522, 306, 554), 104, "exit", 0, 100));
 }
 
 void cgui::load_login_wnd() {
@@ -228,13 +224,13 @@ void cgui::load_login_wnd() {
 	}
 
 	mlogin_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 200, "login", false, false);
-	mlogin = agui->get_window(mlogin_id);
-	ml_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 201, "back", 0, 200));
-	ml_login = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(780, 165, 962, 187), 202, "login", 0, 200));
-	ml_iname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(780, 112, 962, 132), 203, (char*)cs->client_name.c_str(), 200));
-	ml_ipw = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(780, 139, 962, 159), 204, "", 200));
-	ml_name = agui->get_text(agui->add_text("STANDARD", font_size, "username:", 0xFFFFFF, e->get_gfx()->cord_to_pnt(680, 115), 205, 200));
-	ml_pw = agui->get_text(agui->add_text("STANDARD", font_size, "password:", 0xFFFFFF, e->get_gfx()->cord_to_pnt(680, 142), 206, 200));
+	mlogin = agui->get_object<gui_window>(mlogin_id);
+	ml_back = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 201, "back", 0, 200));
+	ml_login = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(780, 165, 962, 187), 202, "login", 0, 200));
+	ml_iname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(780, 112, 962, 132), 203, (char*)cs->client_name.c_str(), 200));
+	ml_ipw = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(780, 139, 962, 159), 204, "", 200));
+	ml_name = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "username:", 0xFFFFFF, e->get_gfx()->cord_to_pnt(680, 115), 205, 200));
+	ml_pw = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "password:", 0xFFFFFF, e->get_gfx()->cord_to_pnt(680, 142), 206, 200));
 }
 
 void cgui::load_options_wnd() {
@@ -243,9 +239,9 @@ void cgui::load_options_wnd() {
 	}
 
 	moptions_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 300, "options", false, false);
-	moptions = agui->get_window(moptions_id);
-	mo_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 301, "back", 0, 300));
-	mo_save = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(780, 330, 962, 362), 302, "save", 0, 300));
+	moptions = agui->get_object<gui_window>(moptions_id);
+	mo_back = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 301, "back", 0, 300));
+	mo_save = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(780, 330, 962, 362), 302, "save", 0, 300));
 }
 
 void cgui::load_credits_wnd() {
@@ -254,8 +250,8 @@ void cgui::load_credits_wnd() {
 	}
 
 	mcredits_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, e->get_screen()->h), 400, "credits", false, false);
-	mcredits = agui->get_window(moptions_id);
-	mc_back = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 401, "back", 0, 400));
+	mcredits = agui->get_object<gui_window>(moptions_id);
+	mc_back = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(190, 112, 372, 144), 401, "back", 0, 400));
 }
 
 ////////////////// game gui //////////////////
@@ -275,17 +271,17 @@ void cgui::load_chat_wnd() {
 	}
 
 	gchat_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, 384, 340), 1100, "chat", true);
-	gchat = agui->get_window(gchat_id);
-	gc_send = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(289, 282, 364, 302), 1101, "send", 0, 1100));
-	gc_all = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(12, 12, 71, 32), 1102, "all", 0, 1100));
-	gc_world = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(77, 12, 136, 32), 1103, "world", 0, 1100));
-	gc_region = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(142, 12, 201, 32), 1104, "region", 0, 1100));
-	gc_party = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(207, 12, 266, 32), 1105, "party", 0, 1100));
-	gc_imsg = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(12, 282, 283, 302), 1106, "", 1100));
-	gc_msg_box = agui->get_list(agui->add_list_box(e->get_gfx()->pnt_to_rect(12, 38, 364, 276), 1107, 1100));
+	gchat = agui->get_object<gui_window>(gchat_id);
+	gc_send = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(289, 282, 364, 302), 1101, "send", 0, 1100));
+	gc_all = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(12, 12, 71, 32), 1102, "all", 0, 1100));
+	gc_world = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(77, 12, 136, 32), 1103, "world", 0, 1100));
+	gc_region = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(142, 12, 201, 32), 1104, "region", 0, 1100));
+	gc_party = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(207, 12, 266, 32), 1105, "party", 0, 1100));
+	gc_imsg = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(12, 282, 283, 302), 1106, "", 1100));
+	gc_msg_box = agui->get_object<gui_list>(agui->add_list_box(e->get_gfx()->pnt_to_rect(12, 38, 364, 276), 1107, 1100));
 }
 
-void cgui::add_chat_msg(cnet::CHAT_TYPE type, const char* name, const char* msg) {
+void cgui::add_chat_msg(cgui::CHAT_TYPE type, const char* name, const char* msg) {
 	buffer->clear();
 	buffer->str("");
 	*buffer << name << ": " << msg;
@@ -344,4 +340,12 @@ void cgui::add_chat_msg(cnet::CHAT_TYPE type, const char* name, const char* msg)
 	gc_msg_box->set_selected_id(gc_msg_box->get_citems()-1);
 	gc_msg_box->set_position(gc_msg_box->get_citems()-1);
 	txt->set_text("");
+}
+
+cgui::GUI_STATE cgui::get_gui_state() {
+	return gui_state;
+}
+
+void cgui::set_gui_state(GUI_STATE state) {
+	gui_state = state;
 }

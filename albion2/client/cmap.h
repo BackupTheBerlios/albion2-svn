@@ -25,6 +25,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <engine.h>
@@ -49,7 +50,7 @@ public:
 	cmap(engine* e, scene* sce);
 	~cmap();
 
-	void load_map(const char* name);
+	void load_map(unsigned int id);
 	void close_map();
 
 protected:
@@ -58,7 +59,10 @@ protected:
 	msg* m;
 	scene* sce;
 
-	a2emap* map;
+	a2emap* amap;
+	bool map_open;
+
+	map<unsigned int, string> map_names;
 
 };
 

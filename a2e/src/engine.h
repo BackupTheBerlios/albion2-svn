@@ -47,6 +47,7 @@
 #include "lua.h"
 #include "xml.h"
 #include "gui_font.h"
+#include "rtt.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -111,6 +112,7 @@ public:
 	lua* get_lua();
 	gui_font* get_gui_font();
 	xml* get_xml();
+	rtt* get_rtt();
 
     // the initialization mode is used to determine if we should load
     // or compute graphical stuff like textures or shaders
@@ -136,6 +138,8 @@ public:
 
 	string* get_color_scheme();
 
+	unsigned int get_shadow_type();
+
 protected:
 	core* c;
 	msg* m;
@@ -147,6 +151,7 @@ protected:
 	lua* l;
 	xml* x;
 	gui_font* gf;
+	rtt* r;
 
 	string datapath;
 	string tmp_str;
@@ -172,6 +177,7 @@ protected:
 	client_data* client;
 
 	string color_scheme;
+	unsigned int shadow_type;
 
 	string keyset;
 

@@ -1,9 +1,12 @@
 button gui_button.xml
 checkbox gui_check.xml
 combobox gui_combo.xml
+image gui_image.xml
 inputbox gui_input.xml
 listbox gui_list.xml
 mltext gui_mltext.xml
+tab gui_tab.xml
+tab_border gui_tab_border.xml
 vbar gui_vbar.xml
 vbar_up_button gui_vbar_up_button.xml
 vbar_down_button gui_vbar_down_button.xml

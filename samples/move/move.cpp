@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
 
 	player = sce->create_a2emodel();
 	player->load_model(e->data_path("player.a2m"));
+	player->set_hard_scale(0.02f, 0.02f, 0.02f);
 	player->set_position(sphere->get_position()->x, sphere->get_position()->y - 2.0f, sphere->get_position()->z);
 	player->set_material(scale_mat);
 
@@ -177,12 +178,13 @@ int main(int argc, char *argv[])
 
 	// pass the models to ode
 	o->add_object(level, true, ode_object::TRIMESH);
-	o->add_object(sphere, false, ode_object::SPHERE);
+	sphere_obj = o->add_object(sphere, false, ode_object::SPHERE);
+	spheres_obj = new ode_object*[cspheres];
 	for(unsigned int i = 0; i < cspheres; i++) {
-		o->add_object(spheres[i], false, ode_object::SPHERE);
+		spheres_obj[i] = o->add_object(spheres[i], false, ode_object::SPHERE);
 	}
 
-	sphere_obj = o->get_ode_object(1);
+	//sphere_obj = o->get_ode_object(1);
 	sphere_obj->set_max_force(max_force);
 
 	// needed for fps counting
@@ -225,8 +227,10 @@ int main(int argc, char *argv[])
 						case SDLK_SPACE:
 							for(unsigned int i = 0; i < (unsigned int)sqrt((float)cspheres); i++) {
 								for(unsigned int j = 0; j < (unsigned int)sqrt((float)cspheres); j++) {
-									dBodySetPosition(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), (float)i*5, 20.0f, (float)j*5);
-									dBodySetLinearVel(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), 0.0f, 0.0f, 0.0f);
+									//dBodySetPosition(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), (float)i*5, 20.0f, (float)j*5);
+									//dBodySetLinearVel(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), 0.0f, 0.0f, 0.0f);
+									dBodySetPosition(spheres_obj[i*3+j]->get_body(), (float)i*5, 20.0f, (float)j*5);
+									dBodySetLinearVel(spheres_obj[i*3+j]->get_body(), 0.0f, 0.0f, 0.0f);
 								}
 							}
 							break;

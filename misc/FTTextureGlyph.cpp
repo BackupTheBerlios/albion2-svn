@@ -80,9 +80,7 @@ const FTPoint& FTTextureGlyph::Render( const FTPoint& pen)
         glTexCoord2f( uv[1].X(), uv[0].Y());
         glVertex2f( destWidth + pos.X(), pos.Y());*/
 
-		/*cout << "(" << uv[0].X() << ", " << uv[0].Y() << ") (" << uv[1].X() << ", " << uv[1].Y() << ") ("
-			<< pos.X() << ", " << pos.Y() << ") " << destWidth << " - " << destHeight << endl;*/
-        glTexCoord2f( uv[0].X(), uv[0].Y());
+        /*glTexCoord2f( uv[0].X(), uv[0].Y());
         glVertex2f( pos.X(), -pos.Y());
 
 		glTexCoord2f( uv[0].X(), uv[1].Y());
@@ -92,7 +90,19 @@ const FTPoint& FTTextureGlyph::Render( const FTPoint& pen)
         glVertex2f( destWidth + pos.X(), -(pos.Y() - destHeight));
 
         glTexCoord2f( uv[1].X(), uv[0].Y());
+        glVertex2f( destWidth + pos.X(), -pos.Y());*/
+
+        glTexCoord2f( uv[1].X(), uv[0].Y());
         glVertex2f( destWidth + pos.X(), -pos.Y());
+        
+        glTexCoord2f( uv[1].X(), uv[1].Y());
+        glVertex2f( destWidth + pos.X(), -(pos.Y() - destHeight));
+
+		glTexCoord2f( uv[0].X(), uv[1].Y());
+        glVertex2f( pos.X(), -(pos.Y() - destHeight));
+
+		glTexCoord2f( uv[0].X(), uv[0].Y());
+        glVertex2f( pos.X(), -pos.Y());
     glEnd();
 
     return advance;

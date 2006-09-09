@@ -40,11 +40,11 @@ int main(int argc, char *argv[])
 	s = new shader(e);
 	sce = new scene(e, s);
 	cam = new camera(e);
-	agui = new gui(e);
+	agui = new gui(e, s);
 	x = new xml(m);
 	l = e->get_lua();
 	sf = e->get_screen();
-	me = new mapeditor(e, sce);
+	me = new mapeditor(e, sce, cam);
 	megui = new mgui(e, agui, me, sce);
 
 	// initialize the a2e events
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
 	sce->add_light(l1);
-	sce->set_light(false);
+	//sce->set_light(false);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -97,9 +97,39 @@ int main(int argc, char *argv[])
 						break;
 					}
 					break;
+				case SDL_MOUSEMOTION:
+					if(button_left_pressed && !cam->get_mouse_input()) {
+						float scale = (SDL_GetModState() & KMOD_SHIFT) ? 0.1f : 2.0f;
+						me->move_object(aevent->get_event().motion.xrel, aevent->get_event().motion.yrel, scale);
+					}
+					break;
+				case SDL_MOUSEBUTTONUP:
+					switch(aevent->get_event().button.button) {
+						case SDL_BUTTON_LEFT: {
+							button_left_pressed = false;
+						}
+						break;
+						default:
+							break;
+					}
+					break;
 				case SDL_MOUSEBUTTONDOWN:
 					switch(aevent->get_event().button.button) {
-					case SDL_BUTTON_MIDDLE: {
+						case SDL_BUTTON_LEFT: {
+							if(!cam->get_mouse_input()) {
+								button_left_pressed = true;
+
+								core::pnt* mp = new core::pnt();
+								vertex3* proj_pos = new vertex3();
+								aevent->get_mouse_pos(mp);
+								c->get_3d_from_2d(mp, proj_pos);
+								me->arrow_select(proj_pos);
+								delete mp;
+								delete proj_pos;
+							}
+						}
+						break;
+						case SDL_BUTTON_MIDDLE: {
 							core::pnt* mp = new core::pnt();
 							vertex3* proj_pos = new vertex3();
 							aevent->get_mouse_pos(mp);
@@ -136,8 +166,8 @@ int main(int argc, char *argv[])
 		e->start_draw();
 
 		cam->run();
-		me->run();
 		sce->draw();
+		me->run(cam->get_mouse_input());
 		megui->run();
 		agui->draw();
 

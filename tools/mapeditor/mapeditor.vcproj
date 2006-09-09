@@ -160,7 +160,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="."
 				GenerateDebugInformation="false"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				EntryPointSymbol="mainCRTStartup"

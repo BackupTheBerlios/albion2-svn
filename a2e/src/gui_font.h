@@ -58,11 +58,9 @@ protected:
 
 	list<font> fonts;
 
-
 	GLuint texture;
 	float texmaxx;
 	float texmaxy;
-
 
 };
 

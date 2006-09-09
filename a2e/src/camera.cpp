@@ -24,9 +24,6 @@ camera::camera(engine* e) {
 	camera::position = new vertex3();
 	camera::rotation = new vertex3();
 
-	// 2 pi / 360° = pi / 180°
-	piover180 = (float)PI / 180.0f;
-
 	up_down = 0.0f;
 
 	camera::cam_input = true;
@@ -68,25 +65,25 @@ void camera::run() {
 	if(camera::cam_input) {
 		// ... recalculate the cameras position
 		if(evt->is_key_right()) {
-			position->x += (float)sin((rotation->y - 90.0f) * piover180) * cam_speed;
-			position->z += (float)cos((rotation->y - 90.0f) * piover180) * cam_speed;
+			position->x += (float)sin((rotation->y - 90.0f) * PIOVER180) * cam_speed;
+			position->z += (float)cos((rotation->y - 90.0f) * PIOVER180) * cam_speed;
 		}
 
 		if(evt->is_key_left()) {
-			position->x -= (float)sin((rotation->y - 90.0f) * piover180) * cam_speed;
-			position->z -= (float)cos((rotation->y - 90.0f) * piover180) * cam_speed;
+			position->x -= (float)sin((rotation->y - 90.0f) * PIOVER180) * cam_speed;
+			position->z -= (float)cos((rotation->y - 90.0f) * PIOVER180) * cam_speed;
 		}
 
 		if(evt->is_key_up()) {
-			position->x += (float)sin(rotation->y * piover180) * cam_speed;
-			position->y -= (float)sin(rotation->x * piover180) * cam_speed;
-			position->z += (float)cos(rotation->y * piover180) * cam_speed;
+			position->x += (float)sin(rotation->y * PIOVER180) * cam_speed;
+			position->y -= (float)sin(rotation->x * PIOVER180) * cam_speed;
+			position->z += (float)cos(rotation->y * PIOVER180) * cam_speed;
 		}
 
 		if(evt->is_key_down()) {
-			position->x -= (float)sin(rotation->y * piover180) * cam_speed;
-			position->y += (float)sin(rotation->x * piover180) * cam_speed;
-			position->z -= (float)cos(rotation->y * piover180) * cam_speed;
+			position->x -= (float)sin(rotation->y * PIOVER180) * cam_speed;
+			position->y += (float)sin(rotation->x * PIOVER180) * cam_speed;
+			position->z -= (float)cos(rotation->y * PIOVER180) * cam_speed;
 		}
 	}
 

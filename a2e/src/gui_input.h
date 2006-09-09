@@ -44,7 +44,7 @@ class A2E_API gui_input : public gui_object
 public:
 	gui_input(engine* e, gui_style* gs);
 	~gui_input();
-	
+
 	void draw(unsigned int x, unsigned int y);
 	void set_blink_text_handler(gui_text* itext);
 	gui_text* get_blink_text_handler();
@@ -57,6 +57,8 @@ public:
 	bool get_active();
 
 	void set_text(const char* text);
+
+	void do_blink();
 
 protected:
 	msg* m;
@@ -74,6 +76,7 @@ protected:
 
 	// event handle stuff
 	bool is_active;
+
 };
 
 #endif

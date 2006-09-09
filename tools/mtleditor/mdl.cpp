@@ -22,6 +22,7 @@ mdl::mdl(engine* e, scene* sce, camera* cam) {
 	mdl::m = e->get_msg();
 	mdl::f = e->get_file_io();
 	mdl::cam = cam;
+	mdl::agfx = e->get_gfx();
 
 	mdl::model = NULL;
 	mdl::amodel = NULL;
@@ -29,6 +30,12 @@ mdl::mdl(engine* e, scene* sce, camera* cam) {
 	mdl::ani = false;
 
 	mdl::mdl_ld = false;
+
+	mdl::updated = false;
+
+	mdl::ud_alpha_start = 0.5f;
+	mdl::ud_timer_out = 500;
+	mdl::ud_timer2_out = 25;
 }
 
 mdl::~mdl() {
@@ -91,10 +98,13 @@ void mdl::load_model(char* filename, char* ani_filename) {
 		amodel = sce->create_a2eanim();
 		amodel->load_model(e->data_path(filename), true);
 		amodel->add_animation(e->data_path(ani_filename));
+		amodel->play_frames(1, 1);
 		sce->add_model(amodel);
 	}
 
 	mdl::mdl_ld = true;
+
+	if(!ani) vertices = model->get_vertices();
 
 	// reset cam
 	core::aabbox* bbox = ani ? amodel->get_bounding_box() : model->get_bounding_box();
@@ -103,6 +113,11 @@ void mdl::load_model(char* filename, char* ani_filename) {
 
 	cam->set_position(-(p->x + et->x), -(p->y + et->y), -(p->z + et->z));
 	cam->set_rotation(0.0f, 45.0f, 0.0f);
+
+	float max = et->x;
+	if(max < et->y) max = et->y;
+	if(max < et->z) max = et->z;
+	cam->set_cam_speed(max / 100.0f);
 
 	delete et;
 }
@@ -216,4 +231,85 @@ void mdl::save_material(const char* filename) {
 
 bool mdl::is_model() {
 	return mdl::mdl_ld;
+}
+
+void mdl::update_selection(unsigned int obj_num) {
+	if(!ani) {
+		indices = model->get_indices(obj_num);
+		index_count = model->get_index_count(obj_num);
+	}
+	else {
+		vertices = amodel->get_vertices(obj_num);
+		indices = amodel->get_indices(obj_num);
+		index_count = amodel->get_index_count(obj_num);
+	}
+
+	updated = true;
+	ud_alpha = ud_alpha_start;
+	ud_timer = SDL_GetTicks();
+	ud_timer2 = SDL_GetTicks();
+}
+
+void mdl::draw_selection(bool wireframe) {
+	vertex3* pos = ani ? amodel->get_position() : model->get_position();
+
+	glPushMatrix();
+	glTranslatef(pos->x, pos->y, pos->z);
+
+	if(wireframe) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+
+		// draw wireframe
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glEnable(GL_POLYGON_OFFSET_LINE); // use polygon offset to "disable" z-fighting
+		glPolygonOffset(-1.0f, 0.0f);
+
+		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+
+		glColor3f(1.0f, 1.0f, 1.0f);
+		if(ani) glFrontFace(GL_CW);
+		glDrawElements(GL_TRIANGLES, index_count * 3, GL_UNSIGNED_INT, indices);
+		if(ani) glFrontFace(GL_CCW);
+
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+		glDisable(GL_POLYGON_OFFSET_LINE);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	// draw white fade effect
+	if(updated) {
+		glEnable(GL_BLEND);
+
+		glEnable(GL_POLYGON_OFFSET_FILL); // use polygon offset to "disable" z-fighting
+		glPolygonOffset(-1.0f, 0.0f);
+
+		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+
+		glColor4f(1.0f, 1.0f, 1.0f, ud_alpha);
+		if(ani) glFrontFace(GL_CW);
+		glDrawElements(GL_TRIANGLES, index_count * 3, GL_UNSIGNED_INT, indices);
+		if(ani) glFrontFace(GL_CCW);
+
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
+		glDisable(GL_BLEND);
+
+		if(SDL_GetTicks() - ud_timer > ud_timer_out) {
+			updated = false;
+		}
+
+		if(SDL_GetTicks() - ud_timer2 > ud_timer2_out) {
+			ud_alpha -= ud_alpha_start / (float)(ud_timer_out / ud_timer2_out);
+			ud_timer2 = SDL_GetTicks();
+		}
+	}
+
+	glPopMatrix();
 }

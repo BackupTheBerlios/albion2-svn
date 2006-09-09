@@ -32,12 +32,23 @@ void open_info_wnd() {
 	unsigned int width = e->get_screen()->w;
 	unsigned int height = e->get_screen()->h;
 
-	info_wnd_id = agui->add_window(agfx->pnt_to_rect(width/2 - 138, height/2 - 68, width/2 + 138, height/2 + 68), 200, "Info Window");
-	info_wnd = agui->get_window(info_wnd_id);
-	cinfo_type = agui->get_combo(agui->add_combo_box(agfx->pnt_to_rect(12, 12, 256, 33), 201, 200));
-	tinfo1 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 47), 202, 200));
-	tinfo2 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 64), 203, 200));
-	tinfo3 = agui->get_text(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 81), 204, 200));
+	info_wnd_id = agui->add_window(agfx->pnt_to_rect(width/2 - 140, height/2 - 80, width/2 + 140, height/2 + 80), 200, "Info Window");
+	info_wnd = agui->get_object<gui_window>(info_wnd_id);
+
+	info_wnd_tab = agui->get_object<gui_tab>(agui->add_tab(agfx->pnt_to_rect(0, 0, 276, 137), 201, 200));
+	info_wnd_tab->add_tab("Combo-Box");
+	info_wnd_tab->add_tab("Cursor-Position");
+	info_wnd_tab->add_tab("Time");
+
+	cinfo_type = agui->get_object<gui_combo>(agui->add_combo_box(agfx->pnt_to_rect(12, 12, 256, 33), 202, 200, 201));
+	tinfo1 = agui->get_object<gui_text>(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 47), 203, 200, 201));
+	tinfo2 = agui->get_object<gui_text>(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 64), 204, 200, 201));
+	tinfo3 = agui->get_object<gui_text>(agui->add_text("STANDARD", 12, "", gs->get_color("FONT"), agfx->cord_to_pnt(12, 81), 205, 200, 201));
+
+	cinfo_type->set_tab(0);
+	tinfo1->set_tab(1);
+	tinfo2->set_tab(1);
+	tinfo3->set_tab(1);
 
 	cinfo_type->add_item("Cursor-Position", 0);
 	cinfo_type->add_item("Time", 1);
@@ -57,7 +68,8 @@ int main(int argc, char *argv[])
 	c = e->get_core();
 	aevent = e->get_event();
 	agfx = e->get_gfx();
-	agui = new gui(e);
+	s = new shader(e);
+	agui = new gui(e, s);
 	gs = agui->get_gui_style();
 
 	// initialize the a2e events
@@ -72,16 +84,16 @@ int main(int argc, char *argv[])
 	img->open_image(e->data_path("engine_logo.png"));
 	img->set_position(width - img->get_width(), height - img->get_height());
 
-	bedit = agui->get_button(agui->add_button(agfx->pnt_to_rect(12, 152, 109, 173), 100, "edit", 0, 0));
-	badd = agui->get_button(agui->add_button(agfx->pnt_to_rect(121, 152, 218, 173), 101, "add", 0, 0));
-	bset = agui->get_button(agui->add_button(agfx->pnt_to_rect(169, 179, 218, 199), 102, "set", 0, 0));
-	bopen_msg = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 12, width - 12, 35), 103, "open msg box", 0, 0));
-	bopen_fd = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 41, width - 12, 64), 104, "open file dialog", 0, 0));
-	bopen_wnd = agui->get_button(agui->add_button(agfx->pnt_to_rect(width - 112, 70, width - 12, 93), 105, "open window", 0, 0));
-	llist = agui->get_list(agui->add_list_box(agfx->pnt_to_rect(12, 12, 218, 146), 106, 0));
-	ilitem = agui->get_input(agui->add_input_box(agfx->pnt_to_rect(12, 179, 163, 199), 107, "", 0));
-	tstatus = agui->get_text(agui->add_text("STANDARD", 12, "...", gs->get_color("FONT"), agfx->cord_to_pnt(9, height - 20), 108, 0));
-	clogo = agui->get_check(agui->add_check_box(agfx->pnt_to_rect(width - 112, height - img->get_height() - 22, width - 12, height - img->get_height() - 2), 109, "logo visible?", 0));
+	bedit = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(12, 152, 109, 173), 100, "edit", 0, 0));
+	badd = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(121, 152, 218, 173), 101, "add", 0, 0));
+	bset = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(169, 179, 218, 199), 102, "set", 0, 0));
+	bopen_msg = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(width - 112, 12, width - 12, 35), 103, "open msg box", 0, 0));
+	bopen_fd = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(width - 112, 41, width - 12, 64), 104, "open file dialog", 0, 0));
+	bopen_wnd = agui->get_object<gui_button>(agui->add_button(agfx->pnt_to_rect(width - 112, 70, width - 12, 93), 105, "open window", 0, 0));
+	llist = agui->get_object<gui_list>(agui->add_list_box(agfx->pnt_to_rect(12, 12, 218, 146), 106, 0));
+	ilitem = agui->get_object<gui_input>(agui->add_input_box(agfx->pnt_to_rect(12, 179, 163, 199), 107, "", 0));
+	tstatus = agui->get_object<gui_text>(agui->add_text("STANDARD", 12, "...", gs->get_color("FONT"), agfx->cord_to_pnt(9, height - 20), 108, 0));
+	clogo = agui->get_object<gui_check>(agui->add_check_box(agfx->pnt_to_rect(width - 112, height - img->get_height() - 22, width - 12, height - img->get_height() - 2), 109, "logo visible?", 0));
 	clogo->set_checked(img_visible);
 
 	// fill list box with data
@@ -152,12 +164,13 @@ int main(int argc, char *argv[])
 						case 102:
 							if(cur_ed_id == -1) break;
 							llist->get_item(cur_ed_id)->text = ilitem->get_text()->c_str();
+							llist->set_selected_id(cur_ed_id);
 							break;
 						case 103:
 							agui->add_msgbox_ok("test message box", "test message box text ...");
 							break;
 						case 104:
-							file_dialog = agui->get_window(agui->add_open_dialog(file_dialog_id, "open file dialog ... (png files)", (char*)e->get_data_path().c_str(), "png"));
+							file_dialog = agui->get_object<gui_window>(agui->add_open_dialog(file_dialog_id, "open file dialog ... (png files)", (char*)e->get_data_path().c_str(), "png"));
 							break;
 						case 105:
 							if(agui->exist(info_wnd_id)) break;
@@ -174,11 +187,12 @@ int main(int argc, char *argv[])
 					c->reset(&tmp);
 
 					switch(aevent->get_gui_event().id) {
-						case 201:
+						case 202:
 							cur_info_id = cinfo_type->get_selected_id();
 							tinfo1->set_text("");
 							tinfo2->set_text("");
 							tinfo3->set_text("");
+							info_wnd_tab->set_active_tab(cur_info_id+1);
 							break;
 						default:
 							break;
@@ -195,6 +209,38 @@ int main(int argc, char *argv[])
 							img_visible = clogo->get_checked();
 						  }
 						  break;
+						default:
+							break;
+					}
+					break;
+				case event::TAB_SELECTED:
+					switch(aevent->get_gui_event().id) {
+						case 201:
+							tinfo1->set_text("");
+							tinfo2->set_text("");
+							tinfo3->set_text("");
+							switch(info_wnd_tab->get_active_tab()) {
+								case 0:
+									cinfo_type->set_tab(0);
+									break;
+								case 1:
+									cur_info_id = 0;
+									cinfo_type->set_tab(1);
+									tinfo1->set_tab(1);
+									tinfo2->set_tab(1);
+									tinfo3->set_tab(1);
+									break;
+								case 2:
+									cur_info_id = 1;
+									cinfo_type->set_tab(2);
+									tinfo1->set_tab(2);
+									tinfo2->set_tab(2);
+									tinfo3->set_tab(2);
+									break;
+								default:
+									break;
+							}
+							break;
 						default:
 							break;
 					}
@@ -222,7 +268,7 @@ int main(int argc, char *argv[])
 					time(&rawtime);
 					tinfo = localtime(&rawtime);
 
-					tmp << (1900+tinfo->tm_year) << "/" << tinfo->tm_mon << "/" << tinfo->tm_mday << ", ";
+					tmp << (1900+tinfo->tm_year) << "/" << (tinfo->tm_mon+1) << "/" << tinfo->tm_mday << ", ";
 					if(tinfo->tm_hour < 10) tmp << "0";
 					tmp << tinfo->tm_hour;
 					tmp << ":";

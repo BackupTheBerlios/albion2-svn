@@ -32,6 +32,7 @@ gui_style::gui_style(engine* e) {
 	state_types.push_back(*new string("NORMAL"));
 	state_types.push_back(*new string("CLICKED"));
 	state_types.push_back(*new string("BACKGROUND"));
+	state_types.push_back(*new string("SHAPE"));
 
 	r1 = new gfx::rect();
 	p1 = new core::pnt();
@@ -373,7 +374,7 @@ void gui_style::render_gui_element(const char* name, const char* state_name, gfx
 					else p1->y = y + elem->at(i).correct[1] + centery - (text->get_text_height() / 2);
 
 					text->set_color(get_color(elem->at(i).primary_color.c_str()));
-					text->draw(p1->x, p1->y);
+					text->draw(p1->x, p1->y, false);
 				}
 				break;
 			case GT_IMG:

@@ -21,36 +21,11 @@ float ode_object::density = 5.0f;
 
 /*! there is no function currently
  */
-ode_object::ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
+ode_object::ode_object(engine* e) {
 	// get classes
 	ode_object::e = e;
 	ode_object::c = e->get_core();
 	ode_object::m = e->get_msg();
-
-
-	ode_object::world = world;
-	ode_object::space = space;
-	ode_object::dvertices = NULL;
-	ode_object::dindices = NULL;
-	ode_object::set_model(model);
-	ode_object::set_geom(ode_object::get_model(), type);
-	ode_object::body = 0;
-
-	if(!fixed && type != ode_object::TRIMESH) {
-		ode_object::mass = new dMass();
-		ode_object::set_body(type);
-	}
-	else {
-		fixed = true;
-		ode_object::body = NULL;
-		ode_object::mass = NULL;
-	}
-
-	if(type != ode_object::TRIMESH) {
-		ode_object::trimesh = NULL;
-	}
-
-	max_force = 10.0f;
 }
 
 /*! there is no function currently
@@ -76,6 +51,32 @@ ode_object::~ode_object() {
 	m->print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }
 
+void ode_object::init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
+	ode_object::world = world;
+	ode_object::space = space;
+	ode_object::dvertices = NULL;
+	ode_object::dindices = NULL;
+	ode_object::set_model(model);
+	ode_object::set_geom(ode_object::get_model(), type);
+	ode_object::body = 0;
+
+	if(!fixed && type != ode_object::TRIMESH) {
+		ode_object::mass = new dMass();
+		ode_object::set_body(type);
+	}
+	else {
+		fixed = true;
+		ode_object::body = NULL;
+		ode_object::mass = NULL;
+	}
+
+	if(type != ode_object::TRIMESH) {
+		ode_object::trimesh = NULL;
+	}
+
+	max_force = 10.0f;
+}
+
 /*! sets the geometry of the object
  *  @param model a pointer to the model object
  *  @param type the type of the ode object
@@ -83,11 +84,23 @@ ode_object::~ode_object() {
 void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 	switch(type) {
 		case ode_object::TRIMESH: {
+			vertex3* vertices;
+			core::index* indices;
 			// initialize pointers to our a2emodel stuff
-			vertex3* vertices = model->get_vertices();
-			core::index* indices = model->get_indices();
-			ode_object::vertex_count = model->get_vertex_count();
-			ode_object::index_count = model->get_index_count();
+			if(!model->is_collision_model()) {
+				// if we don't have a collision model, use the models vertices and indices
+				vertices = model->get_vertices();
+				indices = model->get_total_indices();
+				ode_object::vertex_count = model->get_vertex_count();
+				ode_object::index_count = model->get_index_count();
+			}
+			else {
+				// if we have a collision model, use the collision models vertices and indices
+				vertices = model->get_col_vertices();
+				indices = model->get_col_indices();
+				ode_object::vertex_count = model->get_col_vertex_count();
+				ode_object::index_count = model->get_col_index_count();
+			}
 
 			// create trimesh data id
 			ode_object::trimesh = dGeomTriMeshDataCreate();
@@ -132,7 +145,7 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			dGeomSetPosition(ode_object::geom, model->get_position()->x,
 				model->get_position()->y, model->get_position()->z);
 
-			delete [] indices;
+			if(!model->is_collision_model()) delete [] indices;
 
 			// contact caching
 			/*dGeomTriMeshEnableTC(ode_object::geom, 0, 1);
@@ -226,6 +239,17 @@ void ode_object::set_body(ode_object::OTYPE type) {
 			ode_object::mass->setSphere(ode_object::density,
 				(dReal)ode_object::model->get_radius());
 			dMassAdjust(ode_object::mass, 0.2f);
+
+			dMassSetParameters(ode_object::mass, 10.0f, 0.0f, 0.0f, 0.0f,
+				16.0f, 16.0f, 16.0f, 0.0f, 0.0f, 0.0f);
+			/*cout << "-----" << endl;
+			for(unsigned int i = 0; i < 12; i++) {
+				cout << ode_object::mass->I[i] << endl;
+			}
+			cout << "-----" << endl;
+			for(unsigned int i = 0; i < 4; i++) {
+				cout << ode_object::mass->c[i] << endl;
+			}*/
 		}
 		break;
 		// need to be changed to capped cylinder some day ...
@@ -293,26 +317,32 @@ void ode_object::set_mass(float mass) {
 void ode_object::add_force(float x, float y, float z) {
 	const dReal* cur_force = dBodyGetForce(ode_object::body);
 
-	if(cur_force[0] + x >= ode_object::max_force || cur_force[0] - x <= -ode_object::max_force) {
-		dBodyAddForce(ode_object::body, ode_object::max_force - cur_force[0], 0.0f, 0.0f);
-	}
-	else {
-		dBodyAddForce(ode_object::body, x, 0.0f, 0.0f);
-	}
-
-	if(cur_force[1] + y >= ode_object::max_force || cur_force[1] - y <= -ode_object::max_force) {
-		dBodyAddForce(ode_object::body, 0.0f, ode_object::max_force - cur_force[1], 0.0f);
-	}
-	else {
-		dBodyAddForce(ode_object::body, 0.0f, y, 0.0f);
+	// look if final force is bigger than max allowed force
+	float total_cur_force = fabsf(cur_force[0]) + fabsf(cur_force[1]) + fabsf(cur_force[2]);
+	float total_add_force = fabsf(x) + fabsf(y) + fabsf(z);
+	if(total_cur_force + total_add_force > max_force) {
+		// if so, scale force (so it is the max force)
+		float diff = max_force - total_cur_force;
+		float scale = diff / total_add_force;
+		x *= scale;
+		y *= scale;
+		z *= scale;
 	}
 
-	if(cur_force[2] + z >= ode_object::max_force || cur_force[2] - z <= -ode_object::max_force) {
-		dBodyAddForce(ode_object::body, 0.0f, 0.0f, ode_object::max_force - cur_force[2]);
-	}
-	else {
-		dBodyAddForce(ode_object::body, 0.0f, 0.0f, z);
-	}
+	dBodyAddForce(ode_object::body, x, 0.0f, 0.0f);
+	dBodyAddForce(ode_object::body, 0.0f, y, 0.0f);
+	dBodyAddForce(ode_object::body, 0.0f, 0.0f, z);
+}
+
+/*! sets a velocity to the object specified by x, y and z
+ *  @param x set velocity on the x axis
+ *  @param y set velocity on the y axis
+ *  @param z set velocity on the z axis
+ */
+void ode_object::set_velocity(float x, float y, float z) {
+	dBodySetLinearVel(ode_object::body, x, 0.0f, 0.0f);
+	dBodySetLinearVel(ode_object::body, 0.0f, y, 0.0f);
+	dBodySetLinearVel(ode_object::body, 0.0f, 0.0f, z);
 }
 
 /*! sets the maximum force that the object can encounter
@@ -320,4 +350,16 @@ void ode_object::add_force(float x, float y, float z) {
  */
 void ode_object::set_max_force(float force) {
 	ode_object::max_force = force;
+}
+
+void ode_object::set_body_rotation(vertex3* rot) {
+	dMatrix3 R;
+	dRFromAxisAndAngle(R, 1.0f, 0.0f, 0.0f, rot->x);
+	dRFromAxisAndAngle(R, 0.0f, 1.0f, 0.0f, rot->y);
+	dRFromAxisAndAngle(R, 0.0f, 0.0f, 1.0f, rot->z);
+	dBodySetRotation(ode_object::body, R);
+}
+
+dReal* ode_object::get_body_rotation() {
+	return (dReal*)dBodyGetRotation(body);
 }

@@ -45,17 +45,22 @@
 #include <xml.h>
 #include <image.h>
 #include "csystem.h"
-#include "cnet.h"
 using namespace std;
 
 class cgui {
 public:
-	cgui(engine* e, gui* agui, csystem* cs, cnet* cn);
+	cgui(engine* e, csystem* cs);
 	~cgui();
 
 	enum GUI_STATE {
 		GS_MAIN,
 		GS_GAME
+	};
+
+	enum CHAT_TYPE {
+		CT_WORLD,
+		CT_REGION,
+		CT_PARTY
 	};
 
 	void init();
@@ -69,7 +74,10 @@ public:
 	void load_game_gui();
 
 	void load_chat_wnd();
-	void add_chat_msg(cnet::CHAT_TYPE type, const char* name, const char* msg);
+	void add_chat_msg(cgui::CHAT_TYPE type, const char* name, const char* msg);
+
+	GUI_STATE get_gui_state();
+	void set_gui_state(GUI_STATE state);
 
 protected:
 	engine* e;
@@ -78,7 +86,6 @@ protected:
 	core* c;
 	file_io* f;
 	csystem* cs;
-	cnet* cn;
 
 	GUI_STATE gui_state;
 	unsigned int font_size;

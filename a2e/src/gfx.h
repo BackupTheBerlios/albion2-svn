@@ -72,6 +72,7 @@ public:
 	void draw_2colored_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2);
 	void draw_filled_rectangle(gfx::rect* rectangle, unsigned int color);
 	void draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2, FADE_TYPE ft);
+	void draw_bbox(core::aabbox* bbox, unsigned int color);
 
 	bool is_pnt_in_rectangle(gfx::rect* rectangle, core::pnt* point);
 
@@ -83,8 +84,15 @@ public:
 	void set_scissor(gfx::rect* rectangle);
 	void set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 	void end_scissor();
+
+	void set_flip(bool state);
+	bool get_flip();
+
 protected:
 	SDL_Surface* screen;
+	bool flip;
+
+	core::pnt* points;
 };
 
 #endif

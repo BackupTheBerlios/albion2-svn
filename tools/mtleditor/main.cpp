@@ -21,13 +21,18 @@
  *
  * \author flo
  *
- * \date March 2006 - June 2006
+ * \date March 2006 - July 2006
  *
- * Albion 2 Engine - Mapeditor
+ * Albion 2 Engine - Material-Editor
  */
 
 int main(int argc, char *argv[])
 {
+	// for debug purposes
+	/*argc = 3;
+	argv[1] = "celtic_house.a2m";
+	argv[2] = "celtic_house.a2mtl";*/
+
 	// initialize the engine
 	e = new engine("../../data/");
 	e->init();
@@ -40,7 +45,7 @@ int main(int argc, char *argv[])
 	s = new shader(e);
 	sce = new scene(e, s);
 	cam = new camera(e);
-	agui = new gui(e);
+	agui = new gui(e, s);
 	x = new xml(m);
 	l = e->get_lua();
 	sf = e->get_screen();
@@ -57,22 +62,16 @@ int main(int argc, char *argv[])
 	cam->set_position(0.0f, 0.0f, 0.0f);
 	cam->set_rotation_speed(100.0f);
 	cam->set_mouse_input(false);
-	//cam->set_cam_speed(5.0f);
 
 	// set the light
 	light* l1 = new light(e, 0.0f, 80.0f, 0.0f);
-	/*float lamb[] = { 0.12f, 0.12f, 0.12f, 1.0f};
-	float ldif[] = { 0.9f, 0.9f, 0.9f, 1.0f};
-	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};*/
-	float lamb[] = { 0.5f, 0.5f, 0.5f, 1.0f};
-	float ldif[] = { 0.9f, 0.9f, 0.9f, 1.0f};
-	float lspc[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	float lamb[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	float ldif[] = { 0.0f, 0.0f, 0.0f, 0.0f};
+	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};
 	l1->set_lambient(lamb);
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
 	sce->add_light(l1);
-	// for testing purposes
-	sce->set_light(false);
 
 	// needed for fps counting
 	unsigned int fps = 0;
@@ -89,7 +88,10 @@ int main(int argc, char *argv[])
 		string fmdl = "";
 		string fani = "";
 		string fmat = "";
-		if(argc == 3) {
+		if(argc == 2) {
+			fmdl = argv[1];
+		}
+		else if(argc == 3) {
 			fmdl = argv[1];
 			fmat = argv[2];
 		}
@@ -101,9 +103,9 @@ int main(int argc, char *argv[])
 
 		mg->load_om_wnd();
 		// kinda tricky, but it works ;P
-		agui->get_input(509)->set_text(fmdl.c_str());
-		agui->get_input(510)->set_text(fani.c_str());
-		agui->get_input(511)->set_text(fmat.c_str());
+		agui->get_object<gui_input>(509)->set_text(fmdl.c_str());
+		agui->get_object<gui_input>(510)->set_text(fani.c_str());
+		agui->get_object<gui_input>(511)->set_text(fmat.c_str());
 		aevent->add_gui_event(event::BUTTON_PRESSED, 508);
 	}
 
@@ -157,6 +159,7 @@ int main(int argc, char *argv[])
 
 		cam->run();
 		sce->draw();
+		if(model->is_model()) model->draw_selection(mg->is_wireframe());
 		if(!cam->get_mouse_input()) {
 			agui->draw();
 			mg->run();

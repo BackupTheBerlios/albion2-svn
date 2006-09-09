@@ -76,7 +76,7 @@ void gui_list::draw(unsigned int x, unsigned int y) {
 	}
 
 	// vbar handling
-	gui_list::set_position(vbar_handler->get_position());
+	//gui_list::set_position(vbar_handler->get_position());
 }
 
 /*! creates a vbar -> a pointer to the vbar class
@@ -132,6 +132,8 @@ void gui_list::set_position(unsigned int position) {
 		gui_list::top_item = 0;
 	}
 	vbar_handler->set_position(position);
+
+	gui_list::set_redraw(true);
 }
 
 /*! adds an item to the list
@@ -155,6 +157,8 @@ gui_list::item* gui_list::add_item(char* text, unsigned int id) {
 
 	gui_list::vbar_handler->set_max_lines((unsigned int)items.size());
 
+	gui_list::set_redraw(true);
+
 	return &items.back();
 }
 
@@ -167,6 +171,7 @@ void gui_list::delete_item(unsigned int id) {
 			items.erase(items.begin()+i);
 		}
 	}
+	gui_list::set_redraw(true);
 }
 
 /*! returns the amount of list items
@@ -187,6 +192,7 @@ void gui_list::select_pos(unsigned int x, unsigned int y) {
 		// item out of range ...
 		//m->print(msg::MERROR, "gui_list.cpp", "select_pos(): selected item (%u) out of range!", sel_item);
 	}
+	gui_list::set_redraw(true);
 }
 
 /*! returns the id of the selected element
@@ -200,6 +206,7 @@ unsigned int gui_list::get_selected_id() {
  */
 void gui_list::set_selected_id(unsigned int sid) {
 	gui_list::sid = sid;
+	gui_list::set_redraw(true);
 }
 
 /*! returns the selected list box item

@@ -51,6 +51,7 @@ engine::engine(const char* datapath) {
 	zbuffer = 16;
 	stencil = 8;
 	fullscreen = false;
+	shadow_type = 0;
 
 	m = new msg();
 	f = new file_io(m);
@@ -101,6 +102,10 @@ engine::engine(const char* datapath) {
 			else if(strcmp(x->get_node_name(), "gui") == 0) {
 				if(x->get_attribute("color_scheme") != NULL) {
 					color_scheme = x->get_attribute("color_scheme");
+				}
+
+				if(x->get_attribute("shadow_type") != NULL) {
+					shadow_type = (unsigned int)atoi(x->get_attribute("shadow_type"));
 				}
 			}
 			else if(strcmp(x->get_node_name(), "key_repeat") == 0) {
@@ -184,7 +189,7 @@ engine::~engine() {
 
 	delete m;
 
-    SDL_Quit();
+	SDL_Quit();
 }
 
 /*! initializes the engine in console + graphical or console only mode
@@ -216,7 +221,7 @@ void engine::init(bool console, unsigned int width, unsigned int height, unsigne
 /*! initializes the engine in console + graphical mode
  */
 void engine::init(const char* ico) {
-    engine::mode = engine::GRAPHICAL;
+	engine::mode = engine::GRAPHICAL;
 	m->print(msg::MDEBUG, "engine.cpp", "initializing albion 2 engine in console + graphical mode");
 
 	// initialize sdl
@@ -363,10 +368,21 @@ void engine::init(const char* ico) {
 	// create extension class object
 	exts = new ext(engine::mode, m);
 
+	// create render to texture object
+	r = new rtt(m, c, g, exts);
+
 	// print out informations about additional threads
 	thread_count == 0 ? m->print(msg::MDEBUG, "engine.cpp", "using no additional threads!") :
 		m->print(msg::MDEBUG, "engine.cpp", "using %u additional thread%s!", thread_count,
 		(thread_count == 1 ? "" : "s"));
+
+	// if GL_RENDERER is that damn m$ gdi driver, exit a2e ...
+	// no official support for this crappy piece of software ...
+	if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
+		m->print(msg::MERROR, "engine.cpp", "A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your grapic card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.matrox.com  http://www.3dlabs.com http://www.intel.com");
+		SDL_Delay(10000);
+		exit(1);
+	}
 }
 
 /*! sets the windows width
@@ -374,8 +390,7 @@ void engine::init(const char* ico) {
  */
 void engine::set_width(unsigned int width) {
 	engine::width = width;
-	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
-		engine::depth, engine::flags);
+	engine::screen = SDL_SetVideoMode(engine::width, engine::height, engine::depth, engine::flags);
 	if(engine::screen == NULL) {
 		m->print(msg::MERROR, "engine.cpp", "can't set video mode: %s", SDL_GetError());
 		exit(1);
@@ -387,8 +402,7 @@ void engine::set_width(unsigned int width) {
  */
 void engine::set_height(unsigned int height) {
 	engine::height = height;
-	engine::screen = SDL_SetVideoMode(engine::width, engine::height,
-		engine::depth, engine::flags);
+	engine::screen = SDL_SetVideoMode(engine::width, engine::height, engine::depth, engine::flags);
 	if(engine::screen == NULL) {
 		m->print(msg::MERROR, "engine.cpp", "can't set video mode: %s", SDL_GetError());
 		exit(1);
@@ -647,7 +661,13 @@ xml* engine::get_xml() {
 	return engine::x;
 }
 
-/*! returns the xml class
+/*! returns the rtt class
+ */
+rtt* engine::get_rtt() {
+	return engine::r;
+}
+
+/*! returns the color scheme
  */
 string* engine::get_color_scheme() {
 	return &(engine::color_scheme);
@@ -691,4 +711,8 @@ engine::client_data* engine::get_client_data() {
 
 void engine::load_ico(const char* ico) {
 	SDL_WM_SetIcon(IMG_Load(data_path(ico)), NULL);
+}
+
+unsigned int engine::get_shadow_type() {
+	return engine::shadow_type;
 }

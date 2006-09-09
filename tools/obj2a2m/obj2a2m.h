@@ -34,10 +34,19 @@ using namespace std;
 vector<vertex3> vertices;
 vector<vertex3> ivertices;
 vector<core::coord> tex_coords;
-vector<core::index>* indices;
+vector<vector<core::index> > indices;
+vector<string> obj_names;
 unsigned int object_count = 0;
 unsigned int cur_object = 0;
 bool ginit = false;
 bool blender = false;
+
+vector<vertex3> col_vertices;
+vector<core::index> col_indices;
+bool collision = false;
+unsigned int col_object = -1;
+unsigned int col_vnum = -1;
+unsigned int col_vertex_count = 0;
+unsigned int col_tex_count = 0;
 
 #endif

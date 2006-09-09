@@ -69,4 +69,6 @@ SDL_Event ievent;
 mapeditor* me;
 mgui* megui;
 
+bool button_left_pressed = false;
+
 #endif

@@ -31,6 +31,8 @@ image::image(engine* e) {
 
 	scale = true;
 
+	gui_img = false;
+
 	color = 0xFFFFFF;
 
 	// get classes
@@ -52,7 +54,7 @@ image::~image() {
 /*! draws the image
  */
 void image::draw(unsigned int scale_x, unsigned int scale_y) {
-	image::e->start_2d_draw();
+	if(!gui_img) image::e->start_2d_draw();
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, image::texture);
@@ -61,29 +63,57 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	glColor3f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF);
 	if(alpha) { glEnable(GL_BLEND); }
 
-	if(scale) {
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f);
-			glVertex2i(image::position->x, image::position->y);
-			glTexCoord2f(0.0f, 1.0f);
-			glVertex2i(image::position->x, image::position->y + scale_y);
-			glTexCoord2f(1.0f, 1.0f);
-			glVertex2i(image::position->x + scale_x, image::position->y + scale_y);
-			glTexCoord2f(1.0f, 0.0f);
-			glVertex2i(image::position->x + scale_x, image::position->y);
-		glEnd();
+	if(!gui_img) {
+		if(scale) {
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2i(image::position->x, image::position->y);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2i(image::position->x, image::position->y + scale_y);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2i(image::position->x + scale_x, image::position->y + scale_y);
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex2i(image::position->x + scale_x, image::position->y);
+			glEnd();
+		}
+		else {
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2i(image::position->x, image::position->y);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2i(image::position->x, image::position->y + image::heigth);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2i(image::position->x + image::width, image::position->y + image::heigth);
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex2i(image::position->x + image::width, image::position->y);
+			glEnd();
+		}
 	}
 	else {
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f);
-			glVertex2i(image::position->x, image::position->y);
-			glTexCoord2f(0.0f, 1.0f);
-			glVertex2i(image::position->x, image::position->y + image::heigth);
-			glTexCoord2f(1.0f, 1.0f);
-			glVertex2i(image::position->x + image::width, image::position->y + image::heigth);
-			glTexCoord2f(1.0f, 0.0f);
-			glVertex2i(image::position->x + image::width, image::position->y);
-		glEnd();
+		if(scale) {
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2i(image::position->x, image::position->y);
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex2i(image::position->x + scale_x, image::position->y);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2i(image::position->x + scale_x, image::position->y + scale_y);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2i(image::position->x, image::position->y + scale_y);
+			glEnd();
+		}
+		else {
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2i(image::position->x, image::position->y);
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex2i(image::position->x + image::width, image::position->y);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2i(image::position->x + image::width, image::position->y + image::heigth);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2i(image::position->x, image::position->y + image::heigth);
+			glEnd();
+		}
 	}
 
 	if(alpha) { glDisable(GL_BLEND); }
@@ -93,7 +123,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y) {
 	// the depth buffer, otherwise nothing will be seen
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	image::e->stop_2d_draw();
+	if(!gui_img) image::e->stop_2d_draw();
 }
 
 /*! draws the image
@@ -146,6 +176,13 @@ void image::set_texture(GLuint tex) {
 	t->get_texture(texture)->components == 4 ? alpha = true : alpha = false;
 }
 
+void image::set_texture(GLuint tex, unsigned int width, unsigned int height, bool alpha) {
+	texture = tex;
+	image::width = width;
+	image::heigth = height;
+	image::alpha = alpha;
+}
+
 //! returns the images texture
 GLuint image::get_texture() {
 	return image::texture;
@@ -173,4 +210,8 @@ unsigned int image::get_height() {
 
 void image::set_color(unsigned int color) {
 	image::color = color;
+}
+
+void image::set_gui_img(bool state) {
+	gui_img = state;
 }

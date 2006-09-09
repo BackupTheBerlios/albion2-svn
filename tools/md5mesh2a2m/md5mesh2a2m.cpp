@@ -87,7 +87,11 @@ bool LoadMesh(char* str) {
 	}
 
 	pMeshes = new MD5Mesh[iNumMeshes];
-	for(int i = 0; i < iNumMeshes; i++) {		
+	object_names = new string[iNumMeshes];
+	for(int i = 0; i < iNumMeshes; i++) {
+		NEXT("meshes:")
+		pFD >> object_names[i];
+
 		NEXT("numverts")
 		pFD >> pMeshes[i].iNumVerts;
 		pFD >> buffer;
@@ -185,6 +189,12 @@ int main(int argc, char *argv[])
 
 	// object/mesh count
 	put_int(&afile, iNumMeshes);
+
+	// object names
+	for(int i = 0; i < iNumMeshes; i++) {
+		afile.write(object_names[i].c_str(), (unsigned int)object_names[i].length());
+		afile.put(char(0xFF));
+	}
 
 	// write mesh data
 	for(int i = 0; i < iNumMeshes; i++) {

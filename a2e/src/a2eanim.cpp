@@ -83,6 +83,8 @@ a2eanim::a2eanim(engine* e, shader* s) {
 	init = false;
 	vbo = false;
 
+	object_names = NULL;
+
 	// get classes
 	a2eanim::e = e;
 	a2eanim::s = s;
@@ -139,12 +141,14 @@ a2eanim::~a2eanim() {
 		}
 	}
 
+	if(object_names != NULL) { delete [] object_names; }
+
 	m->print(msg::MDEBUG, "a2eanim.cpp", "a2eanim stuff freed");
 }
 
 /*! draws the model
  */
-void a2eanim::draw() {
+void a2eanim::draw(bool use_shader) {
 	if(a2eanim::is_visible && e->get_init_mode() == engine::GRAPHICAL) {
 		// frame stuff
 		if(a2eanim::current_frame < a2eanim::end_frame &&
@@ -247,8 +251,8 @@ void a2eanim::draw() {
 		}
 
 		for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
-			if(exts->is_shader_support() && a2eanim::material->get_material_type(i) == a2ematerial::PARALLAX) {
-				s->use_shader(1);
+			if(exts->is_shader_support() && a2eanim::material->get_material_type(i) == a2ematerial::PARALLAX && use_shader) {
+				s->use_shader(shader::PARALLAX);
 
 				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
 				s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
@@ -269,6 +273,8 @@ void a2eanim::draw() {
 				glEnable(GL_TEXTURE_2D);
 
 				if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
+
+				glColor3f(1.0f, 1.0f, 1.0f);
 
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
@@ -328,9 +334,9 @@ void a2eanim::draw() {
 				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glDisable(GL_TEXTURE_2D);
-				s->use_shader(0);
+				s->use_shader(shader::NONE);
 			}
-			else {
+			else { // !use_shader
 				if(a2eanim::is_material) {
 					glBindTexture(GL_TEXTURE_2D, a2eanim::material->get_texture(i, 0));
 				}
@@ -339,6 +345,8 @@ void a2eanim::draw() {
 				//glEnable(GL_TEXTURE_2D);
 				//if(a2eanim::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
 				a2eanim::material->enable_texture(i);
+
+				glColor3f(1.0f, 1.0f, 1.0f);
 
 				if(vbo) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, a2eanim::meshes[i].vbo_vertices_id);
@@ -483,6 +491,15 @@ void a2eanim::load_model(char* filename, bool vbo) {
 
 	// object/mesh count
 	a2eanim::mesh_count = file->get_uint();
+
+	// get object_names
+	object_names = new string[a2eanim::mesh_count];
+	char ch;
+	for(unsigned int i = 0; i < a2eanim::mesh_count; i++) {
+		while((ch = file->get_char()) != char(0xFF)) {
+			object_names[i] += ch;
+		}
+	}
 
 	// get mesh data
 	a2eanim::meshes = new mesh[a2eanim::mesh_count];
@@ -1319,3 +1336,18 @@ unsigned int a2eanim::get_object_count() {
 	return a2eanim::mesh_count;
 }
 
+string* a2eanim::get_object_names() {
+	return a2eanim::object_names;
+}
+
+vertex3* a2eanim::get_vertices(unsigned int mesh) {
+	return meshes[mesh].vertices;
+}
+
+core::index* a2eanim::get_indices(unsigned int mesh) {
+	return meshes[mesh].indices;
+}
+
+unsigned int a2eanim::get_index_count(unsigned int mesh) {
+	return meshes[mesh].triangle_count;
+}

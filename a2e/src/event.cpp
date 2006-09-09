@@ -403,3 +403,14 @@ void event::load_keyset(const char* language) {
 		}
 	}*/
 }
+
+bool event::is_gui_event(GEVENT_TYPE event_type, unsigned int id) {
+	if(cgui_event != 0) {
+		for(unsigned int i = 1; i <= cgui_event; i++) {
+			if(gui_event_stack[i].id == id && gui_event_stack[i].type == event_type) {
+				return true;
+			}
+		}
+	}
+	return false;
+}

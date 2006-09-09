@@ -84,7 +84,8 @@ public:
 		BUTTON_PRESSED,
 		COMBO_ITEM_SELECTED,
 		CHECKBOX_CHECKED,
-		LISTBOX_ITEM_SELECTED
+		LISTBOX_ITEM_SELECTED,
+		TAB_SELECTED
 	};
 
 	struct gevent {
@@ -95,6 +96,8 @@ public:
 	bool is_gui_event();
 	gevent get_gui_event();
 	void add_gui_event(GEVENT_TYPE event_type, unsigned int id);
+	//! for internal use only!
+	bool is_gui_event(GEVENT_TYPE event_type, unsigned int id);
 
 	unsigned int cgui_event;
 	gevent* gui_event_stack;

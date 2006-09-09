@@ -42,11 +42,12 @@
 #include <net.h>
 #include "userman.h"
 #include "web.h"
+#include "map.h"
 using namespace std;
 
 class snet {
 public:
-	snet(engine* e, net* n, userman* um, web* w);
+	snet(engine* e, net* n, userman* um, web* w, smap* sm);
 	~snet();
 
 	enum PACKET_TYPE {
@@ -54,7 +55,9 @@ public:
 		PT_NEW_CLIENT,
 		PT_QUIT_CLIENT,
 		PT_CHAT_MSG,
-		PT_FLAG
+		PT_FLAG,
+		PT_VU_LIST,
+		PT_VO_LIST
 	};
 
 	enum CHAT_TYPE {
@@ -66,7 +69,15 @@ public:
 	enum FLAGS {
 		F_SUCCESS_LOGIN,
 		F_WRONG_UNAME,
-		F_WRONG_PW
+		F_WRONG_PW,
+		F_GET_MAP,
+		F_GET_POS,
+		F_GET_ROT,
+		F_POST_MAP,
+		F_POST_POS,
+		F_POST_ROT,
+		F_MOVE_FORWARD,
+		F_MOVE_BACK
 	};
 
 	int process_packet(unsigned int cnum, char* pdata, unsigned int max_len);
@@ -76,6 +87,8 @@ public:
 
 	int process_http_packet(unsigned int cnum, char* pdata, unsigned int max_len);
 	void write_http_header(stringstream* stream, const char* status);
+
+	void run();
 
 	// used for setting packet data from other classes
 	stringstream* get_data();
@@ -87,6 +100,7 @@ protected:
 	net* n;
 	userman* um;
 	web* w;
+	smap* sm;
 
 	unsigned int max_packet_size;
 
@@ -95,6 +109,8 @@ protected:
 	stringstream* data;
 	char* packet_data;
 	char* line;
+
+	float piover180;
 
 };
 

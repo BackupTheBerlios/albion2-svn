@@ -35,6 +35,7 @@
 #include <gui.h>
 #include <event.h>
 #include <image.h>
+#include <shader.h>
 using namespace std;
 
 void open_info_wnd();
@@ -47,6 +48,7 @@ gui* agui;
 event* aevent;
 image* img;
 gui_style* gs;
+shader* s;
 
 bool done = false;
 
@@ -67,6 +69,7 @@ gui_text* tstatus;
 gui_check* clogo;
 
 GUI_OBJ info_wnd_id = -1;
+gui_tab* info_wnd_tab;
 gui_window* info_wnd;
 gui_combo* cinfo_type;
 gui_text* tinfo1;

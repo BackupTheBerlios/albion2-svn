@@ -19,11 +19,16 @@
 /*! there is no function currently
  */
 gfx::gfx() {
+	flip = false;
+
+	unsigned int max_point_count = 2048; // increase max point count if we have to render a line that is longer than 2048 pixel
+	points = new core::pnt[max_point_count];
 }
 
 /*! there is no function currently
  */
 gfx::~gfx() {
+	delete [] points;
 }
 
 /*! draws a point
@@ -32,10 +37,12 @@ gfx::~gfx() {
  */
 void gfx::draw_point(core::pnt* point, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
-	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
+	glEnable(GL_BLEND);
+	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color>>24) & 0xFF)) / 0xFF));
 	glBegin(GL_POINTS);
 		glVertex2i(point->x, point->y+1);
 	glEnd();
+	glDisable(GL_BLEND);
 }
 
 /*! draws a line
@@ -49,7 +56,7 @@ void gfx::draw_line(core::pnt* point1, core::pnt* point2, unsigned int color) {
 
 void gfx::draw_line(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
-	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
+	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color>>24) & 0xFF)) / 0xFF));
 
 	/*glBegin(GL_LINES);
 		glVertex2i(point1->x, point1->y);
@@ -74,7 +81,8 @@ void gfx::draw_line(unsigned int x1, unsigned int y1, unsigned int x2, unsigned 
 	cpx *= sign_x;
 	cpy *= sign_y;
 
-	glBegin(GL_POINTS);
+	// old non vertex array draw code
+	/*glBegin(GL_POINTS);
 	if(dist_x1_x2 < dist_y1_y2) {
 	    for(; x < dist_y1_y2; x++, dy += cpy) {
 			glVertex2i(dx, dy+1);
@@ -95,7 +103,42 @@ void gfx::draw_line(unsigned int x1, unsigned int y1, unsigned int x2, unsigned 
 			}
 		}
 	}
-	glEnd();
+	glEnd();*/
+
+	// use a vertex array to draw the points (is faster, measured performance increase with 1000 lines: ~ +33%)
+	unsigned int point_count = dist_x1_x2 > dist_y1_y2 ? dist_x1_x2 : dist_y1_y2;
+	unsigned int i = 0;
+	if(dist_x1_x2 < dist_y1_y2) {
+	    for(; x < dist_y1_y2; x++, dy += cpy) {
+			points[i].x = dx;
+			points[i].y = dy+1;
+			i++;
+			y += dist_x1_x2;
+			if(y >= dist_y1_y2) {
+				y -= dist_y1_y2;
+				dx += cpx;
+			}
+		}
+	}
+	else {
+		for(; x < dist_x1_x2; x++, dx += cpx) {
+			points[i].x = dx;
+			points[i].y = dy+1;
+			i++;
+			y += dist_y1_y2;
+			if(y >= dist_x1_x2) {
+				y -= dist_x1_x2;
+				dy += cpy;
+			}
+		}
+	}
+
+	glEnable(GL_BLEND);
+	glVertexPointer(2, GL_INT, 0, points);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays(GL_POINTS, 0, point_count);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisable(GL_BLEND);
 }
 
 /*! draws a line into a 3d space
@@ -177,58 +220,103 @@ void gfx::draw_2colored_rectangle(gfx::rect* rectangle,
  *  @param rectangle the rectangle itself
  *  @param color the color of the filled rectangle
  */
-void gfx::draw_filled_rectangle(gfx::rect* rectangle,
-								unsigned int color) {
+void gfx::draw_filled_rectangle(gfx::rect* rectangle, unsigned int color) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
-	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
+	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color>>24) & 0xFF)) / 0xFF));
 	glBegin(GL_QUADS);
-		glVertex2i(rectangle->x1, rectangle->y2+1);
-		glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
-		glVertex2i(rectangle->x2 + 1, rectangle->y1);
-		glVertex2i(rectangle->x1, rectangle->y1);
+		if(!flip) {
+			glVertex2i(rectangle->x1, rectangle->y2+1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			glVertex2i(rectangle->x1, rectangle->y1);
+		}
+		else {
+			glVertex2i(rectangle->x1, rectangle->y1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			glVertex2i(rectangle->x1, rectangle->y2+1);
+		}
 	glEnd();
 }
 
 void gfx::draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2, FADE_TYPE ft) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
+	glEnable(GL_BLEND);
 	glBegin(GL_QUADS);
 	switch(ft) {
 		case gfx::FT_HORIZONTAL:
-			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x2 + 1, rectangle->y1);
-			glVertex2i(rectangle->x1, rectangle->y1);
-			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x1, rectangle->y2+1);
-			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			if(!flip) {
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+				glVertex2i(rectangle->x1, rectangle->y1);
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			}
+			else {
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y1);
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			}
 			break;
 		case gfx::FT_VERTICAL:
-			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x1, rectangle->y1);
-			glVertex2i(rectangle->x1, rectangle->y2+1);
-			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
-			glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			if(!flip) {
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y1);
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			}
+			else {
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glVertex2i(rectangle->x1, rectangle->y1);
+			}
 			break;
 		case gfx::FT_DIAGONAL: {
 			unsigned int avg = get_average_color(color1, color2);
-			glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x2 + 1, rectangle->y1);
-			glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x1, rectangle->y1);
-			glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x1, rectangle->y2+1);
-			glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f);
-			glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			if(!flip) {
+				glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((avg>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y1);
+				glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((avg>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+			}
+			else {
+				glColor4f(((GLfloat)((color2>>16) & 0xFF)) / 0xFF, ((GLfloat)((color2>>8) & 0xFF)) / 0xFF, ((GLfloat)(color2 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color2>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y2+1);
+				glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((avg>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y2+1);
+				glColor4f(((GLfloat)((color1>>16) & 0xFF)) / 0xFF, ((GLfloat)((color1>>8) & 0xFF)) / 0xFF, ((GLfloat)(color1 & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((color1>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x1, rectangle->y1);
+				glColor4f(((GLfloat)((avg>>16) & 0xFF)) / 0xFF, ((GLfloat)((avg>>8) & 0xFF)) / 0xFF, ((GLfloat)(avg & 0xFF)) / 0xFF, 1.0f - (((GLfloat)((avg>>24) & 0xFF)) / 0xFF));
+				glVertex2i(rectangle->x2 + 1, rectangle->y1);
+			}
 			}
 			break;
 		default:
 			break;
 	}
 	glEnd();
+	glDisable(GL_BLEND);
 }
 
 unsigned int gfx::get_average_color(unsigned int color1, unsigned int color2) {
 	unsigned int tmp = 0, ret = 0;
+	tmp = ((color2>>24) & 0xFF) > ((color1>>24) & 0xFF)?
+		((color1>>24) & 0xFF) + ((((color2>>24) & 0xFF) - ((color1>>24) & 0xFF)) / 2) :
+		((color2>>24) & 0xFF) + ((((color1>>24) & 0xFF) - ((color2>>24) & 0xFF)) / 2);
+	ret += tmp << 24;
 	tmp = ((color2>>16) & 0xFF) > ((color1>>16) & 0xFF)?
 		((color1>>16) & 0xFF) + ((((color2>>16) & 0xFF) - ((color1>>16) & 0xFF)) / 2) :
 		((color2>>16) & 0xFF) + ((((color1>>16) & 0xFF) - ((color2>>16) & 0xFF)) / 2);
@@ -351,11 +439,53 @@ void gfx::set_scissor(gfx::rect* rectangle) {
  *  @param y2 y2 value of the scissor box
  */
 void gfx::set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
-	glScissor(x1, screen->h - y2, x2 - x1, y2 - y1);
-	//glScissor(x1, y2, x2-x1, y2-y1);
+	if(!flip) {
+		glScissor(x1, screen->h - y2, x2 - x1, y2 - y1);
+	}
+	else {
+		glScissor(x1, y1, x2 - x1, y2 - y1);
+	}
 }
 
 //! ends/disables scissor test
 void gfx::end_scissor() {
 	glDisable(GL_SCISSOR_TEST);
+}
+
+void gfx::draw_bbox(core::aabbox* bbox, unsigned int color) {
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glColor4f(((GLfloat)((color>>16) & 0xFF)) / 0xFF, ((GLfloat)((color>>8) & 0xFF)) / 0xFF, ((GLfloat)(color & 0xFF)) / 0xFF, 1.0f);
+	glBegin(GL_LINE_STRIP);
+		glVertex3f(bbox->vmax.x, bbox->vmax.y, bbox->vmax.z);
+		glVertex3f(bbox->vmax.x, bbox->vmax.y, bbox->vmin.z);
+		glVertex3f(bbox->vmax.x, bbox->vmin.y, bbox->vmin.z);
+		glVertex3f(bbox->vmax.x, bbox->vmin.y, bbox->vmax.z);
+		glVertex3f(bbox->vmax.x, bbox->vmax.y, bbox->vmax.z);
+		glVertex3f(bbox->vmin.x, bbox->vmax.y, bbox->vmax.z);
+		glVertex3f(bbox->vmin.x, bbox->vmax.y, bbox->vmin.z);
+		glVertex3f(bbox->vmin.x, bbox->vmin.y, bbox->vmin.z);
+		glVertex3f(bbox->vmin.x, bbox->vmin.y, bbox->vmax.z);
+		glVertex3f(bbox->vmin.x, bbox->vmax.y, bbox->vmax.z);
+	glEnd();
+	glBegin(GL_LINES);
+		glVertex3f(bbox->vmax.x, bbox->vmax.y, bbox->vmin.z);
+		glVertex3f(bbox->vmin.x, bbox->vmax.y, bbox->vmin.z);
+
+		glVertex3f(bbox->vmax.x, bbox->vmin.y, bbox->vmin.z);
+		glVertex3f(bbox->vmin.x, bbox->vmin.y, bbox->vmin.z);
+
+		glVertex3f(bbox->vmax.x, bbox->vmin.y, bbox->vmax.z);
+		glVertex3f(bbox->vmin.x, bbox->vmin.y, bbox->vmax.z);
+	glEnd();
+}
+
+void gfx::set_flip(bool state) {
+	flip = state;
+}
+
+bool gfx::get_flip() {
+	return flip;
 }

@@ -1,5 +1,5 @@
 [A2EMODEL - 8 bytes (char[8])]
-[A2EMODEL TYPE (= 1) - 1 byte (0 = static / 1 = animated/dynamic) (char)]
+[A2EMODEL TYPE (= 1) - 1 byte (0 = static / 1 = animated/dynamic) (char) / 2 = static with collision model]
 
 [JOINT COUNT - 4 bytes (unsigned int)]
 [BASE JOINT COUNT - 4 bytes (unsigned int)]
@@ -10,6 +10,7 @@
 [END FOR EACH]
 
 [OBJECT/MESH COUNT - 4 bytes (unsigned int)]
+[OBJECT NAMES - OBJECT COUNT *  x bytes (names are separated by 0xFF)]
 [FOR EACH OBJECT]
 	[VERTEX COUNT - 4 bytes (unsigned int)]
 	[FOR EACH VERTEX]

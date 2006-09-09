@@ -16,14 +16,6 @@
 
 #include "shader.h"
 
-#ifdef WIN32
-#define glGetProcAddress(x) wglGetProcAddress(x)
-#define ProcType LPCSTR
-#else
-#define glGetProcAddress(x) glXGetProcAddress(x)
-#define ProcType GLubyte*
-#endif
-
 /*! create and initialize the shader class
  */
 shader::shader(engine* e) {
@@ -55,6 +47,19 @@ shader::shader(engine* e) {
 	string vs_path = e->data_path("parallax.vs");
 	string fs_path = e->data_path("parallax.fs");
 	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 6, pl_uniforms, 4, pl_attributes);
+
+	char* phl_uniforms[] = { "texture" };
+	vs_path = e->data_path("phong.vs");
+	fs_path = e->data_path("phong.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 1, phl_uniforms, 0, NULL);
+
+	char* blur_uniforms[] = { "tcs", "texture" };
+	char* blur_attributes[] = { "texture_coord" };
+	vs_path = e->data_path("blur.vs");
+	fs_path = e->data_path("blur3x3.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, blur_uniforms, 1, blur_attributes);
+	fs_path = e->data_path("blur5x5.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, blur_uniforms, 1, blur_attributes);
 }
 
 /*! delete everything
@@ -259,9 +264,9 @@ void shader::set_uniform4i(unsigned int num, int var1, int var2, int var3, int v
  *  @param num the uniforms number
  *  @param var the int array
  */
-void shader::set_uniform1iv(unsigned int num, int* var) {
+void shader::set_uniform1iv(unsigned int num, int* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform1ivARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform1ivARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -269,9 +274,9 @@ void shader::set_uniform1iv(unsigned int num, int* var) {
  *  @param num the uniforms number
  *  @param var the int array
  */
-void shader::set_uniform2iv(unsigned int num, int* var) {
+void shader::set_uniform2iv(unsigned int num, int* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform2ivARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform2ivARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -279,9 +284,9 @@ void shader::set_uniform2iv(unsigned int num, int* var) {
  *  @param num the uniforms number
  *  @param var the int array
  */
-void shader::set_uniform3iv(unsigned int num, int* var) {
+void shader::set_uniform3iv(unsigned int num, int* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform3ivARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform3ivARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -289,9 +294,9 @@ void shader::set_uniform3iv(unsigned int num, int* var) {
  *  @param num the uniforms number
  *  @param var the int array
  */
-void shader::set_uniform4iv(unsigned int num, int* var) {
+void shader::set_uniform4iv(unsigned int num, int* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform4ivARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform4ivARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -345,9 +350,9 @@ void shader::set_uniform4f(unsigned int num, float var1, float var2, float var3,
  *  @param num the uniforms number
  *  @param var the float array
  */
-void shader::set_uniform1fv(unsigned int num, float* var) {
+void shader::set_uniform1fv(unsigned int num, float* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform1fvARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform1fvARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -355,9 +360,9 @@ void shader::set_uniform1fv(unsigned int num, float* var) {
  *  @param num the uniforms number
  *  @param var the float array
  */
-void shader::set_uniform2fv(unsigned int num, float* var) {
+void shader::set_uniform2fv(unsigned int num, float* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform2fvARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform2fvARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -365,9 +370,9 @@ void shader::set_uniform2fv(unsigned int num, float* var) {
  *  @param num the uniforms number
  *  @param var the float array
  */
-void shader::set_uniform3fv(unsigned int num, float* var) {
+void shader::set_uniform3fv(unsigned int num, float* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform3fvARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform3fvARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 
@@ -375,9 +380,9 @@ void shader::set_uniform3fv(unsigned int num, float* var) {
  *  @param num the uniforms number
  *  @param var the float array
  */
-void shader::set_uniform4fv(unsigned int num, float* var) {
+void shader::set_uniform4fv(unsigned int num, float* var, unsigned int count) {
 	if(shader_support) {
-		exts->glUniform4fvARB(shaders[cur_shader].uniforms[num], 1, var);
+		exts->glUniform4fvARB(shaders[cur_shader].uniforms[num], count, var);
 	}
 }
 

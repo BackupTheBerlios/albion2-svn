@@ -63,7 +63,7 @@ public:
 	a2eanim(engine* e, shader* s);
 	~a2eanim();
 
-	void draw();
+	void draw(bool use_shader = true);
 	void draw_joints();
 
 	void load_model(char* filename, bool vbo = false);
@@ -101,6 +101,12 @@ public:
 
 	core::aabbox* get_bounding_box();
 	void build_bounding_box();
+
+	string* get_object_names();
+
+	vertex3* get_vertices(unsigned int mesh);
+	core::index* get_indices(unsigned int mesh);
+	unsigned int get_index_count(unsigned int mesh);
 
 	// used for parallax mapping
 	void generate_normal_list();
@@ -187,6 +193,7 @@ protected:
 	joint* joints;
 	joint** base_joints;
 	mesh* meshes;
+	string* object_names;
 
 	unsigned int canimations;
 	animation** animations;

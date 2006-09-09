@@ -130,6 +130,7 @@ bool gui_vbar::get_slider_active() {
  */
 void gui_vbar::set_max_lines(unsigned int max_lines) {
 	gui_vbar::max_lines = max_lines;
+	gui_vbar::set_redraw(true);
 }
 
 /*! sets the vertical bars shown lines
@@ -137,6 +138,7 @@ void gui_vbar::set_max_lines(unsigned int max_lines) {
  */
 void gui_vbar::set_shown_lines(unsigned int shown_lines) {
 	gui_vbar::shown_lines = shown_lines;
+	gui_vbar::set_redraw(true);
 }
 
 /*! sets the vertical bar position
@@ -156,6 +158,7 @@ void gui_vbar::set_position(unsigned int position) {
 	else {
         gui_vbar::position = position;
 	}
+	gui_vbar::set_redraw(true);
 }
 
 /*! sets the is_active bool
@@ -222,6 +225,7 @@ void gui_vbar::set_new_point(core::pnt* new_point) {
 			}
 		}
 	}
+	gui_vbar::set_redraw(true);
 }
 
 /*! sets the slider active bool

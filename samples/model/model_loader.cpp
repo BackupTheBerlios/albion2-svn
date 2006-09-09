@@ -91,9 +91,9 @@ int main(int argc, char *argv[])
 		// pass the models to ode
 		o->add_object(plane, true, ode_object::TRIMESH);
 		o->add_object(cottage, true, ode_object::TRIMESH);
-		o->add_object(sphere, false, ode_object::SPHERE);
+		osphere = o->add_object(sphere, false, ode_object::SPHERE);
 
-		osphere = o->get_ode_object(2);
+		//osphere = o->get_ode_object(2);
 	}
 	else {
 		mdl_map = new a2emap(e, sce, o);

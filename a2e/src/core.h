@@ -144,6 +144,7 @@ public:
 	void put_uint(stringstream* sstr, unsigned int u);
 	void put_suint(stringstream* sstr, unsigned short int su);
 	void put_block(stringstream* sstr, const char* data, unsigned int size);
+	void put_float(stringstream* sstr, float f);
 
 	char get_char(stringstream* sstr);
 	int get_int(stringstream* sstr);
@@ -152,8 +153,11 @@ public:
 	unsigned short int get_suint(stringstream* sstr);
 	void get_block(stringstream* sstr, char* data, unsigned int size);
 	void get_block(stringstream* sstr, string* data, unsigned int size);
+	void get_float(stringstream* sstr, float& f);
 
 	void reset(stringstream* sstr);
+
+	unsigned int next_pot(unsigned int num);
 
 protected:
 	unsigned int value, bit, num;

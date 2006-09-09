@@ -18,5 +18,5 @@ else
 	tinsert(package.libpaths, {findlib("GL"), findlib("GLU"), findlib("Xxf86vm"), findlib("SDL"), findlib("ftgl"), findlib("ode"), findlib("OPCODE"), findlib("lua"), findlib("xml2")})
 	tinsert(package.buildoptions, "`sdl-config --cflags` -Wall")
 	tinsert(package.linkoptions, "`sdl-config --libs`")
-	tinsert(package.links, {"GL", "GLU", "Xxf86vm", "z", "jpeg", "SDL", "SDL_net", "SDL_image", "ode", "OPCODE", "freetype", "ftgl", "lua", "lualib", "xml2"})
+	tinsert(package.links, {"GL", "GLU", "Xxf86vm", "z", "jpeg", "SDL", "SDL_net", "SDL_image", "ode", "OPCODE", "freetype", "ftgl", "lua", "xml2"})
 end

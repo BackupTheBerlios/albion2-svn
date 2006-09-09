@@ -70,8 +70,17 @@ public:
 	static int mtleditor_thread(void* data);
 	void update_materials(const char* mat_fname);
 
+	static bool ffilter_mdl(const char* filename);
+	static bool ffilter_mtl(const char* filename);
+	static bool ffilter_ani(const char* filename);
+	static unsigned int get_mdl_obj_count(const char* mdl);
+	static unsigned int get_mtl_obj_count(const char* mtl);
+	static unsigned int get_mdl_joint_count(const char* mdl);
+	static unsigned int get_ani_joint_count(const char* ani);
+
 protected:
-	engine* e;
+	static engine* e;
+	static file_io* f;
 	gui* agui;
 	gui_style* gs;
 	msg* m;
@@ -87,6 +96,10 @@ protected:
 	static string sys_call;
 	string mat_name;
 	bool is_thread;
+
+	static const char* mdl_fname;
+	static const char* mtl_fname;
+	static const char* ani_fname;
 
 	/***********
 	GUI ID Chart

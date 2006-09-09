@@ -41,11 +41,12 @@
 #include <a2emap.h>
 #include <net.h>
 #include "csystem.h"
+#include "cgui.h"
 using namespace std;
 
 class cnet {
 public:
-	cnet(engine* e, csystem* cs);
+	cnet(engine* e, csystem* cs, cgui* cg);
 	~cnet();
 
 	enum PACKET_TYPE {
@@ -53,24 +54,29 @@ public:
 		PT_NEW_CLIENT,
 		PT_QUIT_CLIENT,
 		PT_CHAT_MSG,
-		PT_FLAG
-	};
-
-	enum CHAT_TYPE {
-		CT_WORLD,
-		CT_REGION,
-		CT_PARTY
+		PT_FLAG,
+		PT_VU_LIST,
+		PT_VO_LIST
 	};
 
 	enum FLAGS {
 		F_SUCCESS_LOGIN,
 		F_WRONG_UNAME,
-		F_WRONG_PW
+		F_WRONG_PW,
+		F_GET_MAP,
+		F_GET_POS,
+		F_GET_ROT,
+		F_POST_MAP,
+		F_POST_POS,
+		F_POST_ROT,
+		F_MOVE_FORWARD,
+		F_MOVE_BACK
 	};
 
 	int process_packet(char* data, unsigned int max_len);
 	void send_packet(PACKET_TYPE type);
 	void handle_server();
+	void run();
 
 	void close();
 
@@ -78,19 +84,14 @@ public:
 	stringstream* get_data();
 	void clear_data();
 
-	struct client {
-		string name;
-		unsigned int status;
-		unsigned int id;
-	};
-	vector<client> clients;
-
 protected:
 	engine* e;
 	msg* m;
 	core* c;
 	net* n;
 	csystem* cs;
+	cgui* cg;
+	gui* agui;
 
 	unsigned int max_packet_size;
 

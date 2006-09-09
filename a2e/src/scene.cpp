@@ -43,9 +43,9 @@ scene::scene(engine* e, shader* s) {
 	scene::mdiffuse[2] = 1.0f;
 	scene::mdiffuse[3] = 1.0f;
 
-	scene::mspecular[0] = 1.0f;
-	scene::mspecular[1] = 1.0f;
-	scene::mspecular[2] = 1.0f;
+	scene::mspecular[0] = 0.2f;
+	scene::mspecular[1] = 0.2f;
+	scene::mspecular[2] = 0.2f;
 	scene::mspecular[3] = 1.0f;
 
 	scene::mshininess[0] = 1.0f;

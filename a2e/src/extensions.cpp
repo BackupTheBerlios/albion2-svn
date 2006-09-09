@@ -45,8 +45,11 @@ ext::ext(unsigned int imode, msg* m) {
 	glUnmapBufferARB = NULL;
 
 	multitexture_support = false;
+	texenv_combine_support = false;
 	shader_support = false;
 	vbo_support = false;
+	fbo_support = false;
+	blend_func_separate_support = false;
 
 	if(is_ext_supported("GL_ARB_multitexture")) {
 		glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glActiveTextureARB");
@@ -143,6 +146,38 @@ ext::ext(unsigned int imode, msg* m) {
 	else {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!");
 	}
+
+	if(is_ext_supported("GL_EXT_framebuffer_object")) {
+		glIsRenderbufferEXT = (PFNGLISRENDERBUFFEREXTPROC)glGetProcAddress((ProcType)"glIsRenderbufferEXT");
+		glBindRenderbufferEXT = (PFNGLBINDRENDERBUFFEREXTPROC)glGetProcAddress((ProcType)"glBindRenderbufferEXT");
+		glDeleteRenderbuffersEXT = (PFNGLDELETERENDERBUFFERSEXTPROC)glGetProcAddress((ProcType)"glDeleteRenderbuffersEXT");
+		glGenRenderbuffersEXT = (PFNGLGENRENDERBUFFERSEXTPROC)glGetProcAddress((ProcType)"glGenRenderbuffersEXT");
+		glRenderbufferStorageEXT = (PFNGLRENDERBUFFERSTORAGEEXTPROC)glGetProcAddress((ProcType)"glRenderbufferStorageEXT");
+		glGetRenderbufferParameterivEXT = (PFNGLGETRENDERBUFFERPARAMETERIVEXTPROC)glGetProcAddress((ProcType)"glGetRenderbufferParameterivEXT");
+		glIsFramebufferEXT = (PFNGLISFRAMEBUFFEREXTPROC)glGetProcAddress((ProcType)"glIsFramebufferEXT");
+		glBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)glGetProcAddress((ProcType)"glBindFramebufferEXT");
+		glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)glGetProcAddress((ProcType)"glDeleteFramebuffersEXT");
+		glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)glGetProcAddress((ProcType)"glGenFramebuffersEXT");
+		glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)glGetProcAddress((ProcType)"glCheckFramebufferStatusEXT");
+		glFramebufferTexture1DEXT = (PFNGLFRAMEBUFFERTEXTURE1DEXTPROC)glGetProcAddress((ProcType)"glFramebufferTexture1DEXT");
+		glFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)glGetProcAddress((ProcType)"glFramebufferTexture2DEXT");
+		glFramebufferTexture3DEXT = (PFNGLFRAMEBUFFERTEXTURE3DEXTPROC)glGetProcAddress((ProcType)"glFramebufferTexture3DEXT");
+		glFramebufferRenderbufferEXT = (PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC)glGetProcAddress((ProcType)"glFramebufferRenderbufferEXT");
+		glGetFramebufferAttachmentParameterivEXT = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC)glGetProcAddress((ProcType)"glGetFramebufferAttachmentParameterivEXT");
+		glGenerateMipmapEXT = (PFNGLGENERATEMIPMAPEXTPROC)glGetProcAddress((ProcType)"glGenerateMipmapEXT");
+		fbo_support = true;
+	}
+	else {
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_EXT_framebuffer_object'!");
+	}
+
+	if(is_ext_supported("EXT_blend_func_separate")) {
+		glBlendFuncSeparateEXT = (PFNGLBLENDFUNCSEPARATEEXTPROC)glGetProcAddress((ProcType)"glBlendFuncSeparateEXT");
+		blend_func_separate_support = true;
+	}
+	else {
+		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'EXT_blend_func_separate'!");
+	}
 }
 
 /*! delete everything
@@ -160,6 +195,16 @@ bool ext::is_ext_supported(char* ext_name) {
 			return true;
 		}
 	}
+	return false;
+}
+
+/*! returns true if the opengl version specified by major and minor is available (opengl major.minor.xxxx)
+ *  @param ext_name the extensions name we want to look for if it's supported
+ */
+bool ext::is_gl_version(unsigned int major, unsigned int minor) {
+	char* version = (char*)glGetString(GL_VERSION);
+	if((unsigned int)(version[0] & 0xFF) > major) return true;
+	else if((unsigned int)(version[0] & 0xFF) == major && (unsigned int)(version[2] & 0xFF) >= minor) return true;
 	return false;
 }
 
@@ -181,9 +226,21 @@ bool ext::is_shader_support() {
 	return ext::shader_support;
 }
 
-
 /*! returns true if vertex buffer objects are supported
  */
 bool ext::is_vbo_support() {
 	return ext::vbo_support;
+}
+
+/*! returns true if framebuffer objects are supported
+ */
+bool ext::is_fbo_support() {
+	return ext::fbo_support;
+}
+
+
+/*! returns true if blend func separate is supported
+ */
+bool ext::is_blend_func_separate_support() {
+	return ext::blend_func_separate_support;
 }

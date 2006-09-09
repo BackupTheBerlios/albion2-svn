@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
 	e->set_caption("A2 Client");
 
 	// init class pointers
-	cs = new csystem(e);
 	c = e->get_core();
 	m = e->get_msg();
 	aevent = e->get_event();
@@ -42,28 +41,28 @@ int main(int argc, char *argv[])
 	s = new shader(e);
 	sce = new scene(e, s);
 	cam = new camera(e);
-	agui = new gui(e);
+	agui = new gui(e, s);
 	agui->init();
-	cs->n = new net(e);
-	cn = new cnet(e, cs);
-	cg = new cgui(e, agui, cs, cn);
-	cg->init();
 	cm = new cmap(e, sce);
+	cs = new csystem(e, cam, cm);
 	cs->sf = e->get_screen();
+	cs->n = new net(e);
+	cs->agui = agui;
+	cg = new cgui(e, cs);
+	cg->init();
+	cn = new cnet(e, cs, cg);
 
 	// initialize the a2e events
 	aevent->init(ievent);
 
 	// initialize the camera
-	cam->set_position(-5.0f, -30.0f, -55.0f);
+	cam->set_position(0.0f, 0.0f, 0.0f);
 	cam->set_rotation_speed(100.0f);
 	cam->set_mouse_input(false);
+	cam->set_cam_input(false);
 
-	//a2emap* map = new a2emap(e, sce, NULL);
-	//map->load_map(e->data_path("klouta.a2map"), true);
-
-	light* l1 = new light(e, 0.0f, 200.0f, 0.0f);
-	float lamb1[] = { 0.22f, 0.22f, 0.22f, 1.0f};
+	light* l1 = new light(e, 0.0f, 80.0f, 0.0f);
+	float lamb1[] = { 0.12f, 0.12f, 0.12f, 1.0f};
 	float ldif1[] = { 0.9f, 0.9f, 0.9f, 1.0f};
 	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 	l1->set_lambient(lamb1);
@@ -94,14 +93,46 @@ int main(int argc, char *argv[])
 				case SDL_QUIT:
 					cs->done = true;
 					break;
+				case SDL_MOUSEBUTTONDOWN:
+					switch(aevent->get_event().button.button) {
+						case SDL_BUTTON_RIGHT:
+							cam->set_mouse_input(cam->get_mouse_input() ^ true);
+							break;
+						default:
+						break;
+					}
+					break;
 				case SDL_KEYDOWN:
 					switch(aevent->get_event().key.keysym.sym) {
 						case SDLK_ESCAPE:
 							cs->done = true;
 							break;
+						case SDLK_w:
+						case SDLK_UP:
+							cs->move_forward = true;
+							break;
+						case SDLK_s:
+						case SDLK_DOWN:
+							cs->move_back = true;
+							break;
 						default:
 						break;
 					}
+					break;
+				case SDL_KEYUP:
+					switch(aevent->get_event().key.keysym.sym) {
+						case SDLK_w:
+						case SDLK_UP:
+							cs->move_forward = false;
+							break;
+						case SDLK_s:
+						case SDLK_DOWN:
+							cs->move_back = false;
+							break;
+						default:
+						break;
+					}
+					break;
 					break;
 			}
 		}
@@ -109,8 +140,9 @@ int main(int argc, char *argv[])
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
-			sprintf(tmp, "A2 Client | FPS: %u | Pos: %f %f %f", fps,
-				cam->get_position()->x, cam->get_position()->y, cam->get_position()->z);
+			sprintf(tmp, "A2 Client | FPS: %u | Pos: %f %f %f | Rot: %f %f %f", fps,
+				-cam->get_position()->x, -cam->get_position()->y, -cam->get_position()->z,
+				cam->get_rotation()->x, cam->get_rotation()->y, cam->get_rotation()->z);
 			fps = 0;
 			fps_time = SDL_GetTicks();
 		}
@@ -129,6 +161,7 @@ int main(int argc, char *argv[])
 				//cs->done = true;
 				cs->netinit = false;
 				cs->disconnected = true;
+				cs->logged_in = false;
 				cn->close();
 			}
 			if(SDLNet_SocketReady(cs->n->tcp_server_sock)) {
@@ -139,6 +172,7 @@ int main(int argc, char *argv[])
 				//cs->done = true;
 				cs->netinit = false;
 				cs->disconnected = true;
+				cs->logged_in = false;
 				cn->close();
 			}
 
@@ -148,14 +182,17 @@ int main(int argc, char *argv[])
 				cn->send_packet(cnet::PT_TEST);
 				act_time = SDL_GetTicks();
 			}
+
+			cn->run();
+			cs->run();
 		}
 
 		e->start_draw();
 
-		cg->run();
-		agui->draw();
 		cam->run();
 		sce->draw();
+		cg->run();
+		agui->draw();
 
 		e->stop_draw();
 

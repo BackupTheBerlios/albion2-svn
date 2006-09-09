@@ -48,8 +48,8 @@ public:
 	gui_object(engine* e, gui_style* gs);
 	~gui_object();
 	
-	void draw(unsigned int x, unsigned int y);
-	void draw_object(unsigned int x, unsigned int y);
+	void draw(int x, int y);
+	void draw_object(int x, int y);
 
 
 	// gui button element variables functions
@@ -70,9 +70,20 @@ public:
 
 	void set_image(image* img);
 	image* get_image();
+	void set_image_texture(unsigned int tex);
+	unsigned int get_image_texture();
 
 	void set_type(const char* type);
 	string* get_type();
+
+	void set_redraw(bool state);
+	bool get_redraw();
+
+	void set_scissor(bool state);
+	bool get_scissor();
+
+	void set_tab(unsigned int id);
+	unsigned int get_tab();
 
 protected:
 	msg* m;
@@ -97,6 +108,12 @@ protected:
 	string text;
 	//! the object's image
 	image* img;
+	//! redraw flag
+	bool redraw;
+	//! scissor
+	bool scissor;
+	//! the object's tab
+	unsigned int tab;
 
 };
 

@@ -40,17 +40,12 @@ int main(int argc, char *argv[])
 	s = new shader(e);
 	sce = new scene(e, s);
 	n = new net(e);
-	o = new ode(e);
-	o->init();
+	//o = new ode(e);
+	//o->init();
 	w = new web(e);
 	um = new userman(e);
-	sn = new snet(e, n, um, w);
-
-	um->load_list(e->data_path("users.xml"));
-
-	// open map
-	a2emap* map = new a2emap(e, sce, o);
-	map->load_map(e->data_path("klouta.a2map"), true);
+	sm = new smap(e, sce, um);
+	sn = new snet(e, n, um, w, sm);
 
 	// net init
 	if(n->init()) {
@@ -69,6 +64,11 @@ int main(int argc, char *argv[])
 		done = true;
 	}
 
+	// load server stuff
+	um->load_user_list(e->data_path("users.xml"));
+	um->load_user_db(e->data_path("user_db.xml"));
+
+	sm->load();
 
 	// ode stuff
 	unsigned int ode_timer = SDL_GetTicks();
@@ -94,6 +94,8 @@ int main(int argc, char *argv[])
 		}
 		n->handle_server();
 		sn->manage_clients();
+		sn->run();
+		um->run();
 
 		// ode ...
 		if(SDL_GetTicks() - ode_timer >= ode_timestep) {
@@ -104,16 +106,20 @@ int main(int argc, char *argv[])
 			o->run(SDL_GetTicks() - ode_timer2);*/
 
 			// use a fixed value of 40 updates per second
-			o->run(ode_timestep);
+			//o->run(ode_timestep);
+
+			sm->run(ode_timestep);
+			ode_timer = SDL_GetTicks();
 		}
 
 		if(SDL_GetTicks() - save_timer >= 60000) {
 			um->save_user_list();
+			um->save_user_db();
 			save_timer = SDL_GetTicks();
 		}
 	}
 
-	o->close();
+	//o->close();
 
 	return 0;
 }

@@ -441,6 +441,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\gui_image.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_image.h"
+			>
+		</File>
+		<File
 			RelativePath="gui_input.cpp"
 			>
 		</File>
@@ -478,6 +486,14 @@
 		</File>
 		<File
 			RelativePath="gui_style.h"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_tab.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\gui_tab.h"
 			>
 		</File>
 		<File
@@ -574,6 +590,14 @@
 		</File>
 		<File
 			RelativePath="quaternion.h"
+			>
+		</File>
+		<File
+			RelativePath=".\rtt.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\rtt.h"
 			>
 		</File>
 		<File

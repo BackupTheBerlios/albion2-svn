@@ -36,6 +36,7 @@ gui_combo::gui_combo(engine* e, gui_style* gs) : gui_object(e, gs) {
 	gui_combo::m = e->get_msg();
 	gui_combo::g = e->get_gfx();
 	gui_combo::gf = e->get_gui_font();
+	gui_combo::evt = e->get_event();
 	gui_combo::gs = gs;
 
 	gui_combo::list_visible = false;
@@ -64,15 +65,6 @@ void gui_combo::draw(unsigned int x, unsigned int y) {
 	g->pnt_to_rect(gui_combo::list_button->get_rectangle(),
 		gui_combo::rectangle->x2 - 14 - 2, gui_combo::rectangle->y1 + 1,
 		gui_combo::rectangle->x2 - 1, gui_combo::rectangle->y1 + 16 + 2);
-
-	// event handling
-	if(gui_combo::list_button->get_state() == "CLICKED" && !list_button_pressed) {
-		list_button_pressed = true;
-		list_visible = list_visible ^ true;
-	}
-	else if(gui_combo::list_button->get_state() != "CLICKED") {
-		list_button_pressed = false;
-	}
 
 	if(list_visible) {
 		set_state("CLICKED");
@@ -187,4 +179,21 @@ void gui_combo::select_pos(core::pnt* pos) {
 void gui_combo::click_pos(core::pnt* pos) {
 	unsigned int y = pos->y - rectangle->y1 - 21;
 	set_selected_id(items[y / 18].id);
+}
+
+unsigned int gui_combo::get_marked_item() {
+	return marked_item;
+}
+
+//! handles the combo box (its events)
+void gui_combo::handle_combo() {
+	// event handling
+	if(evt->is_gui_event(event::BUTTON_PRESSED, gui_combo::list_button->get_id()) && !list_button_pressed) {
+		list_button_pressed = true;
+		list_visible = list_visible ^ true;
+		set_redraw(true);
+	}
+	else if(gui_combo::list_button->get_state() != "CLICKED") {
+		list_button_pressed = false;
+	}
 }

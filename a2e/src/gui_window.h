@@ -44,7 +44,7 @@ class A2E_API gui_window : public gui_object
 public:
 	gui_window(engine* e, gui_style* gs);
 	~gui_window();
-	
+
 	void draw();
 
 	unsigned int get_lid();
@@ -68,11 +68,17 @@ public:
 	bool get_bg();
 	void set_bg(bool state);
 
+	void set_redraw(bool state);
+	bool get_redraw();
+
+	void handle_window();
+
 protected:
 	msg* m;
 	core* c;
 	engine* e;
 	gfx* g;
+	event* evt;
 	
 	gui_button* exit_button_handler;
 
@@ -86,6 +92,8 @@ protected:
 	bool moving;
 
 	bool deleted;
+
+	bool redraw;
 
 };
 

@@ -54,10 +54,13 @@ public:
 	~ext();
 
 	bool is_ext_supported(char* ext_name);
+	bool is_gl_version(unsigned int major, unsigned int minor);
 	bool is_multitexture_support();
 	bool is_texenv_combine_support();
 	bool is_shader_support();
 	bool is_vbo_support();
+	bool is_fbo_support();
+	bool is_blend_func_separate_support();
 
 	PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
 	PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
@@ -122,6 +125,27 @@ public:
 	PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB;
 	PFNGLISBUFFERARBPROC glIsBufferARB;
 
+	PFNGLISRENDERBUFFEREXTPROC glIsRenderbufferEXT;
+	PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT;
+	PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT;
+	PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT;
+	PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT;
+	PFNGLGETRENDERBUFFERPARAMETERIVEXTPROC glGetRenderbufferParameterivEXT;
+	PFNGLISFRAMEBUFFEREXTPROC glIsFramebufferEXT;
+	PFNGLBINDFRAMEBUFFEREXTPROC glBindFramebufferEXT;
+	PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT;
+	PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT;
+	PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC glCheckFramebufferStatusEXT;
+	PFNGLFRAMEBUFFERTEXTURE1DEXTPROC glFramebufferTexture1DEXT;
+	PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT;
+	PFNGLFRAMEBUFFERTEXTURE3DEXTPROC glFramebufferTexture3DEXT;
+	PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT;
+	PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC glGetFramebufferAttachmentParameterivEXT;
+	PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT;
+
+	PFNGLBLENDFUNCSEPARATEEXTPROC glBlendFuncSeparateEXT;
+
+
 	// - taken from engine.h -
     // the initialization mode is used to determine if we should load
     // or compute graphical stuff like textures or shaders
@@ -138,6 +162,8 @@ protected:
 	bool texenv_combine_support;
 	bool shader_support;
 	bool vbo_support;
+	bool fbo_support;
+	bool blend_func_separate_support;
 
 };
 

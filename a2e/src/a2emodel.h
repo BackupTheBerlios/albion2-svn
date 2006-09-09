@@ -54,7 +54,7 @@ public:
 	~a2emodel();
 
 	void load_model(char* filename, bool vbo = false);
-	void draw();
+	void draw(bool use_shader = true);
 	void set_position(float x, float y, float z);
 	vertex3* get_position();
 	void set_scale(float x, float y, float z);
@@ -64,10 +64,12 @@ public:
 	vertex3* get_rotation();
 
 	vertex3* get_vertices();
-	core::index* get_indices();
+	core::index* get_total_indices();
+	core::index* get_indices(unsigned int obj_num);
 	core::index* get_tex_indices();
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
+	unsigned int get_index_count(unsigned int obj_num);
 
 	void scale_tex_coords(float su, float sv);
 
@@ -82,11 +84,19 @@ public:
 
 	void set_material(a2ematerial* material);
 
+	string* get_object_names();
+
 	// stuff for collision detection
 	void set_radius(float radius);
 	void set_length(float length);
 	float get_radius();
 	float get_length();
+
+	bool is_collision_model();
+	vertex3* get_col_vertices();
+	core::index* get_col_indices();
+	unsigned int get_col_vertex_count();
+	unsigned int get_col_index_count();
 
 	// used for parallax mapping
 	void generate_normal_list();
@@ -118,6 +128,14 @@ protected:
 	GLuint vbo_normals_id;
 	GLuint vbo_binormals_id;
 	GLuint vbo_tangents_id;
+
+	string* object_names;
+
+	bool collision_model;
+	unsigned int col_vertex_count;
+	unsigned int col_index_count;
+	vertex3* col_vertices;
+	core::index* col_indices;
 
 	vertex3* normals;
 	vertex3* binormals;

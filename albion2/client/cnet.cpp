@@ -16,7 +16,7 @@
 
 #include "cnet.h"
 
-cnet::cnet(engine* e, csystem* cs) {
+cnet::cnet(engine* e, csystem* cs, cgui* cg) {
 	max_packet_size = 4096;
 
 	buffer = new stringstream(stringstream::in | stringstream::out | stringstream::binary);
@@ -26,7 +26,9 @@ cnet::cnet(engine* e, csystem* cs) {
 	cnet::c = e->get_core();
 	cnet::m = e->get_msg();
 	cnet::cs = cs;
+	cnet::cg = cg;
 	cnet::n = cs->n;
+	cnet::agui = cs->agui;
 }
 
 cnet::~cnet() {
@@ -34,15 +36,15 @@ cnet::~cnet() {
 	delete data;
 }
 
-int cnet::process_packet(char* data, unsigned int max_len) {
+int cnet::process_packet(char* pdata, unsigned int max_len) {
 	int used = 1;
-	if(!n->check_header(data, net::HT_A2EN)) {
+	if(!n->check_header(pdata, net::HT_A2EN)) {
 		return used;
 	}
 
 	buffer->str("");
 	buffer->clear();
-	c->put_block(buffer, data, max_len);
+	c->put_block(buffer, pdata, max_len);
 	buffer->seekg(4, stringstream::beg);
 
 	int packet_len = c->get_int(buffer);
@@ -55,11 +57,23 @@ int cnet::process_packet(char* data, unsigned int max_len) {
 			unsigned int name_len = c->get_uint(buffer);
 			c->get_block(buffer, &tmp_str, name_len);
 
-			clients.push_back(*new client());
-			clients.back().name = tmp_str;
-			clients.back().id = id;
-			clients.back().status = net::CS_ONLINE;
-			m->print(msg::MDEBUG, "main.cpp", "process_packet(): added new client (#%u, %s)!", clients.back().id, clients.back().name.c_str());
+			cs->clients.push_back(*new csystem::client());
+			cs->clients.back().name = tmp_str;
+			cs->clients.back().id = id;
+			cs->clients.back().status = net::CS_ONLINE;
+			cs->clients.back().get_map = true;
+			cs->clients.back().get_pos = true;
+			cs->clients.back().get_rot = true;
+			if(cs->clients.back().name == cs->client_name) {
+				cs->client_id = cs->clients.back().id;
+
+				c->reset(data);
+				c->put_uint(data, cnet::F_GET_ROT);
+				c->put_uint(data, cs->client_id);
+				send_packet(cnet::PT_FLAG);
+				cs->clients.back().get_rot = false;
+			}
+			m->print(msg::MDEBUG, "main.cpp", "process_packet(): added new client (#%u, %s)!", cs->clients.back().id, cs->clients.back().name.c_str());
 		}
 		break;
 		case cnet::PT_QUIT_CLIENT: {
@@ -67,24 +81,24 @@ int cnet::process_packet(char* data, unsigned int max_len) {
 
 			int i = -1;
 			int del = 0;
-			for(vector<client>::iterator cl_iter = clients.begin(); cl_iter != clients.end(); cl_iter++) {
+			for(vector<csystem::client>::iterator cl_iter = cs->clients.begin(); cl_iter != cs->clients.end(); cl_iter++) {
 				i++;
 				if(id == cl_iter->id) {
 					del = i;
 				}
 			}
 			if(i != -1) {
-				m->print(msg::MDEBUG, "main.cpp", "process_packet(): client quit (#%u, %s)!", clients[del].id, clients[del].name.c_str());
-				clients.erase(clients.begin()+del);
+				m->print(msg::MDEBUG, "main.cpp", "process_packet(): client quit (#%u, %s)!", cs->clients[del].id, cs->clients[del].name.c_str());
+				cs->clients.erase(cs->clients.begin()+del);
 			}
 		}
 		break;
 		case cnet::PT_CHAT_MSG: {
-			cnet::CHAT_TYPE type = (cnet::CHAT_TYPE)c->get_uint(buffer);
+			cgui::CHAT_TYPE type = (cgui::CHAT_TYPE)c->get_uint(buffer);
 
 			unsigned int id = c->get_uint(buffer);
 			string name = "unknown";
-			for(vector<client>::iterator cl_iter = clients.begin(); cl_iter != clients.end(); cl_iter++) {
+			for(vector<csystem::client>::iterator cl_iter = cs->clients.begin(); cl_iter != cs->clients.end(); cl_iter++) {
 				if(id == cl_iter->id) {
 					name = cl_iter->name;
 				}
@@ -101,7 +115,84 @@ int cnet::process_packet(char* data, unsigned int max_len) {
 		break;
 		case cnet::PT_FLAG: {
 			unsigned int flag = c->get_uint(buffer);
-			cs->flags.push_back(*new unsigned int(flag));
+
+			switch(flag) {
+				case cnet::F_SUCCESS_LOGIN:
+					// if needed?
+					if(cg->get_gui_state() != cgui::GS_GAME) {
+						cg->set_gui_state(cgui::GS_GAME);
+						cg->load_game_gui();
+					}
+					cs->logged_in = true;
+					break;
+				case cnet::F_WRONG_UNAME:
+					agui->add_msgbox_ok("system message", "you entered a user name that doesn't exist!");
+					break;
+				case cnet::F_WRONG_PW:
+					agui->add_msgbox_ok("system message", "you entered a wrong password!");
+					break;
+				case cnet::F_POST_MAP: {
+					if(!cs->logged_in) break;
+
+					unsigned int cid = c->get_uint(buffer);
+					csystem::client* client = cs->get_client(cid);
+					client->map = c->get_uint(buffer);
+
+					if(cid == cs->client_id) {
+						cs->add_flag(csystem::CF_LOAD_MAP);
+					}
+				}
+				break;
+				case cnet::F_POST_POS: {
+					if(!cs->logged_in) break;
+
+					unsigned int cid = c->get_uint(buffer);
+					csystem::client* client = cs->get_client(cid);
+					c->get_block(buffer, (char*)&client->position, sizeof(vertex3));
+					client->get_pos = true;
+				}
+				break;
+				case cnet::F_POST_ROT: {
+					if(!cs->logged_in) break;
+
+					unsigned int cid = c->get_uint(buffer);
+					csystem::client* client = cs->get_client(cid);
+					c->get_block(buffer, (char*)&client->rotation, sizeof(vertex3));
+					if(cid != cs->client_id) client->get_rot = true;
+					else {
+						cs->cam->get_rotation()->set(&client->rotation);
+
+						c->reset(data);
+						c->put_uint(data, cnet::F_POST_ROT);
+						c->put_uint(data, cs->client_id);
+						c->put_block(data, (const char*)&(cs->get_client(cs->client_id)->rotation), sizeof(vertex3));
+						send_packet(cnet::PT_FLAG);
+					}
+				}
+				break;
+				case cnet::F_GET_ROT: {
+					if(!cs->logged_in) break;
+
+					c->reset(data);
+					c->put_uint(data, cnet::F_POST_ROT);
+					c->put_uint(data, cs->client_id);
+					c->put_block(data, (const char*)&(cs->get_client(cs->client_id)->rotation), sizeof(vertex3));
+					send_packet(cnet::PT_FLAG);
+				}
+				break;
+				default:
+					//m->print(msg::MERROR, "cnet.cpp", "process_packet(): unknown flag type %u!", flag);
+					break;
+			}
+		}
+		break;
+		case cnet::PT_VU_LIST: {
+			cs->vis_user.clear();
+
+			unsigned int size = c->get_uint(buffer);
+			for(unsigned int i = 0; i < size; i++) {
+				cs->vis_user.push_back(c->get_uint(buffer));
+			}
 		}
 		break;
 		default: {
@@ -149,6 +240,13 @@ void cnet::send_packet(cnet::PACKET_TYPE type) {
 			c->put_block(buffer, data->str().c_str(), (unsigned int)data->str().size());
 		}
 		break;
+		case cnet::PT_FLAG: {
+			if(n->tcp_server_sock == NULL) break;
+
+			c->put_uint(buffer, cnet::PT_FLAG);
+			c->put_block(buffer, data->str().c_str(), (unsigned int)data->str().size());
+		}
+		break;
 		default:
 			m->print(msg::MERROR, "main.cpp", "send_packet(): unknown packet type (%u)!", type);
 			return;
@@ -160,18 +258,18 @@ void cnet::send_packet(cnet::PACKET_TYPE type) {
 }
 
 void cnet::handle_server() {
-	char* data = new char[max_packet_size];
+	char* pdata = new char[max_packet_size];
 	int pos, len, used;
 
 	// checks if client is still connected to the server
-	len = n->recv_packet(&n->tcp_server_sock, data, max_packet_size, 0xFFFFFFFF);
+	len = n->recv_packet(&n->tcp_server_sock, pdata, max_packet_size, 0xFFFFFFFF);
 	if(len <= 0) {
 		n->close_socket(n->tcp_server_sock);
 	}
 	else {
 		pos = 0;
 		while(len > 0) {
-			used = process_packet(&data[pos], len);
+			used = process_packet(&pdata[pos], len);
 
 			pos += used;
 			len -= used;
@@ -182,7 +280,69 @@ void cnet::handle_server() {
 			}
 		}
 	}
-	delete [] data;
+	delete [] pdata;
+}
+
+void cnet::run() {
+	// check if there are any new messages to send ...
+	if(cs->send_msgs.size() != 0) {
+		// if so, send messages ...
+		for(vector<csystem::chat_msg>::iterator cm_iter = cs->send_msgs.begin(); cm_iter != cs->send_msgs.end(); cm_iter++) {
+			c->reset(data);
+			c->put_uint(data, (cgui::CHAT_TYPE)cm_iter->type);
+			c->put_uint(data, (unsigned int)cm_iter->msg.length());
+			c->put_block(data, cm_iter->msg.c_str(), (unsigned int)cm_iter->msg.length());
+			send_packet(cnet::PT_CHAT_MSG);
+		}
+		// all messages sent, clear msg buffer
+		cs->send_msgs.clear();
+	}
+
+	// get positions and rotations of visible users
+	for(vector<unsigned int>::iterator iter = cs->vis_user.begin(); iter != cs->vis_user.end(); iter++) {
+		csystem::client* client = cs->get_client(*iter);
+		if(client->get_pos) {
+			c->reset(data);
+			c->put_uint(data, cnet::F_GET_POS);
+			c->put_uint(data, *iter);
+			send_packet(cnet::PT_FLAG);
+
+			client->get_pos = false;
+		}
+		if(client->get_rot) {
+			c->reset(data);
+			c->put_uint(data, cnet::F_GET_ROT);
+			c->put_uint(data, *iter);
+			send_packet(cnet::PT_FLAG);
+
+			client->get_rot = false;
+		}
+		if(client->get_map) {
+			c->reset(data);
+			c->put_uint(data, cnet::F_GET_MAP);
+			c->put_uint(data, *iter);
+			send_packet(cnet::PT_FLAG);
+
+			client->get_map = false;
+		}
+	}
+
+	if(SDL_GetTicks() - cs->move_timer >= 200) {
+		cs->move_timer = SDL_GetTicks();
+
+		if(cs->move_forward) {
+			c->reset(data);
+			c->put_uint(data, cnet::F_MOVE_FORWARD);
+			c->put_uint(data, cs->client_id);
+			send_packet(cnet::PT_FLAG);
+		}
+		else if(cs->move_back) {
+			c->reset(data);
+			c->put_uint(data, cnet::F_MOVE_BACK);
+			c->put_uint(data, cs->client_id);
+			send_packet(cnet::PT_FLAG);
+		}
+	}
 }
 
 stringstream* cnet::get_data() {

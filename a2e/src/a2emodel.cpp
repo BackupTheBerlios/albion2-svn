@@ -43,6 +43,14 @@ a2emodel::a2emodel(engine* e, shader* s) {
 	a2emodel::indices = NULL;
 	a2emodel::index_count = NULL;
 
+	a2emodel::object_names = NULL;
+
+	a2emodel::collision_model = false;
+	a2emodel::col_vertex_count = 0;
+	a2emodel::col_index_count = 0;
+	a2emodel::col_vertices = NULL;
+	a2emodel::col_indices = NULL;
+
 	draw_wireframe = false;
 
 	is_visible = true;
@@ -91,6 +99,8 @@ a2emodel::~a2emodel() {
 	    delete [] a2emodel::normal_list;
     }
 
+	if(a2emodel::object_names != NULL) { delete [] object_names; }
+
 	// delete vbos
 	if(vbo) {
 		if(exts->glIsBufferARB(vbo_vertices_id)) { exts->glDeleteBuffersARB(1, &vbo_vertices_id); }
@@ -107,7 +117,7 @@ a2emodel::~a2emodel() {
 
 /*! draws the model
  */
-void a2emodel::draw() {
+void a2emodel::draw(bool use_shader) {
 	if(a2emodel::is_visible && e->get_init_mode() == engine::GRAPHICAL) {
 		glPushMatrix();
 		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
@@ -121,8 +131,8 @@ void a2emodel::draw() {
 		glScalef(a2emodel::scale->x, a2emodel::scale->y, a2emodel::scale->z);
 
 		for(unsigned int i = 0; i < object_count; i++) {
-			if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::PARALLAX) {
-				s->use_shader(1);
+			if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::PARALLAX && use_shader) {
+				s->use_shader(shader::PARALLAX);
 
 				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
 				s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
@@ -148,6 +158,7 @@ void a2emodel::draw() {
 				}
 				if(a2emodel::material->get_color_type(i, 0) == 0x01) { glEnable(GL_BLEND); }
 
+				glColor3f(1.0f, 1.0f, 1.0f);
 
 				// do we use a vertex buffer object?
 				if(vbo) {
@@ -208,15 +219,99 @@ void a2emodel::draw() {
 				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glDisable(GL_TEXTURE_2D);
-				s->use_shader(0);
+				s->use_shader(shader::NONE);
 			}
-			else {
+			else if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::DIFFUSE && use_shader) {
+				// if the wireframe flag is set, draw the model in wireframe mode
+				if(a2emodel::draw_wireframe) {
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				}
+
+				s->use_shader(shader::PHONG);
+
+				s->set_uniform1i(0, 0);
+
+				a2emodel::material->enable_texture(i);
+
+				glColor3f(1.0f, 1.0f, 1.0f);
+
+				// do we use a vertex buffer object?
+				if(vbo) {
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_vertices_id);
+					glVertexPointer(3, GL_FLOAT, 0, NULL);
+					glEnableClientState(GL_VERTEX_ARRAY);
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_normals_id);
+					glNormalPointer(GL_FLOAT, 0, NULL);
+					glEnableClientState(GL_NORMAL_ARRAY);
+
+
+					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
+						glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
+
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
+
+					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, NULL);
+
+					glDisableClientState(GL_VERTEX_ARRAY);
+					glDisableClientState(GL_NORMAL_ARRAY);
+					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
+
+					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+				}
+				// if not (or the extension isn't supported, use vertex arrays
+				else {
+					glVertexPointer(3, GL_FLOAT, 0, vertices);
+					glEnableClientState(GL_VERTEX_ARRAY);
+					glNormalPointer(GL_FLOAT, 0, normals);
+					glEnableClientState(GL_NORMAL_ARRAY);
+					
+					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glTexCoordPointer(2, GL_FLOAT, 0, tex_coords);
+						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
+
+					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, indices[i]);
+
+					glDisableClientState(GL_VERTEX_ARRAY);
+					glDisableClientState(GL_NORMAL_ARRAY);
+					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
+						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
+						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					}
+				}
+
+				a2emodel::material->disable_texture(i);
+
+				s->use_shader(shader::NONE);
+
+				// reset to filled mode
+				if(a2emodel::draw_wireframe) {
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				}
+			}
+			else { // !use_shader
 				// if the wireframe flag is set, draw the model in wireframe mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				}
 
 				a2emodel::material->enable_texture(i);
+				
+				glColor3f(1.0f, 1.0f, 1.0f);
 
 				// do we use a vertex buffer object?
 				if(vbo) {
@@ -288,6 +383,19 @@ void a2emodel::draw() {
 
 		glPopMatrix();
 	}
+
+	// just for debug purposes or later usage in the mapeditor ...
+	/*if(collision_model) {
+		glDisable(GL_TEXTURE_2D);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_TRIANGLES);
+		for(unsigned int i = 0; i < col_index_count; i++) {
+			glVertex3f(position->x + col_vertices[col_indices[i].i1].x, position->y + col_vertices[col_indices[i].i1].y, position->z + col_vertices[col_indices[i].i1].z);
+			glVertex3f(position->x + col_vertices[col_indices[i].i2].x, position->y + col_vertices[col_indices[i].i2].y, position->z + col_vertices[col_indices[i].i2].z);
+			glVertex3f(position->x + col_vertices[col_indices[i].i3].x, position->y + col_vertices[col_indices[i].i3].y, position->z + col_vertices[col_indices[i].i3].z);
+		}
+		glEnd();
+	}*/
 }
 
 /*! loads a .a2m model file
@@ -316,13 +424,15 @@ void a2emodel::load_model(char* filename, bool vbo) {
 	}
 	delete [] file_type;
 
-	// get model type and abort if it's not 0x00
+	// get model type and abort if it's not 0x00 or 0x02
 	char mtype = file->get_char();
-	if(mtype != 0x00) {
+	if(mtype != 0x00 && mtype != 0x02) {
 		m->print(msg::MERROR, "a2emodel.cpp", "non supported model type: %u!", (unsigned int)(mtype & 0xFF));
 		file->close_file();
 		return;
 	}
+
+	if(mtype == 0x02) collision_model = true;
 
 	vertex_count = file->get_uint();
 	a2emodel::normals = new vertex3[a2emodel::vertex_count];
@@ -342,6 +452,15 @@ void a2emodel::load_model(char* filename, bool vbo) {
 	}
 
 	object_count = file->get_uint();
+
+	object_names = new string[object_count];
+	char ch;
+	for(unsigned int i = 0; i < object_count; i++) {
+		while((ch = file->get_char()) != char(0xFF)) {
+			object_names[i] += ch;
+		}
+	}
+
 	indices = new core::index*[object_count];
 	index_count = new unsigned int[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
@@ -351,6 +470,24 @@ void a2emodel::load_model(char* filename, bool vbo) {
 			indices[i][j].i1 = file->get_uint();
 			indices[i][j].i2 = file->get_uint();
 			indices[i][j].i3 = file->get_uint();
+		}
+	}
+
+	if(collision_model) {
+		col_vertex_count = file->get_uint();
+		col_vertices = new vertex3[col_vertex_count];
+		for(unsigned int i = 0; i < col_vertex_count; i++) {
+			col_vertices[i].x = file->get_float();
+			col_vertices[i].y = file->get_float();
+			col_vertices[i].z = file->get_float();
+		}
+
+		col_index_count = file->get_uint();
+		col_indices = new core::index[col_index_count];
+		for(unsigned int i = 0; i < col_index_count; i++) {
+			col_indices[i].i1 = file->get_uint();
+			col_indices[i].i2 = file->get_uint();
+			col_indices[i].i3 = file->get_uint();
 		}
 	}
 
@@ -458,6 +595,14 @@ void a2emodel::set_hard_scale(float x, float y, float z) {
 		vertices[i].z *= z;
 	}
 
+	if(collision_model) {
+		for(unsigned int i = 0; i < a2emodel::col_vertex_count; i++) {
+			col_vertices[i].x *= x;
+			col_vertices[i].y *= y;
+			col_vertices[i].z *= z;
+		}
+	}
+
 	// rebuild the bounding box
 	a2emodel::build_bounding_box();
 }
@@ -491,9 +636,9 @@ vertex3* a2emodel::get_vertices() {
 	return a2emodel::vertices;
 }
 
-/*! returns a pointer to the indices
+/*! returns a pointer to all the indices
  */
-core::index* a2emodel::get_indices() {
+core::index* a2emodel::get_total_indices() {
 	unsigned int total_count = 0;
 	for(unsigned int i = 0; i < object_count; i++) {
 		total_count += index_count[i];
@@ -514,6 +659,12 @@ core::index* a2emodel::get_indices() {
 	return total_indices;
 }
 
+/*! returns a pointer to the specified (by obj_num) indices
+ */
+core::index* a2emodel::get_indices(unsigned int obj_num) {
+	return indices[obj_num];
+}
+
 /*! returns the vertex count
  */
 unsigned int a2emodel::get_vertex_count() {
@@ -528,6 +679,12 @@ unsigned int a2emodel::get_index_count() {
 		total_index_count += index_count[i];
 	}
 	return total_index_count;
+}
+
+/*! returns the index count of the sub-object obj_num
+ */
+unsigned int a2emodel::get_index_count(unsigned int obj_num) {
+	return index_count[obj_num];
 }
 
 /*! builds the bounding box
@@ -645,7 +802,7 @@ void a2emodel::generate_normal_list() {
 	// i assume there is no vertex that is part of more than 32 triangles ...
 	unsigned int* tmp_num = new unsigned int[32];
 	unsigned int x = 0;
-	core::index* all_indices = a2emodel::get_indices();
+	core::index* all_indices = a2emodel::get_total_indices();
 
 	// reserve memory for the normal list
 	normal_list = new nlist[a2emodel::vertex_count];
@@ -681,7 +838,7 @@ void a2emodel::generate_normals() {
 	vertex3* tnormals = new vertex3[32];
 	vertex3* tbinormals = new vertex3[32];
 	vertex3* ttangents = new vertex3[32];
-	core::index* all_indices = a2emodel::get_indices();
+	core::index* all_indices = a2emodel::get_total_indices();
 
 	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
 		// check if vertex is part of a triangle
@@ -763,4 +920,30 @@ void a2emodel::scale_tex_coords(float su, float sv) {
 
 unsigned int a2emodel::get_object_count() {
 	return a2emodel::object_count;
+}
+
+/*! returns true if the model has a collision model
+ */
+bool a2emodel::is_collision_model() {
+	return a2emodel::collision_model;
+}
+
+vertex3* a2emodel::get_col_vertices() {
+	return col_vertices;
+}
+
+core::index* a2emodel::get_col_indices() {
+	return col_indices;
+}
+
+unsigned int a2emodel::get_col_vertex_count() {
+	return col_vertex_count;
+}
+
+unsigned int a2emodel::get_col_index_count() {
+	return col_index_count;
+}
+
+string* a2emodel::get_object_names() {
+	return a2emodel::object_names;
 }

@@ -20,7 +20,8 @@
 dWorldID ode::world = 0;
 dSpaceID ode::space = 0;
 dJointGroupID ode::joint_group = 0;
-float ode::gravity = -9.8f;
+//float ode::gravity = -0.5f;
+float ode::gravity = -9.81f;
 //float ode::gravity = -20.0f;
 float ode::cfm = 1e-5f;
 float ode::erp = 0.2f;
@@ -28,7 +29,6 @@ float ode::erp = 0.2f;
 /*! there is no function currently
  */
 ode::ode(engine* e) {
-	object_count = 0;
 	timer = SDL_GetTicks();
 
 	// get classes
@@ -40,6 +40,7 @@ ode::ode(engine* e) {
 /*! there is no function currently
  */
 ode::~ode() {
+	ode_objects.clear();
 }
 
 /*! initializes ode and creates a world
@@ -55,7 +56,7 @@ void ode::init() {
 	ode::joint_group = dJointGroupCreate(0);
 
 	// set the error reduction parameter to 0.2
-	//dWorldSetERP(ode::world, ode::erp);
+	dWorldSetERP(ode::world, ode::erp);
 
 	// set the constraint force mixing to 10^-5
 	dWorldSetCFM(ode::world, ode::cfm);
@@ -64,7 +65,7 @@ void ode::init() {
 	dWorldSetGravity(ode::world, 0.0f, gravity, 0.0f);
 
 	// - enable this if you notice jittering objects!
-	//dWorldSetContactSurfaceLayer(ode::world, 0.001f);
+	dWorldSetContactSurfaceLayer(ode::world, 0.001f);
 
 	// set auto enable depth
 	//dWorldSetAutoEnableDepthSF1(ode::world, 1);
@@ -73,15 +74,10 @@ void ode::init() {
 	//dWorldSetAutoDisableFlag(ode::world, 1);
 
 	// set the contacts max correction velocity
-	dWorldSetContactMaxCorrectingVel(ode::world, 2.0f);
+	dWorldSetContactMaxCorrectingVel(ode::world, 5.0f);
 
 	// ?
 	//dWorldSetQuickStepNumIterations(ode::world, 7);
-
-	// initialize all ode objects
-	for(unsigned int i = 0; i < MAX_OBJECTS; i++) {
-		ode_objects[i] = 0;
-	}
 }
 
 /*! destroys all ode relevant stuff
@@ -90,9 +86,7 @@ void ode::close() {
 	m->print(msg::MDEBUG, "ode.cpp", "freeing ode stuff");
 
 	// destroy all ode objects
-	for(unsigned int i = 0; i < ode::object_count; i++) {
-		delete ode_objects[i];
-	}
+	ode_objects.clear();
 
 	// destroy the joint group
 	dJointGroupDestroy(ode::joint_group);
@@ -122,7 +116,8 @@ void ode::run(unsigned int el_time) {
 	dSpaceCollide(ode::space, 0, &ode::collision_callback);
 
 	// execute a 0.05f world step
-	dWorldStep(ode::world, (float)el_time / 1000.0f);
+	//dWorldStep(ode::world, (float)el_time / 1000.0f);
+	dWorldStepFast1(ode::world, (float)el_time / 1000.0f, 20);
 
 	// clean the joint group for the next step
 	dJointGroupEmpty(ode::joint_group);
@@ -144,6 +139,18 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 
 	dContact contact[MAX_CONTACTS];
 	for(i = 0; i < MAX_CONTACTS; i++) {
+		contact[i].surface.mode = dContactSoftERP | dContactSoftCFM | dContactMotion1 | dContactMotion2 | dContactSlip1 | dContactSlip2 | dContactBounce | dContactApprox1;
+		contact[i].surface.mu = 0;
+		contact[i].surface.mu2 = 0;
+		contact[i].surface.slip1 = 0.0f; // friction
+		contact[i].surface.slip2 = 0.0f;
+		contact[i].surface.bounce = 0.0f;
+		contact[i].surface.bounce_vel = 0.0f;
+		contact[i].surface.soft_erp = 0.4f;
+		contact[i].surface.soft_cfm = 1e-5f;
+		contact[i].surface.motion1 = 0.0f;
+		contact[i].surface.motion2 = 0.0f;
+
 		/*contact[i].surface.mode = dContactBounce | dContactSoftCFM | dContactSlip1 | dContactSlip2 | dContactApprox1;
 		//contact[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
@@ -156,14 +163,14 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 		contact[i].surface.slip2 = 0.0f;
 		//contact[i].surface.*/
 
-		contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
+		/*contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
 		contact[i].surface.slip1 = 0.1f; // friction
 		contact[i].surface.slip2 = 0.1f;
 		contact[i].surface.bounce= 0.0f;
 		contact[i].surface.bounce_vel = 0.0f;
 		contact[i].surface.soft_erp = 0.2f;
-		contact[i].surface.soft_cfm = 1e-5f;
+		contact[i].surface.soft_cfm = 1e-5f;*/
 
 		/*contact[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contact[i].surface.mu = dInfinity;
@@ -189,6 +196,8 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
 
 	if(numc > 0) {
 		for(i = 0; i < numc; i++){
+			//contact[i].geom.
+			//cout << "(" << contact[i].geom.pos[0] << ", " << contact[i].geom.pos[1] << ", " << contact[i].geom.pos[2] << ")" << endl;
 			dJointID c = dJointCreateContact(ode::world, ode::joint_group, &contact[i]);
 			dJointAttach(c, b1, b2);
 		}
@@ -202,65 +211,50 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
  */
 ode_object* ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
 	// create an new ode object and pass it to the list
-	ode::ode_objects[ode::object_count] = new ode_object(e, &ode::world, &ode::space, model, fixed, type);
+	ode::ode_objects.push_back(NULL);
+	ode::ode_objects.back() = new ode_object(e);
+	ode::ode_objects.back()->init(&ode::world, &ode::space, model, fixed, type);
 
-	// increment object count
-	ode::object_count++;
-
-	return ode::ode_objects[(ode::object_count-1)];
+	//return &*(ode::ode_objects.begin()+(ode::ode_objects.size()-1));
+	return ode::ode_objects.back();
 }
 
 /*! deletes an object of the world
  *  @param num the objects number
  */
-void ode::delete_object(unsigned int num) {
-	delete ode::ode_objects[num];
-	for(unsigned int i = num; i < (ode::object_count-1); i++) {
-		ode::ode_objects[i] = ode::ode_objects[i+1];
+void ode::delete_object(ode_object* obj) {
+	vector<ode_object*>::iterator del_iter;
+	bool found = false;
+	for(vector<ode_object*>::iterator iter = ode_objects.begin(); iter != ode_objects.end(); iter++) {
+		if(*iter == obj) {
+			del_iter = iter;
+			found = true;
+		}
 	}
-	ode::ode_objects[(ode::object_count-1)] = NULL;
-
-	// decrease object count
-	ode::object_count--;
+	if(found) {
+		delete *del_iter;
+		ode_objects.erase(del_iter);
+	}
+	else {
+		m->print(msg::MERROR, "ode.cpp", "delete_object(): could not find and delete the specified object!");
+	}
 }
 
 /*! updates all ode objects
  */
 void ode::update_objects() {
-	for(unsigned int i = 0; i < object_count; i++) {
-		if(ode::ode_objects[i]) {
-			dGeomID geom = ode::ode_objects[i]->get_geom();
-			dBodyID body = ode::ode_objects[i]->get_body();
-			if(geom != 0) {
-				dReal* pos = (dReal*)dGeomGetPosition(geom);
-				ode::ode_objects[i]->get_model()->set_position((float)pos[0],
-					(float)pos[1], (float)pos[2]);
+	for(vector<ode_object*>::iterator iter = ode_objects.begin(); iter != ode_objects.end(); iter++) {
+		dGeomID geom = (*iter)->get_geom();
+		dBodyID body = (*iter)->get_body();
+		if(geom != 0) {
+			dReal* pos = (dReal*)dGeomGetPosition(geom);
+			(*iter)->get_model()->set_position((float)pos[0], (float)pos[1], (float)pos[2]);
 
-				if(body != 0) {
-					dReal* rotation = (dReal*)dBodyGetRotation(body);
-					ode::ode_objects[i]->get_model()->set_rotation(c->rad_to_deg(rotation[0]),
-						c->rad_to_deg(rotation[1]), c->rad_to_deg(rotation[2]));
-				}
+			if(body != 0) {
+				dReal* rotation = (dReal*)dBodyGetRotation(body);
+				(*iter)->get_model()->set_rotation(c->rad_to_deg(rotation[0]),
+					c->rad_to_deg(rotation[1]), c->rad_to_deg(rotation[2]));
 			}
 		}
 	}
-}
-
-/*! returns the ode object with the number 'num'
- *  @param num the index/number of the object you want to get
- */
-ode_object* ode::get_ode_object(unsigned int num) {
-	if(num < object_count) {
-		return ode::ode_objects[num];
-	}
-	else {
-		m->print(msg::MERROR, "ode.cpp", "object #%u does not exist!", num);
-		return 0;
-	}
-}
-
-/*! returns the ode object count
- */
-unsigned int ode::get_object_count() {
-	return ode::object_count;
 }

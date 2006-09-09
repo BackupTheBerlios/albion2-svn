@@ -16,7 +16,7 @@
 
 #include "snet.h"
 
-snet::snet(engine* e, net* n, userman* um, web* w) {
+snet::snet(engine* e, net* n, userman* um, web* w, smap* sm) {
 	max_packet_size = 4096;
 
 	buffer = new stringstream(stringstream::in | stringstream::out | stringstream::binary);
@@ -30,6 +30,9 @@ snet::snet(engine* e, net* n, userman* um, web* w) {
 	snet::n = n;
 	snet::um = um;
 	snet::w = w;
+	snet::sm = sm;
+
+	piover180 = (float)PI / 180.0f;
 }
 
 snet::~snet() {
@@ -45,8 +48,7 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 		return used;
 	}
 
-	buffer->str("");
-	buffer->clear();
+	c->reset(buffer);
 	c->put_block(buffer, pdata, max_len);
 	buffer->seekg(4, stringstream::beg);
 
@@ -63,9 +65,11 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 			unsigned int name_len = c->get_uint(buffer);
 			c->get_block(buffer, &tmp_str, name_len);
 			n->get_clients()->at(cnum).name = tmp_str;
+			const char* client_name = n->get_clients()->at(cnum).name.c_str();
+			userman::user_data* user = um->get_user(client_name);
 			tmp_str = "";
 			// check if user exists
-			if(!um->check_user(n->get_clients()->at(cnum).name.c_str())) {
+			if(!um->check_user(client_name)) {
 				// user doesn't exist, quit client
 				n->get_clients()->at(cnum).quit = true;
 
@@ -80,7 +84,7 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 			unsigned int pw_len = c->get_uint(buffer);
 			c->get_block(buffer, &tmp_str, pw_len);
 			// check if user entered the right password
-			if(!um->check_pw(n->get_clients()->at(cnum).name.c_str(), tmp_str.c_str())) {
+			if(!um->check_pw(client_name, tmp_str.c_str())) {
 				// wrong pw, quit client
 				n->get_clients()->at(cnum).quit = true;
 
@@ -99,9 +103,10 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 			// send new client data to all clients
 			unsigned int i = 0;
 			for(vector<net::client>::iterator cl_iter = n->get_clients()->begin(); cl_iter != n->get_clients()->end(); cl_iter++) {
-				if(i != cnum) {
+				//if(i != cnum) {
+				// send data to client itself too ...
 					send_packet(i, cnum, snet::PT_NEW_CLIENT);
-				}
+				//}
 				i++;
 			}
 
@@ -118,13 +123,29 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 			c->reset(data);
 			c->put_uint(data, F_SUCCESS_LOGIN);
 			send_packet(cnum, 0, snet::PT_FLAG);
+
+			// set net id
+			user->nid = cnum;
+
+			// set user active
+			user->active = true;
+
+			// load model file (the physical object of the player)
+			user->obj = new a2emodel(e, NULL);
+			user->obj->load_model(e->data_path("player_sphere.a2m"), false);
+			user->obj->set_radius(2.0f);
+			user->obj->get_position()->set(&user->position);
+			user->obj->get_rotation()->set(&user->rotation);
+
+			sm->add_user_phys_obj(client_name);
 		}
 		break;
 		case snet::PT_QUIT_CLIENT: {
 			n->get_clients()->at(cnum).quit = true;
+			const char* client_name = n->get_clients()->at(cnum).name.c_str();
 
 			m->print(msg::MDEBUG, "main.cpp", "process_packet(): quitting client (#%u, %s)!",
-				n->get_clients()->at(cnum).id, n->get_clients()->at(cnum).name.c_str());
+				n->get_clients()->at(cnum).id, client_name);
 
 			unsigned int i = 0;
 			for(vector<net::client>::iterator cl_iter = n->get_clients()->begin(); cl_iter != n->get_clients()->end(); cl_iter++) {
@@ -133,6 +154,15 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 				}
 				i++;
 			}
+
+			// reset net id
+			um->get_user(client_name)->nid = -1;
+
+			// set user inactive
+			um->get_user(client_name)->active = false;
+
+			delete um->get_user(client_name)->obj;
+			sm->del_user_phys_obj(client_name);
 		}
 		break;
 		case snet::PT_CHAT_MSG: {
@@ -161,6 +191,61 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 			delete [] chat_msg;
 		}
 		break;
+		case snet::PT_FLAG: {
+			unsigned int flag = c->get_uint(buffer);
+			unsigned int client = c->get_uint(buffer);
+			userman::user_data* user = um->get_user(client);
+
+			switch(flag) {
+				case snet::F_GET_MAP:
+					c->reset(data);
+					c->put_uint(data, snet::F_POST_MAP);
+					c->put_uint(data, client);
+					c->put_uint(data, user->map);
+					send_packet(cnum, 0, snet::PT_FLAG);
+					break;
+				case snet::F_GET_POS:
+					c->reset(data);
+					c->put_uint(data, snet::F_POST_POS);
+					c->put_uint(data, client);
+					c->put_block(data, (const char*)&user->position, sizeof(vertex3));
+					send_packet(cnum, 0, snet::PT_FLAG);
+					break;
+				case snet::F_GET_ROT:
+					c->reset(data);
+					c->put_uint(data, snet::F_POST_ROT);
+					c->put_uint(data, client);
+					c->put_block(data, (const char*)&user->rotation, sizeof(vertex3));
+					send_packet(cnum, 0, snet::PT_FLAG);
+					break;
+				case snet::F_POST_ROT:
+					c->get_block(buffer, (char*)&(user->rotation), sizeof(vertex3));
+
+					c->reset(data);
+					c->put_uint(data, snet::F_GET_ROT);
+					send_packet(cnum, 0, snet::PT_FLAG);
+					break;
+				case snet::F_MOVE_FORWARD: {
+					float x = -sinf(user->rotation.y * piover180);
+					float y = sinf(user->rotation.x * piover180);
+					float z = -cosf(user->rotation.y * piover180);
+					//cout << x << " - " << y << " - " << z << endl;
+					user->phys_obj->add_force(x, y, z);
+				}
+				break;
+				case snet::F_MOVE_BACK: {
+					float x = sinf(user->rotation.y * piover180);
+					float y = -sinf(user->rotation.x * piover180);
+					float z = cosf(user->rotation.y * piover180);
+					//cout << x << " - " << y << " - " << z << endl;
+					user->phys_obj->add_force(x, y, z);
+				}
+				break;
+				default:
+					break;
+			}
+		}
+		break;
 		default: {
 			m->print(msg::MERROR, "main.cpp", "process_packet(): unknown packet type (%u)!", packet_type);
 		}
@@ -172,15 +257,14 @@ int snet::process_packet(unsigned int cnum, char* pdata, unsigned int max_len) {
 }
 
 void snet::send_packet(unsigned int cnum, unsigned int inum, snet::PACKET_TYPE type) {
-	buffer->str("");
-	buffer->clear();
+	c->reset(buffer);
 	switch(type) {
 		// new client connection, send information to other clients
 		case snet::PT_NEW_CLIENT: {
 			if(n->get_clients()->at(cnum).sock == NULL && n->get_clients()->at(cnum).status == net::CS_ONLINE) break;
 
 			c->put_uint(buffer, snet::PT_NEW_CLIENT);
-			c->put_uint(buffer, n->get_clients()->at(inum).id);
+			c->put_uint(buffer, um->get_user(n->get_clients()->at(inum).name.c_str())->id);
 			c->put_uint(buffer, (unsigned int)n->get_clients()->at(inum).name.size());
 			c->put_block(buffer, n->get_clients()->at(inum).name.c_str(), (unsigned int)n->get_clients()->at(inum).name.size());
 		}
@@ -203,6 +287,13 @@ void snet::send_packet(unsigned int cnum, unsigned int inum, snet::PACKET_TYPE t
 			if(n->get_clients()->at(cnum).sock == NULL && n->get_clients()->at(cnum).status == net::CS_ONLINE) break;
 
 			c->put_uint(buffer, snet::PT_FLAG);
+			c->put_block(buffer, data->str().c_str(), (unsigned int)data->str().size());
+		}
+		break;
+		case snet::PT_VU_LIST: {
+			if(n->get_clients()->at(cnum).sock == NULL && n->get_clients()->at(cnum).status == net::CS_ONLINE) break;
+
+			c->put_uint(buffer, snet::PT_VU_LIST);
 			c->put_block(buffer, data->str().c_str(), (unsigned int)data->str().size());
 		}
 		break;
@@ -378,4 +469,30 @@ void snet::write_http_header(stringstream* stream, const char* status) {
 
 stringstream* snet::get_data() {
 	return data;
+}
+
+void snet::run() {
+	map<string, userman::user_data>* ul = um->get_user_list();
+	vector<net::client> clients = *(n->get_clients());
+
+	// TODO: make this a really vis_user list ...
+	// put user id of every visible player into the vis_user list of each user
+	for(map<string, userman::user_data>::iterator iter = ul->begin(); iter != ul->end(); iter++) {
+		// update list every 4 seconds ...
+		if(iter->second.nid != -1 && SDL_GetTicks() - iter->second.vis_user_timer > 4000) {
+			iter->second.vis_user.clear();
+			for(map<string, userman::user_data>::iterator uiter = ul->begin(); uiter != ul->end(); uiter++) {
+				iter->second.vis_user.push_back(uiter->second.id);
+			}
+			iter->second.vis_user_timer = SDL_GetTicks();
+
+			// send new vis_user list to client
+			c->reset(data);
+			c->put_uint(data, (unsigned int)iter->second.vis_user.size());
+			for(vector<unsigned int>::iterator id_iter = iter->second.vis_user.begin(); id_iter != iter->second.vis_user.end(); id_iter++) {
+				c->put_uint(data, *id_iter);
+			}
+			send_packet(iter->second.nid, 0, snet::PT_VU_LIST);
+		}
+	}
 }

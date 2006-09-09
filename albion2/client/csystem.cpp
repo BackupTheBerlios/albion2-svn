@@ -16,19 +16,26 @@
 
 #include "csystem.h"
 
-csystem::csystem(engine* e) {
+csystem::csystem(engine* e, camera* cam, cmap* cm) {
 	csystem::e = e;
 	csystem::c = e->get_core();
 	csystem::m = e->get_msg();
+	csystem::cam = cam;
+	csystem::cm = cm;
 
 	done = false;
 	netinit = false;
 	new_client = false;
 	disconnected = false;
+	logged_in = false;
 	server = (char*)e->get_client_data()->server_name.c_str();
 	port = e->get_client_data()->port;
 	lis_port = e->get_client_data()->lis_port;
 	client_name = e->get_client_data()->client_name;
+
+	move_forward = false;
+	move_back = false;
+	move_timer = SDL_GetTicks();
 }
 
 csystem::~csystem() {
@@ -78,4 +85,56 @@ void csystem::add_chat_msg(unsigned int type, char* name, char* msg) {
 	chat_msgs.back().type = type;
 	chat_msgs.back().name = name;
 	chat_msgs.back().msg = msg;
+}
+
+void csystem::send_chat_msg(unsigned int type, char* msg) {
+	send_msgs.push_back(*new csystem::chat_msg());
+	send_msgs.back().type = type;
+	send_msgs.back().msg = msg;
+}
+
+csystem::client* csystem::get_client(unsigned int id) {
+	for(vector<client>::iterator cl_iter = clients.begin(); cl_iter != clients.end(); cl_iter++) {
+		if(cl_iter->id == id) {
+			return &*cl_iter;
+		}
+	}
+	m->print(msg::MERROR, "csystem.cpp", "get_client(): no client with such an id (#%u) exists!", id);
+	return NULL;
+}
+
+void csystem::add_flag(unsigned int flag) {
+	flags.push_back(flag);
+}
+
+unsigned int csystem::get_flag() {
+	if(flags.size() != 0) {
+		unsigned int ret = flags.front();
+		flags.erase(flags.begin());
+		return ret;
+	}
+
+	return 0;
+}
+
+void csystem::run() {
+	if(!logged_in) return;
+
+	unsigned int flag = 0;
+	while((flag = get_flag()) != 0) {
+		switch(flag) {
+			case CF_LOAD_MAP:
+				cm->close_map();
+				cm->load_map(get_client(client_id)->map);
+				break;
+			default:
+				break;
+		}
+	}
+
+	vertex3* pos = &(get_client(client_id)->position);
+	cam->set_position(-pos->x, -pos->y - 0.75f, -pos->z);
+
+	vertex3* rot = cam->get_rotation();
+	get_client(client_id)->rotation.set(rot);
 }

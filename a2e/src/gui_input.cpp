@@ -134,7 +134,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 				gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 			text_handler->set_point(p1);
-			text_handler->draw(new_text, x+1, y+1);
+			text_handler->draw(new_text, x+1, y+1, false);
 
 			delete [] new_text;
 			delete [] tmp_text;
@@ -183,7 +183,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 				text_handler->set_point(p1);
-				text_handler->draw(new_text, x+1, y+1);
+				text_handler->draw(new_text, x+1, y+1, false);
 
 				delete [] new_text;
 				delete [] tmp_text;
@@ -219,7 +219,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 				g->cord_to_pnt(p1, gui_input::rectangle->x1 + 2 + width_input_box - (unsigned int)text_handler->get_font()->ttf_font->Advance(new_text),
 					gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 				text_handler->set_point(p1);
-				text_handler->draw(new_text, x+1, y+1);
+				text_handler->draw(new_text, x+1, y+1, false);
 
 				delete [] new_text;
 			}
@@ -238,31 +238,13 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 		g->cord_to_pnt(p1, gui_input::rectangle->x1 + 4,
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2) + 2);
 		text_handler->set_point(p1);
-		text_handler->draw(x+1, y+1);
+		text_handler->draw(x+1, y+1, false);
 	}
 	delete p1;
 
 	// draw blink text
 	width = blink_text_handler->get_text_width();
 	height = blink_text_handler->get_text_height();
-
-	// draw blink symbol
-	if(is_active) {
-		if(SDL_GetTicks() - blink_time >= 500) {
-			if(strcmp(blink_text_handler->get_text(), "|") == 0) {
-				blink_text_handler->set_text(" ");
-			}
-			else {
-				blink_text_handler->set_text("|");
-			}
-			blink_time = SDL_GetTicks();
-		}
-	}
-	else {
-		if(strcmp(blink_text_handler->get_text(), "|") == 0) {
-			blink_text_handler->set_text(" ");
-		}
-	}
 
 	// first we divide the input boxes height by 2, to get center point of the input box.
 	// then we also divide the texts higth by 2, to get the length we have to
@@ -280,7 +262,7 @@ void gui_input::draw(unsigned int x, unsigned int y) {
 			gui_input::rectangle->y1 + (height_input_box/2 - 14/2));
 	}
 	blink_text_handler->set_point(p2);
-	blink_text_handler->draw(x+1, y+1);
+	blink_text_handler->draw(x+1, y+1, false);
 	delete p2;
 	is_in_rectangle = true;
 }
@@ -316,6 +298,8 @@ void gui_input::set_text(const char* text) {
 	if(text_pos > gui_input::text.length()) {
 		text_pos = (unsigned int)gui_input::text.length();
 	}
+
+	gui_input::redraw = true;
 }
 
 /*! sets the is_active bool
@@ -340,5 +324,25 @@ void gui_input::set_text_position(unsigned int position) {
 	}
 	else {
 		gui_input::text_pos = position;
+	}
+}
+
+void gui_input::do_blink() {
+	if(is_active) {
+		if(SDL_GetTicks() - blink_time >= 500) {
+			if(strcmp(blink_text_handler->get_text(), "|") == 0) {
+				blink_text_handler->set_text(" ");
+			}
+			else {
+				blink_text_handler->set_text("|");
+			}
+			gui_input::redraw = true;
+			blink_time = SDL_GetTicks();
+		}
+	}
+	else {
+		if(strcmp(blink_text_handler->get_text(), "|") == 0) {
+			blink_text_handler->set_text(" ");
+		}
 	}
 }

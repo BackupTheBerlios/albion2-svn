@@ -50,6 +50,7 @@ public:
 
 	GLuint get_texture();
 	void set_texture(GLuint tex);
+	void set_texture(GLuint tex, unsigned int width, unsigned int height, bool alpha);
 
 	void set_scaling(bool state);
 	bool get_scaling();
@@ -60,6 +61,8 @@ public:
 	unsigned int get_height();
 
 	void set_color(unsigned int color);
+
+	void set_gui_img(bool state);
 
 protected:
 	msg* m;
@@ -75,6 +78,7 @@ protected:
 	unsigned int heigth;
 
 	bool scale;
+	bool gui_img;
 
 	unsigned int color;
 

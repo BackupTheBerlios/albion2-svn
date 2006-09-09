@@ -207,6 +207,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\map.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\map.h"
+			>
+		</File>
+		<File
 			RelativePath=".\snet.cpp"
 			>
 		</File>

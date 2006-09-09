@@ -19,7 +19,7 @@
 		
 		<gfx type="hfade" bbox="x1 y1 x2 y2" correct="2 2 -3 -3" primary_color="WINDOW_BORDER10" secondary_color="WINDOW_BG4"/>
 
-		<gfx type="hfade" bbox="x2 y1 x2 y2" correct="0 2 0 -3" primary_color="WINDOW_BORDER3" secondary_color="WINDOW_BORDER9"/>
+		<gfx type="hfade" bbox="x2 y1 x2 y2" correct="0 2 0 -3" primary_color="WINDOW_BORDER18" secondary_color="WINDOW_BORDER9"/>
 		
 		<gfx type="line" bbox="x1 y2 x2 y2" correct="2 0 -3 0" primary_color="WINDOW_BORDER9"/>
 		<gfx type="point" bbox="x1 y2 x1 y1" correct="1 -1 0 0" primary_color="WINDOW_BORDER9"/>

@@ -122,9 +122,11 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 			objects[i].amodel->set_rotation(objects[i].orientation.x, objects[i].orientation.y, objects[i].orientation.z) :
 			objects[i].model->set_rotation(objects[i].orientation.x, objects[i].orientation.y, objects[i].orientation.z);
 
+		// TODO: make a hard_scale at the amodel too ...
 		objects[i].model_type ?
 			objects[i].amodel->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z) :
-			objects[i].model->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z);
+			(objects[i].model->set_hard_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z),
+			objects[i].model->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z));
 
 		objects[i].model_type ? sce->add_model(objects[i].amodel) : sce->add_model(objects[i].model);
 
@@ -153,8 +155,8 @@ bool a2emap::load_map(const char* filename, bool vbo) {
  */
 void a2emap::close_map() {
 	for(unsigned int i = 0; i < object_count; i++) {
-		objects[i].model_type ? sce->delete_model(objects[i].amodel), delete objects[i].amodel :
-								sce->delete_model(objects[i].model), delete objects[i].model;
+		objects[i].model_type ? (sce->delete_model(objects[i].amodel), delete objects[i].amodel) :
+								(sce->delete_model(objects[i].model), delete objects[i].model);
 
 		delete objects[i].mat;
 	}

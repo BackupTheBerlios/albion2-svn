@@ -58,6 +58,9 @@ public:
 	void save_material(const char* filename = "temp.dat");
 	bool is_model();
 
+	void update_selection(unsigned int obj_num);
+	void draw_selection(bool wireframe);
+
 	a2ematerial* get_material();
 
 	a2emodel* model;
@@ -72,8 +75,20 @@ protected:
 	scene* sce;
 	file_io* f;
 	camera* cam;
+	gfx* agfx;
 
 	bool mdl_ld;
+
+	vertex3* vertices;
+	core::index* indices;
+	unsigned int index_count;
+	bool updated;
+	unsigned int ud_timer;
+	unsigned int ud_timer2;
+	unsigned int ud_timer_out;
+	unsigned int ud_timer2_out;
+	float ud_alpha;
+	float ud_alpha_start;
 
 };
 

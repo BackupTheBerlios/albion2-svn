@@ -33,19 +33,20 @@ core::pnt* lua::p2 = NULL;
 lua::lua(msg* m) {
 	l = lua_open();
 
-	luaopen_base(l);
+	/*luaopen_base(l);
 	luaopen_table(l);
 	luaopen_io(l);
 	luaopen_string(l);
 	luaopen_math(l);
 	luaopen_debug(l);
-	luaopen_loadlib(l);
+	luaopen_loadlib(l);*/
+	luaL_openlibs(l);
 
-    lua::v1 = new vertex3();
-    lua::v2 = new vertex3();
-    lua::r1 = new gfx::rect();
-    lua::p1 = new core::pnt();
-    lua::p2 = new core::pnt();
+	lua::v1 = new vertex3();
+	lua::v2 = new vertex3();
+	lua::r1 = new gfx::rect();
+	lua::p1 = new core::pnt();
+	lua::p2 = new core::pnt();
 
 	lua::m = m;
 	lua::g = NULL;
@@ -55,12 +56,12 @@ lua::lua(msg* m) {
 /*! delete everything
  */
 lua::~lua() {
-    delete lua::r1;
-    delete lua::p1;
-    delete lua::p2;
-
-    delete lua::v1;
-    delete lua::v2;
+	delete lua::r1;
+	delete lua::p1;
+	delete lua::p2;
+	
+	delete lua::v1;
+	delete lua::v2;
 
 	lua_close(l);
 }
@@ -69,7 +70,7 @@ lua::~lua() {
  *  @param filename the scripts file name
  */
 void lua::run_script(char* filename) {
-	lua_dofile(l, filename);
+	luaL_dofile(l, filename);
 }
 
 /*! registers a c/c++ function in lua (so it can be called within a lua script)

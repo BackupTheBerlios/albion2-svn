@@ -179,7 +179,8 @@ void core::get_2d_from_3d(vertex3* v, pnt* p) {
 		viewport, &output[0], &output[1], &output[2]);
 
 	p->x = (unsigned int)output[0];
-	p->y = (unsigned int)((GLdouble)viewport[3] - output[1]);
+	//p->y = (unsigned int)((GLdouble)viewport[3] - output[1]);
+	p->y = (unsigned int)output[1];
 
 	delete output;
 	delete modelview;
@@ -383,11 +384,12 @@ char** core::tokenize(char* string, char delim) {
  */
 bool core::is_line_in_bbox(aabbox* bbox, line3* l1) {
 	// thx to miguel gomez for that routine (http://www.gamasutra.com/features/19991018/Gomez_6.htm)
-	vertex3* l = new vertex3(l1->get_direction()); //line direction
-	vertex3* mid = new vertex3(l1->get_middle()); //midpoint of the line
-	float hl = l1->get_length() * 0.5f; //segment half-length
+	vertex3* l = new vertex3(l1->get_direction()); // line direction
+	vertex3* mid = new vertex3(l1->get_middle()); // midpoint of the line
+	float hl = l1->get_length() * 0.5f; // segment half-length
 	vertex3* t = new vertex3(((bbox->vmin + bbox->vmax) * 0.5f) - mid); // bbox position subracted by the lines middle point
 	vertex3* e = new vertex3((bbox->vmax - bbox->vmin) * 0.5f); // bounding box extent
+	e->set(fabs(e->x), fabs(e->y), fabs(e->z)); // extent has to be positive
 	float r = 0.0f; // temp result
 	bool ret = true;
 
@@ -423,7 +425,6 @@ bool core::is_line_in_bbox(aabbox* bbox, line3* l1) {
 	return ret;
 }
 
-
 /*! converts a float to an char string - remember to delete the string afterwards
  *  @param f the float we want to convert
  *  @param str the string we want to "save" the float in
@@ -438,7 +439,7 @@ bool core::is_a2eanim(char* filename) {
 	char t = f->get_char();
 	f->close_file();
 
-	return (t & 0xFF) == 0x00 ? false : true;
+	return ((t & 0xFF) == 0x00 || (t & 0xFF) == 0x02) ? false : true;
 }
 
 unsigned int core::swap_uint(unsigned int u) {
@@ -473,6 +474,14 @@ void core::put_uint(stringstream* sstr, unsigned int u) {
 void core::put_suint(stringstream* sstr, unsigned short int su) {
 	sstr->put((su >> 8) & 0xFF);
 	sstr->put(su & 0xFF);
+}
+
+void core::put_float(stringstream* sstr, float f) {
+	sstr->write((const char*)&f, 4);
+}
+
+void core::get_float(stringstream* sstr, float& f) {
+	sstr->read((char*)&f, 4);
 }
 
 char core::get_char(stringstream* sstr) {
@@ -534,4 +543,16 @@ void core::reset(stringstream* sstr) {
 	sstr->seekg(0);
 	sstr->str("");
 	sstr->clear();
+}
+
+/*! returns the nearest power of two value of num (only numerical upwards)
+ *  @param num the number which next pot value we want to have 
+ */
+unsigned int core::next_pot(unsigned int num) {
+	unsigned int tmp = 2;
+	for(unsigned int i = 0; i < (sizeof(unsigned int)*8)-1; i++) {
+		if(tmp >= num) return tmp;
+		tmp <<= 1;
+	}
+	return -1;
 }

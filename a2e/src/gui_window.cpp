@@ -27,12 +27,14 @@ gui_window::gui_window(engine* e, gui_style* gs) : gui_object(e, gs) {
 	gui_window::moving = false;
 	gui_window::deleted = false;
 	gui_window::bg = false;
+	gui_window::redraw = false;
 
 	// get classes
 	gui_window::e = e;
 	gui_window::c = e->get_core();
 	gui_window::m = e->get_msg();
 	gui_window::g = e->get_gfx();
+	gui_window::evt = e->get_event();
 	gui_window::gs = gs;
 }
 
@@ -48,16 +50,11 @@ gui_window::~gui_window() {
  */
 void gui_window::draw() {
 	if(gui_window::border) {
-		draw_object(0, 0);
-
-		// button event handling
-		if(gui_window::exit_button_handler->get_state() == "CLICKED") {
-			gui_window::deleted = true;
-		}
+		draw_object(-(int)rectangle->x1, -(int)rectangle->y1);
 	}
 
 	if(!gui_window::border && bg) {
-		draw_object(0, 0);
+		draw_object(-(int)rectangle->x1, -(int)rectangle->y1);
 	}
 }
 
@@ -166,4 +163,24 @@ void gui_window::set_exit_button_handler(gui_button* ibutton) {
 //! returns the exit button handler
 gui_button* gui_window::get_exit_button_handler() {
 	return gui_window::exit_button_handler;
+}
+
+/*! sets the redraw flag of the window (so window content will be rendered again at next gui draw)
+ *  @param state the state of the flag
+ */
+void gui_window::set_redraw(bool state) {
+	gui_window::redraw = state;
+}
+
+//! returns true if the window has to be redrawn
+bool gui_window::get_redraw() {
+	return gui_window::redraw;
+}
+
+void gui_window::handle_window() {
+	if(gui_window::border) {
+		if(evt->is_gui_event(event::BUTTON_PRESSED, exit_button_handler->get_id())) {
+			gui_window::deleted = true;
+		}
+	}
 }

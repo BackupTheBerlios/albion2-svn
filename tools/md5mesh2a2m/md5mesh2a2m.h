@@ -100,6 +100,8 @@ struct MD5Joint {
 MD5Joint* pJoints;
 MD5Mesh* pMeshes;
 
+string* object_names;
+
 int iNumJoints;
 int iNumBaseJoints;
 int iNumMeshes;

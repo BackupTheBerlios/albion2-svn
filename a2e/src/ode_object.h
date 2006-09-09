@@ -49,9 +49,10 @@ public:
 		TRIMESH		//!< enum trimesh geometry
 	};
 
-	ode_object(engine* e, dWorldID* world, dSpaceID* space, a2emodel* model,
-		bool fixed,	ode_object::OTYPE type);
+	ode_object(engine* e);
 	~ode_object();
+
+	void init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type);
 
 	void set_geom(a2emodel* model, ode_object::OTYPE type);
 	dGeomID get_geom();
@@ -63,7 +64,11 @@ public:
 	a2emodel* get_model();
 
 	void add_force(float x, float y, float z);
+	void set_velocity(float x, float y, float z);
 	void set_max_force(float force);
+
+	void set_body_rotation(vertex3* rot);
+	dReal* get_body_rotation();
 
 	// for debugging purposes
 	void reset();

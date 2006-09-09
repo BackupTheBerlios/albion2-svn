@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <engine>
 	<screen width="1024" height="768" depth="32" zbuffer="32" stencil="32" fullscreen="0"/>
-	<gui style="CLEARLOOKS" color_scheme="CLEARLOOKS"/>
+	<gui style="CLEARLOOKS" color_scheme="CLEARLOOKS" shadow_type="1"/> // shadow_type: 0=shadows disabled, 1=32 blur passes, 2=64 blur passes
 	<key_repeat time="200"/>
 	<sleep time="0"/>
 	<thread count="2"/> // number of additional threads besides the main thread
-	<server port="1335" max_clients="32"/>
-	<client server="localhost" port="1335" lis_port="1336" name=""/>
+	<server port="1337" max_clients="32"/>
+	<client server="localhost" port="1337" lis_port="1336" name=""/>
 	<keyset set="DE"/>
 </engine>

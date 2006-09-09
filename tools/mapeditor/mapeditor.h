@@ -44,13 +44,14 @@
 #include <lua.h>
 #include <xml.h>
 #include <vertex3.h>
+#include <a2emodel.h>
 #include "map.h"
 using namespace std;
 
 // the main class
 class mapeditor {
 public:
-	mapeditor(engine* e, scene* sce);
+	mapeditor(engine* e, scene* sce, camera* cam);
 	~mapeditor();
 
 	struct map_object {
@@ -69,7 +70,7 @@ public:
 	void save_map(char* filename = NULL);
 	void close_map();
 	void new_map(char* filename);
-	void run();
+	void run(bool cam_input);
 
 	void select_object(vertex3* look_at);
 	list<map_object>::iterator get_sel_object();
@@ -92,10 +93,15 @@ public:
 
 	list<map_object>* get_objects();
 
+	void arrow_select(vertex3* look_at);
+	void move_object(int x, int y, float scale = 2.0f);
+
 protected:
 	engine* e;
 	msg* m;
+	core* c;
 	scene* sce;
+	camera* cam;
 
 	cmap* memap;
 
@@ -122,6 +128,14 @@ protected:
 	list<map_object>::iterator sel_mobject;
 
 	bool map_opened;
+
+	a2emodel* arrow[3];
+	a2ematerial* arrow_mat[3];
+	core::aabbox* arrow_bbox[3];
+	core::aabbox* arrow_bbox_tmp[3];
+	bool* arrow_selected;
+
+	line3* sel_line;
 
 };
 

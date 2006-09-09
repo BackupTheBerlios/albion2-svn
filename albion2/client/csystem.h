@@ -42,11 +42,13 @@
 #include <a2emap.h>
 #include <image.h>
 #include <net.h>
+#include <gui.h>
+#include "cmap.h"
 using namespace std;
 
 class csystem {
 public:
-	csystem(engine* e);
+	csystem(engine* e, camera* cam, cmap* cm);
 	~csystem();
 
 	bool init_net();
@@ -61,13 +63,18 @@ public:
 	void add_chat_msg(unsigned int type, char* name, char* msg);
 	chat_msg* get_msg();
 
-	vector<unsigned int> flags;
+	vector<chat_msg> send_msgs;
+	void send_chat_msg(unsigned int type, char* msg);
+	chat_msg* get_send_msg();
 
 
 	engine* e;
 	core* c;
 	msg* m;
 	net* n;
+	gui* agui;
+	camera* cam;
+	cmap* cm;
 
 	SDL_Surface* sf;
 
@@ -75,11 +82,44 @@ public:
 	bool netinit;
 	bool new_client;
 	bool disconnected;
+	bool logged_in;
 	char* server;
 	unsigned short int port;
 	unsigned short int lis_port;
 	string client_name;
 	string client_pw;
+	unsigned int client_id;
+	vector<unsigned int> vis_user;
+
+	bool move_forward;
+	bool move_back;
+	unsigned int move_timer;
+
+	struct client {
+		string name;
+		unsigned int status;
+		unsigned int id;
+
+		bool get_map;
+		bool get_pos;
+		bool get_rot;
+
+		unsigned int map;
+		vertex3 position;
+		vertex3 rotation;
+	};
+	vector<client> clients;
+
+	client* get_client(unsigned int id);
+
+	enum CONTROL_FLAGS {
+		CF_LOAD_MAP = 1
+	};
+	vector<unsigned int> flags;
+	void add_flag(unsigned int flag);
+	unsigned int get_flag();
+
+	void run();
 
 };
 

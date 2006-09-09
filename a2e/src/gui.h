@@ -33,6 +33,8 @@
 #include "engine.h"
 #include "gfx.h"
 #include "event.h"
+#include "rtt.h"
+#include "shader.h"
 #include "gui_text.h"
 #include "gui_button.h"
 #include "gui_input.h"
@@ -44,6 +46,8 @@
 #include "gui_combo.h"
 #include "gui_style.h"
 #include "gui_mltext.h"
+#include "gui_image.h"
+#include "gui_tab.h"
 using namespace std;
 typedef unsigned int GUI_OBJ;
 
@@ -60,14 +64,35 @@ typedef unsigned int GUI_OBJ;
 class A2E_API gui
 {
 public:
-	gui(engine* e);
+	gui(engine* e, shader* s);
 	~gui();
+
+	//! gui element types
+	enum GTYPE {
+		BUTTON,		//!< enum button type
+		INPUT,		//!< enum input box type
+		TEXT,		//!< enum static text type
+		EMPTY,		//!< enum empty type
+		LIST,		//!< enum list box type
+		VBAR,		//!< enum vertical bar type
+		CHECK,		//!< enum check box type
+		COMBO,		//!< enum combo box type
+		WINDOW,		//!< enum window type
+		MLTEXT,		//!< enum multi line text type
+		IMAGE,		//!< enum image type
+		TAB,		//!< enum tab type
+		OPENDIALOG,	//!< enum open file dialog type
+		MSGBOX_OK	//!< enum message box type
+	};
+
+	typedef bool file_filter(const char*);
 
 	struct gui_element {
 		unsigned int id;
 		unsigned int type;
 		unsigned int num;
 		unsigned int wid;
+		unsigned int tid;
 		bool is_drawn;
 	};
 
@@ -81,19 +106,24 @@ public:
 	void init();
 	void draw();
 	void draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, list<gui_window>::reference wnd_iter);
+	bool handle_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, list<gui_window>::reference wnd_iter);
 
 	bool delete_element(unsigned int id);
 
-	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int id, char* text, GLuint image_texture, unsigned int wid);
+	GUI_OBJ add_button(gfx::rect* rectangle, unsigned int id, char* text, GLuint image_texture, unsigned int wid = 0, unsigned int tid = 0);
 	GUI_OBJ add_text(char* font_name, unsigned int font_size, char* text,
-				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid = 0);	
-	GUI_OBJ add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
-	GUI_OBJ add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
-	GUI_OBJ add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
-	GUI_OBJ add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
-	GUI_OBJ add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
+				   unsigned int color, core::pnt* point, unsigned int id, unsigned int wid = 0, unsigned int tid = 0);	
+	GUI_OBJ add_input_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_check_box(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0, unsigned int tid = 0);
 	GUI_OBJ add_window(gfx::rect* rectangle, unsigned int id, char* caption, bool border = true, bool bg = true);
-	GUI_OBJ add_mltext(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0);
+	GUI_OBJ add_mltext(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_image(gfx::rect* rectangle, unsigned int id, const char* image_filename, image* image_obj, unsigned int wid = 0, unsigned int tid = 0);
+	GUI_OBJ add_tab(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
+
+	gui_object* get_object(unsigned int id);
 
 	void handle_input(list<gui_input>::reference input_box);
 
@@ -105,29 +135,9 @@ public:
 
 	gui_style* get_gui_style();
 
-	list<gui_button>::iterator get_button_iter(unsigned int id);
-	list<gui_input>::iterator get_input_iter(unsigned int id);
-	list<gui_text>::iterator get_text_iter(unsigned int id);
-	list<gui_list>::iterator get_list_iter(unsigned int id);
-	list<gui_vbar>::iterator get_vbar_iter(unsigned int id);
-	list<gui_check>::iterator get_check_iter(unsigned int id);
-	list<gui_combo>::iterator get_combo_iter(unsigned int id);
-	list<gui_window>::iterator get_window_iter(unsigned int id);
-	vector<msg_ok_wnd>::iterator get_msgbox_iter(unsigned int id);
 	list<gui_element>::iterator get_element_iter(unsigned int id);
-	list<gui_mltext>::iterator get_mltext_iter(unsigned int id);
-
-	gui_button* get_button(unsigned int id);
-	gui_input* get_input(unsigned int id);
-	gui_text* get_text(unsigned int id);
-	gui_list* get_list(unsigned int id);
-	gui_vbar* get_vbar(unsigned int id);
-	gui_check* get_check(unsigned int id);
-	gui_combo* get_combo(unsigned int id);
-	gui_window* get_window(unsigned int id);
 	msg_ok_wnd* get_msgbox(unsigned int id);
 	gui_element* get_element(unsigned int id);
-	gui_mltext* get_mltext(unsigned int id);
 
 	bool exist(unsigned int id);
 
@@ -139,8 +149,10 @@ public:
 
 	unsigned int get_free_id();
 
+	bool is_redraw(list<gui::gui_element>::iterator ge_iter);
+
 	// dialogs
-	GUI_OBJ add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30);
+	GUI_OBJ add_open_dialog(unsigned int id, char* caption, char* dir, char* ext, unsigned int x = 30, unsigned int y = 30, file_filter* callback = NULL);
 	gui_list* get_open_diaolg_list();
 	GUI_OBJ add_msgbox_ok(char* caption, char* text);
 
@@ -152,24 +164,10 @@ protected:
 	gfx* g;
 	gui_font* gf;
 	gui_style* gs;
+	rtt* r;
+	shader* s;
 
 	SDL_Surface* gui_surface;
-
-	//! gui element types
-	enum GTYPE {
-		BUTTON,	//!< enum button type
-		INPUT,	//!< enum input box type
-		TEXT,	//!< enum static text type
-		EMPTY,	//!< enum empty type
-		LIST,	//!< enum list box type
-		VBAR,	//!< enum vertical bar type
-		CHECK,	//!< enum check box type
-		COMBO,	//!< enum combo box type
-		WINDOW,	//!< enum window type
-		MLTEXT,	//!< enum multi line text type
-		OPENDIALOG,	//!< enum open file dialog type
-		MSGBOX_OK	//!< enum message box type
-	};
 
 	//! gui elements
 	list<gui_element> gui_elements;
@@ -178,31 +176,45 @@ protected:
 	list<gui_element>::iterator active_element;
 
 	//! gui buttons
-	list<gui_button> gui_buttons;
+	list<gui_button*> gui_buttons;
 
 	//! gui texts
-	list<gui_text> gui_texts;
+	list<gui_text*> gui_texts;
 
 	//! gui input boxes
-	list<gui_input> gui_input_boxes;
+	list<gui_input*> gui_input_boxes;
 
 	//! gui list boxes
-	list<gui_list> gui_list_boxes;
+	list<gui_list*> gui_list_boxes;
 
 	//! gui vertical bars
-	list<gui_vbar> gui_vbars;
+	list<gui_vbar*> gui_vbars;
 
 	//! gui check boxes
-	list<gui_check> gui_check_boxes;
+	list<gui_check*> gui_check_boxes;
 
 	//! gui combo boxes
-	list<gui_combo> gui_combo_boxes;
-
-	//! gui windows
-	list<gui_window> gui_windows;
+	list<gui_combo*> gui_combo_boxes;
 
 	//! gui multi line texts
-	list<gui_mltext> gui_mltexts;
+	list<gui_mltext*> gui_mltexts;
+
+	//! gui images
+	list<gui_image*> gui_images;
+
+	//! gui windows
+	list<gui_window*> gui_windows;
+
+	//! gui tabs
+	list<gui_tab*> gui_tabs;
+
+	//! window framebuffer objects
+	struct window_buffer {
+		unsigned int wid;
+		rtt::fbo* buffer;
+		rtt::fbo* shadow;
+	};
+	list<window_buffer*> window_buffers;
 
 	//! list of all window ids (the id at the end is the id of the "most"
 	//! front window and the one in the beginning the "most" far window)
@@ -210,7 +222,7 @@ protected:
 
 	core::pnt* p;
 	core::pnt* p2;
-	gfx::rect* r;
+	gfx::rect* r1;
 	gfx::rect* r2;
 	GUI_OBJ main_window;
 
@@ -226,6 +238,13 @@ protected:
 	//! used by get_free_id
 	unsigned int start_id;
 
+	unsigned int shadow_type;
+	float* tcs;
+	unsigned int xcorrect;
+	unsigned int ycorrect;
+	float xadd;
+	float yadd;
+
 
 	// dialog stuff ...
 	GUI_OBJ ofd_wnd_id;
@@ -234,7 +253,61 @@ protected:
 	gui_button* ofd_cancel;
 	gui_list* ofd_dirlist;
 
-	vector<msg_ok_wnd> msg_boxes;
+	list<msg_ok_wnd*> msg_boxes;
+
+public:
+	template<typename T> T* get_object(unsigned int id) {
+		list<T*>* objects = NULL;
+
+		switch(get_element(id)->type) {
+			case BUTTON:
+				objects = (list<T*>*)&gui_buttons;
+				break;
+			case INPUT:
+				objects = (list<T*>*)&gui_input_boxes;
+				break;
+			case TEXT:
+				objects = (list<T*>*)&gui_texts;
+				break;
+			case LIST:
+				objects = (list<T*>*)&gui_list_boxes;
+				break;
+			case VBAR:
+				objects = (list<T*>*)&gui_vbars;
+				break;
+			case CHECK:
+				objects = (list<T*>*)&gui_check_boxes;
+				break;
+			case COMBO:
+				objects = (list<T*>*)&gui_combo_boxes;
+				break;
+			case WINDOW:
+				objects = (list<T*>*)&gui_windows;
+				break;
+			case MLTEXT:
+				objects = (list<T*>*)&gui_mltexts;
+				break;
+			case IMAGE:
+				objects = (list<T*>*)&gui_images;
+				break;
+			case TAB:
+				objects = (list<T*>*)&gui_tabs;
+				break;
+			default:
+				break;
+		}
+
+		for(list<T*>::iterator iter = objects->begin(); iter != objects->end(); iter++) {
+			if((*iter)->get_id() == id) {
+				return *iter;
+			}
+		}
+
+		m->print(msg::MERROR, "gui.cpp", "get_object(): no %s with such an id (%u) exists!", objects->size() > 0 ? objects->back()->get_type()->c_str() : "", id);
+
+		return NULL;
+	}
+
 };
 
 #endif

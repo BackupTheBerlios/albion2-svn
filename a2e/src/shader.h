@@ -67,19 +67,19 @@ public:
 	void set_uniform2i(unsigned int num, int var1, int var2);
 	void set_uniform3i(unsigned int num, int var1, int var2, int var3);
 	void set_uniform4i(unsigned int num, int var1, int var2, int var3, int var4);
-	void set_uniform1iv(unsigned int num, int* var);
-	void set_uniform2iv(unsigned int num, int* var);
-	void set_uniform3iv(unsigned int num, int* var);
-	void set_uniform4iv(unsigned int num, int* var);
+	void set_uniform1iv(unsigned int num, int* var, unsigned int count = 1);
+	void set_uniform2iv(unsigned int num, int* var, unsigned int count = 1);
+	void set_uniform3iv(unsigned int num, int* var, unsigned int count = 1);
+	void set_uniform4iv(unsigned int num, int* var, unsigned int count = 1);
 
 	void set_uniform1f(unsigned int num, float var1);
 	void set_uniform2f(unsigned int num, float var1, float var2);
 	void set_uniform3f(unsigned int num, float var1, float var2, float var3);
 	void set_uniform4f(unsigned int num, float var1, float var2, float var3, float var4);
-	void set_uniform1fv(unsigned int num, float* var);
-	void set_uniform2fv(unsigned int num, float* var);
-	void set_uniform3fv(unsigned int num, float* var);
-	void set_uniform4fv(unsigned int num, float* var);
+	void set_uniform1fv(unsigned int num, float* var, unsigned int count = 1);
+	void set_uniform2fv(unsigned int num, float* var, unsigned int count = 1);
+	void set_uniform3fv(unsigned int num, float* var, unsigned int count = 1);
+	void set_uniform4fv(unsigned int num, float* var, unsigned int count = 1);
 
 	void set_attribute4iv(unsigned int num, int* var);
 
@@ -91,6 +91,14 @@ public:
 	void set_attribute2fv(unsigned int num, float* var);
 	void set_attribute3fv(unsigned int num, float* var);
 	void set_attribute4fv(unsigned int num, float* var);
+
+	enum INTERNAL_SHADERS {
+		NONE,
+		PARALLAX,
+		PHONG,
+		BLUR3X3,
+		BLUR5X5
+	};
 
 
 protected:

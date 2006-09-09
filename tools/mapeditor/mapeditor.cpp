@@ -16,10 +16,12 @@
 
 #include "mapeditor.h"
 
-mapeditor::mapeditor(engine* e, scene* sce) {
+mapeditor::mapeditor(engine* e, scene* sce, camera* cam) {
 	mapeditor::e = e;
 	mapeditor::sce = sce;
 	mapeditor::m = e->get_msg();
+	mapeditor::c = e->get_core();
+	mapeditor::cam = cam;
 
 	memap = new cmap(e);
 
@@ -35,6 +37,29 @@ mapeditor::mapeditor(engine* e, scene* sce) {
 	sel = false;
 
 	map_opened = false;
+
+	// load arrow stuff
+	arrow_selected = new bool[3];
+	for(unsigned int i = 0; i < 3; i++) {
+		arrow[i] = sce->create_a2emodel();
+		arrow[i]->load_model(e->data_path("arrow.a2m"), false); // TODO: if i'd use a vbo for this object and do NOT render it, i get weird results (totally screwed up graphic output)
+
+		arrow_mat[i] = new a2ematerial(e);
+
+		arrow_bbox[i] = new core::aabbox(*arrow[i]->get_bounding_box());
+		arrow_bbox_tmp[i] = new core::aabbox();
+		arrow_selected[i] = false;
+	}
+
+	arrow_mat[0]->load_material(e->data_path("arrow_x.a2mtl"));
+	arrow_mat[1]->load_material(e->data_path("arrow_y.a2mtl"));
+	arrow_mat[2]->load_material(e->data_path("arrow_z.a2mtl"));
+
+	for(unsigned int i = 0; i < 3; i++) {
+		arrow[i]->set_material(arrow_mat[i]);
+	}
+
+	sel_line = new line3();
 }
 
 mapeditor::~mapeditor() {
@@ -51,48 +76,91 @@ mapeditor::~mapeditor() {
 	amodels.clear();
 	materials.clear();
 	objects.clear();
+
+	for(unsigned int i = 0; i < 3; i++) {
+		delete arrow[i];
+		delete arrow_mat[i];
+		delete arrow_bbox[i];
+		delete arrow_bbox_tmp[i];
+	}
+	delete [] arrow_selected;
+
+	delete sel_line;
 }
 
-void mapeditor::run() {
+void mapeditor::run(bool cam_input) {
 	// draw bounding box of selected model
-	vertex3* tmpv = new vertex3(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmin.z);
-	vertex3* tmpv2 = new vertex3();
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmin, tmpv, 0xFFFFFF);
-	tmpv->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmin, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmin.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmin, tmpv, 0xFFFFFF);
+	e->get_gfx()->draw_bbox(cur_bbox, 0xFFFFFF);
 
-    tmpv->set(cur_bbox->vmax.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-    tmpv2->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmax.z);
-    tmpv2->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
+	if(sel && !cam_input) {
+		// draw x, y and z axis arrows
 
-    tmpv->set(cur_bbox->vmax.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-    tmpv2->set(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmin.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmax.z);
-    tmpv2->set(cur_bbox->vmin.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
+		vertex3* pos = sel_mobject->type ? sel_mobject->amodel->get_position() : sel_mobject->model->get_position();
+		core::pnt* p2d = new core::pnt();
+		c->get_2d_from_3d(pos, p2d);
 
-    tmpv->set(cur_bbox->vmin.x, cur_bbox->vmax.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmax, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmax, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmax.x, cur_bbox->vmax.y, cur_bbox->vmin.z);
-	e->get_gfx()->draw_3d_line(&cur_bbox->vmax, tmpv, 0xFFFFFF);
+		glPushMatrix();
+		glPushAttrib(GL_ENABLE_BIT);
 
-    tmpv->set(cur_bbox->vmin.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-    tmpv2->set(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
-    tmpv->set(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmin.z);
-    tmpv2->set(cur_bbox->vmax.x, cur_bbox->vmin.y, cur_bbox->vmax.z);
-	e->get_gfx()->draw_3d_line(tmpv2, tmpv, 0xFFFFFF);
+		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_BLEND);
 
-    delete tmpv;
-    delete tmpv2;
+		// clear depth buffer so the axis arrows will "overwrite" all other stuff
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+
+		line3 l(pos->x, pos->y, pos->z, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
+		float scale = l.get_length() / 600.0f; // a length of 6 (arrow size(100) * length(6) = 1000) is the "base scale" of 1.0f
+		for(unsigned int i = 0; i < 3; i++) { arrow[i]->set_scale(scale, scale, scale); }
+
+		for(unsigned int i = 0; i < 3; i++) { arrow[i]->get_position()->set(pos); }
+		arrow[0]->set_rotation(0.0f, 0.0f, 90.0f);
+		arrow[1]->set_rotation(0.0f, 0.0f, 0.0f);
+		arrow[2]->set_rotation(-90.0f, 0.0f, 0.0f);
+
+		// copy bbox data to tmp bboxes, scale, rotate and reposition tmp bboxes
+		for(unsigned int i = 0; i < 3; i++) {
+			memcpy(arrow_bbox_tmp[i], arrow_bbox[i], sizeof(core::aabbox));
+			arrow_bbox_tmp[i]->vmin *= scale;
+			arrow_bbox_tmp[i]->vmax *= scale;
+		}
+
+		float rsin, rcos;
+		vertex3* tmp_pos;
+
+		rsin = sinf(90.0f*(float)PIOVER180);
+		rcos = cosf(90.0f*(float)PIOVER180);
+		tmp_pos = &arrow_bbox_tmp[0]->vmax;
+		arrow_bbox_tmp[0]->vmax.set(tmp_pos->x * rcos + tmp_pos->y * rsin, tmp_pos->y * rcos - tmp_pos->x * rsin, tmp_pos->z);
+		tmp_pos = &arrow_bbox_tmp[0]->vmin;
+		arrow_bbox_tmp[0]->vmin.set(tmp_pos->x * rcos + tmp_pos->y * rsin, tmp_pos->y * rcos - tmp_pos->x * rsin, tmp_pos->z);
+
+		rsin = sinf(-90.0f*(float)PIOVER180);
+		rcos = cosf(-90.0f*(float)PIOVER180);
+		tmp_pos = &arrow_bbox_tmp[2]->vmax;
+		arrow_bbox_tmp[2]->vmax.set(tmp_pos->x, tmp_pos->y * rcos + tmp_pos->z * rsin, tmp_pos->z * rcos - tmp_pos->y * rsin);
+		tmp_pos = &arrow_bbox_tmp[2]->vmin;
+		arrow_bbox_tmp[2]->vmin.set(tmp_pos->x, tmp_pos->y * rcos + tmp_pos->z * rsin, tmp_pos->z * rcos - tmp_pos->y * rsin);
+
+		for(unsigned int i = 0; i < 3; i++) {
+			arrow_bbox_tmp[i]->vmin += pos;
+			arrow_bbox_tmp[i]->vmax += pos;
+		}
+
+		arrow[0]->draw(false);
+		//e->get_gfx()->draw_bbox(arrow_bbox_tmp[0], 0xFFFFFF);
+		arrow[1]->draw(false);
+		//e->get_gfx()->draw_bbox(arrow_bbox_tmp[1], 0xFFFFFF);
+		arrow[2]->draw(false);
+		//e->get_gfx()->draw_bbox(arrow_bbox_tmp[2], 0xFFFFFF);
+
+
+		glPopAttrib();
+		glPopMatrix();
+		
+		delete p2d;
+	}
 }
 
 void mapeditor::save_map(char* filename) {
@@ -216,11 +284,13 @@ void mapeditor::open_map(char* filename) {
 }
 
 void mapeditor::select_object(vertex3* look_at) {
-	line3* sel_line = new line3(&(*e->get_position() * -1.0f), look_at);
+	*sel_line->v1 = e->get_position();
+	*sel_line->v1 *= -1.0f;
+	*sel_line->v2 = look_at;
 	core::aabbox* tmp_bbox = new core::aabbox();
 
 	// method: we go through all models and check wether they are
-	// hit be the sel_line. those which do so are checked for their
+	// hit by the sel_line. those which do so are checked for their
 	// cam_pos <-> bbox pos distance and the one with the smallest
 	// distance will be selected. -- actually this can't be the best
 	// solution, but it works quite well ;)
@@ -236,8 +306,8 @@ void mapeditor::select_object(vertex3* look_at) {
 			tmp_bbox->vmax.adjust(obj_iter->model->get_scale());
 			tmp_bbox->vmin += obj_iter->model->get_position();
 			tmp_bbox->vmax += obj_iter->model->get_position();
-			if(e->get_core()->is_line_in_bbox(tmp_bbox, sel_line)) {
-				float distance = e->get_core()->get_distance(e->get_position(),
+			if(c->is_line_in_bbox(tmp_bbox, sel_line)) {
+				float distance = c->get_distance(e->get_position(),
 								&((obj_iter->model->get_bounding_box()->vmin + obj_iter->model->get_bounding_box()->vmax) * 0.5f));
 				if(distance < min_distance) {
 					min_distance = distance;
@@ -252,8 +322,8 @@ void mapeditor::select_object(vertex3* look_at) {
 			tmp_bbox->vmax.adjust(obj_iter->amodel->get_scale());
 			tmp_bbox->vmin += obj_iter->amodel->get_position();
 			tmp_bbox->vmax += obj_iter->amodel->get_position();
-			if(e->get_core()->is_line_in_bbox(tmp_bbox, sel_line)) {
-				float distance = e->get_core()->get_distance(e->get_position(),
+			if(c->is_line_in_bbox(tmp_bbox, sel_line)) {
+				float distance = c->get_distance(e->get_position(),
 								&((obj_iter->amodel->get_bounding_box()->vmin + obj_iter->amodel->get_bounding_box()->vmax) * 0.5f));
 				if(distance < min_distance) {
 					min_distance = distance;
@@ -297,7 +367,6 @@ void mapeditor::select_object(vertex3* look_at) {
 	new_sel = true;
 
 	delete tmp_bbox;
-	delete sel_line;
 }
 
 list<mapeditor::map_object>::iterator mapeditor::get_sel_object() {
@@ -453,4 +522,49 @@ void mapeditor::new_map(char* filename) {
 
 list<mapeditor::map_object>* mapeditor::get_objects() {
 	return &objects;
+}
+
+void mapeditor::arrow_select(vertex3* look_at) {
+	// if no object is selected, return
+	if(!sel) return;
+
+	// create selection/intersection line
+	*sel_line->v1 = e->get_position();
+	*sel_line->v1 *= -1.0f;
+	*sel_line->v2 = look_at;
+
+	arrow_selected[0] = c->is_line_in_bbox(arrow_bbox_tmp[0], sel_line);
+	arrow_selected[1] = c->is_line_in_bbox(arrow_bbox_tmp[1], sel_line);
+	arrow_selected[2] = c->is_line_in_bbox(arrow_bbox_tmp[2], sel_line);
+}
+
+void mapeditor::move_object(int x, int y, float scale) {
+	if(!arrow_selected[0] && !arrow_selected[1] && !arrow_selected[2]) return;
+
+	vertex3* pos = sel_mobject->type ? sel_mobject->amodel->get_position() : sel_mobject->model->get_position();
+	line3 l(pos->x, pos->y, pos->z, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
+	vertex3* dir = &sel_line->get_direction();
+
+	float x_size = (l.get_length() / e->get_screen()->w) * scale;
+	float y_size = (l.get_length() / e->get_screen()->h) * scale;
+
+	float strengthx, strengthy;
+	if(arrow_selected[0]) {
+		strengthx = fabs(fabs(dir->x) - 1.0f);
+		strengthy = fabs(fabs(dir->y) - 1.0f);
+		pos->x += x_size*(float)x*strengthx;
+		pos->x += y_size*(float)y*-1.0f*strengthy;
+	}
+	if(arrow_selected[1]) {
+		pos->y += y_size*(float)y*-1.0f;
+	}
+	if(arrow_selected[2]) {
+		strengthx = fabs(fabs(dir->x) - 1.0f);
+		strengthy = fabs(fabs(dir->y) - 1.0f);
+		pos->z += x_size*(float)y*strengthx;
+		pos->z += y_size*(float)x*strengthy;
+	}
+
+	reload_cur_bbox();
+	new_sel = true;
 }

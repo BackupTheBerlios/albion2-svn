@@ -64,16 +64,20 @@ public:
 	void set_selected_id(unsigned int id);
 	unsigned int get_selected_id();
 	item* get_selected_item();
+	unsigned int get_marked_item();
 
 	unsigned int get_item_count();
 
 	void select_pos(core::pnt* pos);
 	void click_pos(core::pnt* pos);
 
+	void handle_combo();
+
 protected:
 	msg* m;
 	core* c;
 	engine* e;
+	event* evt;
 	gfx* g;
 	gui_font* gf;
 

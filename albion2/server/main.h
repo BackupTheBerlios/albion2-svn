@@ -43,6 +43,7 @@
 #include "snet.h"
 #include "userman.h"
 #include "web.h"
+#include "map.h"
 using namespace std;
 
 engine* e;
@@ -51,9 +52,9 @@ core* c;
 event* aevent;
 shader* s;
 scene* sce;
-ode* o;
 net* n;
 snet* sn;
+smap* sm;
 userman* um;
 web* w;
 

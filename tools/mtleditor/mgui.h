@@ -76,14 +76,24 @@ public:
 
 	void open_mdl();
 
+	bool is_wireframe();
+
+	static bool ffilter_mdl(const char* filename);
+	static bool ffilter_mtl(const char* filename);
+	static bool ffilter_ani(const char* filename);
+	static unsigned int get_mdl_obj_count(const char* mdl);
+	static unsigned int get_mtl_obj_count(const char* mtl);
+	static unsigned int get_mdl_joint_count(const char* mdl);
+	static unsigned int get_ani_joint_count(const char* ani);
+
 protected:
-	engine* e;
+	static engine* e;
 	gui* agui;
 	gui_style* gs;
 	msg* m;
 	scene* sce;
 	mdl* model;
-	file_io* f;
+	static file_io* f;
 
 	unsigned int font_size;
 
@@ -94,8 +104,11 @@ protected:
 	unsigned int cur_rgb_arg;
 	unsigned int cur_alpha_arg;
 
-	unsigned int rot_axis;
-	float rot[3];
+	bool wireframe;
+
+	static const char* mdl_fname;
+	static const char* mtl_fname;
+	static const char* ani_fname;
 
 	/***********
 	GUI ID Chart
@@ -120,16 +133,17 @@ protected:
 	gui_button* msave_mtl;
 	gui_button* mclose_mtl;
 	gui_button* mopen_model;
-	gui_button* mrot_axis_x;
-	gui_button* mrot_axis_y;
-	gui_button* mrot_axis_z;
-	gui_button* mrot_l;
-	gui_button* mrot_r;
+	gui_button* msub_obj;
+	gui_button* mmat_prop;
+	gui_button* mwireframe;
 	GLuint mnew_tex;
 	GLuint mopen_tex;
 	GLuint msave_tex;
 	GLuint mclose_tex;
 	GLuint mopen_model_tex;
+	GLuint msub_obj_tex;
+	GLuint mmat_prop_tex;
+	GLuint mwireframe_tex;
 
 	GUI_OBJ obj_id;
 	gui_window* obj_wnd;
@@ -153,7 +167,7 @@ protected:
 	gui_combo* mcb_rgb_op;
 	gui_combo* mcb_alpha_src;
 	gui_combo* mcb_alpha_op;
-	image* mitex_large;
+	gui_image* mitex;
 	GLuint mnone_tex;
 
 	GUI_OBJ tex_id;

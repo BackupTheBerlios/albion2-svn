@@ -28,6 +28,8 @@ using namespace std;
 
 #include "win_dll_export.h"
 
+#define PIOVER180 0.01745329252
+
 /*! @class camera
  *  @brief a2e camera functions
  *  @author flo
@@ -70,8 +72,6 @@ protected:
 	float up_down;
 	float rotation_speed;
 	float cam_speed;
-
-	float piover180;
 
 	bool cam_input;
 	bool mouse_input;

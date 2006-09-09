@@ -18,10 +18,10 @@
 #define __ODE_H__
 
 #include <iostream>
+#include <vector>
+#include <cmath>
 #include <SDL/SDL.h>
 #include <ode/ode.h>
-#include <cmath>
-#include <list>
 #include "msg.h"
 #include "core.h"
 #include "engine.h"
@@ -30,7 +30,6 @@
 using namespace std;
 
 #define MAX_CONTACTS 64
-#define MAX_OBJECTS 4096
 
 #include "win_dll_export.h"
 
@@ -55,12 +54,8 @@ public:
 	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 
 	ode_object* add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
-	void delete_object(unsigned int num);
+	void delete_object(ode_object* obj);
 	void update_objects();
-
-	ode_object* get_ode_object(unsigned int num);
-
-	unsigned int get_object_count();
 
 protected:
 	msg* m;
@@ -69,8 +64,7 @@ protected:
 
 	unsigned int timer;
 
-	unsigned int object_count;
-	ode_object* ode_objects[MAX_OBJECTS];
+	vector<ode_object*> ode_objects;
 
 	static dWorldID world;
 	static dSpaceID space;

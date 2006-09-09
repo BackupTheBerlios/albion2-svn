@@ -16,6 +16,12 @@
 
 #include "mgui.h"
 
+engine* mgui::e = NULL;
+file_io* mgui::f = NULL;
+const char* mgui::mdl_fname = NULL;
+const char* mgui::mtl_fname = NULL;
+const char* mgui::ani_fname = NULL;
+
 mgui::mgui(engine* e, gui* agui, mdl* model, scene* sce) {
 	mgui::e = e;
 	mgui::agui = agui;
@@ -38,14 +44,9 @@ mgui::mgui(engine* e, gui* agui, mdl* model, scene* sce) {
 	cur_rgb_arg = 0;
 	cur_alpha_arg = 0;
 
-	rot_axis = 0;
-	rot[0] = 45.0f;
-	rot[1] = 45.0f;
-	rot[2] = 0.0f;
-
 	mnone_tex = e->get_texman()->add_texture(e->data_path("none.png"));
-	mitex_large = new image(e);
-	mitex_large->set_texture(mnone_tex);
+
+	wireframe = false;
 
 	menu_id = 0xFFFFFFFF; // there is no gui object with the id 0xFFFFFFFF
 	obj_id = 0xFFFFFFFF;
@@ -73,7 +74,7 @@ void mgui::run() {
 					// open existing material file
 					case 102: {
 						if(model->is_model()) {
-							ofd_wnd = agui->get_window(agui->add_open_dialog(700, "open material", e->data_path(NULL), "a2mtl"));
+							ofd_wnd = agui->get_object<gui_window>(agui->add_open_dialog(700, "open material", e->data_path(NULL), "a2mtl"));
 						}
 					}
 					break;
@@ -96,34 +97,25 @@ void mgui::run() {
 						load_om_wnd();
 					}
 					break;
-					// change rot axis to x
 					case 106: {
-						rot_axis = 0;
+						if(model->is_model()) {
+							load_obj_wnd();
+							update_obj_list();
+							oobj_list->set_selected_id(cur_obj);
+						}
 					}
 					break;
-					// change rot axis to y
 					case 107: {
-						rot_axis = 1;
+						if(model->is_model()) {
+							load_mat_wnd();
+							update_mat(model->get_material(), cur_obj, 0);
+						}
 					}
 					break;
-					// change rot axis to z
 					case 108: {
-						rot_axis = 2;
-					}
-					break;
-					// subtract 10 from the rot
-					case 109: {
-						rot[rot_axis] -= 10.0f;
-					}
-					break;
-					// add 10 to the rot
-					case 110: {
-						rot[rot_axis] += 10.0f;
-					}
-					break;
-					// change object
-					case 202: {
-						update_mat(cur_mat, oobj_list->get_selected_item()->id, 0);
+						if(model->is_model()) {
+							wireframe = wireframe ^ true;
+						}
 					}
 					break;
 					// change texture
@@ -161,7 +153,7 @@ void mgui::run() {
 					break;
 					// open texture file dialog
 					case 403: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(450, "choose a texture file", e->data_path(NULL), "png"));
+						ofd_wnd = agui->get_object<gui_window>(agui->add_open_dialog(450, "choose a texture file", e->data_path(NULL), "png"));
 					}
 					break;
 					// apply button of the open texture file dialog
@@ -186,17 +178,24 @@ void mgui::run() {
 					break;
 					// open model file dialog
 					case 505: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(520, "choose a model file", e->data_path(NULL), "a2m"));
+						mtl_fname = om_imat_fname->get_text()->c_str();
+						ani_fname = om_iani_fname->get_text()->c_str();
+						unsigned int wid = agui->add_open_dialog(520, "choose a model file", e->data_path(NULL), "a2m", 30, 30, &ffilter_mdl);
+						if(wid != 0) ofd_wnd = agui->get_object<gui_window>(wid);
 					}
 					break;
 					// open animation file dialog
 					case 506: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(530, "choose an animation file", e->data_path(NULL), "a2a"));
+						mdl_fname = om_imdl_fname->get_text()->c_str();
+						unsigned int wid = agui->add_open_dialog(530, "choose an animation file", e->data_path(NULL), "a2a", 30, 30, &ffilter_ani);
+						if(wid != 0) ofd_wnd = agui->get_object<gui_window>(wid);
 					}
 					break;
 					// open material file dialog
 					case 507: {
-						ofd_wnd = agui->get_window(agui->add_open_dialog(540, "choose a material file", e->data_path(NULL), "a2mtl"));
+						mdl_fname = om_imdl_fname->get_text()->c_str();
+						unsigned int wid = agui->add_open_dialog(540, "choose a material file", e->data_path(NULL), "a2mtl", 30, 30, &ffilter_mtl);
+						if(wid != 0) ofd_wnd = agui->get_object<gui_window>(wid);
 					}
 					break;
 					// open model + ani + mat
@@ -301,13 +300,67 @@ void mgui::run() {
 										}
 									}
 									break;
+								case a2ematerial::BUMP:
+									if(id == a2ematerial::DIFFUSE) {
+										te->tex_count = 1;
+									}
+									else if(id == a2ematerial::PARALLAX) {
+										te->tex_count = 2;
+									}
+									else if(id == a2ematerial::MULTITEXTURE) {
+										unsigned int tex_count = 2;
+										// check if texture #2 is the none tex, if so, decrease texture count
+										// - otherwise the none texture will be included in the multi-texture mat
+										if(te->textures[1] == mnone_tex) {
+											tex_count--;
+										}
+
+										te->tex_count = tex_count;
+										for(unsigned int i = tex_count; i < 8; i++) {
+											te->col_type[i] = 0;
+											te->textures[i] = mnone_tex;
+											te->tex_names[i] = "none.png";
+										}
+										for(unsigned int i = 0; i < 8; i++) {
+											te->rgb_combine[i] = (char)0xFF;
+											te->alpha_combine[i] = (char)0xFF;
+											for(unsigned int j = 0; j < 3; j++) {
+												te->rgb_source[i][j] = 0;
+												te->rgb_operand[i][j] = 0;
+												te->alpha_source[i][j] = 0;
+												te->alpha_operand[i][j] = 0;
+											}
+										}
+									}
+									break;
 								case a2ematerial::PARALLAX:
 									if(id == a2ematerial::DIFFUSE) {
 										te->tex_count = 1;
 									}
+									else if(id == a2ematerial::BUMP) {
+										te->tex_count = 2;
+									}
 									else if(id == a2ematerial::MULTITEXTURE) {
-										te->tex_count = 3;
-										for(unsigned int i = 3; i < 8; i++) {
+										unsigned int tex_count = 3;
+										// check if textures #2 and #3 are the none tex, if so, decrease texture count
+										// - otherwise the none textures will be included in the multi-texture mat
+										if(te->textures[2] == mnone_tex) {
+											tex_count--;
+											if(te->textures[1] == mnone_tex) {
+												tex_count--;
+											}
+										}
+										// if texture #3 is set, but #2 not, decrease tex count and copy tex date from #3 to #2
+										else if(te->textures[2] != mnone_tex && te->textures[1] == mnone_tex) {
+											tex_count--;
+
+											te->col_type[1] = te->col_type[2];
+											te->textures[1] = te->textures[2];
+											te->tex_names[1] = te->tex_names[2];
+										}
+
+										te->tex_count = tex_count;
+										for(unsigned int i = tex_count; i < 8; i++) {
 											te->col_type[i] = 0;
 											te->textures[i] = mnone_tex;
 											te->tex_names[i] = "none.png";
@@ -327,6 +380,14 @@ void mgui::run() {
 								case a2ematerial::MULTITEXTURE:
 									if(id == a2ematerial::DIFFUSE) {
 										te->tex_count = 1;
+									}
+									else if(id == a2ematerial::BUMP) {
+										for(unsigned int i = te->tex_count; i < 2; i++) {
+											te->col_type[i] = 0;
+											te->textures[i] = mnone_tex;
+											te->tex_names[i] = "none.png";
+										}
+										te->tex_count = 2;
 									}
 									else if(id == a2ematerial::PARALLAX) {
 										for(unsigned int i = te->tex_count; i < 3; i++) {
@@ -385,20 +446,23 @@ void mgui::run() {
 						break;
 				}
 				break;
+			case event::LISTBOX_ITEM_SELECTED:
+				switch(e->get_event()->get_gui_event().id) {
+					// change object
+					case 201: {
+						if(agui->exist(mat_id)) update_mat(cur_mat, oobj_list->get_selected_item()->id, 0);
+						else cur_obj = oobj_list->get_selected_item()->id;
+						model->update_selection(cur_obj);
+					}
+					break;
+					default:
+						break;
+				}
+				break;
 			default:
 			break;
 		}
 	}
-
-	if(agui->exist(mat_id)) {
-		if(!mat_wnd->get_deleted()) {
-			mitex_large->set_position(mat_wnd->get_rectangle()->x1 + 151, mat_wnd->get_rectangle()->y1 + 28);
-			mitex_large->draw(192, 192);
-		}
-	}
-
-	// rotation is somehow bugged .....
-	//if(model->is_model()) model->ani ? model->amodel->set_rotation(rot[0], rot[1], rot[2]) : model->model->set_rotation(rot[0], rot[1], rot[2]);
 }
 
 void mgui::load_main_gui() {
@@ -406,33 +470,36 @@ void mgui::load_main_gui() {
 		if(!menu->get_deleted()) return;
 	}
 
+	unsigned int width = e->get_screen()->w;
+
 	mnew_tex = e->get_texman()->add_texture(e->data_path("icons/new.png"), 4, GL_RGBA);
 	mopen_tex = e->get_texman()->add_texture(e->data_path("icons/open.png"), 4, GL_RGBA);
 	msave_tex = e->get_texman()->add_texture(e->data_path("icons/save.png"), 4, GL_RGBA);
 	mclose_tex = e->get_texman()->add_texture(e->data_path("icons/close.png"), 4, GL_RGBA);
 	mopen_model_tex = e->get_texman()->add_texture(e->data_path("icons/open_model.png"), 4, GL_RGBA);
+	msub_obj_tex = e->get_texman()->add_texture(e->data_path("icons/subobj.png"), 4, GL_RGBA);
+	mmat_prop_tex = e->get_texman()->add_texture(e->data_path("icons/mat_prop.png"), 4, GL_RGBA);
+	mwireframe_tex = e->get_texman()->add_texture(e->data_path("icons/wireframe.png"), 4, GL_RGBA);
 
 	menu_id = agui->add_window(e->get_gfx()->pnt_to_rect(0, 0, e->get_screen()->w, 24), 100, "main gui", false);
-	menu = agui->get_window(menu_id);
-	mnew_mtl = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(3, 3, 21, 21), 101, "", mnew_tex, 100));
-	mopen_mtl = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(24, 3, 42, 21), 102, "", mopen_tex, 100));
-	msave_mtl = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(45, 3, 63, 21), 103, "", msave_tex, 100));
-	mclose_mtl = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(66, 3, 84, 21), 104, "", mclose_tex, 100));
-
-	mopen_model = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(87, 3, 127, 21), 105, "", mopen_model_tex, 100));
+	menu = agui->get_object<gui_window>(menu_id);
+	mnew_mtl = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(3, 3, 21, 21), 101, "", mnew_tex, 100));
+	mopen_mtl = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(24, 3, 42, 21), 102, "", mopen_tex, 100));
+	msave_mtl = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(45, 3, 63, 21), 103, "", msave_tex, 100));
+	mclose_mtl = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(66, 3, 84, 21), 104, "", mclose_tex, 100));
+	mopen_model = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(87, 3, 127, 21), 105, "", mopen_model_tex, 100));
+	msub_obj = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(width - 42, 3, width - 24, 21), 106, "", msub_obj_tex, 100));
+	mmat_prop = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(width - 21, 3, width - 3, 21), 107, "", mmat_prop_tex, 100));
+	mwireframe = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(width - 63, 3, width - 45, 21), 108, "", mwireframe_tex, 100));
 
 	mnew_mtl->set_image_scaling(false);
 	mopen_mtl->set_image_scaling(false);
 	msave_mtl->set_image_scaling(false);
 	mclose_mtl->set_image_scaling(false);
 	mopen_model->set_image_scaling(false);
-
-	// rotation is somehow bugged .....
-	/*mrot_axis_x = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(150, 1, 168, 19), 0, 106, "X", 0, 100));
-	mrot_axis_y = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(169, 1, 187, 19), 0, 107, "Y", 0, 100));
-	mrot_axis_z = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(188, 1, 207, 19), 0, 108, "Z", 0, 100));
-	mrot_l = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(208, 1, 226, 19), 0, 109, "<|", 0, 100));
-	mrot_r = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(227, 1, 245, 19), 0, 110, "|>", 0, 100));*/
+	msub_obj->set_image_scaling(false);
+	mmat_prop->set_image_scaling(false);
+	mwireframe->set_image_scaling(false);
 }
 
 void mgui::load_obj_wnd() {
@@ -441,9 +508,8 @@ void mgui::load_obj_wnd() {
 	}
 
 	obj_id = agui->add_window(e->get_gfx()->pnt_to_rect(30, 30, 255, 375), 200, "Sub-Objects", true);
-	obj_wnd = agui->get_window(obj_id);
-	oobj_list = agui->get_list(agui->add_list_box(e->get_gfx()->pnt_to_rect(4, 4, 216, 296), 201, 200));
-	ochange = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(4, 300, 216, 320), 202, "change", 0, 200));
+	obj_wnd = agui->get_object<gui_window>(obj_id);
+	oobj_list = agui->get_object<gui_list>(agui->add_list_box(e->get_gfx()->pnt_to_rect(4, 4, 216, 320), 201, 200));
 }
 
 void mgui::load_mat_wnd() {
@@ -452,13 +518,16 @@ void mgui::load_mat_wnd() {
 	}
 
 	mat_id = agui->add_window(e->get_gfx()->pnt_to_rect(630, 30, 1000, 386), 300, "Material Properties", true);
-	mat_wnd = agui->get_window(mat_id);
+	mat_wnd = agui->get_object<gui_window>(mat_id);
 
-	mtype = agui->get_text(agui->add_text("STANDARD", font_size, "Type", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(15, 9), 301, 300));
-	mrgb = agui->get_text(agui->add_text("STANDARD", font_size, "RGB Combine", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(151, 207), 302, 300));
-	malpha = agui->get_text(agui->add_text("STANDARD", font_size, "Alpha Combine", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(252, 207), 303, 300));
+	mtype = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "Type", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(15, 9), 301, 300));
+	mrgb = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "RGB Combine", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(151, 207), 302, 300));
+	malpha = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "Alpha Combine", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(252, 207), 303, 300));
+	mitex = agui->get_object<gui_image>(agui->add_image(e->get_gfx()->pnt_to_rect(151, 28, 343, 220), 325, NULL, NULL, 300));
+	mitex->set_image_texture(mnone_tex);
+	mitex->get_image()->set_gui_img(true);
 
-	mcb_type = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(15, 22, 131, 42), 304, 300));
+	mcb_type = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(15, 22, 131, 42), 304, 300));
 	mcb_type->add_item("NONE", 0);
 	mcb_type->add_item("DIFFUSE", 1);
 	mcb_type->add_item("BUMP (no support)", 2);
@@ -466,32 +535,31 @@ void mgui::load_mat_wnd() {
 	mcb_type->add_item("MULTI-TEXTURE", 4);
 
 	mtex = new gui_button*[8];
-	mtex[0] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 47, 70, 102), 305, "Tex #1", mnone_tex, 300));
-	mtex[1] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(76, 47, 131, 102), 306, "Tex #2", mnone_tex, 300));
-	mtex[2] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 105, 70, 160), 307, "Tex #3", mnone_tex, 300));
-	mtex[3] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(76, 105, 131, 160), 308, "Tex #4", mnone_tex, 300));
-	mtex[4] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 163, 70, 218), 309, "Tex #5", mnone_tex, 300));
-	mtex[5] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(76, 163, 131, 218), 310, "Tex #6", mnone_tex, 300));
-	mtex[6] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 221, 70, 276), 311, "Tex #7", mnone_tex, 300));
-	mtex[7] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(76, 221, 131, 276), 312, "Tex #8", mnone_tex, 300));
-	//mapply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 278, 131, 297), 325, "apply", 0, 300));
-	mchange_tex = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 298, 131, 317), 326, "change texture", 0, 300));
+	mtex[0] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 47, 70, 102), 305, "Tex #1", mnone_tex, 300));
+	mtex[1] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(76, 47, 131, 102), 306, "Tex #2", mnone_tex, 300));
+	mtex[2] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 105, 70, 160), 307, "Tex #3", mnone_tex, 300));
+	mtex[3] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(76, 105, 131, 160), 308, "Tex #4", mnone_tex, 300));
+	mtex[4] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 163, 70, 218), 309, "Tex #5", mnone_tex, 300));
+	mtex[5] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(76, 163, 131, 218), 310, "Tex #6", mnone_tex, 300));
+	mtex[6] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 221, 70, 276), 311, "Tex #7", mnone_tex, 300));
+	mtex[7] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(76, 221, 131, 276), 312, "Tex #8", mnone_tex, 300));
+	mchange_tex = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 298, 131, 317), 326, "change texture", 0, 300));
 	
 	mrgb_arg = new gui_button*[3];
 	malpha_arg = new gui_button*[3];
-	mrgb_arg[0] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(153, 251, 174, 271), 313, "1", 0, 300));
-	mrgb_arg[1] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(175, 251, 196, 271), 314, "2", 0, 300));
-	mrgb_arg[2] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(197, 251, 218, 271), 315, "3", 0, 300));
-	malpha_arg[0] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(252, 251, 273, 271), 316, "1", 0, 300));
-	malpha_arg[1] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(274, 251, 295, 271), 317, "2", 0, 300));
-	malpha_arg[2] = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(296, 251, 317, 271), 318, "3", 0, 300));
+	mrgb_arg[0] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(153, 251, 174, 271), 313, "1", 0, 300));
+	mrgb_arg[1] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(175, 251, 196, 271), 314, "2", 0, 300));
+	mrgb_arg[2] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(197, 251, 218, 271), 315, "3", 0, 300));
+	malpha_arg[0] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(252, 251, 273, 271), 316, "1", 0, 300));
+	malpha_arg[1] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(274, 251, 295, 271), 317, "2", 0, 300));
+	malpha_arg[2] = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(296, 251, 317, 271), 318, "3", 0, 300));
 
-	mcb_rgb_combine = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(151, 224, 242, 244), 319, 300));
-	mcb_alpha_combine = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(251, 224, 342, 244), 320, 300));
-	mcb_rgb_src = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(153, 274, 244, 294), 321, 300));
-	mcb_rgb_op = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(153, 297, 244, 317), 322, 300));
-	mcb_alpha_src = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(252, 274, 343, 294), 323, 300));
-	mcb_alpha_op = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(252, 297, 343, 317), 324, 300));
+	mcb_rgb_combine = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(151, 224, 242, 244), 319, 300));
+	mcb_alpha_combine = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(251, 224, 342, 244), 320, 300));
+	mcb_rgb_src = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(153, 274, 244, 294), 321, 300));
+	mcb_rgb_op = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(153, 297, 244, 317), 322, 300));
+	mcb_alpha_src = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(252, 274, 343, 294), 323, 300));
+	mcb_alpha_op = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(252, 297, 343, 317), 324, 300));
 
 	mcb_rgb_combine->add_item("REPLACE", 0);
 	mcb_rgb_combine->add_item("MODULATE", 1);
@@ -536,17 +604,17 @@ void mgui::load_tex_wnd() {
 	}
 
 	tex_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 656, 145), 400, "load texure", true);
-	tex_wnd = agui->get_window(tex_id);
+	tex_wnd = agui->get_object<gui_window>(tex_id);
 
-	ttex_fname = agui->get_text(agui->add_text("STANDARD", font_size, "texture filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 12), 401, 400));
-	ttex_type = agui->get_text(agui->add_text("STANDARD", font_size, "texture type:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 35), 402, 400));
+	ttex_fname = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "texture filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 12), 401, 400));
+	ttex_type = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "texture type:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 35), 402, 400));
 
-	tbrowse = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(339, 8, 368, 28), 403, "...", 0, 400));
-	tapply = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(15, 62, 368, 83), 404, "apply", 0, 400));
+	tbrowse = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(339, 8, 368, 28), 403, "...", 0, 400));
+	tapply = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(15, 62, 368, 83), 404, "apply", 0, 400));
 
-	titex_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 8, 333, 28), 405, "", 400));
+	titex_fname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(110, 8, 333, 28), 405, "", 400));
 
-	titex_type = agui->get_combo(agui->add_combo_box(e->get_gfx()->pnt_to_rect(110, 35, 210, 55), 406, 400));
+	titex_type = agui->get_object<gui_combo>(agui->add_combo_box(e->get_gfx()->pnt_to_rect(110, 35, 210, 55), 406, 400));
 	titex_type->add_item("RGB", 0);
 	titex_type->add_item("RGBA", 1);
 	titex_type->set_selected_id(0);
@@ -558,21 +626,21 @@ void mgui::load_om_wnd() {
 	}
 
 	om_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 652, 180), 500, "load model/animation/material", true);
-	om_wnd = agui->get_window(om_id);
+	om_wnd = agui->get_object<gui_window>(om_id);
 
-	om_mdl_fname = agui->get_text(agui->add_text("STANDARD", font_size, "model filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 9), 501, 500));
-	om_ani_fname = agui->get_text(agui->add_text("STANDARD", font_size, "animation filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 32), 502, 500));
-	om_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "material filename:*", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 55), 503, 500));
-	om_mat_des = agui->get_text(agui->add_text("STANDARD", font_size, "*(if empty, a new one will be created)", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(160, 75), 504, 500));
+	om_mdl_fname = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "model filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 9), 501, 500));
+	om_ani_fname = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "animation filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 32), 502, 500));
+	om_mat_fname = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "material filename:*", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(12, 55), 503, 500));
+	om_mat_des = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "*(if empty, a new one will be created)", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(160, 75), 504, 500));
 
-	om_browse_mdl = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(339, 5, 368, 25), 505, "...", 0, 500));
-	om_browse_ani = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(339, 29, 368, 49), 506, "...", 0, 500));
-	om_browse_mat = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(339, 52, 368, 72), 507, "...", 0, 500));
-	om_open = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(12, 97, 368, 118), 508, "open", 0, 500));
+	om_browse_mdl = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(339, 5, 368, 25), 505, "...", 0, 500));
+	om_browse_ani = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(339, 29, 368, 49), 506, "...", 0, 500));
+	om_browse_mat = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(339, 52, 368, 72), 507, "...", 0, 500));
+	om_open = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(12, 97, 368, 118), 508, "open", 0, 500));
 
-	om_imdl_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 5, 333, 25), 509, "", 500));
-	om_iani_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 29, 333, 49), 510, "", 500));
-	om_imat_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 52, 333, 72), 511, "", 500));
+	om_imdl_fname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 5, 333, 25), 509, "", 500));
+	om_iani_fname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 29, 333, 49), 510, "", 500));
+	om_imat_fname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(125, 52, 333, 72), 511, "", 500));
 }
 
 void mgui::load_sm_wnd() {
@@ -581,24 +649,22 @@ void mgui::load_sm_wnd() {
 	}
 
 	sm_id = agui->add_window(e->get_gfx()->pnt_to_rect(270, 30, 653, 119), 600, "save material", true);
-	sm_wnd = agui->get_window(sm_id);
+	sm_wnd = agui->get_object<gui_window>(sm_id);
 
-	sm_mat_fname = agui->get_text(agui->add_text("STANDARD", font_size, "material filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(9, 12), 601, 600));
+	sm_mat_fname = agui->get_object<gui_text>(agui->add_text("STANDARD", font_size, "material filename:", gs->get_color("FONT"), e->get_gfx()->cord_to_pnt(9, 12), 601, 600));
 
-	sm_save = agui->get_button(agui->add_button(e->get_gfx()->pnt_to_rect(12, 35, 368, 56), 602, "save", 0, 600));
+	sm_save = agui->get_object<gui_button>(agui->add_button(e->get_gfx()->pnt_to_rect(12, 35, 368, 56), 602, "save", 0, 600));
 
-	sm_imat_fname = agui->get_input(agui->add_input_box(e->get_gfx()->pnt_to_rect(120, 9, 369, 29), 603, (char*)model->mat_fname.c_str(), 600));
+	sm_imat_fname = agui->get_object<gui_input>(agui->add_input_box(e->get_gfx()->pnt_to_rect(120, 9, 369, 29), 603, (char*)model->mat_fname.c_str(), 600));
 }
 
 void mgui::update_obj_list() {
 	oobj_list->clear();
 	unsigned int obj_count = model->ani ? model->amodel->get_object_count() : model->model->get_object_count();
-	char* tmp = new char[16];
+	string* obj_names = model->ani ? model->amodel->get_object_names() : model->model->get_object_names();
 	for(unsigned int i = 0; i < obj_count; i++) {
-		sprintf(tmp, "object %u", i);
-		oobj_list->add_item(tmp, i);
+		oobj_list->add_item((char*)obj_names[i].c_str(), i);
 	}
-	delete [] tmp;
 }
 
 void mgui::update_mat(a2ematerial* mat, unsigned int obj, unsigned int tex) {
@@ -607,7 +673,7 @@ void mgui::update_mat(a2ematerial* mat, unsigned int obj, unsigned int tex) {
 	cur_tex = tex;
 
 	// set material type
-	mcb_type->set_selected_id((mat->get_material_type(obj) & 0xFF));
+	mcb_type->set_selected_id(mat->get_material_type(obj) & 0xFF);
 
 	// set multitexturing stuff
 	unsigned int argc_rgb = 0;
@@ -657,8 +723,8 @@ void mgui::update_mat(a2ematerial* mat, unsigned int obj, unsigned int tex) {
 		agui->set_visibility(mrgb->get_id(), true);
 		agui->set_visibility(malpha->get_id(), true);
 
-		if(tex < mat->get_texture_count(obj)) mitex_large->set_texture(mat->get_texture(obj, tex));
-		else mitex_large->set_texture(mnone_tex);
+		if(tex < mat->get_texture_count(obj)) mitex->set_image_texture(mat->get_texture(obj, tex));
+		else mitex->set_image_texture(mnone_tex);
 
 		if(argc_rgb != 0) {
 			mcb_rgb_src->set_selected_id((mat->get_tex_elem(obj)->rgb_source[tex][cur_rgb_arg] & 0xFF));
@@ -676,7 +742,7 @@ void mgui::update_mat(a2ematerial* mat, unsigned int obj, unsigned int tex) {
 		agui->set_visibility(mrgb->get_id(), false);
 		agui->set_visibility(malpha->get_id(), false);
 
-		mitex_large->set_texture(mat->get_texture(obj, tex));
+		mitex->set_image_texture(mat->get_texture(obj, tex));
 	}
 
 	// set the visibility of the multi-texturing stuff
@@ -713,10 +779,10 @@ void mgui::update_mat(a2ematerial* mat, unsigned int obj, unsigned int tex) {
 
 	// set the texture images
 	for(unsigned int i = 0; i < mat->get_texture_count(obj); i++) {
-		mtex[i]->get_image()->set_texture(mat->get_texture(obj, i));
+		mtex[i]->set_image_texture(mat->get_texture(obj, i));
 	}
 	for(unsigned int i = mat->get_texture_count(obj); i < 8; i++) {
-		mtex[i]->get_image()->set_texture(mnone_tex);
+		mtex[i]->set_image_texture(mnone_tex);
 	}
 
 	// set the visibility of the texture buttons
@@ -800,6 +866,7 @@ void mgui::open_mdl() {
 
 	update_obj_list();
 	update_mat(model->get_material(), 0, 0);
+	model->update_selection(cur_obj);
 }
 
 void mgui::save_mtl() {
@@ -814,4 +881,121 @@ void mgui::close_mtl() {
 
 	obj_wnd->set_deleted(true);
 	mat_wnd->set_deleted(true);
+}
+
+bool mgui::is_wireframe() {
+	return wireframe;
+}
+
+bool mgui::ffilter_mdl(const char* filename) {
+	if(strcmp(mtl_fname, "") == 0 && strcmp(ani_fname, "") == 0) {
+		return true;
+	}
+	else {
+		bool ret = true;
+		// if model object count equals material object count, set ret to true
+		if(strcmp(mtl_fname, "") != 0) ret = (get_mdl_obj_count(filename) == get_mtl_obj_count(mtl_fname) ? true : false);
+
+		// if ani_fname is set and ret is true
+		if(strcmp(ani_fname, "") != 0 && ret) {
+			// if model is no animated model, return false
+			if(!e->get_core()->is_a2eanim(e->data_path(filename))) {
+				return false;
+			}
+			// if model joint count equals animation joint count, set ret to true (if not, set it false)
+			ret = (get_mdl_joint_count(filename) == get_ani_joint_count(ani_fname) ? true : false);
+		}
+
+		return ret;
+	}
+	return false;
+}
+
+bool mgui::ffilter_mtl(const char* filename) {
+	if(strcmp(mdl_fname, "") == 0) {
+		return true;
+	}
+	else {
+		// if model object count equals material object count, return true
+		return (get_mdl_obj_count(mdl_fname) == get_mtl_obj_count(filename) ? true : false);
+	}
+	return false;
+}
+
+bool mgui::ffilter_ani(const char* filename) {
+	if(strcmp(mdl_fname, "") == 0) {
+		return true;
+	}
+	else {
+		// if model joint count equals animation joint count, return true
+		return (get_mdl_joint_count(mdl_fname) == get_ani_joint_count(filename) ? true : false);
+	}
+	return false;
+}
+
+unsigned int mgui::get_mdl_obj_count(const char* mdl) {
+	unsigned int mdl_obj_count;
+
+	// get model object count
+	f->open_file(e->data_path(mdl), file_io::OT_READ_BINARY);
+
+	f->seek(8);
+	unsigned int type = (unsigned int)(f->get_char() & 0xFF);
+
+	if(type == 0 || type == 2) {
+		unsigned int vertex_count = f->get_uint();
+		f->seek(8 + 1 + 4 + (vertex_count * 3 * 4) + (vertex_count * 2 * 4));
+		mdl_obj_count = f->get_uint();
+	}
+	else if(type == 1) {
+		unsigned int joint_count = f->get_uint();
+		f->seek(8 + 1 + 4 + 4 + joint_count * (4 + 12 + 16));
+		mdl_obj_count = f->get_uint();
+	}
+
+	f->close_file();
+
+	return mdl_obj_count;
+}
+
+unsigned int mgui::get_mtl_obj_count(const char* mtl) {
+	unsigned int mtl_obj_count;
+
+	// get material object count
+	f->open_file(e->data_path(mtl), file_io::OT_READ_BINARY);
+
+	f->seek(11);
+	mtl_obj_count = f->get_uint();
+
+	f->close_file();
+
+	return mtl_obj_count;
+}
+
+unsigned int mgui::get_mdl_joint_count(const char* mdl) {
+	unsigned int mdl_joint_count;
+
+	// get model joint count
+	f->open_file(e->data_path(mdl), file_io::OT_READ_BINARY);
+
+	f->seek(9);
+	mdl_joint_count = f->get_uint();
+
+	f->close_file();
+
+	return mdl_joint_count;
+}
+
+unsigned int mgui::get_ani_joint_count(const char* ani) {
+	unsigned int ani_joint_count;
+
+	// get model joint count
+	f->open_file(e->data_path(ani), file_io::OT_READ_BINARY);
+
+	f->seek(7);
+	ani_joint_count = f->get_uint();
+
+	f->close_file();
+
+	return ani_joint_count;
 }

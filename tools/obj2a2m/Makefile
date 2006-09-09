@@ -6,49 +6,64 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-  BINDIR = ../..
-  LIBDIR = ../..
-  OBJDIR = obj/Debug
-  OUTDIR = ../../tools/bin
-  CPPFLAGS = -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  BINDIR := ../..
+  LIBDIR := ../..
+  OBJDIR := obj/Debug
+  OUTDIR := ../../tools/bin
+  CPPFLAGS := -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
   CFLAGS += $(CPPFLAGS) -g -Os -c `sdl-config --cflags`
-  CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
-  LDDEPS = ../../a2e/lib/liba2e.a
-  TARGET = obj2a2m
+  CXXFLAGS := $(CFLAGS)
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2
+  LDDEPS := ../../a2e/lib/liba2e.a
+  TARGET := obj2a2m
+  BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES)
 endif
 
 ifeq ($(CONFIG),Release)
-  BINDIR = ../..
-  LIBDIR = ../..
-  OBJDIR = obj/Release
-  OUTDIR = ../../tools/bin
-  CPPFLAGS = -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  BINDIR := ../..
+  LIBDIR := ../..
+  OBJDIR := obj/Release
+  OUTDIR := ../../tools/bin
+  CPPFLAGS := -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
   CFLAGS += $(CPPFLAGS) -O2 -Os -c `sdl-config --cflags`
-  CXXFLAGS = $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -llualib -lxml2
-  LDDEPS = ../../a2e/lib/liba2e.a
-  TARGET = obj2a2m
+  CXXFLAGS := $(CFLAGS)
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2
+  LDDEPS := ../../a2e/lib/liba2e.a
+  TARGET := obj2a2m
+  BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES)
 endif
 
-OBJECTS = \
+OBJECTS := \
 	$(OBJDIR)/obj2a2m.o \
+
+CMD := $(subst \,\\,$(ComSpec)$(COMSPEC))
+ifeq (,$(CMD))
+  CMD_MKBINDIR := mkdir -p $(BINDIR)
+  CMD_MKLIBDIR := mkdir -p $(LIBDIR)
+  CMD_MKOUTDIR := mkdir -p $(OUTDIR)
+  CMD_MKOBJDIR := mkdir -p $(OBJDIR)
+else
+  CMD_MKBINDIR := $(CMD) /c if not exist $(subst /,\\,$(BINDIR)) mkdir $(subst /,\\,$(BINDIR))
+  CMD_MKLIBDIR := $(CMD) /c if not exist $(subst /,\\,$(LIBDIR)) mkdir $(subst /,\\,$(LIBDIR))
+  CMD_MKOUTDIR := $(CMD) /c if not exist $(subst /,\\,$(OUTDIR)) mkdir $(subst /,\\,$(OUTDIR))
+  CMD_MKOBJDIR := $(CMD) /c if not exist $(subst /,\\,$(OBJDIR)) mkdir $(subst /,\\,$(OBJDIR))
+endif
 
 .PHONY: clean
 
-$(OUTDIR)/$(TARGET): $(OBJECTS) $(LDDEPS)
+$(OUTDIR)/$(TARGET): $(OBJECTS) $(LDDEPS) $(RESOURCES)
 	@echo Linking obj2a2m
-	-@if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
-	-@if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
-	-@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi
-	@$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
+	-@$(CMD_MKBINDIR)
+	-@$(CMD_MKLIBDIR)
+	-@$(CMD_MKOUTDIR)
+	@$(BLDCMD)
 
 clean:
 	@echo Cleaning obj2a2m
 	-@rm -rf $(OUTDIR)/$(TARGET) $(OBJDIR)
 
 $(OBJDIR)/obj2a2m.o: obj2a2m.cpp
-	-@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
+	-@$(CMD_MKOBJDIR)
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 

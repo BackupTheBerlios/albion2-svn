@@ -27,6 +27,9 @@ gui_object::gui_object(engine* e, gui_style* gs) {
 	gui_object::gs = gs;
 	gui_object::text_handler = NULL;
 	gui_object::img = NULL;
+	gui_object::redraw = false;
+	gui_object::scissor = true;
+	gui_object::tab = 0;
 
 	gui_object::state = "NORMAL";
 }
@@ -51,7 +54,7 @@ gui_object::~gui_object() {
  *  @param x specifies how much the element is moved on the x axis
  *  @param y specifies how much the element is moved on the y axis
  */
-void gui_object::draw(unsigned int x, unsigned int y) {
+void gui_object::draw(int x, int y) {
 	draw_object(x, y);
 }
 
@@ -59,13 +62,15 @@ void gui_object::draw(unsigned int x, unsigned int y) {
  *  @param x specifies how much the element is moved on the x axis
  *  @param y specifies how much the element is moved on the y axis
  */
-void gui_object::draw_object(unsigned int x, unsigned int y) {
+void gui_object::draw_object(int x, int y) {
 	gs->set_gui_text(text_handler);
 	gs->set_image(img);
-	g->set_scissor(x + rectangle->x1, y + rectangle->y1, x + rectangle->x2+1, y + rectangle->y2+1);
-	g->begin_scissor();
+	if(scissor) {
+		g->set_scissor(x + rectangle->x1, y + rectangle->y1, x + rectangle->x2+1, y + rectangle->y2+1);
+		g->begin_scissor();
+	}
 	gs->render_gui_element(type.c_str(), state.c_str(), rectangle, x, y);
-	g->end_scissor();
+	if(scissor) g->end_scissor();
 }
 
 //! returns the objects id
@@ -127,10 +132,26 @@ void gui_object::set_image(image* img) {
 		delete gui_object::img;
 	}
 	gui_object::img = img;
+
+	gui_object::redraw = true;
 }
 
 image* gui_object::get_image() {
 	return gui_object::img;
+}
+
+void gui_object::set_image_texture(unsigned int tex) {
+	if(gui_object::img != NULL) {
+		gui_object::img->set_texture(tex);
+		gui_object::redraw = true;
+	}
+	else {
+		m->print(msg::MERROR, "gui_object.cpp", "set_image_texture(): unable to set the texture of an image that doesn't exist!");
+	}
+}
+
+unsigned int gui_object::get_image_texture() {
+	return gui_object::img->get_texture();
 }
 
 void gui_object::set_type(const char* type) {
@@ -139,4 +160,37 @@ void gui_object::set_type(const char* type) {
 
 string* gui_object::get_type() {
 	return &(gui_object::type);
+}
+
+/*! sets the redraw flag of the object (so the belonging window content will be rendered again at next gui draw)
+ *  @param state the state of the flag
+ */
+void gui_object::set_redraw(bool state) {
+	gui_object::redraw = state;
+}
+
+//! returns true if the object/window has to be redrawn
+bool gui_object::get_redraw() {
+	return gui_object::redraw;
+}
+
+void gui_object::set_scissor(bool state) {
+	gui_object::scissor = state;
+}
+
+bool gui_object::get_scissor() {
+	return gui_object::scissor;
+}
+
+/*! sets the objects tab
+ *  @param id the tab id we want to set
+ */
+void gui_object::set_tab(unsigned int id) {
+	if(gui_object::tab != id) gui_object::redraw = true;
+	gui_object::tab = id;
+}
+
+//! returns the objects tab
+unsigned int gui_object::get_tab() {
+	return gui_object::tab;
 }
