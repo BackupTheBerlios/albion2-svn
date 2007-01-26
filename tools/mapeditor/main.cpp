@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	char* tmp = new char[512];
 	sprintf(tmp, "A2E Mapeditor - v0.1.1");
 
-	me->open_map(e->data_path("omp_test.a2map"));
+	//me->open_map(e->data_path("omp_test.a2map"));
 	//me->open_map(e->data_path("hdrr.a2map"));
 	//me->open_map(e->data_path("mdl_loader.a2map"));
 
