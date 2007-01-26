@@ -219,8 +219,8 @@ int main(int argc, char *argv[])
 		for(int j = 0; j < pMeshes[i].iNumTris; j++) {
 			// indices
 			put_int(&afile, pMeshes[i].pTriangles[j].pIndex[0]);
-			put_int(&afile, pMeshes[i].pTriangles[j].pIndex[1]);
 			put_int(&afile, pMeshes[i].pTriangles[j].pIndex[2]);
+			put_int(&afile, pMeshes[i].pTriangles[j].pIndex[1]);
 		}
 
 		// weight count

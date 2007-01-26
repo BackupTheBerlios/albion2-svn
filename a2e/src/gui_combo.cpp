@@ -133,6 +133,7 @@ void gui_combo::add_item(char* text, unsigned int id) {
 }
 
 void gui_combo::set_selected_item(unsigned int item) {
+	if(gui_combo::selected_item != item) redraw = true;
 	gui_combo::selected_item = item;
 	gui_combo::selected_id = items[gui_combo::selected_item].id;
 
@@ -140,6 +141,7 @@ void gui_combo::set_selected_item(unsigned int item) {
 }
 
 void gui_combo::set_selected_id(unsigned int id) {
+	if(gui_combo::selected_id != id) redraw = true;
 	gui_combo::selected_id = id;
 	unsigned int i = 0;
 	for(vector<gui_combo::item>::iterator iiter = items.begin(); iiter != items.end(); iiter++) {

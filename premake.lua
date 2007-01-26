@@ -2,6 +2,8 @@ project.name = "albion2"
 project.bindir = ""
 project.libdir = ""
 
+project.configs = { "Debug", "Release_AMD", "Release" }
+
 dopackage("a2e")
 
 dopackage("albion2/client")

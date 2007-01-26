@@ -25,6 +25,7 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#include <omp.h>
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -48,6 +49,7 @@
 #include "xml.h"
 #include "gui_font.h"
 #include "rtt.h"
+#include "matrix4.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -68,7 +70,7 @@ public:
 
 	// graphic control functions
 	void init(const char* ico = NULL);
-	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, unsigned int zbuffer = 16, unsigned int stencil = 16, bool fullscreen = false, const char* ico = NULL);
+	void init(bool console, unsigned int width = 640, unsigned int height = 400, unsigned int depth = 16, unsigned int zbuffer = 16, unsigned int stencil = 8, bool fullscreen = false, const char* ico = NULL);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
 	void start_draw();
@@ -85,7 +87,9 @@ public:
 	char* get_caption();
 
 	void set_position(float xpos, float ypos, float zpos);
-	vertex3* get_position();
+	vertex3* get_position(); //! shouldn't be used from outside of the engine, use camera class function instead
+	void set_rotation(float xrot, float yrot);
+	vertex3* get_rotation(); //! shouldn't be used from outside of the engine, use camera class function instead
 
 	void set_cursor_visible(bool state);
 	bool get_cursor_visible();
@@ -100,6 +104,10 @@ public:
 	void set_data_path(const char* data_path = "../data/");
 	string get_data_path();
 	char* data_path(const char* str);
+
+	unsigned int get_filtering();
+	bool get_hdr();
+	bool get_hdr_rgba16();
 
 	// class return functions
 	core* get_core();
@@ -140,6 +148,9 @@ public:
 
 	unsigned int get_shadow_type();
 
+	matrix4* get_projection_matrix();
+	matrix4* get_modelview_matrix();
+
 protected:
 	core* c;
 	msg* m;
@@ -162,6 +173,7 @@ protected:
 	const SDL_VideoInfo* video_info;
 
 	vertex3* position;
+	vertex3* rotation;
 
 	bool cursor_visible;
 
@@ -182,6 +194,14 @@ protected:
 	string keyset;
 
 	void load_ico(const char* ico);
+
+	unsigned int filtering;
+	bool hdr;
+	bool hdr_rgba16;
+
+	matrix4 projection_matrix;
+	matrix4 modelview_matrix;
+
 };
 
 #endif

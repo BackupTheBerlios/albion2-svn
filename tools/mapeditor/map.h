@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <math.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
@@ -56,15 +57,20 @@ public:
 	void new_map(char* filename);
 
 	struct map_object {
-		char model_name[32];
-		char model_filename[32];
-		char ani_filename[32];
+		string model_name;
+		string model_filename;
+		string ani_filename;
 		bool model_type; // (false/0 = static, true/1 = dynamic/animated)
-		char mat_filename[32];
+		string mat_filename;
 		vertex3 position;
 		vertex3 orientation;
 		vertex3 scale;
 		unsigned int phys_type; // (0 = box, 1 = sphere, 2 = cylinder, 3 = trimesh)
+		bool gravity;
+		bool collision_model;
+		bool auto_mass;
+		float mass;
+		vertex3 phys_scale;
 	};
 
 	char map_type[7];

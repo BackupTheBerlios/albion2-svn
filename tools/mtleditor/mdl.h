@@ -68,6 +68,7 @@ public:
 	a2ematerial* mat;
 	bool ani;
 	string mat_fname;
+	string mdl_fname;
 
 protected:
 	engine* e;

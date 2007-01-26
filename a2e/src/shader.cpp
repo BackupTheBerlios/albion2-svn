@@ -41,25 +41,57 @@ shader::shader(engine* e) {
 	cur_shader = 0;
 
 	// create parallax mapping shader
-	char* pl_uniforms[] = { "cam_pos", "light_pos", "diffuse_map", "normal_map", "height_map", "light_color" };
-	char* pl_attributes[] = { "normal", "binormal", "tangent", "texture_coord" };
-
+	const char* pl_uniforms[] = { "cam_pos", "light_pos", "local_mview", "diffuse_texture", "normal_texture", "height_texture", "specular_texture" };
+	const char* pl_attributes[] = { "normal", "binormal", "tangent", "texture_coord" };
 	string vs_path = e->data_path("parallax.vs");
 	string fs_path = e->data_path("parallax.fs");
-	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 6, pl_uniforms, 4, pl_attributes);
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 7, (char**)pl_uniforms, 4, (char**)pl_attributes);
+	fs_path = e->data_path("parallax_hdr.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 7, (char**)pl_uniforms, 4, (char**)pl_attributes);
 
-	char* phl_uniforms[] = { "texture" };
+	const char* phl_uniforms[] = { "diffuse_texture", "specular_texture" };
 	vs_path = e->data_path("phong.vs");
 	fs_path = e->data_path("phong.fs");
-	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 1, phl_uniforms, 0, NULL);
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)phl_uniforms, 0, NULL);
+	fs_path = e->data_path("phong_hdr.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)phl_uniforms, 0, NULL);
 
-	char* blur_uniforms[] = { "tcs", "texture" };
-	char* blur_attributes[] = { "texture_coord" };
+	const char* blur_uniforms[] = { "tcs", "texture" };
+	const char* blur_attributes[] = { "texture_coord" };
 	vs_path = e->data_path("blur.vs");
 	fs_path = e->data_path("blur3x3.fs");
-	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, blur_uniforms, 1, blur_attributes);
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)blur_uniforms, 1, (char**)blur_attributes);
 	fs_path = e->data_path("blur5x5.fs");
-	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, blur_uniforms, 1, blur_attributes);
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)blur_uniforms, 1, (char**)blur_attributes);
+	fs_path = e->data_path("blurline3.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)blur_uniforms, 1, (char**)blur_attributes);
+	fs_path = e->data_path("blurline5.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)blur_uniforms, 1, (char**)blur_attributes);
+
+	const char* sb_uniforms[] = { "skybox_texture", "max_value" };
+	vs_path = e->data_path("skybox.vs");
+	fs_path = e->data_path("skybox.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)sb_uniforms, 0, NULL);
+
+	const char* cv_uniforms[] = { "half_pixel", "RT" };
+	vs_path = e->data_path("convert.vs");
+	fs_path = e->data_path("convert.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 2, (char**)cv_uniforms, 0, NULL);
+
+
+	vs_path = e->data_path("avexphdr_scale.vs");
+
+	const char* av_uniforms[] = { "RT" };
+	fs_path = e->data_path("average.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 1, (char**)av_uniforms, 0, NULL);
+
+	const char* exp_uniforms[] = { "average_texture", "exposure_texture", "frame_time" };
+	fs_path = e->data_path("exposure.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 3, (char**)exp_uniforms, 0, NULL);
+
+	const char* hdr_uniforms[] = { "scene_texture", "blur_texture", "exposure_texture" };
+	fs_path = e->data_path("hdr.fs");
+	shader::add_shader((char*)vs_path.c_str(), (char*)fs_path.c_str(), 3, (char**)hdr_uniforms, 0, NULL);
 }
 
 /*! delete everything
@@ -487,4 +519,23 @@ void shader::set_attribute4fv(unsigned int num, float* var) {
  */
 shader::shader_object* shader::get_shader_object(unsigned int num) {
 	return &shaders[num];
+}
+
+
+void shader::set_uniform_matrix2fv(unsigned int num, float* var, unsigned int count, bool transpose) {
+	if(shader_support) {
+		exts->glUniformMatrix2fv(shaders[cur_shader].uniforms[num], count, transpose, var);
+	}
+}
+
+void shader::set_uniform_matrix3fv(unsigned int num, float* var, unsigned int count, bool transpose) {
+	if(shader_support) {
+		exts->glUniformMatrix3fv(shaders[cur_shader].uniforms[num], count, transpose, var);
+	}
+}
+
+void shader::set_uniform_matrix4fv(unsigned int num, float* var, unsigned int count, bool transpose) {
+	if(shader_support) {
+		exts->glUniformMatrix4fv(shaders[cur_shader].uniforms[num], count, transpose, var);
+	}
 }

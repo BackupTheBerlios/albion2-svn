@@ -51,16 +51,15 @@ bool cmap::open_map(char* filename) {
 	// load objects
 	for(unsigned int i = 0; i < object_count; i++) {
 		// model name
-		f->get_block(map_objects[i].model_name, 32);
+		f->get_terminated_block(&map_objects[i].model_name, (char)0xFF);
 		// model filename
-		f->get_block(map_objects[i].model_filename, 32);
+		f->get_terminated_block(&map_objects[i].model_filename, (char)0xFF);
 		// animation filename
-		f->get_block(map_objects[i].ani_filename, 32);
+		f->get_terminated_block(&map_objects[i].ani_filename, (char)0xFF);
 		// model type
-		if(f->get_char() == 0x00) map_objects[i].model_type = false;
-		else map_objects[i].model_type = true;
+		map_objects[i].model_type = f->get_char() == 0x00 ? false : true;
 		// mat filename
-		f->get_block(map_objects[i].mat_filename, 32);
+		f->get_terminated_block(&map_objects[i].mat_filename, (char)0xFF);
 
 		// position
 		map_objects[i].position.x = f->get_float();
@@ -79,6 +78,23 @@ bool cmap::open_map(char* filename) {
 
 		// physical properties
 		map_objects[i].phys_type = f->get_uint();
+
+		// gravity flag
+		map_objects[i].gravity = f->get_char() == 0x00 ? false : true;
+
+		// collision model flag
+		map_objects[i].collision_model = f->get_char() == 0x00 ? false : true;
+
+		// auto mass flag
+		map_objects[i].auto_mass = f->get_char() == 0x00 ? false : true;
+
+		// mass
+		map_objects[i].mass = f->get_float();
+
+		// physical object scale
+		map_objects[i].phys_scale.x = f->get_float();
+		map_objects[i].phys_scale.y = f->get_float();
+		map_objects[i].phys_scale.z = f->get_float();
 	}
 
 	f->close_file();
@@ -93,11 +109,11 @@ bool cmap::save_map(char* filename) {
 	f->put_uint(object_count);
 
 	for(unsigned int i = 0; i < object_count; i++) {
-		f->write_block(map_objects[i].model_name, 32);
-		f->write_block(map_objects[i].model_filename, 32);
-		f->write_block(map_objects[i].ani_filename, 32);
+		f->write_terminated_block(&map_objects[i].model_name, (char)0xFF);
+		f->write_terminated_block(&map_objects[i].model_filename, (char)0xFF);
+		f->write_terminated_block(&map_objects[i].ani_filename, (char)0xFF);
 		f->put_bool(map_objects[i].model_type);
-		f->write_block(map_objects[i].mat_filename, 32);
+		f->write_terminated_block(&map_objects[i].mat_filename, (char)0xFF);
 
 		f->put_float(map_objects[i].position.x);
 		f->put_float(map_objects[i].position.y);
@@ -112,6 +128,14 @@ bool cmap::save_map(char* filename) {
 		f->put_float(map_objects[i].scale.z);
 
 		f->put_uint(map_objects[i].phys_type);
+		f->put_bool(map_objects[i].gravity);
+		f->put_bool(map_objects[i].collision_model);
+		f->put_bool(map_objects[i].auto_mass);
+		f->put_float(map_objects[i].mass);
+
+		f->put_float(map_objects[i].phys_scale.x);
+		f->put_float(map_objects[i].phys_scale.y);
+		f->put_float(map_objects[i].phys_scale.z);
 	}
 
 	f->close_file();

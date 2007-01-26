@@ -27,7 +27,7 @@ gui_input::gui_input(engine* e, gui_style* gs) : gui_object(e, gs) {
 	gui_input::text.reserve(128);
 
 	gui_input::is_in_rectangle = false;
-	
+
 	text_pos = 0;
 
 	// get classes
@@ -331,10 +331,10 @@ void gui_input::do_blink() {
 	if(is_active) {
 		if(SDL_GetTicks() - blink_time >= 500) {
 			if(strcmp(blink_text_handler->get_text(), "|") == 0) {
-				blink_text_handler->set_text(" ");
+				blink_text_handler->set_text((char*)" ");
 			}
 			else {
-				blink_text_handler->set_text("|");
+				blink_text_handler->set_text((char*)"|");
 			}
 			gui_input::redraw = true;
 			blink_time = SDL_GetTicks();
@@ -342,7 +342,7 @@ void gui_input::do_blink() {
 	}
 	else {
 		if(strcmp(blink_text_handler->get_text(), "|") == 0) {
-			blink_text_handler->set_text(" ");
+			blink_text_handler->set_text((char*)" ");
 		}
 	}
 }

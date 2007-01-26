@@ -48,8 +48,27 @@
 #include "gui_mltext.h"
 #include "gui_image.h"
 #include "gui_tab.h"
+#include "gui_toggle.h"
+#include "gui_object.h"
 using namespace std;
 typedef unsigned int GUI_OBJ;
+
+union gui_object_list_pointer {
+	list<gui_object*>* o;
+	
+	list<gui_button*>* b;
+	list<gui_input*>* in;
+	list<gui_list*>* l;
+	list<gui_vbar*>* v;
+	list<gui_check*>* ch;
+	list<gui_window*>* w;
+	list<gui_combo*>* co;
+	list<gui_mltext*>* m;
+	list<gui_image*>* im;
+	list<gui_tab*>* ta;
+	list<gui_text*>* te;
+	list<gui_toggle*>* to;
+};
 
 #include "win_dll_export.h"
 
@@ -81,6 +100,7 @@ public:
 		MLTEXT,		//!< enum multi line text type
 		IMAGE,		//!< enum image type
 		TAB,		//!< enum tab type
+		TOGGLE,		//!< enum toggle button type
 		OPENDIALOG,	//!< enum open file dialog type
 		MSGBOX_OK	//!< enum message box type
 	};
@@ -122,6 +142,7 @@ public:
 	GUI_OBJ add_mltext(gfx::rect* rectangle, unsigned int id, char* text, unsigned int wid = 0, unsigned int tid = 0);
 	GUI_OBJ add_image(gfx::rect* rectangle, unsigned int id, const char* image_filename, image* image_obj, unsigned int wid = 0, unsigned int tid = 0);
 	GUI_OBJ add_tab(gfx::rect* rectangle, unsigned int id, unsigned int wid = 0);
+	GUI_OBJ add_toggle(gfx::rect* rectangle, unsigned int id, char* text, GLuint image_texture, unsigned int wid = 0, unsigned int tid = 0);
 
 	gui_object* get_object(unsigned int id);
 
@@ -208,6 +229,9 @@ protected:
 	//! gui tabs
 	list<gui_tab*> gui_tabs;
 
+	//! gui toggle buttons
+	list<gui_toggle*> gui_toggle_buttons;
+
 	//! window framebuffer objects
 	struct window_buffer {
 		unsigned int wid;
@@ -239,11 +263,12 @@ protected:
 	unsigned int start_id;
 
 	unsigned int shadow_type;
-	float* tcs;
+	float* tcs_h;
+	float* tcs_v;
 	unsigned int xcorrect;
 	unsigned int ycorrect;
-	float xadd;
-	float yadd;
+	int xadd;
+	int yadd;
 
 
 	// dialog stuff ...
@@ -256,54 +281,76 @@ protected:
 	list<msg_ok_wnd*> msg_boxes;
 
 public:
+	// c++ is weird ..... at least in combination with gcc
 	template<typename T> T* get_object(unsigned int id) {
-		list<T*>* objects = NULL;
+		union T_list_pointer {
+			list<T*>* t_pointer;
+			
+			list<gui_button*>* b;
+			list<gui_input*>* in;
+			list<gui_list*>* l;
+			list<gui_vbar*>* v;
+			list<gui_check*>* ch;
+			list<gui_window*>* w;
+			list<gui_combo*>* co;
+			list<gui_mltext*>* m;
+			list<gui_image*>* im;
+			list<gui_tab*>* ta;
+			list<gui_text*>* te;
+			list<gui_toggle*>* to;
+		};
+
+		T_list_pointer objects;
 
 		switch(get_element(id)->type) {
 			case BUTTON:
-				objects = (list<T*>*)&gui_buttons;
+				objects.b = &gui_buttons;
 				break;
 			case INPUT:
-				objects = (list<T*>*)&gui_input_boxes;
+				objects.in = &gui_input_boxes;
 				break;
 			case TEXT:
-				objects = (list<T*>*)&gui_texts;
+				objects.te = &gui_texts;
 				break;
 			case LIST:
-				objects = (list<T*>*)&gui_list_boxes;
+				objects.l = &gui_list_boxes;
 				break;
 			case VBAR:
-				objects = (list<T*>*)&gui_vbars;
+				objects.v = &gui_vbars;
 				break;
 			case CHECK:
-				objects = (list<T*>*)&gui_check_boxes;
+				objects.ch = &gui_check_boxes;
 				break;
 			case COMBO:
-				objects = (list<T*>*)&gui_combo_boxes;
+				objects.co = &gui_combo_boxes;
 				break;
 			case WINDOW:
-				objects = (list<T*>*)&gui_windows;
+				objects.w = &gui_windows;
 				break;
 			case MLTEXT:
-				objects = (list<T*>*)&gui_mltexts;
+				objects.m = &gui_mltexts;
 				break;
 			case IMAGE:
-				objects = (list<T*>*)&gui_images;
+				objects.im = &gui_images;
 				break;
 			case TAB:
-				objects = (list<T*>*)&gui_tabs;
+				objects.ta = &gui_tabs;
+				break;
+			case TOGGLE:
+				objects.to = &gui_toggle_buttons;
 				break;
 			default:
+				return NULL;
 				break;
 		}
 
-		for(list<T*>::iterator iter = objects->begin(); iter != objects->end(); iter++) {
+		for(typename list<T*>::iterator iter = objects.t_pointer->begin(); iter != objects.t_pointer->end(); iter++) {
 			if((*iter)->get_id() == id) {
 				return *iter;
 			}
 		}
 
-		m->print(msg::MERROR, "gui.cpp", "get_object(): no %s with such an id (%u) exists!", objects->size() > 0 ? objects->back()->get_type()->c_str() : "", id);
+		m->print(msg::MERROR, "gui.cpp", "get_object(): no %s with such an id (%u) exists!", objects.t_pointer->size() > 0 ? objects.t_pointer->back()->get_type()->c_str() : "", id);
 
 		return NULL;
 	}

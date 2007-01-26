@@ -21,6 +21,9 @@
 #include <windows.h>
 #endif
 
+#define EPSILON 0.000001
+#define FLOAT_EQ(x, v) (((v - EPSILON) < x) && (x < (v + EPSILON)))
+
 #include <iostream>
 #include <list>
 #include <string>
@@ -59,18 +62,35 @@ public:
 		list<a2eanim>::iterator amodel;
 		list<a2ematerial>::iterator mat;
 		bool type;
-		char model_name[64];
-		char model_filename[64];
-		char ani_filename[64];
-		char mat_filename[64];
+		string model_name;
+		string model_filename;
+		string ani_filename;
+		string mat_filename;
 		unsigned int phys_type;
+		bool gravity;
+		bool collision_model;
+		bool auto_mass;
+		float mass;
+		vertex3* position;
+		vertex3* orientation;
+		vertex3* scale;
+		vertex3* phys_scale;
+	};
+
+	enum EDIT_STATE {
+		NONE,
+		CAM_INPUT,
+		MOVE,
+		ROTATE,
+		SCALE,
+		PHYS_SCALE
 	};
 
 	void open_map(char* filename);
 	void save_map(char* filename = NULL);
 	void close_map();
 	void new_map(char* filename);
-	void run(bool cam_input);
+	void run(EDIT_STATE edit_state);
 
 	void select_object(vertex3* look_at);
 	list<map_object>::iterator get_sel_object();
@@ -93,13 +113,28 @@ public:
 
 	list<map_object>* get_objects();
 
-	void arrow_select(vertex3* look_at);
-	void move_object(int x, int y, float scale = 2.0f);
+	void select(vertex3* look_at);
+	void edit_object(int x, int y, float scale = 2.0f);
+
+	void set_draw_mode(bool wireframe); // true = wireframe; false = fill
+	bool get_draw_mode();
+
+	void set_objects_visibility(bool state);
+	bool get_objects_visibility();
+
+	void set_physical_map(bool state);
+	bool get_physical_map();
+
+	bool* get_move_toggle();
+	bool* get_rotate_toggle();
+	bool* get_scale_toggle();
+	bool* get_phys_scale_toggle();
 
 protected:
 	engine* e;
 	msg* m;
 	core* c;
+	gfx* g;
 	scene* sce;
 	camera* cam;
 
@@ -110,17 +145,10 @@ protected:
 
 	string cur_map_name;
 
-	/*unsigned int csmodels;
-	unsigned int camodels;
-	a2emodel** models;
-	a2eanim** amodels;
-	a2ematerial** materials;*/
 	list<a2emodel> models;
 	list<a2eanim> amodels;
 	list<a2ematerial> materials;
 
-	//unsigned int cobjects;
-	//map_object* objects;
 	list<map_object> objects;
 
 	core::aabbox* cur_bbox;
@@ -130,12 +158,39 @@ protected:
 	bool map_opened;
 
 	a2emodel* arrow[3];
+	a2emodel* circle[3];
+	a2emodel* arrow_cube[3];
 	a2ematerial* arrow_mat[3];
-	core::aabbox* arrow_bbox[3];
-	core::aabbox* arrow_bbox_tmp[3];
-	bool* arrow_selected;
+	a2ematerial* circle_mat[3];
+	core::aabbox* ctrl_obj_bbox[3];
+	core::aabbox* ctrl_obj_bbox_tmp[3];
+	bool* ctrl_obj_selected;
+	a2emodel* sphere;
+	a2ematerial* sphere_mat;
+	float radius;
+	vertex3* intersection_point;
 
 	line3* sel_line;
+	line3* edit_line;
+
+	EDIT_STATE edit_state;
+
+	bool draw_mode;
+
+	bool objects_visibility;
+	bool physical_map;
+
+	bool move_toggle[4]; // 0 = overall toggle flag; 1 = x; 2 = y; 3 = z
+	bool rotate_toggle[4];
+	bool scale_toggle[4];
+	bool phys_scale_toggle[4];
+
+	vertex3* init_pos;
+	vertex3* init_rot;
+	vertex3* init_scl;
+	vertex3* init_phys_scl;
+
+	line3 pick_line;
 
 };
 

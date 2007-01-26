@@ -16,11 +16,9 @@
 
 #include "scene.h"
 
-/*! there is no function currently
+/*! scene constructor
  */
 scene::scene(engine* e, shader* s) {
-	scene::cmodels = 0;
-	scene::camodels = 0;
 	scene::clights = 0;
 
 	scene::position = new vertex3();
@@ -31,7 +29,8 @@ scene::scene(engine* e, shader* s) {
 	scene::mambient = new float[4];
 	scene::mdiffuse = new float[4];
 	scene::mspecular = new float[4];
-	scene::mshininess = new float[4];
+	//scene::mshininess = new float[4];
+	scene::mshininess = 64;
 
 	scene::mambient[0] = 1.0f;
 	scene::mambient[1] = 1.0f;
@@ -43,26 +42,106 @@ scene::scene(engine* e, shader* s) {
 	scene::mdiffuse[2] = 1.0f;
 	scene::mdiffuse[3] = 1.0f;
 
-	scene::mspecular[0] = 0.2f;
+	/*scene::mspecular[0] = 0.2f;
 	scene::mspecular[1] = 0.2f;
 	scene::mspecular[2] = 0.2f;
+	scene::mspecular[3] = 1.0f;*/
+	scene::mspecular[0] = 1.0f;
+	scene::mspecular[1] = 1.0f;
+	scene::mspecular[2] = 1.0f;
 	scene::mspecular[3] = 1.0f;
 
-	scene::mshininess[0] = 1.0f;
+	/*scene::mshininess[0] = 1.0f;
 	scene::mshininess[1] = 1.0f;
 	scene::mshininess[2] = 1.0f;
-	scene::mshininess[3] = 1.0f;
+	scene::mshininess[3] = 1.0f;*/
+	scene::mshininess = 16;
 
 	scene::is_light = false;
+
 
 	// get classes
 	scene::e = e;
 	scene::s = s;
 	scene::c = e->get_core();
 	scene::m = e->get_msg();
+	scene::exts = e->get_ext();
+	scene::r = e->get_rtt();
+
+	flip = exts->is_fbo_support();
+
+
+	if(e->get_init_mode() == engine::GRAPHICAL) {
+		scene::skybox_tex = 0;
+		scene::max_value = 0.0f;
+		scene::render_skybox = false;
+		proj_mat = new matrix4(1.0734261f, 0.0f, 0.0f, 0.0f,
+								0.0f, 1.4312348f, 0.0f, 0.0f,
+								0.0f, 0.0f, 1.0011435f, -8.0045740f,
+								0.0f, 0.0f, 1.0f, 0.0f);
+		mview_mat = new matrix4();
+
+
+		cur_exposure = 0;
+		fframe_time = 0.0f;
+		iframe_time = SDL_GetTicks();
+
+		float screen_w = (float)e->get_screen()->w;
+		float screen_h = (float)e->get_screen()->h;
+		unsigned int q = 5;
+		float xInc = 1.0f / screen_w;
+		float yInc = 1.0f / screen_h;
+		tcs_line_h = new float[q*2];
+		tcs_line_v = new float[q*2];
+		// h
+		for(unsigned int i = 0; i < q; i++) {
+			tcs_line_h[i*2+0] = (-2.0f * xInc) + ((float)i * xInc);
+			tcs_line_h[i*2+1] = 0.0f;
+		}
+		// v
+		for(unsigned int i = 0; i < q; i++) {
+			tcs_line_v[i*2+0] = 0.0f;
+			tcs_line_v[i*2+1] = (-2.0f * yInc) + ((float)i * yInc);
+		}
+
+		// create buffer
+		if(e->get_hdr()) {
+			// hdr buffer
+			scene_buffer = r->add_buffer(e->get_screen()->w, e->get_screen()->h, rtt::TF_POINT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, true);
+			render_buffer = r->add_buffer(e->get_screen()->w, e->get_screen()->h, rtt::TF_POINT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA16F_ARB, GL_RGBA, GL_FLOAT, true);
+
+			// since nvidia geforce 6 and 7 cards don't support real GL_RGB(A)16 (just fake one that is actually GL_RGB(A)8),
+			// we have to use GL_RGB16F_ARB for those cards (but they unfortunately don't support filtering of this format, so
+			// use a twice as big blur buffer, so the pixelated/grainy effect isn't as noticeable)
+			if(e->get_hdr_rgba16()) {
+				blur_buffer1 = r->add_buffer(e->get_screen()->w/2, e->get_screen()->h/2, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, false);
+				blur_buffer2 = r->add_buffer(e->get_screen()->w/4, e->get_screen()->h/4, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, false);
+				blur_buffer3 = r->add_buffer(e->get_screen()->w/4, e->get_screen()->h/4, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, false);
+				average_buffer = r->add_buffer(64, 64, rtt::TF_BILINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, false);
+			}
+			else {
+				blur_buffer1 = r->add_buffer(e->get_screen()->w/2, e->get_screen()->h/2, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGBA, GL_FLOAT, false);
+				blur_buffer2 = r->add_buffer(e->get_screen()->w/2, e->get_screen()->h/2, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGBA, GL_FLOAT, false);
+				blur_buffer3 = r->add_buffer(e->get_screen()->w/2, e->get_screen()->h/2, rtt::TF_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGBA, GL_FLOAT, false);
+				average_buffer = r->add_buffer(64, 64, rtt::TF_BILINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGBA, GL_FLOAT, false);
+			}
+
+			exposure_buffer[0] = r->add_buffer(1, 1, rtt::TF_POINT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGB, GL_FLOAT, false);
+			exposure_buffer[1] = r->add_buffer(1, 1, rtt::TF_POINT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB16F_ARB, GL_RGB, GL_FLOAT, false);
+
+			// clear exposure buffer #0 (since we'll read/use it before we write sth into it)
+			r->start_draw(exposure_buffer[0]);
+			r->clear();
+			r->stop_draw();
+		}
+		else if(exts->is_fbo_support()) {
+			// normal scene buffer
+			scene_buffer = r->add_buffer(e->get_screen()->w, e->get_screen()->h, rtt::TF_POINT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, true);
+		}
+	}
 }
 
-/*! there is no function currently
+/*! scene destructor
  */
 scene::~scene() {
 	m->print(msg::MDEBUG, "scene.cpp", "freeing scene stuff");
@@ -71,17 +150,29 @@ scene::~scene() {
 	delete [] scene::mambient;
 	delete [] scene::mdiffuse;
 	delete [] scene::mspecular;
-	delete [] scene::mshininess;
+	//delete [] scene::mshininess;
 
-	m->print(msg::MDEBUG, "scene.cpp", "deleting static models");
-	for(unsigned int i = 0; i < cmodels; i++) {
-	    delete scene::models[i];
+	m->print(msg::MDEBUG, "scene.cpp", "deleting models");
+	models.clear();
+	amodels.clear();
+
+	delete proj_mat;
+	delete mview_mat;
+
+	// if hdr is supported, than fbo's are supported too, so we don't need an extra delete in the "hdr fbo delete branch"
+	if(exts->is_fbo_support()) r->delete_buffer(scene_buffer);
+	if(e->get_hdr()) {
+		r->delete_buffer(render_buffer);
+		r->delete_buffer(blur_buffer1);
+		r->delete_buffer(blur_buffer2);
+		r->delete_buffer(blur_buffer3);
+		r->delete_buffer(average_buffer);
+		r->delete_buffer(exposure_buffer[0]);
+		r->delete_buffer(exposure_buffer[1]);
 	}
 
-	m->print(msg::MDEBUG, "scene.cpp", "deleting animated models");
-	for(unsigned int i = 0; i < camodels; i++) {
-	    delete scene::amodels[i];
-	}
+	delete [] tcs_line_h;
+	delete [] tcs_line_v;
 
 	m->print(msg::MDEBUG, "scene.cpp", "scene stuff freed");
 }
@@ -89,9 +180,18 @@ scene::~scene() {
 /*! draws the scene
  */
 void scene::draw() {
+	start_draw();
+	stop_draw();
+}
+
+/*! starts drawing the scene
+ */
+void scene::start_draw() {
+	// set light stuff
 	for(unsigned int i = 0; i < clights; i++) {
 		unsigned int light_num = GL_LIGHT0 + i;
         float pos[] = { lights[i]->get_position()->x, lights[i]->get_position()->y, lights[i]->get_position()->z, 1.0f };
+		if(flip) pos[1] *= -1.0f;
 		glLightfv(light_num, GL_POSITION, pos);
 		glLightfv(light_num, GL_AMBIENT, lights[i]->get_lambient());
 		glLightfv(light_num, GL_DIFFUSE, lights[i]->get_ldiffuse());
@@ -111,23 +211,123 @@ void scene::draw() {
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, scene::mdiffuse);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, scene::mspecular);
 		//glMaterialfv(GL_FRONT, GL_SHININESS, scene::mshininess);
-		glMateriali(GL_FRONT, GL_SHININESS, 128);
+		glMateriali(GL_FRONT, GL_SHININESS, scene::mshininess);
+		//glMateriali(GL_FRONT, GL_SHININESS, 128);
 	}
 	else {
 		glDisable(GL_LIGHTING);
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	for(unsigned int i = 0; i < camodels; i++) {
-		amodels[i]->set_light_color(lights[0]->get_lambient());
-		amodels[i]->set_light_position(lights[0]->get_position());
-		amodels[i]->draw();
+	// pre processing
+	preprocess();
+
+	// render models
+	for(list<a2eanim*>::iterator iter = amodels.begin(); iter != amodels.end(); iter++) {
+		(*iter)->set_light_position(lights[0]->get_position());
+		(*iter)->draw();
+	}
+	for(list<a2emodel*>::iterator iter = models.begin(); iter != models.end(); iter++) {
+		(*iter)->set_light_position(lights[0]->get_position());
+		(*iter)->draw();
 	}
 
-	for(unsigned int i = 0; i < cmodels; i++) {
-		models[i]->set_light_color(lights[0]->get_lambient());
-		models[i]->set_light_position(lights[0]->get_position());
-		models[i]->draw();
+	// render skybox
+	if(render_skybox) {
+		mview_mat->rotate(-c->deg_to_rad(e->get_rotation()->x), c->deg_to_rad(e->get_rotation()->y));
+		*mview_mat *= *proj_mat;
+		mview_mat->invert();
+
+		sb_v0.set(0.0f, 2.0f, 1.0f);
+		sb_v1.set(3.0f, -1.0f, 1.0f);
+		sb_v2.set(-3.0f, -1.0f, 1.0f);
+		sb_v0 *= mview_mat;
+		sb_v1 *= mview_mat;
+		sb_v2 *= mview_mat;
+
+		if(exts->is_shader_support()) {
+			s->use_shader(shader::SKYBOX_HDR);
+			s->set_uniform1i(0, 0);
+			s->set_uniform1f(1, 166.0f);
+
+			glEnable(GL_TEXTURE_CUBE_MAP);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_tex);
+
+			glBegin(GL_TRIANGLES);
+				glTexCoord3fv(&sb_v0.x);
+				glVertex4f(0, 2, 1, 1);
+				glTexCoord3fv(&sb_v1.x);
+				glVertex4f(-3, -1, 1, 1);
+				glTexCoord3fv(&sb_v2.x);
+				glVertex4f(3, -1, 1, 1);
+			glEnd();
+
+			glDisable(GL_TEXTURE_CUBE_MAP);
+			s->use_shader(shader::NONE);
+		}
+		else {
+			// TODO: render skybox for no glsl capable graphic cards
+		}
+	}
+
+	// post processing
+	postprocess();
+
+	// render physical objects
+	if(exts->is_fbo_support()) {
+		r->start_draw(scene_buffer);
+
+		glFrontFace(GL_CW);
+	}
+	for(list<a2emodel*>::iterator iter = models.begin(); iter != models.end(); iter++) {
+		if((*iter)->get_draw_phys_obj()) (*iter)->draw_phys_obj();
+	}
+	if(exts->is_fbo_support()) {
+		glFrontFace(GL_CCW);
+		r->stop_draw();
+	}
+
+	// "open" scene buffer for non engine internal rendering stuff
+	if(exts->is_fbo_support()) {
+		r->start_draw(scene_buffer);
+		glFrontFace(GL_CW);
+	}
+}
+
+/*! stops drawing the scene (and output the result (when using fbos ...))
+ */
+void scene::stop_draw() {
+	// close scene buffer
+	if(exts->is_fbo_support()) {
+		glFrontFace(GL_CCW);
+		glScalef(1.0, 1.0, 1.0);
+		r->stop_draw();
+	}
+
+	// and finally render scene buffer, if hdr rendering or normal fbo rendering is used
+	if(exts->is_fbo_support()) {
+		// render scene buffer
+		e->start_2d_draw();
+		glEnable(GL_TEXTURE_2D);
+		glTranslatef(0.0f, 0.0f, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glFrontFace(GL_CW);
+
+		glBindTexture(GL_TEXTURE_2D, scene_buffer->tex_id);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex2i(0, 0);
+			glTexCoord2f(1.0f, 0.0f);
+			glVertex2i(e->get_screen()->w, 0);
+			glTexCoord2f(1.0f, 1.0f);
+			glVertex2i(e->get_screen()->w, e->get_screen()->h);
+			glTexCoord2f(0.0f, 1.0f);
+			glVertex2i(0, e->get_screen()->h);
+		glEnd();
+
+		glFrontFace(GL_CCW);
+		glDisable(GL_TEXTURE_2D);
+		e->stop_2d_draw();
 	}
 }
 
@@ -135,70 +335,44 @@ void scene::draw() {
  *  @param model pointer to the model
  */
 void scene::add_model(a2emodel* model) {
-	models[cmodels] = model;
-	cmodels++;
+	models.push_back(model);
 }
 
-/*! adds a dynamic model to the scene
+/*! adds an animated model to the scene
  *  @param model pointer to the model
  */
 void scene::add_model(a2eanim* model) {
-	amodels[camodels] = model;
-	camodels++;
+	amodels.push_back(model);
 }
 
 /*! removes a model from the scene
  *  @param model pointer to the model
  */
 void scene::delete_model(a2emodel* model) {
-	unsigned int num = 0;
-	for(unsigned int i = 0; i < cmodels; i++) {
-		if(models[i] == model) {
+	for(list<a2emodel*>::iterator iter = models.begin(); iter != models.end(); iter++) {
+		if((*iter) == model) {
 			// shouldn't be deleted automatically
-			//delete models[i];
-			num = i;
-			i = cmodels;
-		}
-		else if(i == (cmodels-1)) {
-			m->print(msg::MDEBUG, "scene.cpp", "can't delete model: model doesn't exist!");
+			//delete (*iter);
+			models.erase(iter);
 			return;
 		}
 	}
-
-	for(unsigned int i = num; i < (cmodels-1); i++) {
-		models[i] = models[i+1];
-	}
-	models[(cmodels-1)] = NULL;
-
-	// decrease model count
-	cmodels--;
+	m->print(msg::MERROR, "scene.cpp", "can't delete model: model doesn't exist!");
 }
 
 /*! removes an animated model from the scene
  *  @param model pointer to the animated model
  */
 void scene::delete_model(a2eanim* model) {
-	unsigned int num = 0;
-	for(unsigned int i = 0; i < camodels; i++) {
-		if(amodels[i] == model) {
+	for(list<a2eanim*>::iterator iter = amodels.begin(); iter != amodels.end(); iter++) {
+		if((*iter) == model) {
 			// shouldn't be deleted automatically
-			//delete models[i];
-			num = i;
-			i = camodels;
-		}
-		else if(i == (camodels-1)) {
-			m->print(msg::MDEBUG, "scene.cpp", "can't delete animated model: model doesn't exist!");
+			//delete (*iter);
+			amodels.erase(iter);
 			return;
 		}
 	}
-
-	for(unsigned int i = num; i < (camodels-1); i++) {
-		amodels[i] = amodels[i+1];
-	}
-	amodels[(camodels-1)] = NULL;
-
-	// decrease model count
-	camodels--;
+	m->print(msg::MERROR, "scene.cpp", "can't delete animated model: model doesn't exist!");
 }
 
 /*! adds a light to the scene
@@ -244,10 +418,10 @@ void scene::set_position(float x, float y, float z) {
 	scene::position->y = y;
 	scene::position->z = z;
 
-	for(unsigned int i = 0; i < cmodels; i++) {
-		models[i]->set_position(models[i]->get_position()->x + scene::position->x,
-			models[i]->get_position()->y + scene::position->y,
-			models[i]->get_position()->z + scene::position->z);
+	for(list<a2emodel*>::iterator iter = models.begin(); iter != models.end(); iter++) {
+		(*iter)->set_position((*iter)->get_position()->x + scene::position->x,
+							(*iter)->get_position()->y + scene::position->y,
+							(*iter)->get_position()->z + scene::position->z);
 	}
 }
 
@@ -275,7 +449,10 @@ void scene::set_mspecular(float* mspecular) {
 /*! sets the scenes shininess material
  *  @param mshininess the scenes shininess material (vertex4)
  */
-void scene::set_mshininess(float* mshininess) {
+/*void scene::set_mshininess(float* mshininess) {
+	scene::mshininess = mshininess;
+}*/
+void scene::set_mshininess(int mshininess) {
 	scene::mshininess = mshininess;
 }
 
@@ -312,9 +489,9 @@ float* scene::get_mspecular() {
 
 /*! returns the scenes shininess material
  */
-float* scene::get_mshininess() {
+/*float* scene::get_mshininess() {
 	return scene::mshininess;
-}
+}*/
 
 /*! returns true if the light delete flag is set
  */
@@ -334,4 +511,299 @@ a2eanim* scene::create_a2eanim() {
 a2emodel* scene::create_a2emodel() {
 	a2emodel* a2em = new a2emodel(e, s);
 	return a2em;
+}
+
+/*! sets the skybox texture
+ *  @param tex the texture id
+ */
+void scene::set_skybox_texture(unsigned int tex) {
+	scene::skybox_tex = tex;
+	max_value = e->get_texman()->get_texture(tex)->max_value;
+}
+
+/*! returns the skybox texture id
+ */
+unsigned int scene::get_skybox_texture() {
+	return scene::skybox_tex;
+}
+
+/*! sets the flag if a skybox is rendered
+ *  @param state the new state
+ */
+void scene::set_render_skybox(bool state) {
+	scene::render_skybox = state;
+}
+
+/*! returns the render skybox flag
+ */
+bool scene::get_render_skybox() {
+	return scene::render_skybox;
+}
+
+/*! scene draw preprocessing
+ */
+void scene::preprocess() {
+	// hdr rendering
+	if(e->get_hdr()) {
+		r->start_draw(render_buffer);
+		r->clear();
+
+		glScalef(1.0, -1.0, 1.0);
+		glFrontFace(GL_CW);
+	}
+	// normal rendering using a fbo
+	else if(exts->is_fbo_support()) {
+		r->start_draw(scene_buffer);
+		r->clear();
+
+		glScalef(1.0, -1.0, 1.0);
+		glFrontFace(GL_CW);
+	}
+}
+
+/*! scene draw postprocessing
+ */
+void scene::postprocess() {
+	// hdr rendering
+	if(e->get_hdr()) {
+		glFrontFace(GL_CCW);
+		glScalef(1.0, 1.0, 1.0);
+
+		// convert
+		r->start_draw(blur_buffer1);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::CONVERT_HDR);
+		s->set_uniform2f(0, 0.5f / (float)render_buffer->width, 0.5f / (float)render_buffer->height);
+		s->set_uniform1i(1, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, render_buffer->tex_id);
+
+		glBegin(GL_QUADS);
+			glVertex2f(-1, -1);
+			glVertex2f( 1, -1);
+			glVertex2f( 1,  1);
+			glVertex2f(-1,  1);
+		glEnd();
+
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+
+
+		// 5x5 line blur
+		r->start_draw(blur_buffer3);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::BLURLINE5);
+		s->set_uniform2fv(0, tcs_line_h, 5);
+		s->set_uniform1i(1, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, blur_buffer1->tex_id);
+
+		glBegin(GL_QUADS);
+			s->set_attribute2f(0, 0.0f, 0.0f);
+			glVertex2f(-1.0f, -1.0f);
+
+			s->set_attribute2f(0, 1.0f, 0.0f);
+			glVertex2f(1.0f, -1.0f);
+
+			s->set_attribute2f(0, 1.0f, 1.0f);
+			glVertex2f(1.0f, 1.0f);
+
+			s->set_attribute2f(0, 0.0f, 1.0f);
+			glVertex2f(-1.0f, 1.0f);
+		glEnd();
+
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+
+		// v
+
+		r->start_draw(blur_buffer2);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::BLURLINE5);
+		s->set_uniform2fv(0, tcs_line_v, 5);
+		s->set_uniform1i(1, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, blur_buffer3->tex_id);
+
+		glBegin(GL_QUADS);
+			s->set_attribute2f(0, 0.0f, 0.0f);
+			glVertex2f(-1.0f, -1.0f);
+
+			s->set_attribute2f(0, 1.0f, 0.0f);
+			glVertex2f(1.0f, -1.0f);
+
+			s->set_attribute2f(0, 1.0f, 1.0f);
+			glVertex2f(1.0f, 1.0f);
+
+			s->set_attribute2f(0, 0.0f, 1.0f);
+			glVertex2f(-1.0f, 1.0f);
+		glEnd();
+
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+
+		for(unsigned int i = 0; i < 1; i++) {
+			// h
+
+			r->start_draw(blur_buffer3);
+			r->clear();
+			r->start_2d_draw();
+			s->use_shader(shader::BLURLINE5);
+			s->set_uniform2fv(0, tcs_line_h, 5);
+			s->set_uniform1i(1, 0);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, blur_buffer2->tex_id);
+
+			glBegin(GL_QUADS);
+				s->set_attribute2f(0, 0.0f, 0.0f);
+				glVertex2f(-1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 0.0f);
+				glVertex2f(1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 1.0f);
+				glVertex2f(1.0f, 1.0f);
+
+				s->set_attribute2f(0, 0.0f, 1.0f);
+				glVertex2f(-1.0f, 1.0f);
+			glEnd();
+
+			glDisable(GL_TEXTURE_2D);
+			s->use_shader(shader::NONE);
+			r->stop_2d_draw();
+			r->stop_draw();
+
+			// v
+
+			r->start_draw(blur_buffer2);
+			r->clear();
+			r->start_2d_draw();
+			s->use_shader(shader::BLURLINE5);
+			s->set_uniform2fv(0, tcs_line_v, 5);
+			s->set_uniform1i(1, 0);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, blur_buffer3->tex_id);
+
+			glBegin(GL_QUADS);
+				s->set_attribute2f(0, 0.0f, 0.0f);
+				glVertex2f(-1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 0.0f);
+				glVertex2f(1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 1.0f);
+				glVertex2f(1.0f, 1.0f);
+
+				s->set_attribute2f(0, 0.0f, 1.0f);
+				glVertex2f(-1.0f, 1.0f);
+			glEnd();
+
+			glDisable(GL_TEXTURE_2D);
+			s->use_shader(shader::NONE);
+			r->stop_2d_draw();
+			r->stop_draw();
+		}
+
+
+		// average
+		r->start_draw(average_buffer);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::AVERAGE_HDR);
+		s->set_uniform1i(0, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, blur_buffer2->tex_id);
+
+		glBegin(GL_TRIANGLES);
+			glVertex2f( 0,  2);
+			glVertex2f(-3, -1);
+			glVertex2f( 3, -1);
+		glEnd();
+
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+
+
+		fframe_time = (float)(SDL_GetTicks() - iframe_time) / 1000.0f;
+		iframe_time = SDL_GetTicks();
+		cur_exposure = 1 - cur_exposure;
+		r->start_draw(exposure_buffer[cur_exposure]);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::EXPOSURE_HDR);
+		s->set_uniform1i(0, 0);
+		s->set_uniform1i(1, 1);
+		s->set_uniform1f(2, fframe_time);
+		exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+		glBindTexture(GL_TEXTURE_2D, average_buffer->tex_id);
+		glEnable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+		glBindTexture(GL_TEXTURE_2D, exposure_buffer[1-cur_exposure]->tex_id);
+		glEnable(GL_TEXTURE_2D);
+
+		glBegin(GL_TRIANGLES);
+			glVertex2f( 0,  2);
+			glVertex2f(-3, -1);
+			glVertex2f( 3, -1);
+		glEnd();
+
+		exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+		glDisable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+
+
+		// hdr
+		r->start_draw(scene_buffer);
+		r->clear();
+		r->start_2d_draw();
+		s->use_shader(shader::HDR);
+		s->set_uniform1i(0, 0);
+		s->set_uniform1i(1, 1);
+		s->set_uniform1i(2, 2);
+		exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+		glBindTexture(GL_TEXTURE_2D, render_buffer->tex_id);
+		glEnable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+		glBindTexture(GL_TEXTURE_2D, blur_buffer2->tex_id);
+		glEnable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+		glBindTexture(GL_TEXTURE_2D, exposure_buffer[cur_exposure]->tex_id);
+		glEnable(GL_TEXTURE_2D);
+
+		glBegin(GL_TRIANGLES);
+			glVertex2f( 0,  2);
+			glVertex2f(-3, -1);
+			glVertex2f( 3, -1);
+		glEnd();
+
+		exts->glActiveTextureARB(GL_TEXTURE2_ARB);
+		glDisable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+		glDisable(GL_TEXTURE_2D);
+		exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+		glDisable(GL_TEXTURE_2D);
+		s->use_shader(shader::NONE);
+		r->stop_2d_draw();
+		r->stop_draw();
+	}
+	// normal rendering using a fbo
+	else if(exts->is_fbo_support()) {
+		glFrontFace(GL_CCW);
+		r->stop_draw();
+	}
 }

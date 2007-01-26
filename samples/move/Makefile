@@ -11,9 +11,23 @@ ifeq ($(CONFIG),Debug)
   OBJDIR := obj/Debug
   OUTDIR := ../../samples/bin
   CPPFLAGS := -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
-  CFLAGS += $(CPPFLAGS) -g -Os -c `sdl-config --cflags`
+  CFLAGS += $(CPPFLAGS) -g `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize
   CXXFLAGS := $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) `sdl-config --libs` -L"jpeglib" -L"zlib" -L"../../lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" ../../a2e/lib/liba2e.a -lGL -lGLU -lz -ljpeg -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
+  LDDEPS := ../../a2e/lib/liba2e.a
+  TARGET := move
+  BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES)
+endif
+
+ifeq ($(CONFIG),Release_AMD)
+  BINDIR := ../..
+  LIBDIR := ../..
+  OBJDIR := obj/Release_AMD
+  OUTDIR := ../../samples/bin
+  CPPFLAGS := -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  CFLAGS += $(CPPFLAGS) -g `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize -march=athlon64 -O3 -ffast-math -funsafe-math-optimizations
+  CXXFLAGS := $(CFLAGS)
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) `sdl-config --libs` -L"jpeglib" -L"zlib" -L"../../lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" ../../a2e/lib/liba2e.a -lGL -lGLU -lz -ljpeg -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
   LDDEPS := ../../a2e/lib/liba2e.a
   TARGET := move
   BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES)
@@ -25,9 +39,9 @@ ifeq ($(CONFIG),Release)
   OBJDIR := obj/Release
   OUTDIR := ../../samples/bin
   CPPFLAGS := -MD -I "../../a2e/src" -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
-  CFLAGS += $(CPPFLAGS) -O2 -Os -c `sdl-config --cflags`
+  CFLAGS += $(CPPFLAGS) -O2 `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize  -march=i686
   CXXFLAGS := $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPic `sdl-config --libs` -L "jpeglib" -L "zlib" -L "../../lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lz -ljpeg ../../a2e/lib/liba2e.a -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s `sdl-config --libs` -L"jpeglib" -L"zlib" -L"../../lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" ../../a2e/lib/liba2e.a -lGL -lGLU -lz -ljpeg -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
   LDDEPS := ../../a2e/lib/liba2e.a
   TARGET := move
   BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES)

@@ -30,6 +30,7 @@ gui_text::gui_text(engine* e) {
 
 	gui_text::advance = 0;
 	gui_text::last_advance = 0;
+	gui_text::last_height = 0;
 
 	gui_text::type = "text";
 
@@ -83,14 +84,14 @@ void gui_text::draw(const char* text, unsigned int x, unsigned int y, bool draw_
 		glBegin(GL_QUADS);
 			if(advance < last_advance || height < last_height) {
 				glVertex2i(gui_text::point->x + x, gui_text::point->y + y - 1);
-				glVertex2i(gui_text::point->x + x + last_advance, gui_text::point->y + y - 1);
-				glVertex2i(gui_text::point->x + x + last_advance, gui_text::point->y + y + last_height - 1);
+				glVertex2i(gui_text::point->x + x + last_advance + 1, gui_text::point->y + y - 1);
+				glVertex2i(gui_text::point->x + x + last_advance + 1, gui_text::point->y + y + last_height - 1);
 				glVertex2i(gui_text::point->x + x, gui_text::point->y + y + last_height - 1);
 			}
 			else {
 				glVertex2i(gui_text::point->x + x, gui_text::point->y + y - 1);
-				glVertex2i(gui_text::point->x + x + advance, gui_text::point->y + y - 1);
-				glVertex2i(gui_text::point->x + x + advance, gui_text::point->y + y + height - 1);
+				glVertex2i(gui_text::point->x + x + advance + 1, gui_text::point->y + y - 1);
+				glVertex2i(gui_text::point->x + x + advance + 1, gui_text::point->y + y + height - 1);
 				glVertex2i(gui_text::point->x + x, gui_text::point->y + y + height - 1);
 			}
 		glEnd();

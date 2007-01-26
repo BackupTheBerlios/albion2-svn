@@ -21,6 +21,8 @@
 core::core(msg* m, file_io* f) {
 	core::m = m;
 	core::f = f;
+
+	core::flip = false;
 }
 
 /*! there is no function currently
@@ -96,6 +98,15 @@ bool core::is_vertex_in_triangle(triangle* t1, vertex3* p1, float precision) {
 	return false;
 }
 
+bool core::is_vertex_in_bbox(aabbox* bbox, vertex3* p1) {
+	if( ((p1->x >= bbox->vmin.x && p1->x <= bbox->vmax.x) || (p1->x <= bbox->vmin.x && p1->x >= bbox->vmax.x)) &&
+		((p1->y >= bbox->vmin.y && p1->y <= bbox->vmax.y) || (p1->y <= bbox->vmin.y && p1->y >= bbox->vmax.y)) &&
+		((p1->z >= bbox->vmin.z && p1->z <= bbox->vmax.z) || (p1->z <= bbox->vmin.z && p1->z >= bbox->vmax.z))) {
+		return true;
+	}
+	return false;
+}
+
 /*! makes a line out of 2 points (p1 and p2)
  *  @param p1 point one (vertex3)
  *  @param p2 point two (vertex3)
@@ -163,6 +174,13 @@ float core::rad_to_deg(float rad) {
 	return rad * (180.0f / (float)PI);
 }
 
+/*! converts a degrees value into radiant
+ *  @param deg the degrees value
+ */
+float core::deg_to_rad(float deg) {
+	return deg * ((float)PI / 180.0f);
+}
+
 /*! converts (projects) a 3d vertex to a 2d screen position
  *  @param v the 3d vertex
  *  @param p the 2d screen position
@@ -200,7 +218,7 @@ void core::get_3d_from_2d(pnt* p, vertex3* v) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	gluUnProject(p->x, ((GLdouble)viewport[3] - p->y), 1.0f, modelview, projection,
+	gluUnProject(p->x, (flip ? p->y : (GLdouble)viewport[3] - p->y), 1.0f, modelview, projection,
 		viewport, &output[0], &output[1], &output[2]);
 
 	v->x = (float)output[0];
@@ -305,15 +323,8 @@ void core::compute_normal_tangent_binormal(vertex3* v1, vertex3* v2, vertex3* v3
 	// adjust
 	vertex3 txb(&tangent);
 	txb ^= binormal;
-	if(normal * txb < 0.0f) {
-		tangent *= -1.0f;
-
-		// our cam doesn't have an "upvector" of -1.0f, so it isn't needed (?)
-		//binormal *= -1.0f;
-	}
-	else {
-		binormal *= -1.0f;
-	}
+	if(normal * txb < 0.0f) tangent *= -1.0f;
+	else binormal *= -1.0f;
 }
 
 /*! returns the amount of delimeters found in the specified string
@@ -555,4 +566,12 @@ unsigned int core::next_pot(unsigned int num) {
 		tmp <<= 1;
 	}
 	return -1;
+}
+
+void core::set_flip(bool state) {
+	flip = state;
+}
+
+bool core::get_flip() {
+	return flip;
 }

@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #include "extensions.h"
 
 #ifdef WIN32
@@ -33,17 +33,6 @@ using namespace std;
 ext::ext(unsigned int imode, msg* m) {
 	ext::mode = imode;
 
-	glActiveTextureARB = NULL;
-	glMultiTexCoord3fARB = NULL;
-
-	glBindBufferARB = NULL;
-	glBufferDataARB = NULL;
-	glBufferSubDataARB = NULL;
-	glDeleteBuffersARB = NULL;
-	glGenBuffersARB = NULL;
-	glMapBufferARB = NULL;
-	glUnmapBufferARB = NULL;
-
 	multitexture_support = false;
 	texenv_combine_support = false;
 	shader_support = false;
@@ -51,7 +40,7 @@ ext::ext(unsigned int imode, msg* m) {
 	fbo_support = false;
 	blend_func_separate_support = false;
 
-	if(is_ext_supported("GL_ARB_multitexture")) {
+	if(is_ext_supported((char*)(char*)"GL_ARB_multitexture")) {
 		glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glActiveTextureARB");
 		glClientActiveTextureARB = (PFNGLCLIENTACTIVETEXTUREARBPROC)glGetProcAddress((ProcType)"glClientActiveTextureARB");
 		glMultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC)glGetProcAddress((ProcType)"glMultiTexCoord2fARB");
@@ -62,17 +51,17 @@ ext::ext(unsigned int imode, msg* m) {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_multitexture'!");
 	}
 
-	if(is_ext_supported("GL_ARB_texture_env_combine")) {
+	if(is_ext_supported((char*)"GL_ARB_texture_env_combine")) {
 		texenv_combine_support = true;
 	}
 	else {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_texture_env_combine'!");
 	}
 
-	if(is_ext_supported("GL_ARB_fragment_shader") &&
-		is_ext_supported("GL_ARB_vertex_shader") &&
-		is_ext_supported("GL_ARB_shader_objects") &&
-		is_ext_supported("GL_ARB_shading_language_100")) {
+	if(is_ext_supported((char*)"GL_ARB_fragment_shader") &&
+		is_ext_supported((char*)"GL_ARB_vertex_shader") &&
+		is_ext_supported((char*)"GL_ARB_shader_objects") &&
+		is_ext_supported((char*)"GL_ARB_shading_language_100")) {
 		glEnableVertexAttribArrayARB = (PFNGLENABLEVERTEXATTRIBARRAYARBPROC)glGetProcAddress((ProcType)"glEnableVertexAttribArrayARB");
 		glVertexAttribPointerARB = (PFNGLVERTEXATTRIBPOINTERARBPROC)glGetProcAddress((ProcType)"glVertexAttribPointerARB");
 
@@ -114,6 +103,9 @@ ext::ext(unsigned int imode, msg* m) {
 		glUniform2fvARB = (PFNGLUNIFORM2FVARBPROC)glGetProcAddress((ProcType)"glUniform2fvARB");
 		glUniform3fvARB = (PFNGLUNIFORM3FVARBPROC)glGetProcAddress((ProcType)"glUniform3fvARB");
 		glUniform4fvARB = (PFNGLUNIFORM4FVARBPROC)glGetProcAddress((ProcType)"glUniform4fvARB");
+		glUniformMatrix2fv = (PFNGLUNIFORMMATRIX2FVARBPROC)glGetProcAddress((ProcType)"glUniformMatrix2fvARB");
+		glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVARBPROC)glGetProcAddress((ProcType)"glUniformMatrix3fvARB");
+		glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVARBPROC)glGetProcAddress((ProcType)"glUniformMatrix4fvARB");
 
 		glVertexAttrib4ivARB = (PFNGLVERTEXATTRIB4IVARBPROC)glGetProcAddress((ProcType)"glVertexAttrib4ivARB");
 
@@ -132,7 +124,7 @@ ext::ext(unsigned int imode, msg* m) {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_fragment_shader', 'GL_ARB_vertex_shader', 'GL_ARB_shader_objects' and/or 'GL_ARB_shading_language_100'!");
 	}
 
-	if(is_ext_supported("GL_ARB_vertex_buffer_object")) {
+	if(is_ext_supported((char*)"GL_ARB_vertex_buffer_object")) {
 		glBindBufferARB = (PFNGLBINDBUFFERARBPROC)glGetProcAddress((ProcType)"glBindBufferARB");
 		glBufferDataARB = (PFNGLBUFFERDATAARBPROC)glGetProcAddress((ProcType)"glBufferDataARB");
 		glBufferSubDataARB = (PFNGLBUFFERSUBDATAARBPROC)glGetProcAddress((ProcType)"glBufferSubDataARB");
@@ -147,7 +139,7 @@ ext::ext(unsigned int imode, msg* m) {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_ARB_vertex_buffer_object'!");
 	}
 
-	if(is_ext_supported("GL_EXT_framebuffer_object")) {
+	if(is_ext_supported((char*)"GL_EXT_framebuffer_object")) {
 		glIsRenderbufferEXT = (PFNGLISRENDERBUFFEREXTPROC)glGetProcAddress((ProcType)"glIsRenderbufferEXT");
 		glBindRenderbufferEXT = (PFNGLBINDRENDERBUFFEREXTPROC)glGetProcAddress((ProcType)"glBindRenderbufferEXT");
 		glDeleteRenderbuffersEXT = (PFNGLDELETERENDERBUFFERSEXTPROC)glGetProcAddress((ProcType)"glDeleteRenderbuffersEXT");
@@ -171,13 +163,15 @@ ext::ext(unsigned int imode, msg* m) {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'GL_EXT_framebuffer_object'!");
 	}
 
-	if(is_ext_supported("EXT_blend_func_separate")) {
+	if(is_ext_supported((char*)"EXT_blend_func_separate")) {
 		glBlendFuncSeparateEXT = (PFNGLBLENDFUNCSEPARATEEXTPROC)glGetProcAddress((ProcType)"glBlendFuncSeparateEXT");
 		blend_func_separate_support = true;
 	}
 	else {
 		if(imode == 0) m->print(msg::MERROR, "extensions.cpp", "ext(): your graphic device doesn't support 'EXT_blend_func_separate'!");
 	}
+
+	//fbo_support = false;
 }
 
 /*! delete everything
@@ -237,7 +231,6 @@ bool ext::is_vbo_support() {
 bool ext::is_fbo_support() {
 	return ext::fbo_support;
 }
-
 
 /*! returns true if blend func separate is supported
  */

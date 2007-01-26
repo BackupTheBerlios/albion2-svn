@@ -43,11 +43,14 @@ int main(int argc, char *argv[])
 	cam = new camera(e);
 	o = new ode(e);
 
+	// make mouse cursor invisible
+	e->set_cursor_visible(false);
+
 	// initialize the a2e events
 	aevent->init(sevent);
 
 	// initialize the camera
-	cam->set_position(-5.0f, -30.0f, -55.0f);
+	cam->set_position(-5.0f, 30.0f, -55.0f);
 	cam->set_rotation_speed(100.0f);
 
 	// initialize ode
@@ -106,12 +109,17 @@ int main(int argc, char *argv[])
 	}
 
 	// lights
-	light* l1 = new light(e, 0.0f, 200.0f, 0.0f);
+	//light* l1 = new light(e, 0.0f, 200.0f, 0.0f);
+	light* l1 = new light(e, 0.0f, 125.0f, 125.0f);
+	//light* l1 = new light(e, 125.0f, 55.0f, 0.0f);
 	light* l2 = new light(e, 0.0f, 15.0f, 0.0f);
 
 	float lamb1[] = { 0.22f, 0.22f, 0.22f, 1.0f};
 	float ldif1[] = { 0.9f, 0.9f, 0.9f, 1.0f};
 	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	/*float lamb1[] = { 0.1f, 0.1f, 0.1f, 1.0f};
+	float ldif1[] = { 0.6f, 0.6f, 0.6f, 1.0f};
+	float lspc1[] = { 1.0f, 1.0f, 1.0f, 1.0f};*/
 	float lamb2[] = { 0.0f, 0.1f, 0.3f, 0.5f};
 	float ldif2[] = { 0.1f, 0.3f, 0.5f, 0.5f};
 	float lspc2[] = { 0.0f, 0.2f, 0.6f, 0.5f};
@@ -174,6 +182,16 @@ int main(int argc, char *argv[])
 							dBodyAddForce(osphere->get_body(), 0.0f, 1.0f, -5.0f);
 						}
 						break;
+						case SDLK_KP_PLUS:
+							shininess++;
+							sce->set_mshininess(shininess);
+							cout << shininess << endl;
+							break;
+						case SDLK_KP_MINUS:
+							shininess--;
+							sce->set_mshininess(shininess);
+							cout << shininess << endl;
+							break;
 						default:
 						break;
 					}

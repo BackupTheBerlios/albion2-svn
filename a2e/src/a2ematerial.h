@@ -26,12 +26,16 @@
 #include "core.h"
 #include "file_io.h"
 #include "engine.h"
+#include "extensions.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
+#define MAT_TYPE_COUNT 5
+#define COL_TYPE_COUNT 2
+
 /*! @class a2ematerial
- *  @brief material routines
+ *  @brief a2e material routines
  *  @author flo
  *  @todo -
  *  
@@ -52,12 +56,12 @@ public:
 	char get_material_type(unsigned int obj_num);
 	char get_color_type(unsigned int obj_num, unsigned int texture);
 
-	void enable_texture(unsigned int obj_num);
-	void disable_texture(unsigned int obj_num);
+	void enable_texture(unsigned int obj_num, bool no_shader = false);
+	void disable_texture(unsigned int obj_num, bool no_shader = false);
 
 	unsigned int get_texture_count(unsigned int obj_num);
 
-	enum MAT_TYPES {
+	enum MAT_TYPE {
 		NONE = 0x00,
 		DIFFUSE = 0x01,
 		BUMP = 0x02,
@@ -90,12 +94,17 @@ public:
 
 	texture_elem* get_tex_elem(unsigned int obj_num);
 
+	unsigned int get_object_count();
+
+	unsigned int get_mat_type_tex_count(MAT_TYPE type);
+
 protected:
 	msg* m;
 	core* c;
 	file_io* file;
 	engine* e;
 	texman* t;
+	ext* exts;
 
 	vector<texture_elem> textures;
 

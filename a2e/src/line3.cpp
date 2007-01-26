@@ -64,6 +64,12 @@ vertex3 line3::get_direction() {
 	return ((*line3::v2) - (*line3::v1)).normalize();
 }
 
+/*! returns the lines vector
+ */
+vertex3 line3::get_vector() {
+	return (*line3::v2) - (*line3::v1);
+}
+
 /*! returns the lines middle point
  */
 vertex3 line3::get_middle() {

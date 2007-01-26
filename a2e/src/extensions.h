@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __EXTENSIONS_H__
 #define __EXTENSIONS_H__
 
@@ -106,6 +106,9 @@ public:
 	PFNGLUNIFORM2FVARBPROC glUniform2fvARB;
 	PFNGLUNIFORM3FVARBPROC glUniform3fvARB;
 	PFNGLUNIFORM4FVARBPROC glUniform4fvARB;
+	PFNGLUNIFORMMATRIX2FVARBPROC glUniformMatrix2fv;
+	PFNGLUNIFORMMATRIX3FVARBPROC glUniformMatrix3fv;
+	PFNGLUNIFORMMATRIX4FVARBPROC glUniformMatrix4fv;
 	PFNGLVERTEXATTRIB4IVARBPROC glVertexAttrib4ivARB;
 	PFNGLVERTEXATTRIB1FARBPROC glVertexAttrib1fARB;
 	PFNGLVERTEXATTRIB2FARBPROC glVertexAttrib2fARB;

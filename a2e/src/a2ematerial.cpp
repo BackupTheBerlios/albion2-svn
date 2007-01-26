@@ -16,7 +16,7 @@
 
 #include "a2ematerial.h"
 
-/*! there is no function currently
+/*! a2ematerial constructor
  */
 a2ematerial::a2ematerial(engine* e) {
 	// get classes
@@ -25,9 +25,10 @@ a2ematerial::a2ematerial(engine* e) {
 	a2ematerial::m = e->get_msg();
 	a2ematerial::file = e->get_file_io();
 	a2ematerial::t = e->get_texman();
+	a2ematerial::exts = e->get_ext();
 }
 
-/*! there is no function currently
+/*! a2ematerial destructor
  */
 a2ematerial::~a2ematerial() {
 	m->print(msg::MDEBUG, "a2ematerial.cpp", "freeing a2ematerial stuff");
@@ -68,28 +69,12 @@ void a2ematerial::load_material(char* filename) {
 
 		// get material type
 		textures.back().mat_type = file->get_char();
-		if(textures.back().mat_type > 0x04) {
+		if(textures.back().mat_type > MAT_TYPE_COUNT) {
 			m->print(msg::MERROR, "a2ematerial.cpp", "load_material(): unknown material type (obj: %u, type: %u)!",
 				i, (unsigned int)textures.back().mat_type);
 		}
 
-		switch(textures.back().mat_type) {
-			case 0x00:
-				textures.back().tex_count = 0; // ???
-				break;
-			case 0x01:
-				textures.back().tex_count = 1;
-				break;
-			case 0x02:
-				textures.back().tex_count = 2;
-				break;
-			case 0x03:
-				textures.back().tex_count = 3;
-				break;
-			case 0x04:
-				textures.back().tex_count = 0;
-				break;
-		}
+		textures.back().tex_count = get_mat_type_tex_count((a2ematerial::MAT_TYPE)textures.back().mat_type);
 
 		// multi texturing stuff
 
@@ -196,7 +181,7 @@ void a2ematerial::load_material(char* filename) {
 			//textures.back().col_type = new char[textures.back().tex_count];
 			for(unsigned int j = 0; j < textures.back().tex_count; j++) {
 				textures.back().col_type[j] = file->get_char();
-				if(textures.back().col_type[j] > 0x01) {
+				if(textures.back().col_type[j] > COL_TYPE_COUNT) {
 					m->print(msg::MERROR, "a2ematerial.cpp", "load_material(): unknown color type (obj: %u, type: %u)!",
 						i, (unsigned int)textures.back().col_type[j]);
 				}
@@ -214,14 +199,8 @@ void a2ematerial::load_material(char* filename) {
 		// get texture file names
 		unsigned int x = 0;
 		while(x < textures.back().tex_count) {
-			unsigned char c = file->get_char();
-			if(c == 0xFF) {
-				textures.back().tex_names[x] = textures.back().tex_names[x];
-				x++;
-			}
-			else {
-				textures.back().tex_names[x] += c;
-			}
+			file->get_terminated_block(&textures.back().tex_names[x], (char)0xFF);
+			x++;
 		}
 	}
 
@@ -232,17 +211,28 @@ void a2ematerial::load_material(char* filename) {
 	a2ematerial::load_textures();
 }
 
-/*! loads the textures (just .png)
+/*! loads the textures
  */
 void a2ematerial::load_textures() {
 	if(e->get_init_mode() == engine::GRAPHICAL) {
 		for(vector<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
 			for(unsigned int i = 0; i < tex_iter->tex_count; i++) {
-				if(tex_iter->col_type[i] == 0x01) {
-					tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 4, GL_RGBA);
-				}
-				else {
-					tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 3, GL_RGB);
+				switch(tex_iter->col_type[i]) {
+					// RGB
+					case 0x00:
+						tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 3, GL_RGB);
+						break;
+					// RGBA
+					case 0x01:
+						tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 4, GL_RGBA);
+						break;
+					// LUMINANCE
+					case 0x02:
+						tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 1, GL_LUMINANCE);
+						break;
+					default:
+						tex_iter->textures[i] = t->add_texture(e->data_path(tex_iter->tex_names[i].c_str()), 3, GL_RGB);
+						break;
 				}
 			}
 		}
@@ -264,6 +254,7 @@ GLuint a2ematerial::get_texture(unsigned int obj_num, unsigned int num) {
 }
 
 /*! returns the material type (MAT_TYPES)
+ *  @param obj_num the number of the object we want to get material type from
  */
 char a2ematerial::get_material_type(unsigned int obj_num) {
 	for(vector<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
@@ -276,6 +267,8 @@ char a2ematerial::get_material_type(unsigned int obj_num) {
 }
 
 /*! returns the color type (0x00 = RGB, 0x01 = RGBA)
+ *  @param obj_num the number of the object we want to get color type from
+ *  @param texture the number of the objects texture
  */
 char a2ematerial::get_color_type(unsigned int obj_num, unsigned int texture) {
 	for(vector<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
@@ -287,6 +280,9 @@ char a2ematerial::get_color_type(unsigned int obj_num, unsigned int texture) {
 	return 0;
 }
 
+/*! returns the texture count of the specified object
+ *  @param obj_num the number of the object we want to get texture count from
+ */
 unsigned int a2ematerial::get_texture_count(unsigned int obj_num) {
 	for(vector<texture_elem>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
 		if(tex_iter->obj_num == obj_num) {
@@ -297,13 +293,31 @@ unsigned int a2ematerial::get_texture_count(unsigned int obj_num) {
 	return 0;
 }
 
-void a2ematerial::enable_texture(unsigned int obj_num) {
+/*! enables all texture of the specified object (in and w/o shader mode)
+ *  @param obj_num the number of the object
+ *  @param no_shader flag that specifies if shaders are being used
+ */
+void a2ematerial::enable_texture(unsigned int obj_num, bool no_shader) {
 	switch(textures.at(obj_num).mat_type) {
-		case a2ematerial::DIFFUSE:
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, textures.at(obj_num).textures[0]);
-			if(textures.at(obj_num).col_type[0] == 0x01) { glEnable(GL_BLEND); }
-			break;
+		case a2ematerial::DIFFUSE: {
+			// used by the shader pipeline
+			if(!no_shader && exts->is_multitexture_support() && exts->is_shader_support()) {
+				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
+				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 0));
+				glEnable(GL_TEXTURE_2D);
+
+				exts->glActiveTextureARB(GL_TEXTURE1_ARB);
+				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 1));
+				glEnable(GL_TEXTURE_2D);
+			}
+			// used by the fixed pipeline
+			else {
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 0));
+				if(textures.at(obj_num).col_type[0] == 0x01) { glEnable(GL_BLEND); }
+			}
+		}
+		break;
 		case a2ematerial::BUMP: {
 				e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glBindTexture(GL_TEXTURE_2D, get_texture(obj_num, 0));
@@ -320,8 +334,8 @@ void a2ematerial::enable_texture(unsigned int obj_num) {
 				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_DOT3_RGB_ARB);
 				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PREVIOUS);
 				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_DOT3_RGB_ARB);
-			}
-			break;
+		}
+		break;
 		case a2ematerial::MULTITEXTURE: {
 			for(unsigned int i = 0; i < textures.at(obj_num).tex_count; i++) {
 				e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB+i);
@@ -406,16 +420,30 @@ void a2ematerial::enable_texture(unsigned int obj_num) {
 			}
 			//if(textures.at(obj_num).col_type[0] == 0x01) { glEnable(GL_BLEND); }
 
-			}
-			break;
+		}
+		break;
 	}
 }
 
-void a2ematerial::disable_texture(unsigned int obj_num) {
+/*! disables all texture of the specified object (in and w/o shader mode)
+ *  @param obj_num the number of the object
+ *  @param no_shader flag that specifies if shaders are being used
+ */
+void a2ematerial::disable_texture(unsigned int obj_num, bool no_shader) {
 	switch(textures.at(obj_num).mat_type) {
 		case a2ematerial::DIFFUSE:
-			if(textures.at(obj_num).col_type[0] == 0x01) { glDisable(GL_BLEND); }
-			glDisable(GL_TEXTURE_2D);
+			// used by the shader pipeline
+			if(!no_shader && exts->is_multitexture_support() && exts->is_shader_support()) {
+				e->get_ext()->glActiveTextureARB(GL_TEXTURE1_ARB);
+				glDisable(GL_TEXTURE_2D);
+				e->get_ext()->glActiveTextureARB(GL_TEXTURE0_ARB);
+				glDisable(GL_TEXTURE_2D);
+			}
+			// used by the fixed pipeline
+			else {
+				glDisable(GL_BLEND);
+				glDisable(GL_TEXTURE_2D);
+			}
 			break;
 		case a2ematerial::BUMP:
 			e->get_ext()->glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -433,6 +461,9 @@ void a2ematerial::disable_texture(unsigned int obj_num) {
 	}
 }
 
+/*! returns the combine mode (used by multi-texturing) associated with a specific id (char)
+ *  @param c the combine modes id
+ */
 unsigned int a2ematerial::get_combine(char c) {
 	switch(c) {
 		case 0x00:
@@ -458,6 +489,9 @@ unsigned int a2ematerial::get_combine(char c) {
 	return 0;
 }
 
+/*! returns the rgb sourc (used by multi-texturing) associated with a specific id (char)
+ *  @param c the rgb sources id
+ */
 unsigned int a2ematerial::get_rgb_source(char c) {
 	switch(c) {
 		case 0x00:
@@ -477,6 +511,9 @@ unsigned int a2ematerial::get_rgb_source(char c) {
 	return 0;
 }
 
+/*! returns the rgb operand (used by multi-texturing) associated with a specific id (char)
+ *  @param c the rgb operands id
+ */
 unsigned int a2ematerial::get_rgb_operand(char c) {
 	switch(c) {
 		case 0x00:
@@ -496,6 +533,9 @@ unsigned int a2ematerial::get_rgb_operand(char c) {
 	return 0;
 }
 
+/*! returns the alpha sourc (used by multi-texturing) associated with a specific id (char)
+ *  @param c the alpha sources id
+ */
 unsigned int a2ematerial::get_alpha_source(char c) {
 	switch(c) {
 		case 0x00:
@@ -515,6 +555,9 @@ unsigned int a2ematerial::get_alpha_source(char c) {
 	return 0;
 }
 
+/*! returns the alpha operand (used by multi-texturing) associated with a specific id (char)
+ *  @param c the alpha operands id
+ */
 unsigned int a2ematerial::get_alpha_operand(char c) {
 	switch(c) {
 		case 0x00:
@@ -528,6 +571,42 @@ unsigned int a2ematerial::get_alpha_operand(char c) {
 	return 0;
 }
 
+/*! returns the texture elem (struct) of the specified object
+ *  @param obj_num the objects number from which we want to get the texture element
+ */
 a2ematerial::texture_elem* a2ematerial::get_tex_elem(unsigned int obj_num) {
 	return &textures[obj_num];
+}
+
+/*! returns the materials sub-object count
+ */
+unsigned int a2ematerial::get_object_count() {
+	return (unsigned int)a2ematerial::textures.size();
+}
+
+/*! returns the texture count of the specified material type
+ *  @param type the material type
+ */
+unsigned int a2ematerial::get_mat_type_tex_count(MAT_TYPE type) {
+	unsigned int ret = 0;
+	switch(type) {
+		case a2ematerial::NONE:
+			ret = 0;
+			break;
+		case a2ematerial::DIFFUSE:
+			ret = 2;
+			break;
+		case a2ematerial::BUMP:
+			ret = 3;
+			break;
+		case a2ematerial::PARALLAX:
+			ret = 4;
+			break;
+		case a2ematerial::MULTITEXTURE:
+			ret = 8;
+			break;
+		default:
+			break;
+	}
+	return ret;
 }

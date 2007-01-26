@@ -34,7 +34,7 @@ void update_cam(cam_type ctype) {
 	float xrot = cam->get_rotation()->y * piover180;
 	float zrot = cam->get_rotation()->y * piover180;
 
-	cam->set_position(-xpos - sinf(xrot) * 15.0f, -ypos - 10.0f, -zpos - cosf(zrot) * 15.0f);
+	cam->set_position(-xpos - sinf(xrot) * 15.0f, ypos + 10.0f, -zpos - cosf(zrot) * 15.0f);
 	player->set_position(xpos, ypos - 2.0f, zpos);
 	player->set_rotation(0.0f, 360.0f - cam->get_rotation()->y, 0.0f);
 
@@ -224,16 +224,16 @@ int main(int argc, char *argv[])
 						case SDLK_KP_MINUS:
 							max_force -= 1.0f;
 							break;
-						case SDLK_SPACE:
-							for(unsigned int i = 0; i < (unsigned int)sqrt((float)cspheres); i++) {
-								for(unsigned int j = 0; j < (unsigned int)sqrt((float)cspheres); j++) {
-									//dBodySetPosition(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), (float)i*5, 20.0f, (float)j*5);
-									//dBodySetLinearVel(o->get_ode_object(2 + i*(unsigned int)sqrt((float)cspheres) + j)->get_body(), 0.0f, 0.0f, 0.0f);
-									dBodySetPosition(spheres_obj[i*3+j]->get_body(), (float)i*5, 20.0f, (float)j*5);
-									dBodySetLinearVel(spheres_obj[i*3+j]->get_body(), 0.0f, 0.0f, 0.0f);
+						case SDLK_SPACE: {
+							unsigned int side = (unsigned int)sqrtf((float)cspheres);
+							for(unsigned int i = 0; i < side; i++) {
+								for(unsigned int j = 0; j < side; j++) {
+									spheres_obj[i*side+j]->reset();
+									dBodySetPosition(spheres_obj[i*side+j]->get_body(), (float)i*5, 20.0f, (float)j*5);
 								}
 							}
-							break;
+						}
+						break;
 						default:
 						break;
 					}

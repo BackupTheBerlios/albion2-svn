@@ -73,6 +73,7 @@ void mdl::close_model() {
 	mdl::mdl_ld = false;
 
 	mat_fname = "";
+	mdl_fname = "";
 }
 
 void mdl::load_model(char* filename, char* ani_filename) {
@@ -111,7 +112,7 @@ void mdl::load_model(char* filename, char* ani_filename) {
 	vertex3* p = ani ? amodel->get_position() : model->get_position();
 	vertex3* et = new vertex3(bbox->vmax - bbox->vmin);
 
-	cam->set_position(-(p->x + et->x), -(p->y + et->y), -(p->z + et->z));
+	cam->set_position(-(p->x + et->x), (p->y + et->y), -(p->z + et->z));
 	cam->set_rotation(0.0f, 45.0f, 0.0f);
 
 	float max = et->x;
@@ -120,6 +121,8 @@ void mdl::load_model(char* filename, char* ani_filename) {
 	cam->set_cam_speed(max / 100.0f);
 
 	delete et;
+	
+	mdl_fname = filename;
 }
 
 void mdl::set_material(char* filename) {
@@ -270,9 +273,7 @@ void mdl::draw_selection(bool wireframe) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 
 		glColor3f(1.0f, 1.0f, 1.0f);
-		if(ani) glFrontFace(GL_CW);
 		glDrawElements(GL_TRIANGLES, index_count * 3, GL_UNSIGNED_INT, indices);
-		if(ani) glFrontFace(GL_CCW);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -292,9 +293,7 @@ void mdl::draw_selection(bool wireframe) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 
 		glColor4f(1.0f, 1.0f, 1.0f, ud_alpha);
-		if(ani) glFrontFace(GL_CW);
 		glDrawElements(GL_TRIANGLES, index_count * 3, GL_UNSIGNED_INT, indices);
-		if(ani) glFrontFace(GL_CCW);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 

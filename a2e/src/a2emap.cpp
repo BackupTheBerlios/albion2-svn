@@ -16,7 +16,10 @@
 
 #include "a2emap.h"
 
-/*! there is no function currently
+/*! a2emap constructor
+ *  @param e a pointer to the engine class
+ *  @param sce a pointer to the scene class
+ *  @param o a pointer to the ode class (not necessarily needed)
  */
 a2emap::a2emap(engine* e, scene* sce, ode* o) {
 	// get classes
@@ -26,20 +29,33 @@ a2emap::a2emap(engine* e, scene* sce, ode* o) {
 	a2emap::c = e->get_core();
 	a2emap::m = e->get_msg();
 	a2emap::f = e->get_file_io();
+
+	map_opened = false;
 }
 
-/*! there is no function currently
+/*! a2emap destructor
  */
 a2emap::~a2emap() {
 	m->print(msg::MDEBUG, "a2emap.cpp", "freeing a2emap stuff");
+
+	// close map if map is still loaded ...
+	if(map_opened) {
+		close_map();
+	}
 
 	m->print(msg::MDEBUG, "a2emap.cpp", "a2emap stuff freed");
 }
 
 /*! loads/opens an a2e map specified by filename and adds everything to the scene
  *  @param filename the maps filename
+ *  @param vbo flag that specifies if vertex buffer objects should be used
  */
 bool a2emap::load_map(const char* filename, bool vbo) {
+	if(map_opened) {
+		m->print(msg::MERROR, "a2emap.cpp", "load_map(): a map is already loaded!");
+		return false;
+	}
+
 	f->open_file(filename, file_io::OT_READ_BINARY);
 
 	char* map_type = new char[7];
@@ -56,24 +72,22 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 	object_count = f->get_uint();
 
 	objects.reserve(object_count);
-	char* tmp = new char[33];
-	tmp[32] = 0;
 	float x, y, z;
 	for(unsigned int i = 0; i < object_count; i++) {
 		objects.push_back(*new a2emap::map_object());
 
-		f->get_block(tmp, 32); // model name
-		objects[i].name = tmp;
+		// model name
+		f->get_terminated_block(&objects[i].name, (char)0xFF);
 
-		f->get_block(tmp, 32); // model filename
-		objects[i].model_filename = tmp;
+		// model filename
+		f->get_terminated_block(&objects[i].model_filename, (char)0xFF);
 
-		f->get_block(tmp, 32); // model animation filename
-		objects[i].ani_filename = tmp;
+		// model animation filename
+		f->get_terminated_block(&objects[i].ani_filename, (char)0xFF);
 
 		f->get_char(); // model type, not needed any more
-		f->get_block(tmp, 32); // model material filename
-		objects[i].mat_filename = tmp;
+		// model material filename
+		f->get_terminated_block(&objects[i].mat_filename, (char)0xFF);
 
 		x = f->get_float(); // position
 		y = f->get_float();
@@ -91,8 +105,24 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 		objects[i].scale.set(x, y, z);
 
 		objects[i].phys_type = f->get_uint(); // physical property
+
+		// gravity flag
+		objects[i].gravity = f->get_char() == 0x00 ? false : true;
+
+		// collision model flag
+		objects[i].collision_model = f->get_char() == 0x00 ? false : true;
+
+		// auto mass flag
+		objects[i].auto_mass = f->get_char() == 0x00 ? false : true;
+
+		// mass
+		objects[i].mass = f->get_float();
+
+		// physical object scale
+		objects[i].phys_scale.x = f->get_float();
+		objects[i].phys_scale.y = f->get_float();
+		objects[i].phys_scale.z = f->get_float();
 	}
-	delete [] tmp;
 
 	f->close_file();
 
@@ -123,10 +153,13 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 			objects[i].model->set_rotation(objects[i].orientation.x, objects[i].orientation.y, objects[i].orientation.z);
 
 		// TODO: make a hard_scale at the amodel too ...
-		objects[i].model_type ?
+		/*objects[i].model_type ?
 			objects[i].amodel->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z) :
 			(objects[i].model->set_hard_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z),
-			objects[i].model->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z));
+			objects[i].model->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z));*/
+		objects[i].model_type ?
+			objects[i].amodel->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z) :
+			objects[i].model->set_scale(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z);
 
 		objects[i].model_type ? sce->add_model(objects[i].amodel) : sce->add_model(objects[i].model);
 
@@ -144,9 +177,14 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 				}
 			}
 
-			objects[i].ode_obj = o->add_object(objects[i].model, false, (ode_object::OTYPE)objects[i].phys_type);
+			objects[i].model->set_phys_scale(objects[i].phys_scale.x, objects[i].phys_scale.y, objects[i].phys_scale.z);
+
+			objects[i].ode_obj = o->add_object(objects[i].model, !objects[i].gravity, (ode_object::OTYPE)objects[i].phys_type, objects[i].collision_model);
+			if(!objects[i].auto_mass) objects[i].ode_obj->set_mass(objects[i].mass);
 		}
 	}
+
+	map_opened = true;
 
 	return true;
 }
@@ -154,6 +192,11 @@ bool a2emap::load_map(const char* filename, bool vbo) {
 /*! closes the map
  */
 void a2emap::close_map() {
+	if(!map_opened) {
+		m->print(msg::MERROR, "a2emap.cpp", "close_map(): no map is currently loaded!");
+		return;
+	}
+
 	for(unsigned int i = 0; i < object_count; i++) {
 		objects[i].model_type ? (sce->delete_model(objects[i].amodel), delete objects[i].amodel) :
 								(sce->delete_model(objects[i].model), delete objects[i].model);
@@ -161,6 +204,7 @@ void a2emap::close_map() {
 		delete objects[i].mat;
 	}
 	objects.clear();
+	object_count = 0;
 }
 
 /*! returns a map object specified by the objects (model) name

@@ -118,6 +118,7 @@ gui_text* gui_object::get_text_handler() {
 }
 
 void gui_object::set_text(const char* text) {
+	if(strcmp(gui_object::text.c_str(), text) != 0) redraw = true;
 	gui_object::text = text;
 	gui_object::text_handler->set_text((char*)text);
 }

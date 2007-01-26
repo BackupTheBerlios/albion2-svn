@@ -29,6 +29,7 @@
 #include <msg.h>
 #include <file_io.h>
 #include <vertex3.h>
+#include <omp.h>
 using namespace std;
 
 vector<vertex3> vertices;

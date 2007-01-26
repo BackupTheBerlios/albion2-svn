@@ -16,7 +16,7 @@
 
 #include "a2emodel.h"
 
-/*! there is no function currently
+/*! a2emodel constructor
  */
 a2emodel::a2emodel(engine* e, shader* s) {
 	a2emodel::position = new vertex3();
@@ -59,6 +59,12 @@ a2emodel::a2emodel(engine* e, shader* s) {
 
 	vbo = false;
 
+	phys_scale = new vertex3(1.0f, 1.0f, 1.0f);
+
+	is_draw_phys_obj = false;
+
+	max_vertex_connections = 0;
+
 	// get classes
 	a2emodel::e = e;
 	a2emodel::s = s;
@@ -69,7 +75,7 @@ a2emodel::a2emodel(engine* e, shader* s) {
 	a2emodel::exts = e->get_ext();
 }
 
-/*! there is no function currently
+/*! a2emodel destructor
  */
 a2emodel::~a2emodel() {
 	m->print(msg::MDEBUG, "a2emodel.cpp", "freeing a2emodel stuff");
@@ -112,35 +118,47 @@ a2emodel::~a2emodel() {
 		if(a2emodel::vbo_indices_ids != NULL) { delete [] vbo_indices_ids; }
 	}
 
+	delete phys_scale;
+
 	m->print(msg::MDEBUG, "a2emodel.cpp", "a2emodel stuff freed");
 }
 
 /*! draws the model
+ *  @param use_shader flag that specifies if shaders should be used for rendering
  */
 void a2emodel::draw(bool use_shader) {
 	if(a2emodel::is_visible && e->get_init_mode() == engine::GRAPHICAL) {
 		glPushMatrix();
 		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
 
-		// rotate the model
-		glRotatef(360.0f - rotation->x, 1.0f, 0.0f , 0.0f);
-		glRotatef(360.0f - rotation->y, 0.0f, 1.0f , 0.0f);
-		glRotatef(360.0f - rotation->z, 0.0f, 0.0f , 1.0f);
+		// rotate the model (use local inverse model view matrix that we already calculated)
+		glMultMatrixf(*mview_mat.m);
 
 		// scale the model
-		glScalef(a2emodel::scale->x, a2emodel::scale->y, a2emodel::scale->z);
+		glMultMatrixf(*scale_mat.m);
 
 		for(unsigned int i = 0; i < object_count; i++) {
-			if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::PARALLAX && use_shader) {
-				s->use_shader(shader::PARALLAX);
+			char mat_type = a2emodel::material->get_material_type(i);
+			// parallax mapping
+			if(exts->is_shader_support() && mat_type == a2ematerial::PARALLAX && use_shader) {
+				if(!e->get_hdr()) s->use_shader(shader::PARALLAX);
+				else s->use_shader(shader::PARALLAX_HDR);
 
-				s->set_uniform3f(0, -e->get_position()->x, -e->get_position()->y, -e->get_position()->z);
-				s->set_uniform3f(1, light_position->x, light_position->y, light_position->z);
+				// we need to add (resp. subtract) the objects position ... kinda "retranslating"
+				s->set_uniform3f(0, -e->get_position()->x - a2emodel::position->x,
+									-e->get_position()->y - a2emodel::position->y,
+									-e->get_position()->z - a2emodel::position->z);
 
-				s->set_uniform1i(2, 0);
-				s->set_uniform1i(3, 1);
-				s->set_uniform1i(4, 2);
-				s->set_uniform4f(5, light_color[0], light_color[1], light_color[2], light_color[3]);
+				s->set_uniform3f(1, (light_position->x - a2emodel::position->x),
+									(light_position->y - a2emodel::position->y),
+									(light_position->z - a2emodel::position->z));
+
+				s->set_uniform_matrix4fv(2, *mview_mat.m);
+
+				s->set_uniform1i(3, 0);
+				s->set_uniform1i(4, 1);
+				s->set_uniform1i(5, 2);
+				s->set_uniform1i(6, 3);
 
 				exts->glActiveTextureARB(GL_TEXTURE0_ARB);
 				glBindTexture(GL_TEXTURE_2D, a2emodel::material->get_texture(i, 0));
@@ -150,6 +168,9 @@ void a2emodel::draw(bool use_shader) {
 				glEnable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE2_ARB);
 				glBindTexture(GL_TEXTURE_2D, a2emodel::material->get_texture(i, 2));
+				glEnable(GL_TEXTURE_2D);
+				exts->glActiveTextureARB(GL_TEXTURE3_ARB);
+				glBindTexture(GL_TEXTURE_2D, a2emodel::material->get_texture(i, 3));
 				glEnable(GL_TEXTURE_2D);
 
 				// if the wireframe flag is set, draw the model in wireframe mode
@@ -166,44 +187,48 @@ void a2emodel::draw(bool use_shader) {
 					glVertexPointer(3, GL_FLOAT, 0, NULL);
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_normals_id);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[0]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[0]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_binormals_id);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[1]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[1]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tangents_id);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[2]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, NULL);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[2]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[3]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, NULL);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[3]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 					glEnableClientState(GL_VERTEX_ARRAY);
 
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, NULL);
 
+					glDisableClientState(GL_VERTEX_ARRAY);
+
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 				}
-				// if not (or the extension isn't supported, use vertex arrays
+				// if not (or the extension isn't supported, use vertex arrays)
 				else {
 					glEnableClientState(GL_VERTEX_ARRAY);
 					glVertexPointer(3, GL_FLOAT, 0, vertices);
 
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[0]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, normals);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[1]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, binormals);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[2]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, tangents);
-					exts->glEnableVertexAttribArrayARB(s->get_shader_object(1)->attributes[3]);
-					exts->glVertexAttribPointerARB(s->get_shader_object(1)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, tex_coords);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[0]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[0], 3, GL_FLOAT, GL_FALSE, 0, normals);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[1]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[1], 3, GL_FLOAT, GL_FALSE, 0, binormals);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[2]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[2], 3, GL_FLOAT, GL_FALSE, 0, tangents);
+					exts->glEnableVertexAttribArrayARB(s->get_shader_object(shader::PARALLAX)->attributes[3]);
+					exts->glVertexAttribPointerARB(s->get_shader_object(shader::PARALLAX)->attributes[3], 2, GL_FLOAT, GL_FALSE, 0, tex_coords);
 
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, indices[i]);
+
+					glDisableClientState(GL_VERTEX_ARRAY);
 				}
 
 
@@ -213,6 +238,8 @@ void a2emodel::draw(bool use_shader) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 
+				exts->glActiveTextureARB(GL_TEXTURE3_ARB);
+				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE2_ARB);
 				glDisable(GL_TEXTURE_2D);
 				exts->glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -221,15 +248,18 @@ void a2emodel::draw(bool use_shader) {
 				glDisable(GL_TEXTURE_2D);
 				s->use_shader(shader::NONE);
 			}
-			else if(exts->is_shader_support() && a2emodel::material->get_material_type(i) == a2ematerial::DIFFUSE && use_shader) {
+			// phong lighting (w/ diffuse mapping)
+			else if(exts->is_shader_support() && use_shader && mat_type == a2ematerial::DIFFUSE) {
 				// if the wireframe flag is set, draw the model in wireframe mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				}
 
-				s->use_shader(shader::PHONG);
+				if(!e->get_hdr()) s->use_shader(shader::PHONG);
+				else s->use_shader(shader::PHONG_HDR);
 
 				s->set_uniform1i(0, 0);
+				s->set_uniform1i(1, 1);
 
 				a2emodel::material->enable_texture(i);
 
@@ -245,7 +275,6 @@ void a2emodel::draw(bool use_shader) {
 					glNormalPointer(GL_FLOAT, 0, NULL);
 					glEnableClientState(GL_NORMAL_ARRAY);
 
-
 					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
 						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
@@ -255,7 +284,6 @@ void a2emodel::draw(bool use_shader) {
 					}
 
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
-
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, NULL);
 
 					glDisableClientState(GL_VERTEX_ARRAY);
@@ -269,7 +297,7 @@ void a2emodel::draw(bool use_shader) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 				}
-				// if not (or the extension isn't supported, use vertex arrays
+				// if not (or the extension isn't supported, use vertex arrays)
 				else {
 					glVertexPointer(3, GL_FLOAT, 0, vertices);
 					glEnableClientState(GL_VERTEX_ARRAY);
@@ -303,15 +331,19 @@ void a2emodel::draw(bool use_shader) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 			}
+			// "normal" diffuse/mutli-texture mapping, no shader usage
 			else { // !use_shader
 				// if the wireframe flag is set, draw the model in wireframe mode
 				if(a2emodel::draw_wireframe) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				}
 
-				a2emodel::material->enable_texture(i);
+				a2emodel::material->enable_texture(i, true);
 				
 				glColor3f(1.0f, 1.0f, 1.0f);
+
+				unsigned int texture_count = a2emodel::material->get_texture_count(i);
+				if(a2emodel::material->get_material_type(i) != a2ematerial::MULTITEXTURE) texture_count--;
 
 				// do we use a vertex buffer object?
 				if(vbo) {
@@ -324,7 +356,7 @@ void a2emodel::draw(bool use_shader) {
 					glEnableClientState(GL_NORMAL_ARRAY);
 
 
-					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+					for(unsigned int j = 0; j < texture_count; j++) {
 						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
@@ -333,12 +365,11 @@ void a2emodel::draw(bool use_shader) {
 					}
 
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
-
 					glDrawElements(GL_TRIANGLES, index_count[i] * 3, GL_UNSIGNED_INT, NULL);
 
 					glDisableClientState(GL_VERTEX_ARRAY);
 					glDisableClientState(GL_NORMAL_ARRAY);
-					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+					for(int j = texture_count; j >= 0; j--) {
 						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
 						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -347,14 +378,14 @@ void a2emodel::draw(bool use_shader) {
 					exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 					exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 				}
-				// if not (or the extension isn't supported, use vertex arrays
+				// if not (or the extension isn't supported, use vertex arrays)
 				else {
 					glVertexPointer(3, GL_FLOAT, 0, vertices);
 					glEnableClientState(GL_VERTEX_ARRAY);
 					glNormalPointer(GL_FLOAT, 0, normals);
 					glEnableClientState(GL_NORMAL_ARRAY);
 					
-					for(unsigned int j = 0; j < a2emodel::material->get_texture_count(i); j++) {
+					for(unsigned int j = 0; j < texture_count; j++) {
 						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
 						glTexCoordPointer(2, GL_FLOAT, 0, tex_coords);
@@ -365,14 +396,14 @@ void a2emodel::draw(bool use_shader) {
 
 					glDisableClientState(GL_VERTEX_ARRAY);
 					glDisableClientState(GL_NORMAL_ARRAY);
-					for(int j = a2emodel::material->get_texture_count(i); j >= 0; j--) {
+					for(int j = texture_count; j >= 0; j--) {
 						exts->glActiveTextureARB(GL_TEXTURE0_ARB+j);
 						exts->glClientActiveTextureARB(GL_TEXTURE0_ARB+j);
 						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					}
 				}
 
-				a2emodel::material->disable_texture(i);
+				a2emodel::material->disable_texture(i, true);
 
 				// reset to filled mode
 				if(a2emodel::draw_wireframe) {
@@ -383,19 +414,95 @@ void a2emodel::draw(bool use_shader) {
 
 		glPopMatrix();
 	}
+}
 
-	// just for debug purposes or later usage in the mapeditor ...
-	/*if(collision_model) {
+/*! draws the models physical model/object
+ */
+void a2emodel::draw_phys_obj() {
+	if(e->get_init_mode() == engine::GRAPHICAL) {
+		glPushMatrix();
+		glTranslatef(a2emodel::position->x, a2emodel::position->y, a2emodel::position->z);
+
+		// rotate the model (use local inverse model view matrix that we already calculated)
+		glMultMatrixf(*mview_mat.m);
+
+		// scale the model
+		glScalef(a2emodel::phys_scale->x, a2emodel::phys_scale->y, a2emodel::phys_scale->z);
+
 		glDisable(GL_TEXTURE_2D);
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glBegin(GL_TRIANGLES);
-		for(unsigned int i = 0; i < col_index_count; i++) {
-			glVertex3f(position->x + col_vertices[col_indices[i].i1].x, position->y + col_vertices[col_indices[i].i1].y, position->z + col_vertices[col_indices[i].i1].z);
-			glVertex3f(position->x + col_vertices[col_indices[i].i2].x, position->y + col_vertices[col_indices[i].i2].y, position->z + col_vertices[col_indices[i].i2].z);
-			glVertex3f(position->x + col_vertices[col_indices[i].i3].x, position->y + col_vertices[col_indices[i].i3].y, position->z + col_vertices[col_indices[i].i3].z);
+		glEnable(GL_BLEND);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_LIGHTING);
+		glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
+
+		unsigned int draw_modes[] = { GL_FILL, GL_LINE };
+
+		if(!collision_model) {
+			for(unsigned int i = 0; i < 2; i++) {
+				glPolygonMode(GL_FRONT_AND_BACK, draw_modes[i]);
+
+				if(i) {
+					glEnable(GL_POLYGON_OFFSET_LINE); // use polygon offset to "disable" z-fighting
+					glPolygonOffset(-1.0f, 0.0f);
+				}
+
+				for(unsigned int j = 0; j < object_count; j++) {
+					// do we use a vertex buffer object?
+					if(vbo) {
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_vertices_id);
+						glVertexPointer(3, GL_FLOAT, 0, NULL);
+						glEnableClientState(GL_VERTEX_ARRAY);
+
+						exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[j]);
+
+						glDrawElements(GL_TRIANGLES, index_count[j] * 3, GL_UNSIGNED_INT, NULL);
+
+						glDisableClientState(GL_VERTEX_ARRAY);
+
+						exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+						exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+					}
+					// if not (or the extension isn't supported, use vertex arrays)
+					else {
+						glVertexPointer(3, GL_FLOAT, 0, vertices);
+						glEnableClientState(GL_VERTEX_ARRAY);
+
+						glDrawElements(GL_TRIANGLES, index_count[j] * 3, GL_UNSIGNED_INT, indices[j]);
+
+						glDisableClientState(GL_VERTEX_ARRAY);
+					}
+				}
+
+				if(i) glDisable(GL_POLYGON_OFFSET_LINE);
+			}
 		}
-		glEnd();
-	}*/
+		else {
+			for(unsigned int i = 0; i < 2; i++) {
+				glPolygonMode(GL_FRONT_AND_BACK, draw_modes[i]);
+
+				if(i) {
+					glEnable(GL_POLYGON_OFFSET_LINE); // use polygon offset to "disable" z-fighting
+					glPolygonOffset(-1.0f, 0.0f);
+				}
+
+				glVertexPointer(3, GL_FLOAT, 0, col_vertices);
+				glEnableClientState(GL_VERTEX_ARRAY);
+
+				glDrawElements(GL_TRIANGLES, col_index_count * 3, GL_UNSIGNED_INT, col_indices);
+
+				glDisableClientState(GL_VERTEX_ARRAY);
+
+				if(i) glDisable(GL_POLYGON_OFFSET_LINE);
+			}
+		}
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		glEnable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+
+		glPopMatrix();
+	}
 }
 
 /*! loads a .a2m model file
@@ -502,41 +609,39 @@ void a2emodel::load_model(char* filename, bool vbo) {
 		// vertices vbo
 		exts->glGenBuffersARB(1, &vbo_vertices_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_vertices_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float),
-			vertices, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float), vertices, GL_STATIC_DRAW_ARB);
 
 		// tex_coords vbo
 		exts->glGenBuffersARB(1, &vbo_tex_coords_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float),
-			tex_coords, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float), tex_coords, GL_STATIC_DRAW_ARB);
 
 		// normals vbo
 		exts->glGenBuffersARB(1, &vbo_normals_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_normals_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float),
-			normals, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float), normals, GL_STATIC_DRAW_ARB);
 
 		// binormals vbo
 		exts->glGenBuffersARB(1, &vbo_binormals_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_binormals_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float),
-			binormals, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float), binormals, GL_STATIC_DRAW_ARB);
 
 		// tangents vbo
 		exts->glGenBuffersARB(1, &vbo_tangents_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tangents_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float),
-			tangents, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 3 * sizeof(float), tangents, GL_STATIC_DRAW_ARB);
 
 		// indices vbos
 		vbo_indices_ids = new GLuint[object_count];
 		for(unsigned int i = 0; i < object_count; i++) {
 			exts->glGenBuffersARB(1, &vbo_indices_ids[i]);
 			exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_indices_ids[i]);
-			exts->glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_count[i] * 3 * sizeof(unsigned int),
-				indices[i], GL_STATIC_DRAW_ARB);
+			exts->glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_count[i] * 3 * sizeof(unsigned int), indices[i], GL_STATIC_DRAW_ARB);
 		}
+
+		// reset buffer
+		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		exts->glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
 		// not needed any more ... delete them?
 		/*delete [] normals;
@@ -575,9 +680,12 @@ vertex3* a2emodel::get_position() {
  *  @param z the z scale
  */
 void a2emodel::set_scale(float x, float y, float z) {
+	if(!(x != a2emodel::scale->x || y != a2emodel::scale->y || z != a2emodel::scale->z)) return;
 	a2emodel::scale->x = x;
 	a2emodel::scale->y = y;
 	a2emodel::scale->z = z;
+
+	update_scale_matrix();
 
 	// rebuild the bounding box - not needed in here / pointless ...
 	//a2emodel::build_bounding_box();
@@ -593,6 +701,13 @@ void a2emodel::set_hard_scale(float x, float y, float z) {
 		vertices[i].x *= x;
 		vertices[i].y *= y;
 		vertices[i].z *= z;
+	}
+
+	// reupload vertices stuff to vbo
+	if(vbo) {
+		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_vertices_id);
+		exts->glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, vertex_count * 3 * sizeof(float), vertices);
+		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	}
 
 	if(collision_model) {
@@ -619,9 +734,13 @@ vertex3* a2emodel::get_scale() {
  *  @param z the z rotation
  */
 void a2emodel::set_rotation(float x, float y, float z) {
+	if(!(x != a2emodel::rotation->x || y != a2emodel::rotation->y || z != a2emodel::rotation->z)) return;
+
 	a2emodel::rotation->x = x;
 	a2emodel::rotation->y = y;
 	a2emodel::rotation->z = z;
+
+	update_mview_matrix();
 }
 
 /*! returns the rotation of the model
@@ -636,7 +755,7 @@ vertex3* a2emodel::get_vertices() {
 	return a2emodel::vertices;
 }
 
-/*! returns a pointer to all the indices
+/*! returns a pointer to all the indices (needs to be deleted manually!)
  */
 core::index* a2emodel::get_total_indices() {
 	unsigned int total_count = 0;
@@ -660,6 +779,7 @@ core::index* a2emodel::get_total_indices() {
 }
 
 /*! returns a pointer to the specified (by obj_num) indices
+ *  @param obj_num sub-object number we want the indices from
  */
 core::index* a2emodel::get_indices(unsigned int obj_num) {
 	return indices[obj_num];
@@ -682,6 +802,7 @@ unsigned int a2emodel::get_index_count() {
 }
 
 /*! returns the index count of the sub-object obj_num
+ *  @param obj_num sub-object we want to get the index count from
  */
 unsigned int a2emodel::get_index_count(unsigned int obj_num) {
 	return index_count[obj_num];
@@ -820,6 +941,7 @@ void a2emodel::generate_normal_list() {
 			}
 		}
 		normal_list[i].count = x;
+		if(normal_list[i].count > max_vertex_connections) max_vertex_connections = normal_list[i].count;
 		if(x != 0) {
 			normal_list[i].num = new unsigned int[normal_list[i].count];
 			for(unsigned int j = 0; j < x; j++) {
@@ -835,59 +957,69 @@ void a2emodel::generate_normal_list() {
 /*! generates the normals, binormals and tangents of the model
  */
 void a2emodel::generate_normals() {
-	vertex3* tnormals = new vertex3[32];
-	vertex3* tbinormals = new vertex3[32];
-	vertex3* ttangents = new vertex3[32];
+	unsigned int thread_count = e->get_thread_count();
+	vertex3** tnormals = new vertex3*[thread_count];
+	vertex3** tbinormals = new vertex3*[thread_count];
+	vertex3** ttangents = new vertex3*[thread_count];
+	for(unsigned int i = 0; i < thread_count; i++) {
+		tnormals[i] = new vertex3[max_vertex_connections];
+		tbinormals[i] = new vertex3[max_vertex_connections];
+		ttangents[i] = new vertex3[max_vertex_connections];
+	}
 	core::index* all_indices = a2emodel::get_total_indices();
 
-	for(unsigned int i = 0; i < a2emodel::vertex_count; i++) {
+	int i, j, tn;
+
+	#pragma omp parallel for \
+	shared(all_indices) \
+	private(i, j, tn) \
+	firstprivate(tnormals, tbinormals, ttangents) \
+	default(shared) \
+	schedule(guided)
+	for(i = 0; i < (int)vertex_count; i++) {
+		tn = omp_get_thread_num();
 		// check if vertex is part of a triangle
 		if(a2emodel::normal_list[i].count != 0) {
-			// first of all: clear all vectors
-			a2emodel::normals[i].x = 0.0f;
-			a2emodel::normals[i].y = 0.0f;
-			a2emodel::normals[i].z = 0.0f;
-			a2emodel::binormals[i].x = 0.0f;
-			a2emodel::binormals[i].y = 0.0f;
-			a2emodel::binormals[i].z = 0.0f;
-			a2emodel::tangents[i].x = 0.0f;
-			a2emodel::tangents[i].y = 0.0f;
-			a2emodel::tangents[i].z = 0.0f;
 			// compute the normals, binormals and tangents for all triangles the vertex is part of
-			for(unsigned int j = 0; j < a2emodel::normal_list[i].count; j++) {
-				c->compute_normal_tangent_binormal(
-					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i1],
-					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i2],
-					&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i3],
-					tnormals[j], tbinormals[j], ttangents[j],
-					&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i1],
-					&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i2],
-					&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i3]);
+			for(j = 0; j < (int)a2emodel::normal_list[i].count; j++) {
+				if(exts->is_shader_support()) {
+					c->compute_normal_tangent_binormal(
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i1],
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i2],
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i3],
+						tnormals[tn][j], tbinormals[tn][j], ttangents[tn][j],
+						&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i1],
+						&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i2],
+						&a2emodel::tex_coords[all_indices[a2emodel::normal_list[i].num[j]].i3]);
+				}
+				else {
+					c->compute_normal(
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i1],
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i2],
+						&a2emodel::vertices[all_indices[a2emodel::normal_list[i].num[j]].i3],
+						tnormals[tn][j]);
+				}
 			}
 			// add all normals, binormals and tangents and divide them by the amount of them
-			for(unsigned int j = 0; j < a2emodel::normal_list[i].count; j++) {
-				a2emodel::normals[i] += tnormals[j];
-				a2emodel::binormals[i] += tbinormals[j];
-				a2emodel::tangents[i] += ttangents[j];
+			for(j = 0; j < (int)a2emodel::normal_list[i].count; j++) {
+				a2emodel::normals[i] += tnormals[tn][j];
+				if(exts->is_shader_support()) {
+					a2emodel::binormals[i] += tbinormals[tn][j];
+					a2emodel::tangents[i] += ttangents[tn][j];
+				}
 			}
 			a2emodel::normals[i] /= (float)a2emodel::normal_list[i].count;
-			a2emodel::binormals[i] /= (float)a2emodel::normal_list[i].count;
-			a2emodel::tangents[i] /= (float)a2emodel::normal_list[i].count;
+			if(exts->is_shader_support()) {
+				a2emodel::binormals[i] /= (float)a2emodel::normal_list[i].count;
+				a2emodel::tangents[i] /= (float)a2emodel::normal_list[i].count;
+			}
 		}
 	}
 
+	delete [] all_indices;
 	delete [] tnormals;
 	delete [] tbinormals;
 	delete [] ttangents;
-
-	delete [] all_indices;
-}
-
-/*! sets the current light color (used for parallax mapping)
- *  @param lcol the light color
- */
-void a2emodel::set_light_color(float* lcol) {
-	a2emodel::light_color = lcol;
 }
 
 /*! sets the current light position (used for parallax mapping)
@@ -913,11 +1045,12 @@ void a2emodel::scale_tex_coords(float su, float sv) {
 		// create new buffer
 		exts->glGenBuffersARB(1, &vbo_tex_coords_id);
 		exts->glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_tex_coords_id);
-		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float),
-			tex_coords, GL_STATIC_DRAW_ARB);
+		exts->glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertex_count * 2 * sizeof(float), tex_coords, GL_STATIC_DRAW_ARB);
 	}
 }
 
+/*! returns the models sub-object count
+ */
 unsigned int a2emodel::get_object_count() {
 	return a2emodel::object_count;
 }
@@ -928,22 +1061,74 @@ bool a2emodel::is_collision_model() {
 	return a2emodel::collision_model;
 }
 
+/*! returns a pointer to the models collision model vertices
+ */
 vertex3* a2emodel::get_col_vertices() {
 	return col_vertices;
 }
 
+/*! returns a pointer to the models collision model indices
+ */
 core::index* a2emodel::get_col_indices() {
 	return col_indices;
 }
 
+/*! returns the models collision model vertex count
+ */
 unsigned int a2emodel::get_col_vertex_count() {
 	return col_vertex_count;
 }
 
+/*! returns the models collision model index count
+ */
 unsigned int a2emodel::get_col_index_count() {
 	return col_index_count;
 }
 
+/*! returns a string pointer to the models sub-object names
+ */
 string* a2emodel::get_object_names() {
 	return a2emodel::object_names;
+}
+
+/*! sets the models physical scale
+ *  @param x x scale
+ *  @param y y scale
+ *  @param z z scale
+ */
+void a2emodel::set_phys_scale(float x, float y, float z) {
+	phys_scale->set(x, y, z);
+}
+
+/*! returns the physical scale
+ */
+vertex3* a2emodel::get_phys_scale() {
+	return phys_scale;
+}
+
+/*! updates the local modelview matrix
+ */
+void a2emodel::update_mview_matrix() {
+	a2emodel::mview_mat.rotate(c->deg_to_rad(360.0f - rotation->x), c->deg_to_rad(rotation->y), c->deg_to_rad(360.0f - rotation->z));
+	a2emodel::mview_mat.invert();
+}
+
+/*! updates the local scale matrix
+ */
+void a2emodel::update_scale_matrix() {
+	a2emodel::scale_mat.identity();
+	a2emodel::scale_mat.scale(scale->x, scale->y, scale->z);
+}
+
+/*! sets the models draw physical object state
+ *  @param state the new state
+ */
+void a2emodel::set_draw_phys_obj(bool state) {
+	a2emodel::is_draw_phys_obj = state;
+}
+
+/*! returns the models draw physical object flag
+ */
+bool a2emodel::get_draw_phys_obj() {
+	return a2emodel::is_draw_phys_obj;
 }

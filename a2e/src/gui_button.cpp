@@ -21,14 +21,14 @@
 gui_button::gui_button(engine* e, gui_style* gs) : gui_object(e, gs) {
 	gui_button::type = "button";
 
+	gui_button::img_scale = true;
+
 	// get classes
 	gui_button::e = e;
 	gui_button::c = e->get_core();
 	gui_button::m = e->get_msg();
 	gui_button::g = e->get_gfx();
 	gui_button::gs = gs;
-
-	gui_button::img_scale = true;
 }
 
 /*! there is no function currently

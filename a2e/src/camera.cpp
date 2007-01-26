@@ -15,14 +15,13 @@
  */
 
 #include "camera.h"
-#include "msg.h"
-#include <math.h>
 
 /*! there is no function currently
  */
 camera::camera(engine* e) {
 	camera::position = new vertex3();
 	camera::rotation = new vertex3();
+	camera::direction = new vertex3();
 
 	up_down = 0.0f;
 
@@ -32,13 +31,7 @@ camera::camera(engine* e) {
 	rotation_speed = 100.0f;
 	cam_speed = 1.0f;
 
-	camera::position->x = 0.0f;
-	camera::position->y = 0.0f;
-	camera::position->z = 0.0f;
-	
-	camera::rotation->x = 0.0f;
-	camera::rotation->y = 0.0f;
-	camera::rotation->z = 0.0f;
+	camera::flip = e->get_ext()->is_fbo_support();
 
 	// get classes
 	camera::e = e;
@@ -54,6 +47,7 @@ camera::~camera() {
 
 	delete camera::position;
 	delete camera::rotation;
+	delete camera::direction;
 
 	m->print(msg::MDEBUG, "camera.cpp", "camera stuff freed");
 }
@@ -75,15 +69,29 @@ void camera::run() {
 		}
 
 		if(evt->is_key_up()) {
-			position->x += (float)sin(rotation->y * PIOVER180) * cam_speed;
-			position->y -= (float)sin(rotation->x * PIOVER180) * cam_speed;
-			position->z += (float)cos(rotation->y * PIOVER180) * cam_speed;
+			if(!flip) {
+				position->x += (float)sin(rotation->y * PIOVER180) * cam_speed;
+				position->y -= (float)sin(rotation->x * PIOVER180) * cam_speed;
+				position->z += (float)cos(rotation->y * PIOVER180) * cam_speed;
+			}
+			else {
+				position->x += (float)sin(rotation->y * PIOVER180) * cam_speed;
+				position->y += (float)sin((360.0f - rotation->x) * PIOVER180) * cam_speed;
+				position->z += (float)cos(rotation->y * PIOVER180) * cam_speed;
+			}
 		}
 
 		if(evt->is_key_down()) {
-			position->x -= (float)sin(rotation->y * PIOVER180) * cam_speed;
-			position->y += (float)sin(rotation->x * PIOVER180) * cam_speed;
-			position->z -= (float)cos(rotation->y * PIOVER180) * cam_speed;
+			if(!flip) {
+				position->x -= (float)sin(rotation->y * PIOVER180) * cam_speed;
+				position->y += (float)sin(rotation->x * PIOVER180) * cam_speed;
+				position->z -= (float)cos(rotation->y * PIOVER180) * cam_speed;
+			}
+			else {
+				position->x -= (float)sin(rotation->y * PIOVER180) * cam_speed;
+				position->y -= (float)sin((360.0f - rotation->x) * PIOVER180) * cam_speed;
+				position->z -= (float)cos(rotation->y * PIOVER180) * cam_speed;
+			}
 		}
 	}
 
@@ -118,11 +126,22 @@ void camera::run() {
 	}
 
 	// rotate
-	glRotatef(360.0f - rotation->x, 1.0f, 0.0f, 0.0f);
-	glRotatef(360.0f - rotation->y, 0.0f, 1.0f, 0.0f);
+	if(!flip) {
+		glRotatef(360.0f - rotation->x, 1.0f, 0.0f, 0.0f);
+		glRotatef(360.0f - rotation->y, 0.0f, 1.0f, 0.0f);
+	}
+	else {
+		glRotatef(rotation->x, 1.0f, 0.0f, 0.0f);
+		glRotatef(360.0f - rotation->y, 0.0f, 1.0f, 0.0f);
+	}
 
-	// reposition
+	if(flip) position->y *= -1.0f;
+
+	// reposition / "rotate"
 	e->set_position(camera::position->x, camera::position->y, camera::position->z);
+	e->set_rotation(camera::rotation->x, camera::rotation->y);
+
+	if(flip) position->y *= -1.0f;
 }
 
 /*! sets the position of the camera
@@ -134,6 +153,8 @@ void camera::set_position(float x, float y, float z) {
 	camera::position->x = x;
 	camera::position->y = y;
 	camera::position->z = z;
+
+	camera::position->y *= -1.0f;
 }
 
 /*! sets the rotation of the camera
@@ -213,4 +234,21 @@ void camera::set_cam_speed(float speed) {
  */
 float camera::get_cam_speed() {
 	return camera::cam_speed;
+}
+
+void camera::set_flip(bool state) {
+	flip = state;
+}
+
+bool camera::get_flip() {
+	return flip;
+}
+
+/*! returns the cameras direction
+ */
+vertex3* camera::get_direction() {
+	direction->x = (float)sin(rotation->y * PIOVER180);
+	direction->y = (float)sin(rotation->x * PIOVER180);
+	direction->z = (float)cos(rotation->y * PIOVER180);
+	return camera::direction;
 }

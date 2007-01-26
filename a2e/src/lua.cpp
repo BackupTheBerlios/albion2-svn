@@ -59,7 +59,7 @@ lua::~lua() {
 	delete lua::r1;
 	delete lua::p1;
 	delete lua::p2;
-	
+
 	delete lua::v1;
 	delete lua::v2;
 
@@ -105,12 +105,12 @@ void lua::set_core(core* c) {
  */
 void lua::load_gfx() {
 	if(lua::g != NULL) {
-		register_function("draw_point", draw_point);
-		register_function("draw_line", draw_line);
-		register_function("draw_3d_line", draw_3d_line);
-		register_function("draw_rectangle", draw_rectangle);
-		register_function("draw_2colored_rectangle", draw_2colored_rectangle);
-		register_function("draw_filled_rectangle", draw_filled_rectangle);
+		register_function((char*)"draw_point", draw_point);
+		register_function((char*)"draw_line", draw_line);
+		register_function((char*)"draw_3d_line", draw_3d_line);
+		register_function((char*)"draw_rectangle", draw_rectangle);
+		register_function((char*)"draw_2colored_rectangle", draw_2colored_rectangle);
+		register_function((char*)"draw_filled_rectangle", draw_filled_rectangle);
 	}
 	else {
 		m->print(msg::MERROR, "lua.cpp", "load_gfx(): no gfx class specified yet!");
@@ -244,7 +244,7 @@ bool lua::check_type(lua_State* l, int num, LARG_TYPE type) {
 
 int lua::draw_point(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 3, types, "draw_point")) {
+	if(!check_args(l, 3, types, (char*)"draw_point")) {
 		return 0;
 	}
 
@@ -262,7 +262,7 @@ int lua::draw_point(lua_State* l) {
 
 int lua::draw_line(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types, "draw_line")) {
+	if(!check_args(l, 5, types, (char*)"draw_line")) {
 		return 0;
 	}
 
@@ -283,7 +283,7 @@ int lua::draw_line(lua_State* l) {
 int lua::draw_3d_line(lua_State* l) {
 	LARG_TYPE types[] = { lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER,
 							lua::FLOAT_NUMBER, lua::FLOAT_NUMBER, lua::FLOAT_NUMBER };
-	if(!check_args(l, 7, types, "draw_3d_line")) {
+	if(!check_args(l, 7, types, (char*)"draw_3d_line")) {
 		return 0;
 	}
 
@@ -305,7 +305,7 @@ int lua::draw_3d_line(lua_State* l) {
 
 int lua::draw_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types, "draw_rectangle")) {
+	if(!check_args(l, 5, types, (char*)"draw_rectangle")) {
 		return 0;
 	}
 
@@ -325,7 +325,7 @@ int lua::draw_rectangle(lua_State* l) {
 
 int lua::draw_filled_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 5, types, "draw_filled_rectangle")) {
+	if(!check_args(l, 5, types, (char*)"draw_filled_rectangle")) {
 		return 0;
 	}
 
@@ -346,7 +346,7 @@ int lua::draw_filled_rectangle(lua_State* l) {
 int lua::draw_2colored_rectangle(lua_State* l) {
 	LARG_TYPE types[] = { lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER,
 							lua::INT_NUMBER, lua::INT_NUMBER, lua::INT_NUMBER };
-	if(!check_args(l, 6, types, "draw_2colored_rectangle")) {
+	if(!check_args(l, 6, types, (char*)"draw_2colored_rectangle")) {
 		return 0;
 	}
 

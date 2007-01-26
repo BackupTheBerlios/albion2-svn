@@ -56,6 +56,18 @@ bool file_io::open_file(const char* filename, FIO_OPEN_TYPE open_type) {
 		case file_io::OT_WRITE_BINARY:
 			file_io::filestream.open(filename, fstream::out | fstream::binary);
 			break;
+		case file_io::OT_APPEND:
+			file_io::filestream.open(filename, fstream::app);
+			break;
+		case file_io::OT_APPEND_BINARY:
+			file_io::filestream.open(filename, fstream::app | fstream::binary);
+			break;
+		case file_io::OT_APPEND_READ:
+			file_io::filestream.open(filename, fstream::in | fstream::app);
+			break;
+		case file_io::OT_APPEND_READ_BINARY:
+			file_io::filestream.open(filename, fstream::in | fstream::app | fstream::binary);
+			break;
 		default:
 			file_io::filestream.open(filename, fstream::in);
 			break;
@@ -170,7 +182,7 @@ unsigned int file_io::get_current_offset() {
  *  @param data a pointer to the block we want to write
  *  @param size the size of the block
  */
-void file_io::write_block(char* data, unsigned int size) {
+void file_io::write_block(const char* data, unsigned int size) {
 	file_io::filestream.write(data, (streamsize)strlen(data));
 	if(strlen(data) < size) {
 		unsigned int x = size - strlen(data);
@@ -260,4 +272,15 @@ bool file_io::check_open() {
  */
 bool file_io::eof() {
 	return file_io::filestream.eof();
+}
+
+void file_io::get_terminated_block(string* str, char terminator) {
+	for(char c = get_char(); c != terminator; c = get_char()) {
+		*str += c;
+	}
+}
+
+void file_io::write_terminated_block(string* str, char terminator) {
+	write_block(str->c_str(), (unsigned int)str->length());
+	put_char(terminator);
 }

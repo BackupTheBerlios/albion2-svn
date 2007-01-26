@@ -11,9 +11,23 @@ ifeq ($(CONFIG),Debug)
   OBJDIR := obj/Debug
   OUTDIR := ../a2e/lib
   CPPFLAGS := -MD -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
-  CFLAGS += $(CPPFLAGS) -g `sdl-config --cflags` -Wall
+  CFLAGS += $(CPPFLAGS) -g `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize
   CXXFLAGS := $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) `sdl-config --libs` -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -llua -lxml2
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPIC `sdl-config --libs` -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
+  LDDEPS :=
+  TARGET := liba2e.a
+  BLDCMD = ar -cr $(OUTDIR)/$(TARGET) $(OBJECTS); ranlib $(OUTDIR)/$(TARGET)
+endif
+
+ifeq ($(CONFIG),Release_AMD)
+  BINDIR := ..
+  LIBDIR := ..
+  OBJDIR := obj/Release_AMD
+  OUTDIR := ../a2e/lib
+  CPPFLAGS := -MD -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
+  CFLAGS += $(CPPFLAGS) -g `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize -march=athlon64 -ffast-math -ftracer -O3 -msse3 -frename-registers -fweb -finline-functions
+  CXXFLAGS := $(CFLAGS)
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -fPIC `sdl-config --libs` -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
   LDDEPS :=
   TARGET := liba2e.a
   BLDCMD = ar -cr $(OUTDIR)/$(TARGET) $(OBJECTS); ranlib $(OUTDIR)/$(TARGET)
@@ -25,9 +39,9 @@ ifeq ($(CONFIG),Release)
   OBJDIR := obj/Release
   OUTDIR := ../a2e/lib
   CPPFLAGS := -MD -I "/usr/include" -I "/usr/include/freetype2" -I "/usr/include/FTGL" -I "/usr/include/ode" -I "/usr/include/opcode" -I "/usr/include/opcode/ICE"
-  CFLAGS += $(CPPFLAGS) -O2 `sdl-config --cflags` -Wall
+  CFLAGS += $(CPPFLAGS) -O2 `sdl-config --cflags` -Wall -fopenmp -pipe -floop-optimize  -march=i686
   CXXFLAGS := $(CFLAGS)
-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s `sdl-config --libs` -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -L "/usr/lib" -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lOPCODE -lfreetype -lftgl -llua -lxml2
+  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -fPIC `sdl-config --libs` -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -L"/usr/lib" -lstdc++ -lGL -lGLU -lXxf86vm -lz -ljpeg -lSDL -lSDL_net -lSDL_image -lode -lfreetype -lftgl -llua -lxml2 -lgomp
   LDDEPS :=
   TARGET := liba2e.a
   BLDCMD = ar -cr $(OUTDIR)/$(TARGET) $(OBJECTS); ranlib $(OUTDIR)/$(TARGET)
@@ -49,18 +63,12 @@ OBJECTS := \
 	$(OBJDIR)/gui_button.o \
 	$(OBJDIR)/gui_check.o \
 	$(OBJDIR)/gui_combo.o \
-	$(OBJDIR)/gui_font.o \
 	$(OBJDIR)/gui_object.o \
 	$(OBJDIR)/gui_style.o \
+	$(OBJDIR)/gui_tab.o \
 	$(OBJDIR)/gui_text.o \
+	$(OBJDIR)/gui_toggle.o \
 	$(OBJDIR)/gui_vbar.o \
-	$(OBJDIR)/gui_window.o \
-	$(OBJDIR)/image.o \
-	$(OBJDIR)/light.o \
-	$(OBJDIR)/line3.o \
-	$(OBJDIR)/lua.o \
-	$(OBJDIR)/msg.o \
-	$(OBJDIR)/net.o \
 	$(OBJDIR)/ode.o \
 	$(OBJDIR)/ode_object.o \
 	$(OBJDIR)/quaternion.o \
@@ -74,6 +82,15 @@ OBJECTS := \
 	$(OBJDIR)/gui_input.o \
 	$(OBJDIR)/gui_list.o \
 	$(OBJDIR)/gui_mltext.o \
+	$(OBJDIR)/gui_font.o \
+	$(OBJDIR)/gui_window.o \
+	$(OBJDIR)/image.o \
+	$(OBJDIR)/light.o \
+	$(OBJDIR)/line3.o \
+	$(OBJDIR)/lua.o \
+	$(OBJDIR)/matrix4.o \
+	$(OBJDIR)/msg.o \
+	$(OBJDIR)/net.o \
 
 CMD := $(subst \,\\,$(ComSpec)$(COMSPEC))
 ifeq (,$(CMD))
@@ -176,11 +193,6 @@ $(OBJDIR)/gui_combo.o: src/gui_combo.cpp
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(OBJDIR)/gui_font.o: src/gui_font.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
 $(OBJDIR)/gui_object.o: src/gui_object.cpp
 	-@$(CMD_MKOBJDIR)
 	@echo $(notdir $<)
@@ -191,47 +203,22 @@ $(OBJDIR)/gui_style.o: src/gui_style.cpp
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
+$(OBJDIR)/gui_tab.o: src/gui_tab.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
 $(OBJDIR)/gui_text.o: src/gui_text.cpp
 	-@$(CMD_MKOBJDIR)
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
+$(OBJDIR)/gui_toggle.o: src/gui_toggle.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
 $(OBJDIR)/gui_vbar.o: src/gui_vbar.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/gui_window.o: src/gui_window.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/image.o: src/image.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/light.o: src/light.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/line3.o: src/line3.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/lua.o: src/lua.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/msg.o: src/msg.cpp
-	-@$(CMD_MKOBJDIR)
-	@echo $(notdir $<)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/net.o: src/net.cpp
 	-@$(CMD_MKOBJDIR)
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
@@ -297,6 +284,51 @@ $(OBJDIR)/gui_list.o: src/gui_list.cpp
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJDIR)/gui_mltext.o: src/gui_mltext.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/gui_font.o: src/gui_font.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/gui_window.o: src/gui_window.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/image.o: src/image.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/light.o: src/light.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/line3.o: src/line3.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/lua.o: src/lua.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/matrix4.o: src/matrix4.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/msg.o: src/msg.cpp
+	-@$(CMD_MKOBJDIR)
+	@echo $(notdir $<)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/net.o: src/net.cpp
 	-@$(CMD_MKOBJDIR)
 	@echo $(notdir $<)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<

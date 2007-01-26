@@ -35,12 +35,13 @@
 #include "engine.h"
 #include "a2ematerial.h"
 #include "shader.h"
+#include "matrix4.h"
 using namespace std;
 
 #include "win_dll_export.h"
 
 /*! @class a2emodel
- *  @brief class for loading and displaying an a2e model
+ *  @brief class for loading and displaying an a2e static model
  *  @author flo
  *  @todo -
  *  
@@ -63,10 +64,13 @@ public:
 	void set_rotation(float x, float y, float z);
 	vertex3* get_rotation();
 
+	void draw_phys_obj();
+	void set_draw_phys_obj(bool state);
+	bool get_draw_phys_obj();
+
 	vertex3* get_vertices();
 	core::index* get_total_indices();
 	core::index* get_indices(unsigned int obj_num);
-	core::index* get_tex_indices();
 	unsigned int get_vertex_count();
 	unsigned int get_index_count();
 	unsigned int get_index_count(unsigned int obj_num);
@@ -91,6 +95,8 @@ public:
 	void set_length(float length);
 	float get_radius();
 	float get_length();
+	void set_phys_scale(float x, float y, float z);
+	vertex3* get_phys_scale();
 
 	bool is_collision_model();
 	vertex3* get_col_vertices();
@@ -98,11 +104,13 @@ public:
 	unsigned int get_col_vertex_count();
 	unsigned int get_col_index_count();
 
+	void update_mview_matrix();
+	void update_scale_matrix();
+
 	// used for parallax mapping
 	void generate_normal_list();
 	void generate_normals();
 
-	void set_light_color(float* lcol);
 	void set_light_position(vertex3* lpos);
 
 	unsigned int get_object_count();
@@ -157,6 +165,7 @@ protected:
 	// some variables for collision detection
 	float radius;
 	float length;
+	vertex3* phys_scale;
 
 	// normal stuff
 	struct nlist {
@@ -164,9 +173,14 @@ protected:
 		unsigned int count;
 	};
     nlist* normal_list;
+	unsigned int max_vertex_connections;
 
-	float* light_color;
 	vertex3* light_position;
+
+	matrix4 mview_mat;
+	matrix4 scale_mat;
+
+	bool is_draw_phys_obj;
 
 	//! flag that specifies if this model is using a vertex buffer object
 	bool vbo;

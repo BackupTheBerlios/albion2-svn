@@ -61,6 +61,11 @@ public:
 	bool get_cam_input();
 	bool get_mouse_input();
 
+	void set_flip(bool state);
+	bool get_flip();
+
+	vertex3* get_direction();
+
 protected:
 	msg* m;
 	core* c;
@@ -69,12 +74,15 @@ protected:
 
 	vertex3* position;
 	vertex3* rotation;
+	vertex3* direction;
 	float up_down;
 	float rotation_speed;
 	float cam_speed;
 
 	bool cam_input;
 	bool mouse_input;
+
+	bool flip;
 };
 
 #endif

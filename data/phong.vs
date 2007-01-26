@@ -14,9 +14,7 @@ void main()
 	
 	float d = length(lightDir);
 	
-	att = 1.0 / ( gl_LightSource[0].constantAttenuation + 
-	(gl_LightSource[0].linearAttenuation*d) + 
-	(gl_LightSource[0].quadraticAttenuation*d*d) );
+	att = 1.0 / (gl_LightSource[0].constantAttenuation + (gl_LightSource[0].linearAttenuation*d) + (gl_LightSource[0].quadraticAttenuation*d*d));
 
 	tex_coord = gl_MultiTexCoord0.xy;
 

@@ -57,6 +57,7 @@ public:
 	};
 
 	void set_active(ACTIVE_CLASS active_class);
+	ACTIVE_CLASS get_active();
 
 	struct gui_element {
 		unsigned int id;
@@ -85,7 +86,8 @@ public:
 		COMBO_ITEM_SELECTED,
 		CHECKBOX_CHECKED,
 		LISTBOX_ITEM_SELECTED,
-		TAB_SELECTED
+		TAB_SELECTED,
+		TOGGLE_BUTTON_PRESSED
 	};
 
 	struct gevent {

@@ -81,6 +81,10 @@ public:
 	void set_uniform3fv(unsigned int num, float* var, unsigned int count = 1);
 	void set_uniform4fv(unsigned int num, float* var, unsigned int count = 1);
 
+	void set_uniform_matrix2fv(unsigned int num, float* var, unsigned int count = 1, bool transpose = false);
+	void set_uniform_matrix3fv(unsigned int num, float* var, unsigned int count = 1, bool transpose = false);
+	void set_uniform_matrix4fv(unsigned int num, float* var, unsigned int count = 1, bool transpose = false);
+
 	void set_attribute4iv(unsigned int num, int* var);
 
 	void set_attribute1f(unsigned int num, float var1);
@@ -95,9 +99,18 @@ public:
 	enum INTERNAL_SHADERS {
 		NONE,
 		PARALLAX,
+		PARALLAX_HDR,
 		PHONG,
+		PHONG_HDR,
 		BLUR3X3,
-		BLUR5X5
+		BLUR5X5,
+		BLURLINE3,
+		BLURLINE5,
+		SKYBOX_HDR,
+		CONVERT_HDR,
+		AVERAGE_HDR,
+		EXPOSURE_HDR,
+		HDR
 	};
 
 

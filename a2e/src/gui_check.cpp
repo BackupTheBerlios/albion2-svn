@@ -48,7 +48,7 @@ bool gui_check::get_checked() {
  *  @param state the state of the check box we want to set
  */
 void gui_check::set_checked(bool state) {
+	if(gui_check::checked != state) redraw = true;
 	gui_check::checked = state;
-
 	gui_check::checked ? set_state("CLICKED") : set_state("NORMAL");
 }

@@ -71,4 +71,6 @@ bool use_a2map = true;
 stringstream caption;
 stringstream tmp;
 
+int shininess = 64;
+
 #endif

@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 
 	// initialize gui and chat sutff
 	agui->init();
+	mg->load_main_gui();
 
 	// initialize the camera
 	cam->set_position(0.0f, 0.0f, 0.0f);
@@ -64,10 +65,14 @@ int main(int argc, char *argv[])
 	cam->set_mouse_input(false);
 
 	// set the light
-	light* l1 = new light(e, 0.0f, 80.0f, 0.0f);
+	/*light* l1 = new light(e, 0.0f, 80.0f, 0.0f);
 	float lamb[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 	float ldif[] = { 0.0f, 0.0f, 0.0f, 0.0f};
-	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};
+	float lspc[] = { 0.0f, 0.0f, 0.0f, 0.0f};*/
+	light* l1 = new light(e, 0.0f, 0.0f, 0.0f);
+	float lamb[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	float ldif[] = { 0.0f, 0.0f, 0.0f, 1.0f};
+	float lspc[] = { 0.0f, 0.0f, 0.0f, 1.0f};
 	l1->set_lambient(lamb);
 	l1->set_ldiffuse(ldif);
 	l1->set_lspecular(lspc);
@@ -77,14 +82,10 @@ int main(int argc, char *argv[])
 	unsigned int fps = 0;
 	unsigned int fps_time = 0;
 	char* tmp = new char[512];
-	sprintf(tmp, "A2E Material Editor - v0.1");
-
-	mg->load_main_gui();
+	sprintf(tmp, "A2E Material Editor - v0.1.1");
 
 	// check if arguments were overgiven to the application
 	if(argc > 1) {
-		bool end = false;
-		bool ani = false;
 		string fmdl = "";
 		string fani = "";
 		string fmat = "";
@@ -146,7 +147,7 @@ int main(int argc, char *argv[])
 		// print out the fps count
 		fps++;
 		if(SDL_GetTicks() - fps_time > 1000) {
-			sprintf(tmp, "A2E Material Editor - v0.1 | FPS: %u | Pos: %f %f %f | Rot: %f %f %f", fps,
+			sprintf(tmp, "A2E Material Editor - v0.1.1 | FPS: %u | Pos: %f %f %f | Rot: %f %f %f", fps,
 				-cam->get_position()->x, -cam->get_position()->y, -cam->get_position()->z,
 				cam->get_rotation()->x, cam->get_rotation()->y, cam->get_rotation()->z);
 			fps = 0;
@@ -158,8 +159,9 @@ int main(int argc, char *argv[])
 		e->start_draw();
 
 		cam->run();
-		sce->draw();
+		sce->start_draw();
 		if(model->is_model()) model->draw_selection(mg->is_wireframe());
+		sce->stop_draw();
 		if(!cam->get_mouse_input()) {
 			agui->draw();
 			mg->run();

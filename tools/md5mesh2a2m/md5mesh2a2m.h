@@ -28,6 +28,7 @@
 #include <fstream>
 #include <quaternion.h>
 #include <vertex3.h>
+#include <omp.h>
 using namespace std;
 
 #define NEXT(str) while(buffer.find(str) == string::npos) pFD >> buffer;

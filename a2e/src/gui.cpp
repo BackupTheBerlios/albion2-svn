@@ -43,19 +43,21 @@ gui::gui(engine* e, shader* s) {
 	// set shadows to disabled if we don't have shader support
 	if(shadow_type != 0 && !e->get_ext()->is_shader_support()) shadow_type = 0;
 
-	tcs = new float[50];
+	tcs_h = new float[5*2];
+	tcs_v = new float[5*2];
 
 	if(shadow_type == 1) {
-		xcorrect = 14;
-		ycorrect = 9;
-		xadd = 13.0f;
-		yadd = 13.0f;
+		xadd = 13;
+		yadd = 13;
 	}
 	else if(shadow_type == 2) {
-		xcorrect = 15;
-		ycorrect = 10;
-		xadd = 15.0f;
-		yadd = 15.0f;
+		xadd = 15;
+		yadd = 15;
+	}
+
+	if(shadow_type != 0) {
+		xcorrect = xadd - 1;
+		ycorrect = yadd - yadd/3 + 1;
 	}
 
 	icon_cross = e->get_texman()->add_texture(e->data_path("icons/cross.png"), 4, GL_RGBA);
@@ -93,7 +95,8 @@ gui::~gui() {
 	}
 	window_buffers.clear();
 
-	delete [] tcs;
+	delete [] tcs_h;
+	delete [] tcs_v;
 
 	m->print(msg::MDEBUG, "gui.cpp", "gui stuff freed");
 }
@@ -106,7 +109,7 @@ void gui::init() {
 
 	// init the main window
 	main_window = gui::add_window(g->pnt_to_rect(0, 0, e->get_screen()->w,
-		e->get_screen()->h), 0, "main window", false, false);
+		e->get_screen()->h), 0, (char*)"main window", false, false);
 
 	gui::active_element = gui_elements.begin();
 }
@@ -295,7 +298,7 @@ void gui::draw() {
 					ge_iter != active_element &&
 					ge_iter->tid == 0) {
 					bool tab_redraw = true;
-					gui_tab* tab;
+					gui_tab* tab = NULL;
 					if(ge_iter->type == gui::TAB) {
 						tab = get_object<gui_tab>(ge_iter->id);
 						tab_redraw = tab->get_redraw();
@@ -539,6 +542,12 @@ void gui::draw_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter, 
 			gui_tab* cur_tab = get_object<gui_tab>(ge_iter->id);
 			cur_tab->draw(wp->x, wp->y);
 			cur_tab->set_redraw(false);
+		}
+		break;
+		case gui::TOGGLE: {
+			gui_toggle* cur_toggle = get_object<gui_toggle>(ge_iter->id);
+			cur_toggle->draw(wp->x, wp->y);
+			cur_toggle->set_redraw(false);
 		}
 		break;
 		default:
@@ -864,6 +873,31 @@ bool gui::handle_element(core::pnt* wp, list<gui::gui_element>::iterator ge_iter
 			if(cur_tab->get_redraw()) changed = true;
 		}
 		break;
+		case gui::TOGGLE: {
+			p->x = evt->get_lm_last_pressed_x();
+			p->y = evt->get_lm_last_pressed_y();
+
+			list<gui_toggle>::reference cur_toggle = *get_object<gui_toggle>(ge_iter->id);
+
+			// get the rectangle and add the windows x and y coordinate
+			memcpy(r1, cur_toggle.get_rectangle(), sizeof(gfx::rect));
+			r1->x1 += wp->x;
+			r1->x2 += wp->x;
+			r1->y1 += wp->y;
+			r1->y2 += wp->y;
+
+			if(cur_toggle.get_redraw()) changed = true;
+
+			if((current_id == gui::wnd_layers.back() || !wnd_event) && g->is_pnt_in_rectangle(r1, p) &&
+				active_element->type != gui::COMBO) {
+				changed = true;
+				cur_toggle.set_redraw(true);
+				cur_toggle.set_toggled(cur_toggle.get_toggled() ^ true);
+				evt->add_gui_event(evt->TOGGLE_BUTTON_PRESSED, cur_toggle.get_id());
+				evt->set_last_pressed(0, 0);
+			}
+		}
+		break;
 		case gui::OPENDIALOG: {
 			if(exist(ofd_wnd_id)) {
 				if(ofd_cancel->get_state() == "CLICKED") {
@@ -908,7 +942,7 @@ GUI_OBJ gui::add_button(gfx::rect* rectangle, unsigned int id, char* text, GLuin
 	gui::gui_buttons.push_back(*new gui_button*());
 	gui::gui_buttons.back() = new gui_button(e, gs);
 
-	gui::gui_buttons.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, text,
+	gui::gui_buttons.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, text,
 		gs->get_color("FONT2"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	gui::gui_elements.back().is_drawn = false;
@@ -1000,13 +1034,13 @@ GUI_OBJ gui::add_input_box(gfx::rect* rectangle, unsigned int id, char* text, un
 	gui::gui_input_boxes.push_back(*new gui_input*());
 	gui::gui_input_boxes.back() = new gui_input(e, gs);
 
-	gui::gui_input_boxes.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, text,
+	gui::gui_input_boxes.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, text,
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
 	gui::gui_elements.back().is_drawn = false;
 
-	gui::gui_input_boxes.back()->set_blink_text_handler(get_object<gui_text>(add_text("STANDARD", 12, " ",
+	gui::gui_input_boxes.back()->set_blink_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, (char*)" ",
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -1042,7 +1076,7 @@ GUI_OBJ gui::add_list_box(gfx::rect* rectangle, unsigned int id, unsigned int wi
 	gui::gui_list_boxes.back() = new gui_list(e, gs);
 
 	// add text
-	gui::gui_list_boxes.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, "",
+	gui::gui_list_boxes.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, (char*)"",
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	gui::gui_elements.back().is_drawn = false;
@@ -1081,13 +1115,13 @@ GUI_OBJ gui::add_vbar(gfx::rect* rectangle, unsigned int id, unsigned int wid, u
 
 	// add up button
 	gui::gui_vbars.back()->set_up_button_handler(get_object<gui_button>(add_button(g->pnt_to_rect(0,0,1,1),
-		get_free_id(), "", icon_arrow_up, wid)));
+		get_free_id(), (char*)"", icon_arrow_up, wid)));
 	gui::gui_vbars.back()->get_up_button_handler()->set_image_scaling(false);
 	gui::gui_vbars.back()->get_up_button_handler()->set_type("vbar_up_button");
 
 	// add down button
 	gui::gui_vbars.back()->set_down_button_handler(get_object<gui_button>(add_button(g->pnt_to_rect(0,0,1,1),
-		get_free_id(), "", icon_arrow_down, wid)));
+		get_free_id(), (char*)"", icon_arrow_down, wid)));
 	gui::gui_vbars.back()->get_down_button_handler()->set_image_scaling(false);
 	gui::gui_vbars.back()->get_down_button_handler()->set_type("vbar_down_button");
 
@@ -1119,7 +1153,7 @@ GUI_OBJ gui::add_check_box(gfx::rect* rectangle, unsigned int id, char* text, un
 	gui::gui_check_boxes.push_back(*new gui_check*());
 	gui::gui_check_boxes.back() = new gui_check(e, gs);
 
-	gui::gui_check_boxes.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, text,
+	gui::gui_check_boxes.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, text,
 		gs->get_color("FONT2"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -1159,11 +1193,11 @@ GUI_OBJ gui::add_combo_box(gfx::rect* rectangle, unsigned int id, unsigned int w
 	gui::gui_combo_boxes.push_back(*new gui_combo*());
 	gui::gui_combo_boxes.back() = new gui_combo(e, gs);
 
-	gui::gui_combo_boxes.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, "",
+	gui::gui_combo_boxes.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, (char*)"",
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	gui::gui_elements.back().is_drawn = false; // text shouldn't be drawn automatically
 	gui::gui_combo_boxes.back()->set_list_button(get_object<gui_button>(add_button(g->pnt_to_rect(0,0,1,1),
-		get_free_id(), "", icon_arrow_down, 0xFFFFFFFF)));
+		get_free_id(), (char*)"", icon_arrow_down, 0xFFFFFFFF)));
 	gui::gui_combo_boxes.back()->get_list_button()->set_image_scaling(false);
 	gui::gui_elements.back().is_drawn = false; // button shouldn't be drawn automatically
 
@@ -1194,7 +1228,7 @@ GUI_OBJ gui::add_mltext(gfx::rect* rectangle, unsigned int id, char* text, unsig
 	gui::gui_mltexts.push_back(*new gui_mltext*());
 	gui::gui_mltexts.back() = new gui_mltext(e, gs);
 
-	gui::gui_mltexts.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, text,
+	gui::gui_mltexts.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, text,
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	// don't draw our text automatically
 	gui::gui_elements.back().is_drawn = false;
@@ -1276,13 +1310,13 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 	// add exit button if we got a border
 	if(border) {
 		gui::gui_windows.back()->set_exit_button_handler(get_object<gui_button>(add_button(g->pnt_to_rect(0,0,16,16),
-			get_free_id(), "", icon_cross, id)));
+			get_free_id(), (char*)"", icon_cross, id)));
 		gui::gui_windows.back()->get_exit_button_handler()->set_image_scaling(false);
 		gui::gui_windows.back()->get_exit_button_handler()->set_type("window_button");
 	}
 
 	// add window caption
-	gui::gui_windows.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, caption,
+	gui::gui_windows.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, caption,
 		gs->get_color("FONT2"), g->cord_to_pnt(0,0), get_free_id(), id)));
 	// don't draw our text automatically
 	// celements-1, because our text element, is the last initialized element
@@ -1304,8 +1338,8 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 	window_buffers.back()->wid = id;
 	// also add a shadow buffer if we want window shadows
 	if(shadow_type != 0 && border && bg) {
-		width = c->next_pot((rectangle->x2 - rectangle->x1)+30);
-		height = c->next_pot((rectangle->y2 - rectangle->y1)+30);
+		width = c->next_pot((rectangle->x2 - rectangle->x1)+(xadd*2));
+		height = c->next_pot((rectangle->y2 - rectangle->y1)+(yadd*2));
 		// add +30 px width and +25 px height to the buffers size
 		window_buffers.back()->shadow = r->add_buffer(width, height);
 		rtt::fbo* tmp_buffer = r->add_buffer(width, height);
@@ -1319,10 +1353,10 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 		r1->x2 = width;
 		r1->y2 = height;
 		g->draw_filled_rectangle(r1, 0x00FFFFFF);*/
-		r1->x1 = 0;
-		r1->y1 = 0;
-		r1->x2 = (rectangle->x2 - rectangle->x1);
-		r1->y2 = (rectangle->y2 - rectangle->y1);
+		r1->x1 = xadd;
+		r1->y1 = yadd;
+		r1->x2 = (rectangle->x2 - rectangle->x1)+xadd;
+		r1->y2 = (rectangle->y2 - rectangle->y1)+yadd;
 		g->draw_filled_rectangle(r1, 0x00000000);
 		r->stop_2d_draw();
 		r->stop_draw();
@@ -1332,10 +1366,12 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 		float xInc = 1.0f / (float)width;
 		float yInc = 1.0f / (float)height;
 		for(unsigned int i = 0; i < q; i++) {
-			for(unsigned int j = 0; j < q; j++) {
-				tcs[(((i*q)+j)*2)+0] = (-1.0f * xInc) + ((float)i * xInc);
-				tcs[(((i*q)+j)*2)+1] = (-1.0f * yInc) + ((float)j * yInc);
-			}
+			tcs_h[i*2+0] = (-2.0f * xInc) + ((float)i * xInc);
+			tcs_h[i*2+1] = 0.0f;
+		}
+		for(unsigned int i = 0; i < q; i++) {
+			tcs_v[i*2+0] = 0.0f;
+			tcs_v[i*2+1] = (-2.0f * yInc) + ((float)i * yInc);
 		}
 
 		// blur (32 or 64 passes) with a 5x5 kernel
@@ -1344,15 +1380,46 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 		else if(shadow_type == 2) passes = 64;
 
 		for(unsigned int i = 0; i < passes; i++) {
-			// copy the buffer
-			r->copy_buffer(window_buffers.back()->shadow, tmp_buffer);
+			// copy the buffer - not needed any more
+			//r->copy_buffer(window_buffers.back()->shadow, tmp_buffer);
 
-			// blur effect
+			// blur effect horizontally
+			r->start_draw(tmp_buffer);
+			r->start_2d_draw();
+			s->use_shader(shader::BLURLINE5);
+
+			s->set_uniform2fv(0, tcs_h, 5);
+			s->set_uniform1i(1, 0);
+
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, window_buffers.back()->shadow->tex_id);
+
+			glBegin(GL_QUADS);
+				s->set_attribute2f(0, 0.0f, 0.0f);
+				glVertex2f(-1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 0.0f);
+				glVertex2f(1.0f, -1.0f);
+
+				s->set_attribute2f(0, 1.0f, 1.0f);
+				glVertex2f(1.0f, 1.0f);
+
+				s->set_attribute2f(0, 0.0f, 1.0f);
+				glVertex2f(-1.0f, 1.0f);
+			glEnd();
+
+			glDisable(GL_TEXTURE_2D);
+
+			s->use_shader(shader::NONE);
+			r->stop_2d_draw();
+			r->stop_draw();
+
+			// blur effect vertically
 			r->start_draw(window_buffers.back()->shadow);
 			r->start_2d_draw();
-			s->use_shader(shader::BLUR5X5);
+			s->use_shader(shader::BLURLINE5);
 
-			s->set_uniform2fv(0, tcs, 25);
+			s->set_uniform2fv(0, tcs_v, 5);
 			s->set_uniform1i(1, 0);
 
 			glEnable(GL_TEXTURE_2D);
@@ -1379,11 +1446,11 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 			r->stop_draw();
 		}
 
-		// copy the buffer
-		r->copy_buffer(window_buffers.back()->shadow, tmp_buffer);
+		// copy the buffer - not needed any more
+		//r->copy_buffer(window_buffers.back()->shadow, tmp_buffer);
 
-		// move the texture
-		r->start_draw(window_buffers.back()->shadow);
+		// move the texture - not needed any more
+		/*r->start_draw(window_buffers.back()->shadow);
 		r->start_2d_draw();
 
 		glEnable(GL_TEXTURE_2D);
@@ -1409,7 +1476,7 @@ GUI_OBJ gui::add_window(gfx::rect* rectangle, unsigned int id, char* caption, bo
 		glDisable(GL_TEXTURE_2D);
 
 		r->stop_2d_draw();
-		r->stop_draw();
+		r->stop_draw();*/
 
 		// cut out the window
 		r->start_draw(window_buffers.back()->shadow);
@@ -1456,13 +1523,54 @@ GUI_OBJ gui::add_tab(gfx::rect* rectangle, unsigned int id, unsigned int wid) {
 	gui::gui_tabs.push_back(*new gui_tab*());
 	gui::gui_tabs.back() = new gui_tab(e, gs);
 
-	gui::gui_tabs.back()->set_text_handler(get_object<gui_text>(add_text("STANDARD", 12, "",
+	gui::gui_tabs.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, (char*)"",
 		gs->get_color("FONT"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
 	gui::gui_elements.back().is_drawn = false; // text shouldn't be drawn automatically
 
 	gui::gui_tabs.back()->set_id(id);
 	gui::gui_tabs.back()->set_rectangle(rectangle);
 	gui::gui_tabs.back()->set_redraw(true);
+
+	// redraw window
+	if(wid != 0xFFFFFFFF) get_object<gui_window>(wid)->set_redraw(true);
+
+	return id;
+}
+
+/*! adds a gui toggle button element and returns it
+ *  @param rectangle the toggle buttons rectangle
+ *  @param id the toggle buttons (a2e event) id
+ *  @param text the toggle buttons text
+ *  @param image_texture the image texture we want to set/use
+ *  @param wid the id of the window we want the element to be in (0 = no window)
+ */
+GUI_OBJ gui::add_toggle(gfx::rect* rectangle, unsigned int id, char* text, GLuint image_texture, unsigned int wid, unsigned int tid) {
+	gui::gui_elements.push_back(*new gui_element());
+	gui::gui_elements.back().id = id;
+	gui::gui_elements.back().type = gui::TOGGLE;
+	gui::gui_elements.back().wid = wid;
+	gui::gui_elements.back().tid = tid;
+	gui::gui_elements.back().is_drawn = true;
+
+	// create class
+	gui::gui_toggle_buttons.push_back(*new gui_toggle*());
+	gui::gui_toggle_buttons.back() = new gui_toggle(e, gs);
+
+	gui::gui_toggle_buttons.back()->set_text_handler(get_object<gui_text>(add_text((char*)"STANDARD", 12, text,
+		gs->get_color("FONT2"), g->cord_to_pnt(0,0), get_free_id(), 0xFFFFFFFF)));
+	// don't draw our text automatically
+	gui::gui_elements.back().is_drawn = false;
+
+	// set/create the image
+	if(image_texture != 0) {
+		gui::gui_toggle_buttons.back()->set_image(new image(e));
+		gui::gui_toggle_buttons.back()->get_image()->set_texture(image_texture);
+		gui::gui_toggle_buttons.back()->get_image()->set_gui_img(true);
+	}
+
+	gui::gui_toggle_buttons.back()->set_id(id);
+	gui::gui_toggle_buttons.back()->set_rectangle(rectangle);
+	gui::gui_toggle_buttons.back()->set_text(text);
 
 	// redraw window
 	if(wid != 0xFFFFFFFF) get_object<gui_window>(wid)->set_redraw(true);
@@ -1587,6 +1695,7 @@ bool gui::delete_element(unsigned int id) {
 						delete_element(del_button->get_text_handler()->get_id());
 					}
 					gui_buttons.remove(del_button);
+					delete del_button;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1601,6 +1710,7 @@ bool gui::delete_element(unsigned int id) {
 						delete_element(del_check->get_text_handler()->get_id());
 					}
 					gui_check_boxes.remove(del_check);
+					delete del_check;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1616,6 +1726,7 @@ bool gui::delete_element(unsigned int id) {
 					}
 					delete_element(del_combo->get_list_button()->get_id());
 					gui_combo_boxes.remove(del_combo);
+					delete del_combo;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1631,6 +1742,7 @@ bool gui::delete_element(unsigned int id) {
 					}
 					delete_element(del_input->get_blink_text_handler()->get_id());
 					gui_input_boxes.remove(del_input);
+					delete del_input;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1646,6 +1758,7 @@ bool gui::delete_element(unsigned int id) {
 					}
 					delete_element(del_list->get_vbar_handler()->get_id());
 					gui_list_boxes.remove(del_list);
+					delete del_list;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1657,6 +1770,7 @@ bool gui::delete_element(unsigned int id) {
 						return false;
 					}
 					gui_texts.remove(del_text);
+					delete del_text;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1673,6 +1787,7 @@ bool gui::delete_element(unsigned int id) {
 					delete_element(del_vbar->get_down_button_handler()->get_id());
 					delete_element(del_vbar->get_up_button_handler()->get_id());
 					gui_vbars.remove(del_vbar);
+					delete del_vbar;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1687,6 +1802,7 @@ bool gui::delete_element(unsigned int id) {
 						delete_element(del_window->get_text_handler()->get_id());
 					}
 					gui_windows.remove(del_window);
+					delete del_window;
 					gui_elements.erase(elem_iter);
 
 					// delete rtt buffer
@@ -1723,6 +1839,7 @@ bool gui::delete_element(unsigned int id) {
 					delete_element(del_msg->text->get_id());
 					delete_element(del_msg->ok->get_id());
 					msg_boxes.remove(del_msg);
+					delete del_msg;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1737,6 +1854,7 @@ bool gui::delete_element(unsigned int id) {
 						delete_element(del_mltext->get_text_handler()->get_id());
 					}
 					gui_mltexts.remove(del_mltext);
+					delete del_mltext;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1748,6 +1866,7 @@ bool gui::delete_element(unsigned int id) {
 						return false;
 					}
 					gui_images.remove(del_image);
+					delete del_image;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1759,6 +1878,19 @@ bool gui::delete_element(unsigned int id) {
 						return false;
 					}
 					gui_tabs.remove(del_tab);
+					delete del_tab;
+					gui_elements.erase(elem_iter);
+					return true;
+				}
+				break;
+				case gui::TOGGLE: {
+					gui_toggle* del_toggle = get_object<gui_toggle>(id);
+					if(&del_toggle == NULL) {
+						m->print(msg::MERROR, "gui.cpp", "delete_element(): can not delete element (id: %u)", id);
+						return false;
+					}
+					gui_toggle_buttons.remove(del_toggle);
+					delete del_toggle;
 					gui_elements.erase(elem_iter);
 					return true;
 				}
@@ -1822,6 +1954,12 @@ bool gui::exist(unsigned int id) {
  */
 void gui::set_visibility(unsigned int id, bool state, bool force) {
 	if(id >= 0xFFFF && !force) return; // exit routine for every gui element that has an id bigger than 0xFFFF (-> all non automatically drawn elements)
+
+	// redraw window if state changed
+	if(gui::get_element(id)->is_drawn != state && gui::get_element(id)->wid != 0xFFFFFFFF)
+		get_object<gui_window>(gui::get_element(id)->wid)->set_redraw(true);
+
+	// set new visibility state
 	gui::get_element(id)->is_drawn = state;
 
 	switch(gui::get_element(id)->type) {
@@ -1849,9 +1987,6 @@ void gui::set_visibility(unsigned int id, bool state, bool force) {
 			}
 		}
 		break;
-		case gui::TAB:
-			// TODO!
-			break;
 		case gui::MSGBOX_OK: {
 			gui::set_visibility(gui::get_msgbox(id)->wnd->get_id(), state);
 		}
@@ -1890,8 +2025,8 @@ GUI_OBJ gui::add_open_dialog(unsigned int id, char* caption, char* dir, char* ex
 
 	ofd_wnd_id = add_window(e->get_gfx()->pnt_to_rect(x, y, 370+x, 221+y), id+1, caption, true, true);
 	ofd_wnd = get_object<gui_window>(ofd_wnd_id);
-	ofd_open = get_object<gui_button>(add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), id+2, "Open", 0, id+1));
-	ofd_cancel = get_object<gui_button>(add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 1, "Cancel", 0, id+1));
+	ofd_open = get_object<gui_button>(add_button(e->get_gfx()->pnt_to_rect(302, 0, 365, 20), id+2, (char*)"Open", 0, id+1));
+	ofd_cancel = get_object<gui_button>(add_button(e->get_gfx()->pnt_to_rect(302, 20, 365, 40), 1, (char*)"Cancel", 0, id+1));
 	ofd_dirlist = get_object<gui_list>(add_list_box(e->get_gfx()->pnt_to_rect(0, 0, 300, 198), id+3, id+1));
 
 #ifdef WIN32
@@ -1984,8 +2119,8 @@ GUI_OBJ gui::add_msgbox_ok(char* caption, char* text) {
 	msg_boxes.back()->id = add_window(e->get_gfx()->pnt_to_rect(sw, sh, sw + w, sh + h), wnd_id+1, caption, true, true);
 	msg_boxes.back()->wnd = get_object<gui_window>(msg_boxes.back()->id);
 	msg_boxes.back()->ok = get_object<gui_button>(add_button(e->get_gfx()->pnt_to_rect((unsigned int)((float)w * 0.5f) - 32,
-		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), get_free_id(), "OK", 0, wnd_id+1));
-	msg_boxes.back()->text = get_object<gui_text>(add_text("STANDARD", 12, text, gs->get_color("FONT"),
+		h - 50, (unsigned int)((float)w * 0.5f) + 32, h - 30), get_free_id(), (char*)"OK", 0, wnd_id+1));
+	msg_boxes.back()->text = get_object<gui_text>(add_text((char*)"STANDARD", 12, text, gs->get_color("FONT"),
 		e->get_gfx()->cord_to_pnt(0, 0), get_free_id(), wnd_id+1));
 	unsigned int tw = (unsigned int)((float)(w - msg_boxes.back()->text->get_text_width()) / 2.0f);
 	unsigned int th = (unsigned int)((float)h / 2.0f) - 30;
@@ -2102,6 +2237,9 @@ bool gui::is_redraw(list<gui::gui_element>::iterator ge_iter) {
 		case gui::TAB:
 			return gui::get_object<gui_tab>(ge_iter->id)->get_redraw();
 			break;
+		case gui::TOGGLE:
+			return gui::get_object<gui_toggle>(ge_iter->id)->get_redraw();
+			break;
 		default:
 			break;
 	}
@@ -2109,48 +2247,52 @@ bool gui::is_redraw(list<gui::gui_element>::iterator ge_iter) {
 }
 
 gui_object* gui::get_object(unsigned int id) {
-	list<gui_object*>* objects = NULL;
+	// did i already mentioned that c++ is weird? ;P
+	gui_object_list_pointer objects;
 
-	// so many cryptic letters, so less sense :>
 	switch(get_element(id)->type) {
 		case BUTTON:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_buttons);
+			objects.b = &gui_buttons;
 			break;
 		case INPUT:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_input_boxes);
+			objects.in = &gui_input_boxes;
 			break;
 		case TEXT:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_texts);
+			objects.te = &gui_texts;
 			break;
 		case LIST:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_list_boxes);
+			objects.l = &gui_list_boxes;
 			break;
 		case VBAR:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_vbars);
+			objects.v = &gui_vbars;
 			break;
 		case CHECK:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_check_boxes);
+			objects.ch = &gui_check_boxes;
 			break;
 		case COMBO:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_combo_boxes);
+			objects.co = &gui_combo_boxes;
 			break;
 		case WINDOW:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_windows);
+			objects.w = &gui_windows;
 			break;
 		case MLTEXT:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_mltexts);
+			objects.m = &gui_mltexts;
 			break;
 		case IMAGE:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_images);
+			objects.im = &gui_images;
 			break;
 		case TAB:
-			objects = dynamic_cast<list<gui_object*>*>((list<gui_object*>*)&gui_tabs);
+			objects.ta = &gui_tabs;
+			break;
+		case TOGGLE:
+			objects.to = &gui_toggle_buttons;
 			break;
 		default:
+			return NULL;
 			break;
 	}
 
-	for(list<gui_object*>::iterator iter = objects->begin(); iter != objects->end(); iter++) {
+	for(list<gui_object*>::iterator iter = objects.o->begin(); iter != objects.o->end(); iter++) {
 		if((*iter)->get_id() == id) {
 			return *iter;
 		}

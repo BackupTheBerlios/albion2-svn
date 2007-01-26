@@ -27,6 +27,7 @@
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <SDL/SDL_cpuinfo.h>
 #include "msg.h"
 #include "vertex3.h"
 #include "line3.h"
@@ -36,6 +37,9 @@ using namespace std;
 #include "win_dll_export.h"
 
 #define PI 3.1415926536
+
+#define EPSILON 0.000001
+#define FLOAT_EQ(x, v) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 
 /*! @class core
  *  @brief core stuff
@@ -95,10 +99,6 @@ public:
 		vertex3 vmax;
 	};
 
-	struct matrix4 {
-		float m[16];
-	};
-
 	unsigned int get_bit(unsigned int value, unsigned int bit);
 	unsigned int set_bit(unsigned int value, unsigned int bit, unsigned int num);
 
@@ -107,6 +107,7 @@ public:
 	bool is_vertex_in_line(line* l1, vertex3* p1, float precision = 1);
 	bool is_vertex_in_triangle(triangle* t1, vertex3* p1, float precision = 1);
 	bool is_vertex_in_quad(quad* q1, vertex3* p1, float precision = 1);
+	bool is_vertex_in_bbox(aabbox* bbox, vertex3* p1);
 
 	/*bool is_line_in_triangle(triangle* t1, line* l1);
 	bool is_line_in_quad(quad* t1, line* l1);*/
@@ -117,6 +118,7 @@ public:
 	void vertex_to_quad(vertex3 p1, vertex3 p2, vertex3 p3, vertex3 p4, quad &rquad);
 
 	float rad_to_deg(float rad);
+	float deg_to_rad(float deg);
 
 	void get_2d_from_3d(vertex3* v, pnt* p);
 	void get_3d_from_2d(pnt* p, vertex3* v);
@@ -159,10 +161,15 @@ public:
 
 	unsigned int next_pot(unsigned int num);
 
+	void set_flip(bool state);
+	bool get_flip();
+
 protected:
 	unsigned int value, bit, num;
 	msg* m;
 	file_io* f;
+
+	bool flip;
 
 };
 

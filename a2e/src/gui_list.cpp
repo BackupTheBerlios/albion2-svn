@@ -236,4 +236,6 @@ void gui_list::clear() {
 	sid = 0;
 	position = 0;
 	vbar_handler->set_max_lines(0);
+
+	redraw = true;
 }

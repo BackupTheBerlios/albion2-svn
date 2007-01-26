@@ -339,16 +339,16 @@ int main(int argc, char *argv[]) {
 
 	for(unsigned int i = 0; i < tex_coords.size(); i++) {
 		if(ivertices[i] != vui) {
-			if(!blender) {
+			//if(!blender) {
 				put_float(&ofile, ivertices[i].x);
 				put_float(&ofile, ivertices[i].z);
 				put_float(&ofile, -ivertices[i].y);
-			}
+			/*}
 			else {
 				put_float(&ofile, ivertices[i].x);
 				put_float(&ofile, ivertices[i].y);
 				put_float(&ofile, ivertices[i].z);
-			}
+			}*/
 		}
 		else {
 			cout << "unassigned vertex #" << i << "! (seems like the vertex is specified, but not used by any triangle - putting three 0.0f instead)" << endl;
@@ -384,16 +384,16 @@ int main(int argc, char *argv[]) {
 	if(collision) {
 		put_uint(&ofile, (unsigned int)col_vertices.size());
 		for(vector<vertex3>::iterator iter = col_vertices.begin(); iter != col_vertices.end(); iter++) {
-			if(!blender) {
+			//if(!blender) {
 				put_float(&ofile, iter->x);
 				put_float(&ofile, iter->z);
 				put_float(&ofile, -iter->y);
-			}
+			/*}
 			else {
 				put_float(&ofile, iter->x);
 				put_float(&ofile, iter->y);
 				put_float(&ofile, iter->z);
-			}
+			}*/
 		}
 		put_uint(&ofile, (unsigned int)col_indices.size());
 		for(vector<core::index>::iterator iter = col_indices.begin(); iter != col_indices.end(); iter++) {

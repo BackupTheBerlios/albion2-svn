@@ -62,7 +62,7 @@ a2emodel* level;
 a2emodel* sphere;
 a2emodel* player;
 a2emodel** spheres;
-unsigned int cspheres = 9; // should be a quadratic number
+unsigned int cspheres = 256; // should be a quadratic number
 ode_object* sphere_obj;
 ode_object** spheres_obj;
 

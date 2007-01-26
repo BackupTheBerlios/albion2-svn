@@ -43,6 +43,7 @@ engine::engine(const char* datapath) {
 	fps_limit = 10;
 	flags = 0;
 	position = NULL;
+	rotation = NULL;
 	screen = NULL;
 	key_repeat = 200;
 	width = 640;
@@ -52,6 +53,9 @@ engine::engine(const char* datapath) {
 	stencil = 8;
 	fullscreen = false;
 	shadow_type = 0;
+	filtering = 0;
+	hdr = false;
+	hdr_rgba16 = true;
 
 	m = new msg();
 	f = new file_io(m);
@@ -59,7 +63,7 @@ engine::engine(const char* datapath) {
 	x = new xml(m);
 	e = new event(datapath, m, x);
 	g = new gfx();
-	t = new texman(m);
+	t = new texman(m, f);
 	l = new lua(m);
 	gf = new gui_font(m);
 
@@ -73,85 +77,99 @@ engine::engine(const char* datapath) {
 	else {
 		while(x->process()) {
 			if(strcmp(x->get_node_name(), "screen") == 0) {
-				if(x->get_attribute("width") != NULL) {
-					width = (unsigned int)atoi(x->get_attribute("width"));
+				if(x->get_attribute((char*)(char*)"width") != NULL) {
+					width = (unsigned int)atoi(x->get_attribute((char*)"width"));
 				}
 
-				if(x->get_attribute("height") != NULL) {
-					height = (unsigned int)atoi(x->get_attribute("height"));
+				if(x->get_attribute((char*)"height") != NULL) {
+					height = (unsigned int)atoi(x->get_attribute((char*)"height"));
 				}
 
-				if(x->get_attribute("depth") != NULL) {
-					depth = (unsigned int)atoi(x->get_attribute("depth"));
+				if(x->get_attribute((char*)"depth") != NULL) {
+					depth = (unsigned int)atoi(x->get_attribute((char*)"depth"));
 				}
 
-				if(x->get_attribute("zbuffer") != NULL) {
-					zbuffer = (unsigned int)atoi(x->get_attribute("zbuffer"));
+				if(x->get_attribute((char*)"zbuffer") != NULL) {
+					zbuffer = (unsigned int)atoi(x->get_attribute((char*)"zbuffer"));
 				}
 
-				if(x->get_attribute("stencil") != NULL) {
-					stencil = (unsigned int)atoi(x->get_attribute("stencil"));
+				if(x->get_attribute((char*)"stencil") != NULL) {
+					stencil = (unsigned int)atoi(x->get_attribute((char*)"stencil"));
 				}
 
-				if(x->get_attribute("fullscreen") != NULL) {
-					if(atoi(x->get_attribute("fullscreen")) != 0) {
+				if(x->get_attribute((char*)"fullscreen") != NULL) {
+					if(atoi(x->get_attribute((char*)"fullscreen")) != 0) {
 						engine::fullscreen = true;
 					}
 				}
 			}
 			else if(strcmp(x->get_node_name(), "gui") == 0) {
-				if(x->get_attribute("color_scheme") != NULL) {
-					color_scheme = x->get_attribute("color_scheme");
+				if(x->get_attribute((char*)"color_scheme") != NULL) {
+					color_scheme = x->get_attribute((char*)"color_scheme");
 				}
 
-				if(x->get_attribute("shadow_type") != NULL) {
-					shadow_type = (unsigned int)atoi(x->get_attribute("shadow_type"));
+				if(x->get_attribute((char*)"shadow_type") != NULL) {
+					shadow_type = (unsigned int)atoi(x->get_attribute((char*)"shadow_type"));
 				}
 			}
 			else if(strcmp(x->get_node_name(), "key_repeat") == 0) {
-				if(x->get_attribute("time") != NULL) {
-					key_repeat = (unsigned int)atoi(x->get_attribute("time"));
+				if(x->get_attribute((char*)"time") != NULL) {
+					key_repeat = (unsigned int)atoi(x->get_attribute((char*)"time"));
 				}
 			}
 			else if(strcmp(x->get_node_name(), "sleep") == 0) {
-				if(x->get_attribute("time") != NULL) {
-					fps_limit = (unsigned int)atoi(x->get_attribute("time"));
+				if(x->get_attribute((char*)"time") != NULL) {
+					fps_limit = (unsigned int)atoi(x->get_attribute((char*)"time"));
 				}
 			}
 			else if(strcmp(x->get_node_name(), "thread") == 0) {
-				if(x->get_attribute("count") != NULL) {
-					thread_count = (unsigned int)atoi(x->get_attribute("count"));
+				if(x->get_attribute((char*)"count") != NULL) {
+					thread_count = (unsigned int)atoi(x->get_attribute((char*)"count"));
+					if(thread_count == 0) thread_count = omp_get_max_threads();
 				}
 			}
 			else if(strcmp(x->get_node_name(), "server") == 0) {
-				if(x->get_attribute("port") != NULL) {
-					server->port = (unsigned short int)atoi(x->get_attribute("port"));
+				if(x->get_attribute((char*)"port") != NULL) {
+					server->port = (unsigned short int)atoi(x->get_attribute((char*)"port"));
 				}
-				
-				if(x->get_attribute("max_clients") != NULL) {
-					server->max_clients = (unsigned int)atoi(x->get_attribute("max_clients"));
+
+				if(x->get_attribute((char*)"max_clients") != NULL) {
+					server->max_clients = (unsigned int)atoi(x->get_attribute((char*)"max_clients"));
 				}
 			}
 			else if(strcmp(x->get_node_name(), "client") == 0) {
-				if(x->get_attribute("server") != NULL) {
-					client->server_name = x->get_attribute("server");
-				}
-				
-				if(x->get_attribute("port") != NULL) {
-					client->port = (unsigned short int)atoi(x->get_attribute("port"));
-				}
-				
-				if(x->get_attribute("lis_port") != NULL) {
-					client->lis_port = (unsigned short int)atoi(x->get_attribute("lis_port"));
+				if(x->get_attribute((char*)"server") != NULL) {
+					client->server_name = x->get_attribute((char*)"server");
 				}
 
-				if(x->get_attribute("name") != NULL) {
-					client->client_name = x->get_attribute("name");
+				if(x->get_attribute((char*)"port") != NULL) {
+					client->port = (unsigned short int)atoi(x->get_attribute((char*)"port"));
+				}
+
+				if(x->get_attribute((char*)"lis_port") != NULL) {
+					client->lis_port = (unsigned short int)atoi(x->get_attribute((char*)"lis_port"));
+				}
+
+				if(x->get_attribute((char*)"name") != NULL) {
+					client->client_name = x->get_attribute((char*)"name");
 				}
 			}
 			else if(strcmp(x->get_node_name(), "keyset") == 0) {
-				if(x->get_attribute("set") != NULL) {
-					keyset = x->get_attribute("set");
+				if(x->get_attribute((char*)"set") != NULL) {
+					keyset = x->get_attribute((char*)"set");
+				}
+			}
+			else if(strcmp(x->get_node_name(), "graphic") == 0) {
+				if(x->get_attribute((char*)"filtering") != NULL) {
+					filtering = (unsigned int)atoi(x->get_attribute((char*)"filtering"));
+				}
+
+				if(x->get_attribute((char*)"hdr") != NULL) {
+					hdr = atoi(x->get_attribute((char*)"hdr")) ? true : false;
+				}
+
+				if(x->get_attribute((char*)"hdr_rgba16") != NULL) {
+					hdr_rgba16 = atoi(x->get_attribute((char*)"hdr_rgba16")) ? true : false;
 				}
 			}
 		}
@@ -170,6 +188,9 @@ engine::~engine() {
 
 	if(position != NULL) {
 		delete position;
+	}
+	if(rotation != NULL) {
+		delete rotation;
 	}
 
 	delete c;
@@ -243,11 +264,9 @@ void engine::init(const char* ico) {
 		m->print(msg::MDEBUG, "engine.cpp", "video query failed: %s", SDL_GetError());
 		exit(1);
 	}
-	else {
-		m->print(msg::MDEBUG, "engine.cpp", "successfully received video info");
-	}
 
-	m->print(msg::MDEBUG, "engine.cpp", "amount of available video memory: %u kb", video_info->video_mem);
+	// not working any more?
+	//m->print(msg::MDEBUG, "engine.cpp", "amount of available video memory: %u kb", video_info->video_mem);
 
 	// set some flags
 	engine::flags |= SDL_HWPALETTE;
@@ -360,21 +379,27 @@ void engine::init(const char* ico) {
 
 	// resize stuff
 	resize_window();
-	m->print(msg::MDEBUG, "engine.cpp", "window resizing functions initialized");
 
-	// reserve memory for position ...
+	// reserve memory for position and rotation ...
 	engine::position = new vertex3();
+	engine::rotation = new vertex3();
 
 	// create extension class object
 	exts = new ext(engine::mode, m);
 
+	// set flip state of core class to true if fbos are supported
+	if(exts->is_fbo_support()) {
+		c->set_flip(true);
+	}
+
 	// create render to texture object
-	r = new rtt(m, c, g, exts);
+	r = new rtt(m, c, g, exts, screen->w, screen->h);
 
 	// print out informations about additional threads
-	thread_count == 0 ? m->print(msg::MDEBUG, "engine.cpp", "using no additional threads!") :
-		m->print(msg::MDEBUG, "engine.cpp", "using %u additional thread%s!", thread_count,
-		(thread_count == 1 ? "" : "s"));
+	omp_set_num_threads(thread_count);
+	thread_count = omp_get_max_threads();
+	thread_count == 1 ? m->print(msg::MDEBUG, "engine.cpp", "using one single thread!") :
+		m->print(msg::MDEBUG, "engine.cpp", "using %u threads!", thread_count);
 
 	// if GL_RENDERER is that damn m$ gdi driver, exit a2e ...
 	// no official support for this crappy piece of software ...
@@ -383,6 +408,15 @@ void engine::init(const char* ico) {
 		SDL_Delay(10000);
 		exit(1);
 	}
+
+	// set standard texture filtering
+	t->set_filtering(engine::filtering);
+
+	// check if hdrr is technically possible
+	if(hdr && !exts->is_shader_support() && !exts->is_fbo_support()) {
+		hdr = false;
+	}
+	m->print(msg::MDEBUG, "engine.cpp", "HDR-Rendering is %s!", (hdr ? "enabled" : "disabled"));
 }
 
 /*! sets the windows width
@@ -421,7 +455,37 @@ void engine::start_draw() {
 void engine::stop_draw() {
 	SDL_GL_SwapBuffers();
 
-	// fps limiter
+	GLenum error = glGetError();
+	switch(error) {
+		case GL_NO_ERROR:
+			break;
+		case GL_INVALID_ENUM:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid enum!", error);
+			break;
+		case GL_INVALID_VALUE:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid value!", error);
+			break;
+		case GL_INVALID_OPERATION:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid operation!", error);
+			break;
+		case GL_STACK_OVERFLOW:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid stack overflow!", error);
+			break;
+		case GL_STACK_UNDERFLOW:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid stack underflow!", error);
+			break;
+		case GL_OUT_OF_MEMORY:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: out of memory!", error);
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION_EXT:
+			m->print(msg::MERROR, "engine.cpp", "OpenGL error: invalid framebuffer operation!", error);
+			break;
+		default:
+			m->print(msg::MERROR, "engine.cpp", "unknown OpenGL error: %u!", error);
+			break;
+	}
+
+	// fps "limiter"
 	if(engine::fps_limit != 0) SDL_Delay(engine::fps_limit);
 }
 
@@ -476,17 +540,12 @@ bool engine::init_gl() {
 /*! opengl drawing code
  */
 bool engine::draw_gl_scene() {
-	//glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height); // hmm...?
-	
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	
 	// clear the color and depth buffers.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
-	// we don't want to modify the projection matrix.
-	//glMatrixMode(GL_MODELVIEW);
+
+	// reset model view matrix
 	glLoadIdentity();
-	
+
 	return true;
 }
 
@@ -495,21 +554,21 @@ bool engine::draw_gl_scene() {
 bool engine::resize_window() {
 	// set the viewport
 	glViewport(0, 0, (GLsizei)engine::width, (GLsizei)engine::height);
-	m->print(msg::MDEBUG, "engine.cpp", "viewport set");
 
 	// projection matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (projection) set");
 
 	// set perspective with fov = 72 and far value = 1000.0f
 	gluPerspective(72.0f, (float)engine::width / (float)engine::height, 0.1f, 1000.0f);
-	m->print(msg::MDEBUG, "engine.cpp", "glu perspective set");
+
+	glGetFloatv(GL_PROJECTION_MATRIX, *projection_matrix.m);
 
 	// model view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	m->print(msg::MDEBUG, "engine.cpp", "matrix mode (modelview) set");
+
+	glGetFloatv(GL_MODELVIEW_MATRIX, *modelview_matrix.m);
 
 	return true;
 }
@@ -525,12 +584,31 @@ void engine::set_position(float xpos, float ypos, float zpos) {
 	engine::position->z = zpos;
 
 	glTranslatef(engine::position->x, engine::position->y, engine::position->z);
+
+	if(exts->is_fbo_support()) engine::position->y *= -1.0f;
+
+	glGetFloatv(GL_MODELVIEW_MATRIX, *modelview_matrix.m);
+}
+
+/*! sets the rotation of the user/viewer (this function doesn't affect the cam/users rotation - use the cam class's function instead)
+ *  @param xrot x rotation
+ *  @param yrot y rotation
+ */
+void engine::set_rotation(float xrot, float yrot) {
+	engine::rotation->x = xrot;
+	engine::rotation->y = yrot;
 }
 
 /*! returns the position of the user
  */
 vertex3* engine::get_position() {
 	return engine::position;
+}
+
+/*! returns the rotation of the user
+ */
+vertex3* engine::get_rotation() {
+	return engine::rotation;
 }
 
 /*! starts drawing the 2d elements and initializes the opengl functions for that
@@ -715,4 +793,24 @@ void engine::load_ico(const char* ico) {
 
 unsigned int engine::get_shadow_type() {
 	return engine::shadow_type;
+}
+
+unsigned int engine::get_filtering() {
+	return engine::filtering;
+}
+
+bool engine::get_hdr() {
+	return engine::hdr;
+}
+
+bool engine::get_hdr_rgba16() {
+	return engine::hdr_rgba16;
+}
+
+matrix4* engine::get_projection_matrix() {
+	return &(engine::projection_matrix);
+}
+
+matrix4* engine::get_modelview_matrix() {
+	return &(engine::modelview_matrix);
 }

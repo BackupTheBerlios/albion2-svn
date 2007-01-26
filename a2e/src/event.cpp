@@ -316,6 +316,10 @@ void event::set_active(ACTIVE_CLASS active_class) {
 	event::act_class = active_class;
 }
 
+event::ACTIVE_CLASS event::get_active() {
+	return event::act_class;
+}
+
 /*! returns true if the up arrow key is pressed
  */
 bool event::is_key_up() {
@@ -359,7 +363,7 @@ void event::load_keyset(const char* language) {
 		if(strcmp(x->get_node_name(), "keyset") == 0) {
 		}
 		else if(strcmp(x->get_node_name(), "set") == 0) {
-			if(strcmp(x->get_attribute("language"), language) != 0) {
+			if(strcmp(x->get_attribute((char*)"language"), language) != 0) {
 				while(x->process() && strcmp(x->get_node_name(), "set") != 0) {
 				}
 			}
@@ -367,28 +371,28 @@ void event::load_keyset(const char* language) {
 		else if(strcmp(x->get_node_name(), "key") == 0) {
 			keyset.push_back(*new a2e_key());
 
-			if(x->get_attribute("ignore") != NULL) {
-				keyset.back().id = (unsigned int)atoi(x->get_attribute("ignore"));
+			if(x->get_attribute((char*)"ignore") != NULL) {
+				keyset.back().id = (unsigned int)atoi(x->get_attribute((char*)"ignore"));
 				keyset.back().ignore = true;
 			}
 
-			if(x->get_attribute("id") != NULL) {
-				keyset.back().id = (unsigned int)atoi(x->get_attribute("id"));
+			if(x->get_attribute((char*)"id") != NULL) {
+				keyset.back().id = (unsigned int)atoi(x->get_attribute((char*)"id"));
 			}
 
-			if(x->get_attribute("tokey") != NULL) {
-				const char* c = x->get_attribute("tokey");
-				keyset.back().key = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("tokey"));
+			if(x->get_attribute((char*)"tokey") != NULL) {
+				const char* c = x->get_attribute((char*)"tokey");
+				keyset.back().key = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute((char*)"tokey"));
 			}
 
-			if(x->get_attribute("shift") != NULL) {
-				const char* c = x->get_attribute("shift");
-				keyset.back().shift = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("shift"));
+			if(x->get_attribute((char*)"shift") != NULL) {
+				const char* c = x->get_attribute((char*)"shift");
+				keyset.back().shift = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute((char*)"shift"));
 			}
 
-			if(x->get_attribute("alt") != NULL) {
-				const char* c = x->get_attribute("alt");
-				keyset.back().alt = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute("alt"));
+			if(x->get_attribute((char*)"alt") != NULL) {
+				const char* c = x->get_attribute((char*)"alt");
+				keyset.back().alt = strlen(c) <= 1 ? c[0] : (char)atoi(x->get_attribute((char*)"alt"));
 			}
 		}
 	}

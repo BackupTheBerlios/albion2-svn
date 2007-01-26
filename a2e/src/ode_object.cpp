@@ -51,13 +51,15 @@ ode_object::~ode_object() {
 	m->print(msg::MDEBUG, "ode_object.cpp", "ode_object stuff freed");
 }
 
-void ode_object::init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type) {
+/*! initializes the ode_object (using the parameters)
+ */
+void ode_object::init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type, bool collision_map) {
 	ode_object::world = world;
 	ode_object::space = space;
 	ode_object::dvertices = NULL;
 	ode_object::dindices = NULL;
 	ode_object::set_model(model);
-	ode_object::set_geom(ode_object::get_model(), type);
+	ode_object::set_geom(ode_object::get_model(), type, collision_map);
 	ode_object::body = 0;
 
 	if(!fixed && type != ode_object::TRIMESH) {
@@ -81,13 +83,13 @@ void ode_object::init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fi
  *  @param model a pointer to the model object
  *  @param type the type of the ode object
  */
-void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
+void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type, bool collision_map) {
 	switch(type) {
 		case ode_object::TRIMESH: {
 			vertex3* vertices;
 			core::index* indices;
 			// initialize pointers to our a2emodel stuff
-			if(!model->is_collision_model()) {
+			if(!collision_map || !model->is_collision_model()) {
 				// if we don't have a collision model, use the models vertices and indices
 				vertices = model->get_vertices();
 				indices = model->get_total_indices();
@@ -109,10 +111,14 @@ void ode_object::set_geom(a2emodel* model, ode_object::OTYPE type) {
 			// we need to convert the a2emodel vertices/indices
 			ode_object::dvertices = new dVector3[vertex_count];
 			unsigned int x = 0;
+			float sx, sy, sz;
+			sx = model->get_phys_scale()->x;
+			sy = model->get_phys_scale()->y;
+			sz = model->get_phys_scale()->z;
 			for(unsigned int i = 0; i < ode_object::vertex_count; i++) {
-				ode_object::dvertices[x][0] = vertices[i].x;
-				ode_object::dvertices[x][1] = vertices[i].y;
-				ode_object::dvertices[x][2] = vertices[i].z;
+				ode_object::dvertices[x][0] = vertices[i].x * sx;
+				ode_object::dvertices[x][1] = vertices[i].y * sy;
+				ode_object::dvertices[x][2] = vertices[i].z * sz;
 				x++;
 			}
 
@@ -291,13 +297,15 @@ dBodyID ode_object::get_body() {
 	return ode_object::body;
 }
 
-/*! for debugging purposes - reset the bodys position, rotation and velocity
+/*! resets the bodys position, rotation and velocity
  */
 void ode_object::reset() {
 	dBodySetAngularVel(ode_object::body, 0, 0, 0);
 	dBodySetLinearVel(ode_object::body, 0, 0, 0);
 	dBodySetPosition(ode_object::body, 0, 0, 0);
-	//dBodySetRotation(ode_object::body);
+	dMatrix3 R;
+	for(unsigned int i = 0; i < 12; i++) { R[i] = 0.0f; }
+	dBodySetRotation(ode_object::body, R);
 	dBodyEnable(ode_object::body);
 }
 
@@ -307,7 +315,6 @@ void ode_object::set_mass(float mass) {
 	dMassAdjust(ode_object::mass, mass);
 	dBodySetMass(ode_object::body, ode_object::mass);
 }
-
 
 /*! adds a force to the object specified by x, y and z
  *  @param x add force on the x axis
@@ -352,6 +359,9 @@ void ode_object::set_max_force(float force) {
 	ode_object::max_force = force;
 }
 
+/*! sets the bodys rotation
+ *  @param rot the rotation we want to set
+ */
 void ode_object::set_body_rotation(vertex3* rot) {
 	dMatrix3 R;
 	dRFromAxisAndAngle(R, 1.0f, 0.0f, 0.0f, rot->x);
@@ -360,6 +370,8 @@ void ode_object::set_body_rotation(vertex3* rot) {
 	dBodySetRotation(ode_object::body, R);
 }
 
+/*! returns the bodys rotation
+ */
 dReal* ode_object::get_body_rotation() {
 	return (dReal*)dBodyGetRotation(body);
 }

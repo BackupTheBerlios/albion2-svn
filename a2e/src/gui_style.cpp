@@ -72,7 +72,7 @@ void gui_style::load_color_schemes(const char* cs_file) {
 
 					while(strcmp(x->get_node_name(), "color_schemes") != 0) {
 						if(strcmp(x->get_node_name(), "scheme") == 0) {
-							const char* cs_name = x->get_attribute("name");
+							const char* cs_name = x->get_attribute((char*)"name");
 							if(cs_name == NULL) {
 								m->print(msg::MERROR, "gui_style.cpp", "load_color_schemes(): no scheme name specified!");
 								x->close();
@@ -84,20 +84,20 @@ void gui_style::load_color_schemes(const char* cs_file) {
 
 							while(strcmp(x->get_node_name(), "scheme") != 0) {
 								if(strcmp(x->get_node_name(), "color") == 0) {
-									if(x->get_attribute("name") == NULL) {
+									if(x->get_attribute((char*)"name") == NULL) {
 										m->print(msg::MERROR, "gui_style.cpp", "load_color_schemes(): no color name specified!");
 										x->close();
 										return;
 									}
-									if(x->get_attribute("value") == NULL) {
+									if(x->get_attribute((char*)"value") == NULL) {
 										m->print(msg::MERROR, "gui_style.cpp", "load_color_schemes(): no color value specified!");
 										x->close();
 										return;
 									}
 
 									buffer->setf(stringstream::hex, stringstream::basefield);
-									*buffer << "0x" << x->get_attribute("value");
-									*buffer >> color_schemes[cs_name][x->get_attribute("name")];
+									*buffer << "0x" << x->get_attribute((char*)"value");
+									*buffer >> color_schemes[cs_name][x->get_attribute((char*)"name")];
 									buffer->setf(stringstream::dec, stringstream::basefield);
 									c->reset(buffer);
 								}
@@ -166,13 +166,13 @@ void gui_style::load_gui_elements(const char* list) {
 		else {
 			while(x->process()) {
 				if(strcmp(x->get_node_name(), "gui_element") == 0) {
-					if(x->get_attribute("type") == NULL) {
+					if(x->get_attribute((char*)"type") == NULL) {
 						m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): no gui_elements type specified!");
 						x->close();
 						return;
 					}
-					if(iter->first != x->get_attribute("type")) {
-						m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): gui_elements is of the wrong type (%s)!", x->get_attribute("type"));
+					if(iter->first != x->get_attribute((char*)"type")) {
+						m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): gui_elements is of the wrong type (%s)!", x->get_attribute((char*)"type"));
 						x->close();
 						return;
 					}
@@ -182,13 +182,13 @@ void gui_style::load_gui_elements(const char* list) {
 
 					while(strcmp(x->get_node_name(), "gui_element") != 0) {
 						if(strcmp(x->get_node_name(), "state") == 0) {
-							if(x->get_attribute("type") != NULL) {
+							if(x->get_attribute((char*)"type") != NULL) {
 								state_found = false;
 								for(vector<string>::iterator siter = state_types.begin(); siter != state_types.end(); siter++) {
-									if(*siter == x->get_attribute("type")) {
+									if(*siter == x->get_attribute((char*)"type")) {
 										iter->second.gfx_types.push_back(*new vector<gfx_type>);
 										iter->second.states.push_back(*new state());
-										iter->second.states.back().state_name = x->get_attribute("type");
+										iter->second.states.back().state_name = x->get_attribute((char*)"type");
 
 										state_found = true;
 										break;
@@ -196,7 +196,7 @@ void gui_style::load_gui_elements(const char* list) {
 								}
 
 								if(!state_found) {
-									m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): unknown state type (%s)!", x->get_attribute("type"));
+									m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): unknown state type (%s)!", x->get_attribute((char*)"type"));
 									x->close();
 									return;
 								}
@@ -208,20 +208,20 @@ void gui_style::load_gui_elements(const char* list) {
 							while(strcmp(x->get_node_name(), "state") != 0) {
 								if(strcmp(x->get_node_name(), "gfx") == 0) {
 									iter->second.gfx_types.back().push_back(*new gfx_type());
-									const char* t_att = x->get_attribute("type");
-									const char* pc_att = x->get_attribute("primary_color");
-									const char* sc_att = x->get_attribute("secondary_color");
+									const char* t_att = x->get_attribute((char*)"type");
+									const char* pc_att = x->get_attribute((char*)"primary_color");
+									const char* sc_att = x->get_attribute((char*)"secondary_color");
 									if(t_att == NULL) {
 										m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): no gfx type specified!");
 										x->close();
 										return;
 									}
-									if(x->get_attribute("bbox") == NULL) {
+									if(x->get_attribute((char*)"bbox") == NULL) {
 										m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): no gfx bbox specified!");
 										x->close();
 										return;
 									}
-									if(x->get_attribute("correct") == NULL) {
+									if(x->get_attribute((char*)"correct") == NULL) {
 										m->print(msg::MERROR, "gui_style.cpp", "load_gui_elements(): no gfx correction values specified!");
 										x->close();
 										return;
@@ -248,7 +248,7 @@ void gui_style::load_gui_elements(const char* list) {
 										iter->second.gfx_types.back().back().secondary_color = sc_att;
 									}
 
-									*buffer << x->get_attribute("bbox");
+									*buffer << x->get_attribute((char*)"bbox");
 									for(unsigned int i = 0; i < 4; i++) {
 										*buffer >> tmp;
 										if(tmp == "x1") iter->second.gfx_types.back().back().bbox[i] = 0;
@@ -259,7 +259,7 @@ void gui_style::load_gui_elements(const char* list) {
 									}
 									c->reset(buffer);
 
-									*buffer << x->get_attribute("correct");
+									*buffer << x->get_attribute((char*)"correct");
 									for(unsigned int i = 0; i < 4; i++) {
 										*buffer >> iter->second.gfx_types.back().back().correct[i];
 									}

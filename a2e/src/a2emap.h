@@ -64,6 +64,11 @@ public:
 		vertex3 scale;
 		unsigned int phys_type; // (0 = box, 1 = sphere, 2 = cylinder, 3 = trimesh)
 		ode_object* ode_obj;
+		bool gravity;
+		bool collision_model;
+		bool auto_mass;
+		float mass;
+		vertex3 phys_scale;
 	};
 
 	bool load_map(const char* filename, bool vbo = false);
@@ -81,6 +86,7 @@ protected:
 
 	unsigned int object_count;
 	vector<map_object> objects;
+	bool map_opened;
 
 };
 

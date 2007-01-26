@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="gui"
 	ProjectGUID="{A94FAA7A-FBDF-794C-90D0-A2340CC291E0}"
+	RootNamespace="gui"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -136,6 +137,7 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
+				OpenMP="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"

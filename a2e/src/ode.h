@@ -53,7 +53,7 @@ public:
 
 	static void collision_callback(void* data, dGeomID o1, dGeomID o2);
 
-	ode_object* add_object(a2emodel* model, bool fixed, ode_object::OTYPE type);
+	ode_object* add_object(a2emodel* model, bool fixed, ode_object::OTYPE type, bool collision_map = true);
 	void delete_object(ode_object* obj);
 	void update_objects();
 

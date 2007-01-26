@@ -117,7 +117,11 @@ void ode::run(unsigned int el_time) {
 
 	// execute a 0.05f world step
 	//dWorldStep(ode::world, (float)el_time / 1000.0f);
-	dWorldStepFast1(ode::world, (float)el_time / 1000.0f, 20);
+	//dWorldStepFast1(ode::world, (float)el_time / 1000.0f, 20);
+	// TODO: http://opende.sourceforge.net/wiki/index.php/Manual_%28World%29#Variable_Step_Size:_Don.27t.21
+	//       -> don't use variable step size
+	//       I set it to a fixed value of 0.04f (~40 updates per second) for now ...
+	dWorldStepFast1(ode::world, 0.04f, 20);
 
 	// clean the joint group for the next step
 	dJointGroupEmpty(ode::joint_group);
@@ -209,11 +213,11 @@ void ode::collision_callback(void* data, dGeomID o1, dGeomID o2) {
  *  @param fixed bool, if the object can be moved or if its fixed
  *  @param type the type of the ode object
  */
-ode_object* ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type) {
+ode_object* ode::add_object(a2emodel* model, bool fixed, ode_object::OTYPE type, bool collision_map) {
 	// create an new ode object and pass it to the list
 	ode::ode_objects.push_back(NULL);
 	ode::ode_objects.back() = new ode_object(e);
-	ode::ode_objects.back()->init(&ode::world, &ode::space, model, fixed, type);
+	ode::ode_objects.back()->init(&ode::world, &ode::space, model, fixed, type, collision_map);
 
 	//return &*(ode::ode_objects.begin()+(ode::ode_objects.size()-1));
 	return ode::ode_objects.back();

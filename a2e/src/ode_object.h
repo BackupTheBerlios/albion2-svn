@@ -25,6 +25,7 @@
 #include "core.h"
 #include "engine.h"
 #include "a2emodel.h"
+#include "quaternion.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -41,8 +42,7 @@ class A2E_API ode_object
 {
 public:
 	//! the objects type specifier
-	enum OTYPE
-	{
+	enum OTYPE {
 		BOX,		//!< enum box geometry
 		SPHERE,		//!< enum sphere geometry
 		CYLINDER,	//!< enum cylinder geometry
@@ -52,9 +52,9 @@ public:
 	ode_object(engine* e);
 	~ode_object();
 
-	void init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type);
+	void init(dWorldID* world, dSpaceID* space, a2emodel* model, bool fixed, ode_object::OTYPE type, bool collision_map);
 
-	void set_geom(a2emodel* model, ode_object::OTYPE type);
+	void set_geom(a2emodel* model, ode_object::OTYPE type, bool collision_map);
 	dGeomID get_geom();
 
 	void set_body(ode_object::OTYPE type);
@@ -70,8 +70,9 @@ public:
 	void set_body_rotation(vertex3* rot);
 	dReal* get_body_rotation();
 
-	// for debugging purposes
 	void reset();
+
+	// for debugging purposes
 	void set_mass(float mass);
 
 protected:

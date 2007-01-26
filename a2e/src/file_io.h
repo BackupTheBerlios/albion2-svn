@@ -45,7 +45,11 @@ public:
 		OT_WRITE,
 		OT_READ_BINARY,
 		OT_READWRITE_BINARY,
-		OT_WRITE_BINARY
+		OT_WRITE_BINARY,
+		OT_APPEND,
+		OT_APPEND_BINARY,
+		OT_APPEND_READ,
+		OT_APPEND_READ_BINARY
 	};
 
 	bool open_file(const char* filename, FIO_OPEN_TYPE open_type);
@@ -53,13 +57,15 @@ public:
 	unsigned int get_filesize();
 	void get_line(char* finput);
 	void get_block(char* data, unsigned int size);
+	void get_terminated_block(string* str, char terminator);
 	char get_char();
 	int get_int();
 	unsigned int get_uint();
 	float get_float();
 	void seek(unsigned int offset);
 	unsigned int get_current_offset();
-	void write_block(char* data, unsigned int size);
+	void write_block(const char* data, unsigned int size);
+	void write_terminated_block(string* str, char terminator);
 	void put_uint(unsigned int uint);
 	void put_swap_uint(unsigned int uint);
 	void put_float(float flt);

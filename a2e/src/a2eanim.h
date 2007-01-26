@@ -23,9 +23,11 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_thread.h>
+#include <omp.h>
 #include <cmath>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -95,6 +97,8 @@ public:
 	vertex3* get_scale();
 	void set_rotation(float x, float y, float z);
 	vertex3* get_rotation();
+	void set_phys_scale(float x, float y, float z);
+	vertex3* get_phys_scale();
 
 	void set_visible(bool state);
 	bool get_visible();
@@ -105,26 +109,33 @@ public:
 	string* get_object_names();
 
 	vertex3* get_vertices(unsigned int mesh);
+	unsigned int get_vertex_count(unsigned int mesh);
+	unsigned int get_vertex_count();
 	core::index* get_indices(unsigned int mesh);
 	unsigned int get_index_count(unsigned int mesh);
+	unsigned int get_index_count();
+
+	void set_draw_wireframe(bool state);
+	bool get_draw_wireframe();
+
+	void update_mview_matrix();
+	void update_scale_matrix();
 
 	// used for parallax mapping
 	void generate_normal_list();
-	void generate_normals(); // with threading
-	void generate_normals_nt(); // w/o / no threading
+	void generate_normals();
 
-	void set_light_color(float* lcol);
 	void set_light_position(vertex3* lpos);
 
 	unsigned int get_object_count();
 
 protected:
-	static msg* m;
+	msg* m;
 	file_io* file;
-	static core* c;
+	core* c;
 	engine* e;
 	shader* s;
-	static ext* exts;
+	ext* exts;
 
 	struct joint {
 		int num;
@@ -214,39 +225,27 @@ protected:
 	vertex3* position;
 	vertex3* scale;
 	vertex3* rotation;
+	vertex3* phys_scale;
 
 	bool is_visible;
 
 	float angle0;
 
     nlist** normal_list;
-	float* light_color;
+	unsigned int max_vertex_connections;
 	vertex3* light_position;
 
 	core::aabbox* bbox;
 
 	bool init;
 
-	//! flag that specifies if this model is using a vertex buffer object
+	bool draw_wireframe;
+
+	matrix4 mview_mat;
+	matrix4 scale_mat;
+
+	//! flag that specifies if this model uses a vertex buffer objects
 	bool vbo;
-
-	// for multi-threading ...
-	void mt_compute_nbt();
-	static int mt_nbt(void* data);
-
-	unsigned int thread_count;
-	static vertex3** mt_normals;
-	static vertex3** mt_binormals;
-	static vertex3** mt_tangents;
-	static unsigned int mt_cur_mesh;
-	static unsigned int mt_cur_frame;
-	static unsigned int* mt_start_num;
-	static unsigned int* mt_end_num;
-	static mesh* mt_mesh;
-	static nlist* mt_normal_list;
-	static bool* mt_thread_done;
-	static bool* mt_thread_done2;
-	static unsigned int mt_cur_tn;
 };
 
 #endif

@@ -49,6 +49,15 @@ vertex3::vertex3(vertex3* v) {
 vertex3::~vertex3() {
 }
 
+/*! = operator overload
+ */
+vertex3 vertex3::operator=(const vertex3& v) {
+	vertex3::x = v.x;
+	vertex3::y = v.y;
+	vertex3::z = v.z;
+	return *this;
+}
+
 /*! + operator overload
  */
 vertex3 vertex3::operator+(const vertex3& v) {
@@ -97,6 +106,24 @@ vertex3& vertex3::operator*=(float f) {
 	vertex3::x *= f;
 	vertex3::y *= f;
 	vertex3::z *= f;
+	return *this;
+}
+
+/*! *= operator overload
+ */
+vertex3& vertex3::operator*=(const vertex3& v) {
+	vertex3::x *= v.x;
+	vertex3::y *= v.y;
+	vertex3::z *= v.z;
+	return *this;
+}
+
+vertex3& vertex3::operator*=(const matrix4& mat) {
+	vertex3 v3;
+	v3.x = mat.m[0][0] * vertex3::x + mat.m[0][1] * vertex3::y + mat.m[0][2] * vertex3::z + mat.m[0][3] * 1.0f;
+	v3.y = mat.m[1][0] * vertex3::x + mat.m[1][1] * vertex3::y + mat.m[1][2] * vertex3::z + mat.m[1][3] * 1.0f;
+	v3.z = mat.m[2][0] * vertex3::x + mat.m[2][1] * vertex3::y + mat.m[2][2] * vertex3::z + mat.m[2][3] * 1.0f;
+	memcpy(this, &v3, sizeof(vertex3));
 	return *this;
 }
 

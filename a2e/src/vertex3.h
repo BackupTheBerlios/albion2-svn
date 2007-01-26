@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <cmath>
+#include "matrix4.h"
 using namespace std;
 
 #include "win_dll_export.h"
@@ -44,6 +45,7 @@ public:
 	~vertex3();
 
 	// overloading routines ...
+	vertex3 operator=(const vertex3& v);
 	vertex3 operator+(const vertex3& v);
 	vertex3 operator-(const vertex3& v);
 	vertex3 operator/(float f);
@@ -54,6 +56,8 @@ public:
 	vertex3& operator+=(const vertex3& v);
 	vertex3& operator-=(const vertex3& v);
 	vertex3& operator*=(float f);
+	vertex3& operator*=(const vertex3& v);
+	vertex3& operator*=(const matrix4& mat);
 	vertex3& operator/=(float f);
 	bool operator==(const vertex3& v);
 	bool operator!=(const vertex3& v);

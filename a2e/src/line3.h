@@ -44,6 +44,7 @@ public:
 	~line3();
 
 	vertex3 get_direction();
+	vertex3 get_vector();
 	vertex3 get_middle();
 	float get_length();
 
